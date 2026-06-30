@@ -1,0 +1,255 @@
+"use client"
+
+import {
+  useMemo,
+  useRef,
+  useState,
+} from "react"
+
+import {
+  Search,
+} from "lucide-react"
+
+import {
+  Input,
+} from "@/components/ui/input"
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandList,
+} from "@/components/ui/command"
+
+import {
+  DynamicBadge,
+} from "@/shared/ui/badge/dynamic-badge"
+
+import {
+  SelectOption,
+} from "@/shared/ui/select-option/select-option"
+
+import type {
+  Role,
+} from "../types/role.types"
+
+type Props={
+
+  value?:Role
+
+  items:Role[]
+
+  placeholder:string
+
+  onChange:(
+    role?:Role
+  )=>void
+
+}
+
+export function RoleSelect({
+
+  value,
+
+  items,
+
+  placeholder,
+
+  onChange,
+
+}:Props){
+
+  const [open,setOpen]=
+    useState(false)
+
+  const [query,setQuery]=
+    useState("")
+
+  const inputRef=
+    useRef<HTMLInputElement>(null)
+
+  const filteredItems=
+    useMemo(()=>{
+
+      const search=
+        query
+          .trim()
+          .toLowerCase()
+
+      const source=
+
+        search
+
+          ? items.filter(
+              role=>
+
+                role.name
+                  .toLowerCase()
+                  .includes(search)
+            )
+
+          : items
+
+      if(!value){
+
+        return source
+
+      }
+
+      return [
+
+        ...source.filter(
+          role=>
+            role.id===value.id
+        ),
+
+        ...source.filter(
+          role=>
+            role.id!==value.id
+        ),
+
+      ]
+
+    },[
+      items,
+      query,
+      value,
+    ])
+
+  const close=()=>{
+
+    setOpen(false)
+
+    setQuery("")
+
+  }
+
+  return(
+
+    <Popover
+      open={open}
+      onOpenChange={nextOpen=>{
+
+        setOpen(nextOpen)
+
+        if(!nextOpen){
+
+          setQuery("")
+
+          return
+
+        }
+
+        requestAnimationFrame(()=>{
+
+          inputRef.current?.focus()
+
+        })
+
+      }}
+    >
+
+      <PopoverTrigger className="flex w-full min-w-0 items-center">
+
+        <DynamicBadge
+          label={
+            value?.name ??
+            placeholder
+          }
+          color={
+            value?.color ??
+            placeholder
+          }
+          placeholder={!value}
+          width="field"
+          showChevron
+          chevronOpen={open}
+        />
+
+      </PopoverTrigger>
+
+      <PopoverContent
+        align="start"
+        sideOffset={8}
+        className="w-72 border border-white/10 bg-[#101012] p-2"
+      >
+
+        <Command
+          value={value?.name}
+          className="bg-transparent"
+        >
+
+          <div className="sticky top-0 z-20 mb-2 flex items-center gap-2 bg-[#101012] px-2 pb-2">
+
+            <Search
+              size={14}
+              className="text-white/35"
+            />
+
+            <Input
+              ref={inputRef}
+              value={query}
+              onChange={event=>
+
+                setQuery(
+                  event.target.value
+                )
+
+              }
+              placeholder="Buscar rol..."
+              className="h-9 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+
+          </div>
+
+          <CommandList
+            className="max-h-64 overflow-y-auto erp-scrollbar"
+          >
+
+            <CommandEmpty>
+
+              Sin resultados
+
+            </CommandEmpty>
+
+            <CommandGroup>
+
+              {filteredItems.map(role=>(
+
+                <SelectOption
+                  key={role.id}
+                  label={role.name}
+                  color={role.color}
+                  selected={
+                    value?.id===role.id
+                  }
+                  onSelect={()=>{
+
+                    onChange(role)
+
+                    close()
+
+                  }}
+                />
+
+              ))}
+
+            </CommandGroup>
+
+          </CommandList>
+
+        </Command>
+
+      </PopoverContent>
+
+    </Popover>
+
+  )
+
+}

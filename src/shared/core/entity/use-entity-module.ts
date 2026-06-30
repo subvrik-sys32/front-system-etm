@@ -1,0 +1,265 @@
+"use client"
+
+import { useEffect } from "react"
+import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query"
+
+type EntityWithId={id:string}
+
+export type CacheHandlers<T extends EntityWithId>={
+  onCreate?:(items:T[],created:T)=>T[]
+  onUpdate?:(items:T[],updated:T)=>T[]
+  onRemove?:(items:T[],id:string)=>T[]
+}
+
+type EntityService<T,CreateDto,UpdateDto=CreateDto>={
+  findAll:()=>Promise<T[]>
+  create:(dto:CreateDto)=>Promise<T>
+  update:(id:string,dto:UpdateDto)=>Promise<T>
+  remove:(id:string)=>Promise<void>
+}
+
+export function useEntityModule<
+  T extends EntityWithId,
+  CreateDto,
+  UpdateDto=CreateDto,
+>(
+  key:string,
+  service:EntityService<T,CreateDto,UpdateDto>,
+  handlers?:CacheHandlers<T>,
+){
+
+  const qc=useQueryClient()
+
+  const listKey=[key] as const
+
+  const entityKey=(id:string)=>[
+    key.slice(0,-1),
+    id,
+  ] as const
+
+  const query=useQuery<T[]>({
+    queryKey:listKey,
+    queryFn:service.findAll,
+  })
+
+  useEffect(()=>{
+
+    if(!query.data)return
+
+    for(const item of query.data){
+
+      qc.setQueryData<T>(
+        entityKey(item.id),
+        item,
+      )
+
+    }
+
+  },[
+    qc,
+    query.data,
+  ])
+
+  const create=useMutation({
+
+    mutationFn:service.create,
+
+    onSuccess:async created=>{
+
+      if(!handlers?.onCreate){
+
+        await qc.invalidateQueries({
+          queryKey:listKey,
+        })
+
+        return
+
+      }
+
+      qc.setQueryData<T[]>(
+        listKey,
+        current=>
+          handlers.onCreate!(
+            current??[],
+            created,
+          ),
+      )
+
+      qc.setQueryData<T>(
+        entityKey(created.id),
+        created,
+      )
+
+    },
+
+  })
+
+  const update=useMutation<
+    T,
+    Error,
+    {
+      id:string
+      dto:UpdateDto
+      optimistic?:Partial<T>
+    },
+    {
+      previous:T[]
+    }
+  >({
+
+    mutationFn:({id,dto})=>
+      service.update(
+        id,
+        dto,
+      ),
+
+    onMutate:async({
+      id,
+      optimistic,
+    })=>{
+
+      await qc.cancelQueries({
+        queryKey:listKey,
+      })
+
+      const previous=
+        qc.getQueryData<T[]>(listKey)??[]
+
+      if(optimistic){
+
+        qc.setQueryData<T[]>(
+          listKey,
+          items=>
+            (items??[]).map(
+              item=>
+                item.id===id
+                  ?{
+                      ...item,
+                      ...optimistic,
+                    }
+                  :item,
+            ),
+        )
+
+        const current=
+          qc.getQueryData<T>(
+            entityKey(id),
+          )
+
+        if(current){
+
+          qc.setQueryData<T>(
+            entityKey(id),
+            {
+              ...current,
+              ...optimistic,
+            },
+          )
+
+        }
+
+      }
+
+      return{
+        previous,
+      }
+
+    },
+
+    onError:(
+      _,
+      __,
+      context,
+    )=>{
+
+      if(!context)return
+
+      qc.setQueryData(
+        listKey,
+        context.previous,
+      )
+
+      for(const item of context.previous){
+
+        qc.setQueryData<T>(
+          entityKey(item.id),
+          item,
+        )
+
+      }
+
+    },
+
+    onSuccess:async updated=>{
+
+      if(handlers?.onUpdate){
+
+        qc.setQueryData<T[]>(
+          listKey,
+          current=>
+            handlers.onUpdate!(
+              current??[],
+              updated,
+            ),
+        )
+
+      }else{
+
+        await qc.invalidateQueries({
+          queryKey:listKey,
+        })
+
+      }
+
+      qc.setQueryData<T>(
+        entityKey(updated.id),
+        updated,
+      )
+
+    },
+
+  })
+
+  const remove=useMutation({
+
+    mutationFn:service.remove,
+
+    onSuccess:async(_,id)=>{
+
+      if(handlers?.onRemove){
+
+        qc.setQueryData<T[]>(
+          listKey,
+          current=>
+            handlers.onRemove!(
+              current??[],
+              id,
+            ),
+        )
+
+      }else{
+
+        await qc.invalidateQueries({
+          queryKey:listKey,
+        })
+
+      }
+
+      qc.removeQueries({
+        queryKey:entityKey(id),
+      })
+
+    },
+
+  })
+
+  return{
+    items:query.data??[],
+    loading:query.isLoading,
+    refreshing:query.isFetching,
+    create:create.mutateAsync,
+    update:update.mutateAsync,
+    remove:remove.mutateAsync,
+  }
+
+}

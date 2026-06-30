@@ -1,0 +1,90 @@
+"use client"
+
+import { useMemo } from "react"
+
+import {
+  EntityTableHeader,
+} from "./entity-table-header"
+
+import {
+  EntityTableItem,
+} from "./entity-table-item"
+
+import {
+  TableScrollContainer,
+} from "../horizontal-scroll/table-scroll-container"
+
+import type {
+  EntityTableProps,
+} from "./types"
+
+export function EntityTable<T>({
+  data,
+  columns,
+  rowId,
+  emptyMessage="Sin registros",
+  renderRow,
+  expandedRowId,
+  onExpandedRowChange,
+  renderExpandedRow,
+}:EntityTableProps<T>){
+
+  const templateColumns=useMemo(
+    ()=>columns.map(column=>column.width).join(" "),
+    [columns],
+  )
+
+  return(
+
+    <div className="relative flex h-[calc(100vh-240px)] flex-col overflow-hidden rounded-2xl bg-[#101012] ring-1 ring-white/6">
+
+      <TableScrollContainer>
+
+        <EntityTableHeader
+          columns={columns}
+        />
+
+        <div
+          data-entity-table-scroll
+          className="erp-scrollbar flex-1 overflow-y-auto"
+          style={{
+            scrollbarGutter:"stable",
+          }}
+        >
+
+          {data.length===0&&(
+
+            <div className="flex h-60 items-center justify-center text-neutral-500">
+
+              {emptyMessage}
+
+            </div>
+
+          )}
+
+          {data.map((item,rowIndex)=>(
+
+            <EntityTableItem
+              key={rowId(item)}
+              id={rowId(item)}
+              item={item}
+              rowIndex={rowIndex}
+              columns={columns}
+              templateColumns={templateColumns}
+              renderRow={renderRow}
+              expandedRowId={expandedRowId}
+              onExpandedRowChange={onExpandedRowChange}
+              renderExpandedRow={renderExpandedRow}
+            />
+
+          ))}
+
+        </div>
+
+      </TableScrollContainer>
+
+    </div>
+
+  )
+
+}

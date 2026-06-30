@@ -1,0 +1,83 @@
+import {
+  ProcessPageContent,
+} from "@/features/processes/components/process-page-content"
+
+import {
+  getProcessDefinition,
+} from "@/features/processes/selectors/get-process-definition"
+
+import type {
+  ProcessCode,
+} from "@/features/tasks/types/task.types"
+
+type Props={
+  params:Promise<{
+    code:string
+  }>
+  searchParams:Promise<{
+    taskId?:string
+  }>
+}
+export default async function ProcessPage({
+  params,
+  searchParams,
+}: Props) {
+
+  const {
+    code,
+  } = await params
+
+  const {
+    taskId,
+  }=await searchParams
+
+  const processCode =
+    code.toUpperCase() as ProcessCode
+
+  const process =
+    getProcessDefinition(
+      processCode
+    )
+
+  return(
+
+    <main className="h-full bg-[#050505] px-8 py-10 text-white">
+
+      <section className="space-y-6">
+
+        <header className="flex flex-wrap items-start justify-between gap-4">
+
+          <div className="min-w-0">
+
+            <h1 className="text-2xl font-bold tracking-widest">
+
+              {process?.label.toUpperCase()}
+
+            </h1>
+
+            <p className="mt-2 text-sm text-neutral-500">
+
+              Centro de gestión del proceso
+
+            </p>
+
+          </div>
+
+          <div className="shrink-0">
+
+          </div>
+
+        </header>
+
+            <ProcessPageContent
+              processCode={processCode}
+              focusedTaskId={taskId}
+            />
+
+      </section>
+
+    </main>
+
+  )
+
+}

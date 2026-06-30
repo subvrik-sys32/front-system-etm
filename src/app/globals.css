@@ -206,3 +206,21 @@ input:focus-visible {
   outline: none !important;
   box-shadow: none !important;
 }
+
+@keyframes etm-loading {
+
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(420%);
+  }
+
+}
+
+.animate-etm-loading {
+
+  animation: etm-loading 1.2s linear infinite;
+
+}

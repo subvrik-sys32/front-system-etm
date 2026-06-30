@@ -5,6 +5,10 @@ import {
 } from "react"
 
 import {
+  Loader2,
+} from "lucide-react"
+
+import {
   useRouter,
 } from "next/navigation"
 
@@ -67,6 +71,10 @@ export function LoginForm(){
 
     e.preventDefault()
 
+    if(loading){
+      return
+    }
+
     setError(null)
 
     setLoading(true)
@@ -95,9 +103,9 @@ export function LoginForm(){
 
       setError(
 
-        err?.response?.data?.message ??
+        err?.response?.data?.message??
 
-        "Error al iniciar sesión",
+        "Credenciales incorrectas.",
 
       )
 
@@ -118,6 +126,7 @@ export function LoginForm(){
 
       <input
         value={email}
+        disabled={loading}
         onChange={e=>
           setEmail(
             e.target.value,
@@ -126,40 +135,56 @@ export function LoginForm(){
         placeholder="admin@etmsac.com"
         type="email"
         autoComplete="email"
-        className="w-full rounded-xl bg-[#0A0A0A] px-3 py-2 text-sm"
+        className="w-full rounded-xl border border-white/8 bg-[#0A0A0A] px-3 py-2.5 text-sm outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60"
       />
 
       <input
         value={password}
+        disabled={loading}
         onChange={e=>
           setPassword(
             e.target.value,
           )
         }
-        placeholder="Password"
+        placeholder="Contraseña"
         type="password"
         autoComplete="current-password"
-        className="w-full rounded-xl bg-[#0A0A0A] px-3 py-2 text-sm"
+        className="w-full rounded-xl border border-white/8 bg-[#0A0A0A] px-3 py-2.5 text-sm outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60"
       />
 
-      {error&&(
+      <div className="h-5">
 
-        <p className="text-xs text-red-400">
+        {error&&(
 
-          {error}
+          <p className="text-xs font-medium text-red-400">
 
-        </p>
+            {error}
 
-      )}
+          </p>
+
+        )}
+
+      </div>
 
       <button
         disabled={loading}
-        className="w-full rounded-xl bg-white py-2 text-sm font-semibold text-black disabled:opacity-50"
+        className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-black transition-all duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-neutral-300"
       >
 
-        {loading
-          ?"Ingresando..."
-          :"Entrar"}
+        {loading?(
+          <>
+            <Loader2
+              size={16}
+              className="animate-spin"
+            />
+
+            <span>
+              Ingresando...
+            </span>
+          </>
+        ):(
+          "Entrar"
+        )}
 
       </button>
 

@@ -12,6 +12,10 @@ import {
   useTasks,
 } from "@/features/tasks/hooks/use-tasks"
 
+import {
+  isProjectCompleted,
+} from "@/features/projects/selectors/is-project-completed"
+
 import { NAVIGATION } from "./navigation"
 import { SidebarHeader } from "./sidebar-header"
 import { SidebarSection } from "./sidebar-section"
@@ -34,7 +38,14 @@ export function AppSidebar() {
   } = useProjects()
 
   const projectsCount =
-    projects.length
+    useMemo(
+      () =>
+        projects.filter(
+          project =>
+            !isProjectCompleted(project),
+        ).length,
+      [projects],
+    )
 
   const {
     tasks,
@@ -47,7 +58,6 @@ export function AppSidebar() {
           task =>
             task.workflowSteps?.some(
               step =>
-                step.status !== "COMPLETED" &&
                 step.status !== "REVIEWED",
             ),
         ).length,
@@ -77,8 +87,7 @@ export function AppSidebar() {
       for (const step of steps) {
 
         if (
-          step.status === "REVIEWED" ||
-          step.status === "COMPLETED"
+          step.status === "REVIEWED"
         ) {
           continue
         }
@@ -203,42 +212,45 @@ export function AppSidebar() {
 
       <div className="border-t border-white/5 p-3">
 
-        <div className="group flex items-center gap-3 rounded-xl bg-white/3 px-3 py-2 hover:bg-white/6 transition-all duration-200">
+        <div className="rounded-xl bg-white/3 px-3 py-3 hover:bg-white/6 transition-all duration-200">
 
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-white/10 to-white/3 text-xs font-semibold text-white shadow-inner">
+          <div className="flex items-center gap-2.5 mb-2.5">
 
-            {user?.name?.[0] ?? "?"}
+            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-white/10 to-white/3 text-sm font-semibold text-white shadow-inner">
 
-            <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-green-400 ring-2 ring-[#0A0A0A]" />
+              {user?.name?.[0] ?? "?"}
 
-          </div>
+              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-[#0A0A0A]" />
 
-          <div className="min-w-0 flex-1">
+            </div>
 
             {user ? (
 
-              <>
-                <p className="truncate text-xs font-semibold text-white leading-tight">
-                  {user.name}
-                </p>
-
-                <p className="truncate text-[11px] text-neutral-500">
-                  {user.email}
-                </p>
-              </>
+              <p className="truncate text-sm font-semibold text-white leading-tight">
+                {user.name}
+              </p>
 
             ) : (
 
-              <div className="space-y-2">
-                <div className="h-3 w-24 rounded bg-white/5 animate-pulse" />
-                <div className="h-2 w-24 rounded bg-white/5 animate-pulse" />
-              </div>
+              <div className="h-3 w-32 rounded bg-white/5 animate-pulse" />
 
             )}
 
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2">
+
+            {user ? (
+
+              <p className="truncate min-w-0 text-xs text-neutral-500">
+                {user.email}
+              </p>
+
+            ) : (
+
+              <div className="h-2 w-24 rounded bg-white/5 animate-pulse" />
+
+            )}
 
             <button
               onClick={() => {
@@ -254,7 +266,7 @@ export function AppSidebar() {
                 })
 
               }}
-              className="text-[11px] px-2 py-1 rounded-md text-neutral-400 hover:text-white hover:bg-white/5 transition"
+              className="shrink-0 text-xs px-2 py-1 rounded-md text-neutral-400 hover:text-white hover:bg-white/5 transition"
             >
               Salir
             </button>

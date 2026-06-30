@@ -1,6 +1,9 @@
 "use client"
 
-import { useMemo } from "react"
+import {
+  useEffect,
+  useMemo,
+} from "react"
 
 import type { Project } from "../types/project.types"
 import type { Task } from "@/features/tasks/types/task.types"
@@ -91,6 +94,26 @@ export function ProjectTable({
   const displayedProjects = showHistory
     ? [...completed, ...active]
     : active
+
+  useEffect(() => {
+
+    if (!expand.expandedRowId) {
+      return
+    }
+
+    const exists = displayedProjects.some(
+      project => project.id === expand.expandedRowId,
+    )
+
+    if (!exists) {
+      expand.setExpandedRowId(null)
+    }
+
+  }, [
+    displayedProjects,
+    expand.expandedRowId,
+    expand.setExpandedRowId,
+  ])
 
   const dragApi = useRowDragReorder({
     items: displayedProjects,

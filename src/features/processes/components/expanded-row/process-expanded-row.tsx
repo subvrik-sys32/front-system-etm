@@ -90,6 +90,7 @@ export function ProcessExpandedRow({
 
               <ProcessPaintCard
                 processTask={processTask}
+                readOnly
               />
             </>
           )}
@@ -102,6 +103,7 @@ export function ProcessExpandedRow({
 
               <ProcessPaintCard
                 processTask={processTask}
+                readOnly
               />
             </>
           )}

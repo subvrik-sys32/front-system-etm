@@ -12,6 +12,7 @@ type Props = {
   suffix?: string
   numeric?: boolean
   disabled?: boolean
+  treatZeroAsEmpty?: boolean
   onSave: (
     value: string | null
   ) => void
@@ -23,216 +24,135 @@ export function ProcessEditableValue({
   suffix,
   numeric,
   disabled,
+  treatZeroAsEmpty = true,
   onSave,
 }: Props) {
 
-  const [
-    editing,
-    setEditing,
-  ] = useState(false)
+  const [editing, setEditing] = useState(false)
 
-  const [
-    draft,
-    setDraft,
-  ] = useState(
-    value?.toString() ?? ""
+  const [draft, setDraft] = useState(
+    value===null || value===undefined
+      ? ""
+      : String(value)
   )
 
-  const inputRef =
-    useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
 
     setDraft(
-      value?.toString() ?? ""
+      value===null || value===undefined
+        ? ""
+        : String(value)
     )
 
-  }, [
-    value,
-  ])
+  }, [value])
 
   useEffect(() => {
 
-    if (!editing) {
-      return
-    }
+    if (!editing) return
 
     inputRef.current?.focus()
 
-  }, [
-    editing,
-  ])
+  }, [editing])
 
   const save = () => {
 
-    const normalized =
-      draft.trim()
+    const normalized = draft.trim()
 
-    if (
-      normalized === ""
-    ) {
+    const isZero =
+      numeric &&
+      treatZeroAsEmpty &&
+      normalized !== "" &&
+      Number(normalized) === 0
 
+    if (normalized === "" || isZero) {
       onSave(null)
-
       setEditing(false)
-
       return
-
     }
 
-    onSave(
-      normalized
-    )
-
+    onSave(normalized)
     setEditing(false)
 
   }
 
-  if (
-    editing &&
-    !disabled
-  ) {
+  if (editing && !disabled) {
 
     return (
-
       <input
         ref={inputRef}
-        type={
-          numeric
-            ? "number"
-            : "text"
-        }
+        type={numeric ? "number" : "text"}
         value={draft}
         onChange={event => {
 
-          const next =
-            event.target.value
+          const next = event.target.value
 
-          if (
-            numeric
-          ) {
-
-            if (
-              next !== "" &&
-              !/^\d*\.?\d*$/.test(
-                next
-              )
-            ) {
+          if (numeric) {
+            if (next !== "" && !/^\d*\.?\d*$/.test(next)) {
               return
             }
-
           }
 
-          setDraft(
-            next
-          )
+          setDraft(next)
 
         }}
         onBlur={save}
         onKeyDown={event => {
 
-          if (
-            event.key ===
-            "Enter"
-          ) {
-
-            save()
-
-          }
-
-          if (
-            event.key ===
-            "Escape"
-          ) {
-
-            setEditing(false)
-
-          }
+          if (event.key === "Enter") save()
+          if (event.key === "Escape") setEditing(false)
 
         }}
         className="block w-full border-0 bg-transparent p-0 text-left text-sm font-bold leading-tight outline-none"
       />
-
     )
 
   }
 
-  const hasValue =
+  const isEmpty =
+    value===null ||
+    value===undefined ||
+    (typeof value==="number" && Number.isNaN(value)) ||
+    (typeof value==="string" && value.trim()==="")
 
-    value !== null &&
-
-    value !== undefined &&
-
-    !(
-
-      typeof value === "number" &&
-
-      Number.isNaN(
-        value
-      )
-
-    )
+  const hasValue = !isEmpty
 
   return (
-
     <span
-      role="button"
-      tabIndex={0}
-      onClick={() =>
-
-        !disabled &&
-        setEditing(
-          true
-        )
-
-      }
+      role={disabled ? undefined : "button"}
+      tabIndex={disabled ? undefined : 0}
+      onClick={() => {
+        if (disabled) return
+        setEditing(true)
+      }}
       onKeyDown={event => {
 
-        if (
-          event.key ===
-            "Enter" ||
-          event.key ===
-            " "
-        ) {
+        if (disabled) return
 
+        if (event.key === "Enter" || event.key === " ") {
           event.preventDefault()
-
-          setEditing(
-            true
-          )
-
+          setEditing(true)
         }
 
       }}
-      className="block w-full cursor-pointer text-left text-sm font-bold leading-tight"
+      className={
+        disabled
+          ? "block w-full cursor-default text-left text-sm font-bold leading-tight text-neutral-400"
+          : "block w-full cursor-pointer text-left text-sm font-bold leading-tight"
+      }
     >
 
       {hasValue
-
-        ? (
-
-            suffix
-
-              ? `${value} ${suffix}`
-
-              : value
-
-          )
-
+        ? (suffix ? `${value} ${suffix}` : value)
         : (
-
-            <span className="text-neutral-500">
-
-              {placeholder}
-
-            </span>
-
-          )
-
+          <span className="text-neutral-500">
+            {placeholder}
+          </span>
+        )
       }
 
     </span>
-
   )
 
 }

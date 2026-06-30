@@ -10,9 +10,24 @@ import { getWorkflowStepContext } from "@/features/workflow/utils/get-workflow-s
 
 import type { ProcessTask } from "../../../types/process.types"
 
-const toNumber = (value: unknown) => {
-  const n = Number(value)
-  return Number.isFinite(n) ? n : undefined
+const toNumber = (value: unknown): number | null => {
+
+  if (value == null) {
+    return null
+  }
+
+  const text = String(value).trim()
+
+  if (text === "") {
+    return null
+  }
+
+  const number = Number(text)
+
+  return Number.isFinite(number)
+    ? number
+    : null
+
 }
 
 type Props = {
@@ -54,6 +69,7 @@ export function ProcessProductionCard({
         {
           label: "Entrada",
           value: processTask.inputQuantity ?? "-",
+          editable: false,
         },
 
         ...(showOutput
@@ -79,6 +95,7 @@ export function ProcessProductionCard({
                   }}
                 />
               ),
+              editable: true,
             }]
           : []),
 
@@ -106,6 +123,7 @@ export function ProcessProductionCard({
                   }}
                 />
               ),
+              editable: true,
             }]
           : []),
 

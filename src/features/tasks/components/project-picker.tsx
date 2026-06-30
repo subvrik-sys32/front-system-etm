@@ -12,6 +12,10 @@ import {
 } from "lucide-react"
 
 import {
+  formatDate,
+} from "@/shared/utils/date-format"
+
+import {
   cn,
 } from "@/shared/utils/utils"
 
@@ -326,10 +330,11 @@ export function ProjectPicker({
 
                     <DynamicBadge
                       label={
-                        project.deliveryDate ??
-                        "Sin fecha"
+                        project.deliveryDate
+                          ? formatDate(project.deliveryDate)
+                          : "Sin fecha"
                       }
-                      color={"#64748B"}
+                      color="#64748B"
                       icon="clock"
                     />
 

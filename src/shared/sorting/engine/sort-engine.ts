@@ -9,37 +9,59 @@ const PRIORITY_ORDER = {
   BAJA: 3,
 } as const
 
-type TaskViewParams = {
-  base: Task[]
+type TaskViewParams<T> = {
+  base: T[]
   mode: TaskSortMode
+  getTask?: (item: T) => Task
 }
 
-export function createTaskView({
+export function createTaskView<T extends Task>(params: {
+  base: T[]
+  mode: TaskSortMode
+}): T[]
+
+export function createTaskView<T>(params: {
+  base: T[]
+  mode: TaskSortMode
+  getTask: (item: T) => Task
+}): T[]
+
+export function createTaskView<T>({
   base,
   mode,
-}: TaskViewParams): Task[] {
+  getTask,
+}: TaskViewParams<T>): T[] {
 
   if (mode === "manual") return base
+
+  const extract = getTask ?? ((item: T) => item as unknown as Task)
 
   const view = [...base]
 
   if (mode === "delivery") {
-    return view.sort((a, b) => toTime(a.deliveryDate) - toTime(b.deliveryDate))
+    return view.sort((a, b) =>
+      toTime(extract(a).deliveryDate) - toTime(extract(b).deliveryDate),
+    )
   }
 
   if (mode === "sequence") {
-    return view.sort((a, b) => a.project.sequence - b.project.sequence)
+    return view.sort((a, b) =>
+      extract(a).project.sequence - extract(b).project.sequence,
+    )
   }
 
   // priority
   return view.sort((a, b) => {
-    const aPriority = PRIORITY_ORDER[a.priority.code as keyof typeof PRIORITY_ORDER] ?? 99
-    const bPriority = PRIORITY_ORDER[b.priority.code as keyof typeof PRIORITY_ORDER] ?? 99
+    const taskA = extract(a)
+    const taskB = extract(b)
 
-    const diff = aPriority - bPriority
+    const priorityA = PRIORITY_ORDER[taskA.priority.code as keyof typeof PRIORITY_ORDER] ?? 99
+    const priorityB = PRIORITY_ORDER[taskB.priority.code as keyof typeof PRIORITY_ORDER] ?? 99
+
+    const diff = priorityA - priorityB
     if (diff !== 0) return diff
 
-    return toTime(a.deliveryDate) - toTime(b.deliveryDate)
+    return toTime(taskA.deliveryDate) - toTime(taskB.deliveryDate)
   })
 
 }

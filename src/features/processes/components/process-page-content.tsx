@@ -1,7 +1,6 @@
 "use client"
 
 import {
-  useMemo,
   useState,
 } from "react"
 
@@ -24,14 +23,6 @@ import {
 import {
   useTasks,
 } from "@/features/tasks/hooks/use-tasks"
-
-import {
-  sortTasks,
-} from "@/features/tasks/selectors/sort-tasks"
-
-import {
-  useSortStore,
-} from "@/shared/sorting/store/sort-store"
 
 import {
   useProcesses,
@@ -78,41 +69,18 @@ export function ProcessPageContent({
     loading,
   }=useTasks()
 
-  const taskSortMode=
-    useSortStore(
-      state=>state.taskSortMode,
-    )
-
-  const sortedTasks=
-    useMemo(
-      ()=>sortTasks({
-        tasks,
-        mode:taskSortMode,
-      }),
-      [
-        tasks,
-        taskSortMode,
-      ],
-    )
-
   const{
     processDefinition,
     processTasks,
   }=useProcesses({
     processCode,
-    tasks:sortedTasks,
+    tasks,
   })
 
-  const completedCount=
-    useMemo(
-      ()=>processTasks.filter(
-        task=>
-          task.workflowStep?.status==="REVIEWED",
-      ).length,
-      [
-        processTasks,
-      ],
-    )
+  const completedCount =
+    processTasks.filter(
+      task => task.workflowStep?.status === "REVIEWED",
+    ).length
 
   return(
 
@@ -132,8 +100,6 @@ export function ProcessPageContent({
             <FilterBar
               module="processes"
             />
-
-            <TaskSortButton/>
 
             <HistoryToggleButton
               count={completedCount}

@@ -12,61 +12,107 @@ import type { ProcessTask } from "../../../types/process.types"
 
 type Props = {
   processTask: ProcessTask
+  readOnly?: boolean
 }
 
-const toNumber = (value: unknown) => {
-  const n = Number(value)
-  return Number.isFinite(n) ? n : undefined
+const toNumber = (value: unknown): number | null => {
+
+  if (value == null) {
+    return null
+  }
+
+  const text = String(value).trim()
+
+  if (text === "") {
+    return null
+  }
+
+  const number = Number(text)
+
+  return Number.isFinite(number)
+    ? number
+    : null
+
 }
 
-export function ProcessPaintCard({ processTask }: Props) {
+export function ProcessPaintCard({ processTask, readOnly = false }: Props) {
 
   const updateField = useWorkflowStepField()
 
   const color = processTask.task.color
 
-  const locked = workflowAccess.isCompleted(processTask)
+  const hasPaintProcess =
+    processTask.task.route.includes("PT")
 
-  const stepId = workflowAccess.stepId(processTask)
+  const locked = readOnly || workflowAccess.isCompleted(processTask)
+
+  // en Ensamble/Despacho el step relevante es paintStep, no workflowStep
+  const relevantStep =
+    readOnly
+      ? processTask.paintStep
+      : processTask.workflowStep
+
+  const paintKgReal =
+    relevantStep?.paintKgReal ?? null
+
+  const stepId =
+    relevantStep?.id ?? null
 
   return (
     <ProcessMiniCard
-      label="Pintura"
+      label={hasPaintProcess ? "Pintura" : "Acabado"}
       icon={PaintBucket}
-      color={color?.color ?? "#F97316"}
-      rows={[
-        {
-          label: "Color",
-          value: color?.name ?? "-",
-        },
-        {
-          label: "Pedido",
-          value: `${processTask.task.paintKg} KG`,
-        },
-        {
-          label: "Real",
-          value: (
-            <ProcessEditableValue
-              numeric
-              value={workflowAccess.paintKgReal(processTask) ?? null}
-              suffix="KG"
-              disabled={locked}
-              onSave={async value => {
+      color={
+        hasPaintProcess
+          ? color?.color ?? "#F97316"
+          : "#BBBBBB"
+      }
+      rows={
+        hasPaintProcess
+          ? [
+              {
+                label: "Color",
+                value: color?.name ?? "-",
+                editable: false,
+              },
+              {
+                label: "Pedido",
+                value: `${processTask.task.paintKg} KG`,
+                editable: false,
+              },
+              {
+                label: "Real",
+                value: (
+                  <ProcessEditableValue
+                    numeric
+                    value={paintKgReal}
+                    suffix="KG"
+                    disabled={locked}
+                    onSave={async value => {
 
-                if (!stepId) return
+                      if (!stepId) return
 
-                const paintKgReal = toNumber(value)
+                      const nextValue = toNumber(value)
 
-                await updateField(
-                  stepId,
-                  { paintKgReal },
-                  { paintKgReal },
-                )
-              }}
-            />
-          ),
-        },
-      ]}
+                      await updateField(
+                        stepId,
+                        { paintKgReal: nextValue },
+                        { paintKgReal: nextValue },
+                      )
+                    }}
+                  />
+                ),
+                editable: !locked,
+              },
+            ]
+          : [
+              {
+                label: "Tipo",
+                value: "Natural",
+                editable: false,
+              },
+            ]
+      }
     />
   )
 }

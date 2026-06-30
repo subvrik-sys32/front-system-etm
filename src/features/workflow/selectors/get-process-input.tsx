@@ -4,15 +4,19 @@ export function getProcessInput(
   task: Task,
   processCode: ProcessCode
 ) {
-  const steps = task.workflowSteps
-
-  const index = steps.findIndex(
-    step => step.processCode === processCode
+  const routeIndex = task.route.findIndex(
+    code => code === processCode
   )
 
-  if (index === -1) return null
+  if (routeIndex === -1) return null
 
-  if (index === 0) return task.pieces
+  if (routeIndex === 0) return task.pieces
 
-  return steps[index - 1]?.piecesOutput ?? null
+  const previousProcessCode = task.route[routeIndex - 1]
+
+  const previousStep = task.workflowSteps.find(
+    step => step.processCode === previousProcessCode
+  )
+
+  return previousStep?.piecesOutput ?? null
 }

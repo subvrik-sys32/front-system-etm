@@ -20,6 +20,8 @@ type Row={
 
   secondary?:string
 
+  editable?:boolean
+
 }
 
 type Props={
@@ -102,10 +104,16 @@ export function ProcessMiniCard({
               </p>
 
               <div
-                className="mt-1 text-sm font-bold leading-tight"
-                style={{
-                  color:textColor,
-                }}
+                className={
+                  row.editable===false
+                    ?"mt-1 text-sm font-semibold leading-tight text-neutral-400"
+                    :"mt-1 text-sm font-bold leading-tight"
+                }
+                style={
+                  row.editable===false
+                    ?undefined
+                    :{ color:textColor }
+                }
               >
 
                 {row.value}

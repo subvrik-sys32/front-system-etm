@@ -14,9 +14,24 @@ type Props = {
   processTask: ProcessTask
 }
 
-const toNumber = (value: unknown) => {
-  const n = Number(value)
-  return Number.isFinite(n) ? n : undefined
+const toNumber = (value: unknown): number | null => {
+
+  if (value == null) {
+    return null
+  }
+
+  const text = String(value).trim()
+
+  if (text === "") {
+    return null
+  }
+
+  const number = Number(text)
+
+  return Number.isFinite(number)
+    ? number
+    : null
+
 }
 
 export function ProcessDispatchCard({ processTask }: Props) {
@@ -38,6 +53,7 @@ export function ProcessDispatchCard({ processTask }: Props) {
         {
           label: "Ingreso",
           value: processTask.inputQuantity ?? "-",
+          editable: false,
         },
         {
           label: "Despachadas",
@@ -61,6 +77,7 @@ export function ProcessDispatchCard({ processTask }: Props) {
               }}
             />
           ),
+          editable: true,
         },
       ]}
     />

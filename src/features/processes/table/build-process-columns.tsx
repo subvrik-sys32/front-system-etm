@@ -55,7 +55,7 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       align: "center",
       title: "",
       width: TABLE_WIDTHS.drag,
-      render: () => <DragCell />,
+      render: () => null,
       renderOverlay: () => null,
     },
 

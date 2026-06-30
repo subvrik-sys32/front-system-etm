@@ -29,6 +29,10 @@ import type {
   UpdateProjectDto,
 } from "../types/project.dto"
 
+import type {
+  Task,
+} from "@/features/tasks/types/task.types"
+
 import {
   projectService,
 } from "../services/project.service"
@@ -103,6 +107,29 @@ export function useProjects(){
 
   }
 
+  const removeProject=async(
+    id:string,
+  )=>{
+
+    await remove(id)
+
+    queryClient.setQueryData<Task[]>(
+
+      ["tasks"],
+
+      current=>
+        (current??[]).filter(
+          task=>task.project.id!==id,
+        ),
+
+    )
+
+    queryClient.removeQueries({
+      queryKey:["project",id],
+    })
+
+  }
+
   const reorderProjects=async(
     projects:Project[],
   )=>{
@@ -162,7 +189,8 @@ export function useProjects(){
 
     reorderProjects,
 
-    remove,
+    remove:
+      removeProject,
 
   }
 

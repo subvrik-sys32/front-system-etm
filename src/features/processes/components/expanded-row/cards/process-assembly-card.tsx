@@ -14,9 +14,24 @@ type Props = {
   processTask: ProcessTask
 }
 
-const toNumber = (value: unknown) => {
-  const n = Number(value)
-  return Number.isFinite(n) ? n : undefined
+const toNumber = (value: unknown): number | null => {
+
+  if (value == null) {
+    return null
+  }
+
+  const text = String(value).trim()
+
+  if (text === "") {
+    return null
+  }
+
+  const number = Number(text)
+
+  return Number.isFinite(number)
+    ? number
+    : null
+
 }
 
 export function ProcessAssemblyCard({ processTask }: Props) {
@@ -36,10 +51,12 @@ export function ProcessAssemblyCard({ processTask }: Props) {
         {
           label: "Ingreso",
           value: processTask.inputQuantity ?? "-",
+          editable: false,
         },
         {
           label: "Unidades",
           value: processTask.task.assemblyCount,
+          editable: false,
         },
         {
           label: "Salida",
@@ -63,6 +80,7 @@ export function ProcessAssemblyCard({ processTask }: Props) {
               }}
             />
           ),
+          editable: true,
         },
       ]}
     />

@@ -37,6 +37,10 @@ import {
   AppLoadingScreen,
 } from "@/shared/ui/loading/app-loading-screen"
 
+import{
+  RealtimeProvider,
+}from"@/shared/realtime/realtime-provider"
+
 function setBootstrapCookie(){
 
   document.cookie=
@@ -154,7 +158,11 @@ export function ProtectedLayoutClient({
 
     <AppShell>
 
-      {children}
+      <RealtimeProvider>
+
+        {children}
+
+      </RealtimeProvider>
 
     </AppShell>
 

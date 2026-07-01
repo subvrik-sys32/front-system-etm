@@ -20,6 +20,10 @@ import {
   Sonner,
 } from "@/components/ui/sonner"
 
+import{
+  RealtimeProvider,
+}from"@/shared/realtime/realtime-provider"
+
 const geist =
   Geist({
     subsets: ["latin"],
@@ -45,11 +49,15 @@ export default function RootLayout({
 
         <ApiClientProvider />
 
-        <QueryProvider>
+          <QueryProvider>
 
-          {children}
+            <RealtimeProvider>
 
-        </QueryProvider>
+              {children}
+
+            </RealtimeProvider>
+
+          </QueryProvider>
 
         <Sonner />
 

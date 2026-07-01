@@ -6,51 +6,44 @@ import {
 } from "@tanstack/react-query"
 
 import {
-  useState,
-} from "react"
+  setQueryClient,
+} from "@/lib/query-client"
 
 type Props = {
   children: React.ReactNode
 }
 
-export function QueryProvider({
-  children,
-}: Props) {
+function makeQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60,
+        gcTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: false,
+        retry: 1,
+      },
+    },
+  })
+}
 
-  const [queryClient] =
-    useState(
-      () =>
-        new QueryClient({
+// Singleton fuera de React — se crea UNA sola vez por carga de módulo,
+// sin importar cuántas veces StrictMode invoque el render.
+let browserQueryClient: QueryClient | undefined
 
-          defaultOptions: {
+function getOrCreateBrowserQueryClient() {
+  if (!browserQueryClient) {
+    browserQueryClient = makeQueryClient()
+    setQueryClient(browserQueryClient)
+  }
+  return browserQueryClient
+}
 
-            queries: {
-
-              staleTime: 1000 * 60,
-
-              gcTime: 1000 * 60 * 5,
-
-              refetchOnWindowFocus: false,
-
-              retry: 1,
-
-            },
-
-          },
-
-        }),
-    )
+export function QueryProvider({ children }: Props) {
+  const queryClient = getOrCreateBrowserQueryClient()
 
   return (
-
-    <QueryClientProvider
-      client={queryClient}
-    >
-
+    <QueryClientProvider client={queryClient}>
       {children}
-
     </QueryClientProvider>
-
   )
-
 }

@@ -141,7 +141,7 @@ export function UserDialogHeader({
           <span className="text-neutral-500">
 
             {email ||
-              "usuario@empresa.com"}
+              "usuario@etmsac.com"}
 
           </span>
 

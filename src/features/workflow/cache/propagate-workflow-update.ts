@@ -1,3 +1,5 @@
+"use client"
+
 import type { QueryClient } from "@tanstack/react-query"
 
 import type { Task } from "@/features/tasks/types/task.types"
@@ -6,30 +8,30 @@ import type { WorkflowStep } from "../types/workflow.types"
 import type { WorkflowResponse } from "../services/workflow.services"
 
 function mergeSteps(
-  currentSteps:WorkflowStep[],
-  updated:WorkflowStep[],
-):WorkflowStep[]{
+  currentSteps: WorkflowStep[],
+  updated: Partial<WorkflowStep>[],
+): WorkflowStep[] {
 
-  return currentSteps.map(step=>{
+  return currentSteps.map(step => {
 
-    const patch=
-      updated.find(u=>u.id===step.id)
+    const patch = updated.find(u => u.id === step.id)
 
-    return patch??step
+    return patch
+      ? { ...step, ...patch }
+      : step
 
   })
 
 }
 
 export function propagateWorkflowUpdate(
-  queryClient:QueryClient,
-  response:WorkflowResponse,
-){
+  queryClient: QueryClient,
+  response: WorkflowResponse,
+) {
 
-  const{ taskId,updated }=
-    response
+  const { taskId, updated } = response
 
-  if(!updated||updated.length===0){
+  if (!updated || updated.length === 0) {
     return
   }
 
@@ -37,24 +39,23 @@ export function propagateWorkflowUpdate(
 
     ["tasks"],
 
-    current=>{
+    current => {
 
-      if(!current)return current
+      if (!current) return current
 
-      return current.map(task=>
+      return current.map(task =>
 
-        task.id===taskId
+        task.id === taskId
 
-          ?{
+          ? {
               ...task,
-              workflowSteps:
-                mergeSteps(
-                  task.workflowSteps,
-                  updated,
-                ),
+              workflowSteps: mergeSteps(
+                task.workflowSteps,
+                updated,
+              ),
             }
 
-          :task,
+          : task,
 
       )
 
@@ -62,24 +63,22 @@ export function propagateWorkflowUpdate(
 
   )
 
-  const cachedTask=
-    queryClient.getQueryData<Task>(
-      ["task",taskId],
-    )
+  const cachedTask = queryClient.getQueryData<Task>(
+    ["task", taskId],
+  )
 
-  if(cachedTask){
+  if (cachedTask) {
 
     queryClient.setQueryData<Task>(
 
-      ["task",taskId],
+      ["task", taskId],
 
       {
         ...cachedTask,
-        workflowSteps:
-          mergeSteps(
-            cachedTask.workflowSteps,
-            updated,
-          ),
+        workflowSteps: mergeSteps(
+          cachedTask.workflowSteps,
+          updated,
+        ),
       },
 
     )

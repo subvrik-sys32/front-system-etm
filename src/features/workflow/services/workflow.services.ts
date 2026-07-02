@@ -13,7 +13,7 @@ export type WorkflowResponse={
 
   taskId:string
 
-  workflowSteps:WorkflowStep[]
+  updated:WorkflowStep[]
 
 }
 

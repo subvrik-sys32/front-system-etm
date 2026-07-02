@@ -1,16 +1,37 @@
 import type { QueryClient } from "@tanstack/react-query"
 
 import type { Task } from "@/features/tasks/types/task.types"
+import type { WorkflowStep } from "../types/workflow.types"
 
 import type { WorkflowResponse } from "../services/workflow.services"
+
+function mergeSteps(
+  currentSteps:WorkflowStep[],
+  updated:WorkflowStep[],
+):WorkflowStep[]{
+
+  return currentSteps.map(step=>{
+
+    const patch=
+      updated.find(u=>u.id===step.id)
+
+    return patch??step
+
+  })
+
+}
 
 export function propagateWorkflowUpdate(
   queryClient:QueryClient,
   response:WorkflowResponse,
 ){
 
-  const{ taskId,workflowSteps }=
+  const{ taskId,updated }=
     response
+
+  if(!updated||updated.length===0){
+    return
+  }
 
   queryClient.setQueryData<Task[]>(
 
@@ -26,7 +47,11 @@ export function propagateWorkflowUpdate(
 
           ?{
               ...task,
-              workflowSteps,
+              workflowSteps:
+                mergeSteps(
+                  task.workflowSteps,
+                  updated,
+                ),
             }
 
           :task,
@@ -50,7 +75,11 @@ export function propagateWorkflowUpdate(
 
       {
         ...cachedTask,
-        workflowSteps,
+        workflowSteps:
+          mergeSteps(
+            cachedTask.workflowSteps,
+            updated,
+          ),
       },
 
     )

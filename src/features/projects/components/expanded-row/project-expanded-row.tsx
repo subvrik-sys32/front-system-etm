@@ -24,7 +24,7 @@ type Props={
   tasks:Task[]
 }
 
-const CRITICAL_PRIORITY_ID="priority-critical"
+const CRITICAL_PRIORITY_CODE="URGENTE"
 
 export function ProjectExpandedRow({
   project,
@@ -53,7 +53,7 @@ export function ProjectExpandedRow({
 
       totalPieces+=task.pieces
 
-      if(task.priority.id===CRITICAL_PRIORITY_ID){
+      if(task.priority.code===CRITICAL_PRIORITY_CODE){
         criticalPriorityTasks++
       }
 

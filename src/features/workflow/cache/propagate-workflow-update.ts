@@ -4,50 +4,13 @@ import type { Task } from "@/features/tasks/types/task.types"
 
 import type { WorkflowResponse } from "../services/workflow.services"
 
-import { replaceEntity } from "@/shared/core/entity/cache/replace-entity"
-import { replaceNestedEntity } from "@/shared/core/entity/cache/replace-nested-entity"
-
 export function propagateWorkflowUpdate(
   queryClient:QueryClient,
   response:WorkflowResponse,
 ){
 
-  const task=
-    response.task
-
-  if(task){
-
-    queryClient.setQueryData<Task[]>(
-
-      ["tasks"],
-
-      current=>
-
-        replaceEntity(
-          current??[],
-          task,
-        ),
-
-    )
-
-    queryClient.setQueryData<Task>(
-
-      ["task",task.id],
-
-      task,
-
-    )
-
-    return
-
-  }
-
-  const workflowStep=
-    response.workflowStep
-
-  if(!workflowStep){
-    return
-  }
+  const{ taskId,workflowSteps }=
+    response
 
   queryClient.setQueryData<Task[]>(
 
@@ -55,58 +18,43 @@ export function propagateWorkflowUpdate(
 
     current=>{
 
-      const tasks=
+      if(!current)return current
 
-        replaceNestedEntity(
+      return current.map(task=>
 
-          current??[],
+        task.id===taskId
 
-          task=>task.workflowSteps,
+          ?{
+              ...task,
+              workflowSteps,
+            }
 
-          (task,workflowSteps)=>({
+          :task,
 
-            ...task,
-
-            workflowSteps,
-
-          }),
-
-          workflowStep,
-
-        )
-
-      const parentTask=
-
-        tasks.find(
-
-          task=>
-
-            task.workflowSteps.some(
-
-              step=>
-
-                step.id===workflowStep.id,
-
-            ),
-
-        )
-
-      if(parentTask){
-
-        queryClient.setQueryData<Task>(
-
-          ["task",parentTask.id],
-
-          parentTask,
-
-        )
-
-      }
-
-      return tasks
+      )
 
     },
 
   )
+
+  const cachedTask=
+    queryClient.getQueryData<Task>(
+      ["task",taskId],
+    )
+
+  if(cachedTask){
+
+    queryClient.setQueryData<Task>(
+
+      ["task",taskId],
+
+      {
+        ...cachedTask,
+        workflowSteps,
+      },
+
+    )
+
+  }
 
 }

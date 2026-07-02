@@ -9,17 +9,11 @@ import type {
   WorkflowStep,
 } from "../types/workflow.types"
 
-import type {
-  Task,
-} from "@/features/tasks/types/task.types"
-
 export type WorkflowResponse={
 
   taskId:string
 
-  workflowStep?:WorkflowStep
-
-  task?:Task
+  workflowSteps:WorkflowStep[]
 
 }
 

@@ -48,6 +48,13 @@ export function useEntityModule<
 
     for(const item of query.data){
 
+      const cached=
+        qc.getQueryData<T>(
+          entityKey(item.id),
+        )
+
+      if(cached!==undefined)continue
+
       qc.setQueryData<T>(
         entityKey(item.id),
         item,

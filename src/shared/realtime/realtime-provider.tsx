@@ -1,144 +1,116 @@
 "use client"
 
-import{
-  useEffect,
-}from"react"
+import { useEffect } from "react"
 
-import{
+import {
   fetchEventSource,
   EventStreamContentType,
-}from"@microsoft/fetch-event-source"
+} from "@microsoft/fetch-event-source"
 
-import{
-  authSession,
-}from"@/lib/auth-session"
+import { authSession } from "@/lib/auth-session"
+import { useAuthStore } from "@/features/auth/store/auth-store"
 
-import{
-  realtimeRegistry,
-}from"./types/realtime-registry"
+import { realtimeRegistry } from "./types/realtime-registry"
 
 export function RealtimeProvider({
   children,
-}:{
-  children:React.ReactNode
-}){
+}: {
+  children: React.ReactNode
+}) {
 
-  useEffect(()=>{
+  const user = useAuthStore(s => s.user)
 
-    const token=
-      authSession.get()
+  useEffect(() => {
 
-    if(!token){
-      console.warn("[Realtime] Sin token, no se conecta")
+    // sin sesión activa, no conectamos
+    if (!user) {
       return
     }
 
-    const controller=
-      new AbortController()
+    const token = authSession.get()
+
+    if (!token) {
+      return
+    }
+
+    const controller = new AbortController()
 
     fetchEventSource(
       `${process.env.NEXT_PUBLIC_API_URL}/realtime/events`,
       {
 
-        signal:controller.signal,
+        signal: controller.signal,
 
-        headers:{
-          Authorization:`Bearer ${token}`,
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
 
-        openWhenHidden:true,
+        openWhenHidden: true,
 
-        async onopen(response){
+        async onopen(response) {
 
-          console.log(
-            "[Realtime] onopen status:",
-            response.status,
-            "content-type:",
-            response.headers.get("content-type"),
-          )
-
-          if(
-            response.ok&&
+          if (
+            response.ok &&
             response.headers
               .get("content-type")
-              ?.includes(
-                EventStreamContentType,
-              )
-          ){
-
-            console.log(
-              "[Realtime] Connected",
-            )
-
-            return
-
-          }
-
-          throw new Error(
-            `Realtime ${response.status}`,
-          )
-
-        },
-
-        onmessage(message){
-
-          console.log("[SSE RAW]", message)
-
-          if(
-            !message.data||
-            message.data.trim()===""
-          ){
-            console.warn("[SSE] data vacía, se ignora")
+              ?.includes(EventStreamContentType)
+          ) {
             return
           }
 
-          const event=
-            JSON.parse(
-              message.data,
-            )
-          console.log("[SSE PARSED]", event)
+          if (response.status === 401) {
 
-          if(
-            event.type==="PING"
-          ){
+            authSession.set(null)
+            useAuthStore.getState().logout()
+
+            if (typeof window !== "undefined") {
+              window.location.href = "/login"
+            }
+
+          }
+
+          throw new Error(`Realtime ${response.status}`)
+
+        },
+
+        onmessage(message) {
+
+          if (!message.data || message.data.trim() === "") {
             return
           }
 
-          realtimeRegistry(
-            event,
-          )
+          const event = JSON.parse(message.data)
+
+          if (event.type === "PING") {
+            return
+          }
+
+          realtimeRegistry(event)
 
         },
 
-        onclose(){
-
-          console.warn(
-            "[Realtime] Closed",
-          )
-
+        onclose() {
+          // el navegador reintenta solo si el effect sigue montado
         },
 
-        onerror(error){
+        onerror(error) {
 
-          console.error(
-            "[Realtime] onerror:",
-            error,
-          )
+          // si ya hicimos logout, no seguir reintentando en loop
+          if (!authSession.get()) {
+            throw error // corta el retry automático de fetchEventSource
+          }
 
         },
 
       },
     )
 
-    return()=>{
-
-      console.log("[Realtime] Cleanup: abortando conexión")
+    return () => {
       controller.abort()
-
     }
 
-  },[])
+  }, [user])
 
-  return<>{children}</>
+  return <>{children}</>
 
 }

@@ -34,7 +34,7 @@ export const TaskSortTrigger=
         ref={ref}
         type="button"
         className={cn(
-          "flex h-8 items-center gap-2 rounded-xl px-2 text-white transition-colors hover:bg-[#101012]",
+          "flex h-8 items-center gap-2 rounded-xl px-2 select-none text-white transition-colors hover:bg-[#101012]",
           className
         )}
         {...props}

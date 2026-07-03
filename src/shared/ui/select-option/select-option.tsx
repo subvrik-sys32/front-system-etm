@@ -14,6 +14,7 @@ type Props = {
   selected: boolean
   swatchColor?: string
   disableCheckAnimation?: boolean
+  rightSlot?:React.ReactNode
   onSelect: () => void
   onEdit?: () => void
   onDelete?: () => void
@@ -26,6 +27,7 @@ export function SelectOption({
   selected,
   swatchColor,
   disableCheckAnimation,
+  rightSlot,
   onSelect,
   onEdit,
   onDelete,
@@ -65,9 +67,11 @@ export function SelectOption({
           />
         </div>
 
-        <div className="relative flex h-8 w-14 items-center justify-end">
+        <div className="relative flex h-8 min-w-8 items-center justify-end gap-2">
 
-          {hasActions && (
+          {rightSlot}
+
+          {hasActions&&(
             <div className="absolute right-0 opacity-0 translate-x-1 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100">
               <EntitySelectActionMenu
                 onEdit={actions.edit}
@@ -76,13 +80,17 @@ export function SelectOption({
             </div>
           )}
 
-          {selected && (
+          {selected&&(
             <Check
               size={16}
               strokeWidth={2.5}
-              style={{ color: resolvedColor }}
-              className={`absolute right-0 transition-all duration-200 ${
-                disableCheckAnimation ? "" : hasActions ? "group-hover:-translate-x-10" : ""
+              style={{color:resolvedColor}}
+              className={`transition-all duration-200 ${
+                disableCheckAnimation
+                  ?""
+                  :hasActions
+                    ?"group-hover:-translate-x-10"
+                    :""
               }`}
             />
           )}

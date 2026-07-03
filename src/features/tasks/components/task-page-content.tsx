@@ -7,6 +7,11 @@ import { EntityExpandProvider } from "@/shared/ui/entity-table/features/expansio
 import { EntityToolbar } from "@/shared/ui/entity-toolbar/entity-toolbar"
 import { EntityToolbarSearch } from "@/shared/ui/entity-toolbar/entity-toolbar-search"
 
+import {
+  ExportMenu,
+  type ExportScope,
+} from "@/shared/export"
+
 import { BackToProjectButton } from "@/features/projects/components/actions/back-to-project-button"
 
 import { TaskTable } from "@/features/tasks/table"
@@ -20,6 +25,10 @@ import { HistoryToggleButton } from "@/shared/history/components/history-toggle-
 import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 
 import { useTasks } from "@/features/tasks/hooks/use-tasks"
+
+import { useTaskExport } from "@/features/reports/hooks/use-task-export"
+
+import{ REPORT_EXPORT_SCOPES }from"@/shared/export/constants/export-config"
 
 type Props={
   focusedTaskId?:string
@@ -45,6 +54,14 @@ export function TaskPageContent({
     reorderTasks,
   }=useTasks()
 
+  const{
+    exporting,
+    exportPdf,
+    exportExcel,
+  }=useTaskExport(
+    tasks,
+  )
+
   const completedCount=
     tasks.filter(
       task=>
@@ -52,6 +69,38 @@ export function TaskPageContent({
           task.workflowSteps,
         ),
     ).length
+
+  async function handleExport(
+    format:"pdf"|"excel",
+    scope:ExportScope,
+  ){
+
+    if(
+      exporting||
+      tasks.length===0
+    ){
+
+      return
+
+    }
+
+    if(
+      format==="pdf"
+    ){
+
+      await exportPdf(
+        scope,
+      )
+
+      return
+
+    }
+
+    await exportExcel(
+      scope,
+    )
+
+  }
 
   return(
 
@@ -82,6 +131,11 @@ export function TaskPageContent({
                   value=>!value,
                 )
               }
+            />
+
+            <ExportMenu
+              scopes={REPORT_EXPORT_SCOPES}
+              onExport={handleExport}
             />
 
           </div>

@@ -1,57 +1,80 @@
 "use client"
 
-import {
+import{
   useState,
-} from "react"
+}from"react"
 
-import {
+import{
   EntityToolbar,
-} from "@/shared/ui/entity-toolbar/entity-toolbar"
+}from"@/shared/ui/entity-toolbar/entity-toolbar"
 
-import {
+import{
   EntityToolbarSearch,
-} from "@/shared/ui/entity-toolbar/entity-toolbar-search"
+}from"@/shared/ui/entity-toolbar/entity-toolbar-search"
 
-import {
+import{
   FilterBar,
-} from "@/shared/filter/components/filter-bar"
+}from"@/shared/filter/components/filter-bar"
 
-import {
+import{
   EntityExpandProvider,
-} from "@/shared/ui/entity-table/features/expansion"
+}from"@/shared/ui/entity-table/features/expansion"
 
-import {
+import{
+  ExportMenu,
+}from"@/shared/export/components/export-menu"
+
+import{
+  PRODUCTION_EXPORT_SCOPES,
+}from"@/shared/export/constants/export-config"
+
+import type{
+  ExportFormat,
+  ExportScope,
+}from"@/shared/export/types/export.types"
+
+import{
   useTasks,
-} from "@/features/tasks/hooks/use-tasks"
+}from"@/features/tasks/hooks/use-tasks"
 
-import {
-  useProcesses,
-} from "../hooks/use-processes"
+import type{
+  ProcessCode,
+}from"@/features/tasks/types/task.types"
 
-import {
-  ProcessTable,
-} from "../table/process-table"
-
-import {
+import{
   BackToTaskButton,
-} from "@/features/tasks/components/actions/back-to-task-button"
+}from"@/features/tasks/components/actions/back-to-task-button"
 
-import {
-  TaskSortButton,
-} from "@/shared/sorting/components/task-sort-button"
-
-import {
+import{
   HistoryToggleButton,
-} from "@/shared/history/components/history-toggle-button"
+}from"@/shared/history/components/history-toggle-button"
+
+import{
+  useProductionSheet,
+}from"@/features/reports/hooks/use-production-sheet"
+
+import{
+  useProcesses,
+}from"../hooks/use-processes"
+
+import{
+  ProcessTable,
+}from"../table/process-table"
 
 type Props={
-  processCode:string
+
+  processCode:ProcessCode
+
   focusedTaskId?:string
+
 }
 
 export function ProcessPageContent({
+
   processCode,
+
   focusedTaskId,
+
 }:Props){
 
   const[
@@ -73,14 +96,61 @@ export function ProcessPageContent({
     processDefinition,
     processTasks,
   }=useProcesses({
+
     processCode,
+
     tasks,
+
   })
 
-  const completedCount =
+  const{
+
+    exportPdf,
+
+    exportExcel,
+
+  }=useProductionSheet(
+
+    processTasks,
+
+    processCode,
+
+  )
+
+  const completedCount=
     processTasks.filter(
-      task => task.workflowStep?.status === "REVIEWED",
+      task=>
+        task.workflowStep?.status==="REVIEWED",
     ).length
+
+  async function handleExport(
+
+    format:ExportFormat,
+
+    scope:ExportScope,
+
+  ){
+
+    if(
+      scope!=="active"&&
+      scope!=="history"
+    ){
+
+      return
+
+    }
+
+    if(format==="pdf"){
+
+      await exportPdf(scope)
+
+      return
+
+    }
+
+    await exportExcel(scope)
+
+  }
 
   return(
 
@@ -88,6 +158,7 @@ export function ProcessPageContent({
 
       <EntityToolbar
         left={
+
           <div className="flex flex-wrap items-center gap-2 py-1">
 
             <BackToTaskButton/>
@@ -111,7 +182,17 @@ export function ProcessPageContent({
               }
             />
 
+            <ExportMenu
+              scopes={
+                PRODUCTION_EXPORT_SCOPES
+              }
+              onExport={
+                handleExport
+              }
+            />
+
           </div>
+
         }
       />
 

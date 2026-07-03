@@ -66,6 +66,42 @@ export function taskHandler(
 
     case"DELETED":{
 
+      const payload=
+
+        event.payload as
+
+          |{
+
+              cascade:true
+
+              projectId:string
+
+            }
+
+          |undefined
+
+      if(payload?.cascade){
+
+        queryClient.setQueryData<Task[]>(
+
+          ["tasks"],
+
+          current=>
+
+            (current??[]).filter(
+
+              task=>
+
+                task.project.id!==payload.projectId,
+
+            ),
+
+        )
+
+        return
+
+      }
+
       cacheRemoveEntity<Task>(
 
         queryClient,

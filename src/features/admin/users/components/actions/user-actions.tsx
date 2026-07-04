@@ -9,6 +9,14 @@ import {
 } from "lucide-react"
 
 import {
+  PermissionCode,
+} from "@/shared/core/enums/permission-code.enum"
+
+import {
+  usePermissions,
+} from "@/features/permissions/hooks/use-permissions"
+
+import {
   PrimaryAction,
 } from "@/shared/ui/actions/primary-action"
 
@@ -18,8 +26,20 @@ import {
 
 export function UserActions(){
 
-  const [open,setOpen]=
-    useState(false)
+  const[
+    open,
+    setOpen,
+  ]=useState(false)
+
+  const{
+    has,
+  }=
+    usePermissions()
+
+  const canCreate=
+    has(
+      PermissionCode.USER_CREATE,
+    )
 
   return(
 
@@ -31,9 +51,17 @@ export function UserActions(){
 
         icon={Plus}
 
-        onClick={()=>
+        disabled={!canCreate}
+
+        onClick={()=>{
+
+          if(!canCreate){
+            return
+          }
+
           setOpen(true)
-        }
+
+        }}
 
       />
 

@@ -5,6 +5,14 @@ import {
 } from "@/features/users/components/user-select"
 
 import {
+  PermissionCode,
+} from "@/shared/core/enums/permission-code.enum"
+
+import {
+  usePermissions,
+} from "@/features/permissions/hooks/use-permissions"
+
+import {
   useUsers,
 } from "@/features/users/hooks/use-users"
 
@@ -31,6 +39,15 @@ export function ProjectPmCell({
   const updateField=
     useProjectField()
 
+  const{
+    has,
+  }=usePermissions()
+
+  const canUpdate=
+    has(
+      PermissionCode.PROJECT_UPDATE,
+    )
+
   const pms=
     users.filter(
       user=>user.role?.code==="PROJECT_MANAGER",
@@ -45,6 +62,8 @@ export function ProjectPmCell({
       items={pms}
 
       placeholder="PM"
+
+      disabled={!canUpdate}
 
       onChange={user=>{
 

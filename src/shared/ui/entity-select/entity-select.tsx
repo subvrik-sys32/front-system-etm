@@ -43,6 +43,8 @@ type Props<T extends EntityBase> = {
   onCreate: (dto: EntityForm) => Promise<T>
   onEdit: (params: { id: string; dto: EntityForm }) => Promise<T>
   onDelete: (id: string) => Promise<void>
+
+  disabled?: boolean
 }
 
 export function EntitySelect<T extends EntityBase>({
@@ -54,6 +56,7 @@ export function EntitySelect<T extends EntityBase>({
   onCreate,
   onEdit,
   onDelete,
+  disabled = false,
 }: Props<T>) {
 
   const {
@@ -105,24 +108,46 @@ export function EntitySelect<T extends EntityBase>({
   return (
     <>
       <Popover
-        open={open}
+        open={disabled ? false : open}
         onOpenChange={(v) => {
+
+          if (disabled) {
+            return
+          }
+
           setOpen(v)
-          if (!v) setQuery("")
-          else requestAnimationFrame(() => inputRef.current?.focus())
+
+          if (!v) {
+            setQuery("")
+          } else {
+            requestAnimationFrame(
+              () => inputRef.current?.focus(),
+            )
+          }
+
         }}
       >
-        <PopoverTrigger className="flex w-full min-w-0 items-center">
-          <DynamicBadge
-            label={value?.name ?? placeholder}
-            color={value?.color ?? "#64748B"}
-            icon={value?.icon}
-            variant={collection === "colors" ? "solid" : "subtle"}
-            placeholder={!value}
-            width="field"
-            showChevron
-            chevronOpen={open}
-          />
+        <PopoverTrigger asChild>
+
+          <button
+            type="button"
+            disabled={disabled}
+            className="flex w-full min-w-0 items-center disabled:cursor-not-allowed"
+          >
+
+            <DynamicBadge
+              label={value?.name ?? placeholder}
+              color={value?.color ?? "#64748B"}
+              icon={value?.icon}
+              variant={collection === "colors" ? "solid" : "subtle"}
+              placeholder={!value}
+              width="field"
+              showChevron={!disabled}
+              chevronOpen={open}
+            />
+
+          </button>
+
         </PopoverTrigger>
 
         <PopoverContent className="w-72 border border-white/10 bg-[#101012] p-2">

@@ -51,6 +51,8 @@ type Props = {
     user?:User
   )=>void
 
+  disabled?:boolean
+
 }
 
 export function UserSelect({
@@ -62,6 +64,8 @@ export function UserSelect({
   placeholder,
 
   onChange,
+
+  disabled=false,
 
 }:Props){
 
@@ -133,8 +137,12 @@ export function UserSelect({
   return(
 
     <Popover
-      open={open}
+      open={disabled?false:open}
       onOpenChange={nextOpen=>{
+
+        if(disabled){
+          return
+        }
 
         setOpen(nextOpen)
 
@@ -155,24 +163,32 @@ export function UserSelect({
       }}
     >
 
-      <PopoverTrigger className="flex w-full min-w-0 items-center">
+      <PopoverTrigger asChild>
 
-        <DynamicBadge
-          label={
-            value?.name ??
-            placeholder
-          }
-          color={
-            value
-              ? value.color
-              : "#64748B"
-          }
-          icon={value?.icon}
-          placeholder={!value}
-          width="field"
-          showChevron
-          chevronOpen={open}
-        />
+        <button
+          type="button"
+          disabled={disabled}
+          className="flex w-full min-w-0 items-center disabled:cursor-not-allowed"
+        >
+
+          <DynamicBadge
+            label={
+              value?.name ??
+              placeholder
+            }
+            color={
+              value
+                ? value.color
+                : "#64748B"
+            }
+            icon={value?.icon}
+            placeholder={!value}
+            width="field"
+            showChevron={!disabled}
+            chevronOpen={open}
+          />
+
+        </button>
 
       </PopoverTrigger>
 

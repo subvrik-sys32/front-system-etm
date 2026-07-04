@@ -20,6 +20,7 @@ import { NAVIGATION } from "./navigation"
 import { SidebarHeader } from "./sidebar-header"
 import { SidebarSection } from "./sidebar-section"
 import { SidebarItem } from "./sidebar-item"
+import { SidebarPresence } from "./sidebar-presence"
 
 export function AppSidebar() {
 
@@ -209,6 +210,8 @@ export function AppSidebar() {
         ))}
 
       </div>
+
+      <SidebarPresence />
 
       <div className="border-t border-white/5 p-3">
 

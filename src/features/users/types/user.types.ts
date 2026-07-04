@@ -32,6 +32,8 @@ export interface User{
 
   active:boolean
 
+  online:boolean
+
   deletedAt:string | null
 
   createdAt:string

@@ -1,12 +1,28 @@
 "use client"
 
-import { useState } from "react"
+import {
+  useState,
+} from "react"
 
-import { Plus } from "lucide-react"
+import {
+  Plus,
+} from "lucide-react"
 
-import { PrimaryAction } from "@/shared/ui/actions/primary-action"
+import {
+  PermissionCode,
+} from "@/shared/core/enums/permission-code.enum"
 
-import { TaskDialog } from "../dialog/task-dialog"
+import {
+  usePermissions,
+} from "@/features/permissions/hooks/use-permissions"
+
+import {
+  PrimaryAction,
+} from "@/shared/ui/actions/primary-action"
+
+import {
+  TaskDialog,
+} from "../dialog/task-dialog"
 
 export function TaskActions(){
 
@@ -15,22 +31,52 @@ export function TaskActions(){
     setOpen,
   ]=useState(false)
 
+  const{
+    has,
+  }=
+    usePermissions()
+
+  const canCreate=
+    has(
+      PermissionCode.TASK_CREATE,
+    )
+
   return(
 
     <>
 
       <PrimaryAction
+
         label="Nueva tarea"
+
         icon={Plus}
-        onClick={()=>setOpen(true)}
+
+        disabled={!canCreate}
+
+        onClick={()=>{
+
+          if(!canCreate){
+            return
+          }
+
+          setOpen(true)
+
+        }}
+
       />
 
       {open&&(
 
         <TaskDialog
+
           open={open}
+
           promptOpenAfterCreate
-          onClose={()=>setOpen(false)}
+
+          onClose={()=>
+            setOpen(false)
+          }
+
         />
 
       )}

@@ -1,102 +1,178 @@
 "use client"
 
-import { useState } from "react"
-import { Pencil, Trash2 } from "lucide-react"
+import {
+  useState,
+} from "react"
 
-import { IconAction } from "@/shared/ui/actions/icon-action"
-import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
+import {
+  Pencil,
+  Trash2,
+} from "lucide-react"
 
-import { ProjectDialog } from "../dialog/project-dialog"
+import {
+  PermissionCode,
+} from "@/shared/core/enums/permission-code.enum"
 
-import { useTasks } from "@/features/tasks/hooks/use-tasks"
-import { useProjects } from "../../hooks/use-projects"
+import {
+  usePermissions,
+} from "@/features/permissions/hooks/use-permissions"
 
-import type { Project } from "../../types/project.types"
+import {
+  IconAction,
+} from "@/shared/ui/actions/icon-action"
+
+import {
+  ActionDialog,
+} from "@/shared/ui/dialogs/action-dialog/action-dialog"
+
+import {
+  ProjectDialog,
+} from "../dialog/project-dialog"
+
+import {
+  useTasks,
+} from "@/features/tasks/hooks/use-tasks"
+
+import {
+  useProjects,
+} from "../../hooks/use-projects"
+
+import type{
+  Project,
+}from"../../types/project.types"
 
 type Props={
+
   project:Project
+
 }
 
 const ACTIVE_STATUSES=[
+
   "PROGRESS",
+
   "PAUSED",
-] as const
+
+]as const
 
 export function ProjectRowActions({
+
   project,
+
 }:Props){
 
   const{
     remove,
-  }=useProjects()
+  }=
+    useProjects()
+
+  const{
+    has,
+  }=
+    usePermissions()
+
+  const canUpdate=
+    has(
+      PermissionCode.PROJECT_UPDATE,
+    )
+
+  const canDelete=
+    has(
+      PermissionCode.PROJECT_DELETE,
+    )
 
   const[
     editOpen,
     setEditOpen,
-  ]=useState(false)
+  ]=
+    useState(false)
 
   const[
     deleteOpen,
     setDeleteOpen,
-  ]=useState(false)
+  ]=
+    useState(false)
 
   const[
     error,
     setError,
-  ]=useState<string|null>(null)
+  ]=
+    useState<string|null>(
+      null,
+    )
 
   const{
     tasks,
-  }=useTasks()
+  }=
+    useTasks()
 
-  const handleDelete=async()=>{
+  const handleDelete=
+    async()=>{
 
-    const projectTasks=
-      tasks.filter(
-        task=>task.project.id===project.id,
-      )
+      if(!canDelete){
+        return
+      }
 
-    const hasActiveTasks=
-      projectTasks.some(
-        task=>
-          task.workflowSteps.some(
-            step=>
-              ACTIVE_STATUSES.includes(
-                step.status as (typeof ACTIVE_STATUSES)[number],
-              ),
-          ),
-      )
+      const projectTasks=
 
-    if(hasActiveTasks){
+        tasks.filter(
 
-      setError(
-        "No se puede eliminar: hay tareas en proceso.",
-      )
+          task=>
 
-      return
+            task.project.id===project.id,
+
+        )
+
+      const hasActiveTasks=
+
+        projectTasks.some(
+
+          task=>
+
+            task.workflowSteps.some(
+
+              step=>
+
+                ACTIVE_STATUSES.includes(
+
+                  step.status as (typeof ACTIVE_STATUSES)[number],
+
+                ),
+
+            ),
+
+        )
+
+      if(hasActiveTasks){
+
+        setError(
+          "No se puede eliminar: hay tareas en proceso.",
+        )
+
+        return
+
+      }
+
+      try{
+
+        await remove(
+          project.id,
+        )
+
+        setDeleteOpen(false)
+
+        setError(null)
+
+      }catch(error){
+
+        console.error(
+          "PROJECT DELETE ERROR",
+          error,
+        )
+
+      }
 
     }
-
-    try{
-
-      await remove(
-        project.id,
-      )
-
-      setDeleteOpen(false)
-
-      setError(null)
-
-    }catch(error){
-
-      console.error(
-        "PROJECT DELETE ERROR",
-        error,
-      )
-
-    }
-
-  }
 
   return(
 
@@ -105,39 +181,89 @@ export function ProjectRowActions({
       <div className="ml-3 flex items-center gap-6">
 
         <IconAction
+
           icon={Pencil}
-          onClick={()=>setEditOpen(true)}
+
+          disabled={!canUpdate}
+
+          onClick={()=>{
+
+            if(!canUpdate){
+              return
+            }
+
+            setEditOpen(true)
+
+          }}
+
         />
 
         <IconAction
+
           icon={Trash2}
+
           variant="danger"
-          onClick={()=>setDeleteOpen(true)}
+
+          disabled={!canDelete}
+
+          onClick={()=>{
+
+            if(!canDelete){
+              return
+            }
+
+            setDeleteOpen(true)
+
+          }}
+
         />
 
       </div>
 
       <ProjectDialog
-        open={editOpen}
+
+        open={
+          canUpdate&&
+          editOpen
+        }
+
         project={project}
-        onClose={()=>setEditOpen(false)}
+
+        onClose={()=>
+          setEditOpen(false)
+        }
+
       />
 
       <ActionDialog
-        open={deleteOpen}
+
+        open={
+          canDelete&&
+          deleteOpen
+        }
+
         title="Eliminar proyecto"
+
         description={
           error
-            ? error
-            : `Se eliminará "${project.name}".`
+            ?error
+            :`Se eliminará "${project.name}".`
         }
+
         confirmLabel="Eliminar"
+
         variant="danger"
+
         onClose={()=>{
+
           setDeleteOpen(false)
+
           setError(null)
+
         }}
+
         onConfirm={handleDelete}
+
       />
 
     </>

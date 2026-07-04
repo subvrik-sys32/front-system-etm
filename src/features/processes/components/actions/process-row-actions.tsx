@@ -2,55 +2,114 @@
 
 import { toast } from "sonner"
 
-import { WorkflowAction } from "@/shared/ui/actions/workflow-action"
+import {
+  PermissionCode,
+} from "@/shared/core/enums/permission-code.enum"
 
-import { useWorkflow } from "@/features/workflow/hooks/use-workflow"
+import {
+  WorkflowAction,
+} from "@/shared/ui/actions/workflow-action"
 
-import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
+import {
+  usePermissions,
+} from "@/features/permissions/hooks/use-permissions"
 
-import type {
+import {
+  useWorkflow,
+} from "@/features/workflow/hooks/use-workflow"
+
+import {
+  isWorkflowCompleted,
+} from "@/features/workflow/selectors/is-completed"
+
+import type{
   ProcessCode,
   Task,
-} from "@/features/tasks/types/task.types"
+}from"@/features/tasks/types/task.types"
 
-import type {
+import type{
   WorkflowStatus,
-} from "@/features/workflow/types/workflow.types"
+}from"@/features/workflow/types/workflow.types"
 
 type Props={
+
   task:Task
+
   stepId:string
+
   status:WorkflowStatus
+
   processCode:ProcessCode
+
 }
 
 const PROCESS_NAMES:Record<ProcessCode,string>={
+
   CT:"Corte",
+
   PL:"Plegado",
+
   SD:"Soldadura",
+
   PT:"Pintura",
+
   EN:"Ensamble",
+
   DS:"Despacho",
+
 }
 
 export function ProcessRowActions({
+
   task,
+
   stepId,
+
   status,
+
   processCode,
+
 }:Props){
 
   const{
+
     startStep,
+
     pauseStep,
+
     resumeStep,
+
     completeStep,
+
     reviewStep,
-  }=useWorkflow()
+
+  }=
+    useWorkflow()
+
+  const{
+    has,
+  }=
+    usePermissions()
+
+  // Iniciar / pausar / reanudar / completar: permiso operativo estándar.
+  const canUpdate=
+    has(
+      PermissionCode.WORKFLOW_UPDATE,
+    )
+
+  // Revisar: acción de validación, reservada a roles con más responsabilidad
+  // (Supervisor, Project Manager, Gerencia, Admin). Operario no la tiene.
+  const canReview=
+    has(
+      PermissionCode.WORKFLOW_REVIEW,
+    )
 
   const safeRequest=async(
+
     action:()=>Promise<unknown>,
+
     successMsg:string,
+
   )=>{
 
     try{
@@ -67,9 +126,9 @@ export function ProcessRowActions({
 
         error instanceof Error
 
-          ? error.message
+          ?error.message
 
-          : "Error inesperado.",
+          :"Error inesperado.",
 
       )
 
@@ -77,9 +136,13 @@ export function ProcessRowActions({
 
   }
 
-  const handleStart=()=>
+  const handleStart=()=>{
 
-    safeRequest(
+    if(!canUpdate){
+      return
+    }
+
+    return safeRequest(
 
       ()=>startStep(
         stepId,
@@ -89,9 +152,15 @@ export function ProcessRowActions({
 
     )
 
-  const handlePause=()=>
+  }
 
-    safeRequest(
+  const handlePause=()=>{
+
+    if(!canUpdate){
+      return
+    }
+
+    return safeRequest(
 
       ()=>pauseStep(
         stepId,
@@ -101,9 +170,15 @@ export function ProcessRowActions({
 
     )
 
-  const handleResume=()=>
+  }
 
-    safeRequest(
+  const handleResume=()=>{
+
+    if(!canUpdate){
+      return
+    }
+
+    return safeRequest(
 
       ()=>resumeStep(
         stepId,
@@ -113,16 +188,28 @@ export function ProcessRowActions({
 
     )
 
+  }
+
   const handleComplete=async()=>{
 
+    if(!canUpdate){
+      return
+    }
+
     const currentStep=
+
       task.workflowSteps.find(
+
         s=>s.id===stepId,
+
       )
 
     if(
+
       !currentStep||
+
       currentStep.status!=="PROGRESS"
+
     ){
 
       return
@@ -158,14 +245,24 @@ export function ProcessRowActions({
 
   const handleReview=async()=>{
 
+    if(!canReview){
+      return
+    }
+
     const currentIndex=
+
       task.workflowSteps.findIndex(
+
         s=>s.id===stepId,
+
       )
 
     const wasCompleted=
+
       isWorkflowCompleted(
+
         task.workflowSteps,
+
       )
 
     await safeRequest(
@@ -176,13 +273,14 @@ export function ProcessRowActions({
 
       !wasCompleted
 
-        ? "Tarea finalizada."
+        ?"Tarea finalizada."
 
-        : `${PROCESS_NAMES[processCode]} revisado.`,
+        :`${PROCESS_NAMES[processCode]} revisado.`,
 
     )
 
     const next=
+
       task.workflowSteps[
         currentIndex+1
       ]
@@ -242,9 +340,15 @@ export function ProcessRowActions({
       {status==="PENDING"&&(
 
         <WorkflowAction
+
           label="Iniciar"
+
           variant="start"
+
+          disabled={!canUpdate}
+
           onClick={handleStart}
+
         />
 
       )}
@@ -254,17 +358,31 @@ export function ProcessRowActions({
         <>
 
           <WorkflowAction
+
             label="Pausar"
+
             variant="pause"
+
             iconOnly
+
+            disabled={!canUpdate}
+
             onClick={handlePause}
+
           />
 
           <WorkflowAction
+
             label="Completar"
+
             variant="complete"
+
             iconOnly
+
+            disabled={!canUpdate}
+
             onClick={handleComplete}
+
           />
 
         </>
@@ -274,9 +392,15 @@ export function ProcessRowActions({
       {status==="PAUSED"&&(
 
         <WorkflowAction
+
           label="Reanudar"
+
           variant="start"
+
+          disabled={!canUpdate}
+
           onClick={handleResume}
+
         />
 
       )}
@@ -284,9 +408,15 @@ export function ProcessRowActions({
       {status==="COMPLETED"&&(
 
         <WorkflowAction
+
           label="Revisar"
+
           variant="review"
+
+          disabled={!canReview}
+
           onClick={handleReview}
+
         />
 
       )}

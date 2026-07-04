@@ -1,65 +1,96 @@
 "use client"
 
-import type {
+import type{
   LucideIcon,
-} from "lucide-react"
+}from"lucide-react"
 
-import {
+import{
   cn,
-} from "@/shared/utils/utils"
+}from"@/shared/utils/utils"
 
-type Props = {
-  icon: LucideIcon
+type Props={
 
-  variant?: "default" | "danger"
+  icon:LucideIcon
 
-  onClick: (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => void
+  variant?:"default"|"danger"
+
+  disabled?:boolean
+
+  onClick:(
+
+    event:React.MouseEvent<HTMLButtonElement>
+
+  )=>void
+
 }
 
 export function IconAction({
-  icon: Icon,
-  variant = "default",
+
+  icon:Icon,
+
+  variant="default",
+
+  disabled=false,
+
   onClick,
-}: Props) {
 
-  const danger =
-    variant === "danger"
+}:Props){
 
-  return (
+  const danger=
+    variant==="danger"
+
+  return(
 
     <button
+
       type="button"
 
-      onPointerDown={(event) => {
+      disabled={disabled}
+
+      onPointerDown={event=>{
 
         event.preventDefault()
         event.stopPropagation()
 
       }}
 
-      onClick={(event) => {
+      onClick={event=>{
 
         event.preventDefault()
         event.stopPropagation()
+
+        if(disabled){
+          return
+        }
 
         onClick(event)
 
       }}
 
       className={cn(
+
         "flex h-8 w-8 items-center justify-center rounded-lg transition",
 
-        danger
-          ? "text-neutral-600 hover:bg-red-500/10 hover:text-red-400"
-          : "text-neutral-500 hover:bg-white/10 hover:text-white"
+        disabled
+
+          ?"cursor-not-allowed opacity-35"
+
+          :danger
+
+            ?"text-neutral-600 hover:bg-red-500/10 hover:text-red-400"
+
+            :"text-neutral-500 hover:bg-white/10 hover:text-white",
+
       )}
+
     >
 
       <Icon
+
         size={16}
+
         strokeWidth={2.4}
+
       />
 
     </button>

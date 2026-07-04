@@ -9,10 +9,6 @@ import {
 } from "@/shared/ui/badge/dynamic-badge"
 
 import {
-  DragCell,
-} from "@/shared/ui/entity-table-common/drag-cell"
-
-import {
   ExpandCell,
 } from "@/shared/ui/entity-table-common/expand-cell"
 

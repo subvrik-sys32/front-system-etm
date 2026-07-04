@@ -29,7 +29,7 @@ EntityColumn<User>[]{
       id:"id",
       align:"center",
       title:"N°",
-      width:TABLE_WIDTHS.small,
+      width:TABLE_WIDTHS.medium,
       render:(_,context)=>(
 
         <span className="font-semibold text-white">
@@ -62,7 +62,7 @@ EntityColumn<User>[]{
       id:"username",
       align:"center",
       title:"USERNAME",
-      width:TABLE_WIDTHS.medium,
+      width:TABLE_WIDTHS.large,
       render:user=>(
 
         <span>
@@ -81,7 +81,7 @@ EntityColumn<User>[]{
       width:TABLE_WIDTHS.email,
       render:user=>(
 
-        <span className="truncate">
+        <span className="block truncate">
 
           {user.email}
 
@@ -108,26 +108,25 @@ EntityColumn<User>[]{
     },
 
     {
-      id:"active",
+      id:"online",
       align:"center",
       title:"ESTADO",
-      width:TABLE_WIDTHS.small,
+      width:TABLE_WIDTHS.large,
       render:user=>(
-
-        <DynamicBadge
-          label={
-            user.active
-              ? "Activo"
-              : "Inactivo"
+        <span className="inline-flex items-center justify-center gap-1.5 text-xs font-medium text-neutral-300">
+          <span
+            aria-hidden="true"
+            className={
+              user.online
+                ?"h-1.5 w-1.5 rounded-full bg-emerald-400/90"
+                :"h-1.5 w-1.5 rounded-full bg-neutral-500/70"
+            }
+          />
+          {user.online
+            ?"En línea"
+            :"Desconectado"
           }
-          color={
-            user.active
-              ? "#22C55E"
-              : "#EF4444"
-          }
-          width="field"
-        />
-
+        </span>
       ),
     },
 

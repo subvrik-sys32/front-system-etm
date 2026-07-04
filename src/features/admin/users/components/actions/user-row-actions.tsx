@@ -10,6 +10,14 @@ import {
 } from "lucide-react"
 
 import {
+  PermissionCode,
+} from "@/shared/core/enums/permission-code.enum"
+
+import {
+  usePermissions,
+} from "@/features/permissions/hooks/use-permissions"
+
+import {
   IconAction,
 } from "@/shared/ui/actions/icon-action"
 
@@ -29,7 +37,7 @@ import {
   useUserMutations,
 } from "@/features/users/hooks/use-user-mutations"
 
-type Props = {
+type Props={
 
   userId:string
 
@@ -51,29 +59,51 @@ export function UserRowActions({
     setDeleteOpen,
   ]=useState(false)
 
-  const {
+  const{
     users,
-  } = useUsers()
+  }=
+    useUsers()
 
-  const {
+  const{
     deleteUser,
-  } = useUserMutations()
+  }=
+    useUserMutations()
 
-  const user =
-    users.find(
-      item =>
-        item.id === userId,
+  const{
+    has,
+  }=
+    usePermissions()
+
+  const canUpdate=
+    has(
+      PermissionCode.USER_UPDATE,
     )
 
-  if (!user) {
+  const canDelete=
+    has(
+      PermissionCode.USER_DELETE,
+    )
+
+  const user=
+    users.find(
+      item=>
+        item.id===userId,
+    )
+
+  if(!user){
     return null
   }
 
-  const {
+  const{
     id,
-  } = user
+    name,
+  }=user
 
   async function handleDelete(){
+
+    if(!canDelete){
+      return
+    }
 
     await deleteUser.mutateAsync(
       id,
@@ -90,40 +120,81 @@ export function UserRowActions({
       <div className="ml-3 flex items-center gap-6">
 
         <IconAction
+
           icon={Pencil}
-          onClick={()=>
+
+          disabled={!canUpdate}
+
+          onClick={()=>{
+
+            if(!canUpdate){
+              return
+            }
+
             setEditOpen(true)
-          }
+
+          }}
+
         />
 
         <IconAction
+
           icon={Trash2}
+
           variant="danger"
-          onClick={()=>
+
+          disabled={!canDelete}
+
+          onClick={()=>{
+
+            if(!canDelete){
+              return
+            }
+
             setDeleteOpen(true)
-          }
+
+          }}
+
         />
 
       </div>
 
       <UserDialog
-        open={editOpen}
+
+        open={
+          canUpdate &&
+          editOpen
+        }
+
         user={user}
+
         onClose={()=>
           setEditOpen(false)
         }
+
       />
 
       <ActionDialog
-        open={deleteOpen}
+
+        open={
+          canDelete &&
+          deleteOpen
+        }
+
         title="Eliminar usuario"
-        description={`Se eliminará "${user.name}". Esta acción no se puede deshacer.`}
+
+        description={`Se eliminará "${name}". Esta acción no se puede deshacer.`}
+
         confirmLabel="Eliminar"
+
         variant="danger"
+
         onClose={()=>
           setDeleteOpen(false)
         }
+
         onConfirm={handleDelete}
+
       />
 
     </>

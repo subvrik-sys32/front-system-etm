@@ -1,61 +1,111 @@
 "use client"
 
-import { useState } from "react"
+import {
+  useState,
+} from "react"
 
-import { Pencil, Trash2 } from "lucide-react"
+import {
+  Pencil,
+  Trash2,
+} from "lucide-react"
 
-import { IconAction } from "@/shared/ui/actions/icon-action"
+import {
+  PermissionCode,
+} from "@/shared/core/enums/permission-code.enum"
 
-import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
+import {
+  usePermissions,
+} from "@/features/permissions/hooks/use-permissions"
 
-import { TaskDialog } from "../dialog/task-dialog"
+import {
+  IconAction,
+} from "@/shared/ui/actions/icon-action"
 
-import { useTasks } from "../../hooks/use-tasks"
+import {
+  ActionDialog,
+} from "@/shared/ui/dialogs/action-dialog/action-dialog"
 
-import type { Task } from "../../types/task.types"
+import {
+  TaskDialog,
+} from "../dialog/task-dialog"
+
+import {
+  useTasks,
+} from "../../hooks/use-tasks"
+
+import type{
+  Task,
+}from"../../types/task.types"
 
 type TaskRowActionsProps={
+
   task:Task
+
 }
 
 export function TaskRowActions({
+
   task,
+
 }:TaskRowActionsProps){
 
   const{
     remove,
-  }=useTasks()
+  }=
+    useTasks()
+
+  const{
+    has,
+  }=
+    usePermissions()
+
+  const canUpdate=
+    has(
+      PermissionCode.TASK_UPDATE,
+    )
+
+  const canDelete=
+    has(
+      PermissionCode.TASK_DELETE,
+    )
 
   const[
     editOpen,
     setEditOpen,
-  ]=useState(false)
+  ]=
+    useState(false)
 
   const[
     deleteOpen,
     setDeleteOpen,
-  ]=useState(false)
+  ]=
+    useState(false)
 
-  const handleDelete=async()=>{
+  const handleDelete=
+    async()=>{
 
-    try{
+      if(!canDelete){
+        return
+      }
 
-      await remove(
-        task.id,
-      )
+      try{
 
-      setDeleteOpen(false)
+        await remove(
+          task.id,
+        )
 
-    }catch(error){
+        setDeleteOpen(false)
 
-      console.error(
-        "TASK DELETE ERROR",
-        error,
-      )
+      }catch(error){
+
+        console.error(
+          "TASK DELETE ERROR",
+          error,
+        )
+
+      }
 
     }
-
-  }
 
   return(
 
@@ -64,32 +114,81 @@ export function TaskRowActions({
       <div className="ml-3 flex items-center gap-6">
 
         <IconAction
+
           icon={Pencil}
-          onClick={()=>setEditOpen(true)}
+
+          disabled={!canUpdate}
+
+          onClick={()=>{
+
+            if(!canUpdate){
+              return
+            }
+
+            setEditOpen(true)
+
+          }}
+
         />
 
         <IconAction
+
           icon={Trash2}
+
           variant="danger"
-          onClick={()=>setDeleteOpen(true)}
+
+          disabled={!canDelete}
+
+          onClick={()=>{
+
+            if(!canDelete){
+              return
+            }
+
+            setDeleteOpen(true)
+
+          }}
+
         />
 
       </div>
 
       <TaskDialog
-        open={editOpen}
+
+        open={
+          canUpdate&&
+          editOpen
+        }
+
         task={task}
-        onClose={()=>setEditOpen(false)}
+
+        onClose={()=>
+          setEditOpen(false)
+        }
+
       />
 
       <ActionDialog
-        open={deleteOpen}
+
+        open={
+          canDelete&&
+          deleteOpen
+        }
+
         title="Eliminar tarea"
+
         description={`Se eliminará "${task.reference}". Esta acción no se puede deshacer.`}
+
         confirmLabel="Eliminar"
+
         variant="danger"
-        onClose={()=>setDeleteOpen(false)}
+
+        onClose={()=>
+          setDeleteOpen(false)
+        }
+
         onConfirm={handleDelete}
+
       />
 
     </>

@@ -5,6 +5,14 @@ import {
 } from "@/shared/ui/entity-select/entity-select"
 
 import {
+  PermissionCode,
+} from "@/shared/core/enums/permission-code.enum"
+
+import {
+  usePermissions,
+} from "@/features/permissions/hooks/use-permissions"
+
+import {
   useStages,
 } from "@/features/stages/hooks/use-stages"
 
@@ -39,6 +47,15 @@ export function ProjectStageCell({
   const updateField=
     useProjectField()
 
+  const{
+    has,
+  }=usePermissions()
+
+  const canUpdate=
+    has(
+      PermissionCode.PROJECT_UPDATE,
+    )
+
   return(
 
     <EntitySelect
@@ -50,6 +67,8 @@ export function ProjectStageCell({
       items={stages}
 
       placeholder="Etapa"
+
+      disabled={!canUpdate}
 
       onChange={stage=>{
 

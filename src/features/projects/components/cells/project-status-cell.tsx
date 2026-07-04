@@ -5,6 +5,14 @@ import {
 } from "@/shared/ui/entity-select/entity-select"
 
 import {
+  PermissionCode,
+} from "@/shared/core/enums/permission-code.enum"
+
+import {
+  usePermissions,
+} from "@/features/permissions/hooks/use-permissions"
+
+import {
   useStatuses,
 } from "@/features/statuses/hooks/use-statuses"
 
@@ -39,6 +47,15 @@ export function ProjectStatusCell({
   const updateField=
     useProjectField()
 
+  const{
+    has,
+  }=usePermissions()
+
+  const canUpdate=
+    has(
+      PermissionCode.PROJECT_UPDATE,
+    )
+
   return(
 
     <EntitySelect
@@ -50,6 +67,8 @@ export function ProjectStatusCell({
       items={statuses}
 
       placeholder="Estado"
+
+      disabled={!canUpdate}
 
       onChange={status=>{
 

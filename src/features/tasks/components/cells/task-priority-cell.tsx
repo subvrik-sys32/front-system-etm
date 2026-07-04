@@ -5,6 +5,14 @@ import {
 } from "@/shared/ui/entity-select/entity-select"
 
 import {
+  PermissionCode,
+} from "@/shared/core/enums/permission-code.enum"
+
+import {
+  usePermissions,
+} from "@/features/permissions/hooks/use-permissions"
+
+import {
   usePriorities,
 } from "@/features/priorities/hooks/use-priorities"
 
@@ -39,6 +47,15 @@ export function TaskPriorityCell({
   const updateField=
     useTaskField()
 
+  const{
+    has,
+  }=usePermissions()
+
+  const canUpdate=
+    has(
+      PermissionCode.TASK_UPDATE,
+    )
+
   return(
 
     <EntitySelect
@@ -50,6 +67,8 @@ export function TaskPriorityCell({
       items={priorities}
 
       placeholder="Prioridad"
+
+      disabled={!canUpdate}
 
       onChange={priority=>{
 

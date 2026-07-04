@@ -5,6 +5,14 @@ import {
 } from "@/shared/ui/entity-select/entity-select"
 
 import {
+  PermissionCode,
+} from "@/shared/core/enums/permission-code.enum"
+
+import {
+  usePermissions,
+} from "@/features/permissions/hooks/use-permissions"
+
+import {
   useClients,
 } from "@/features/clients/hooks/use-clients"
 
@@ -39,6 +47,15 @@ export function ProjectClientCell({
   const updateField=
     useProjectField()
 
+  const{
+    has,
+  }=usePermissions()
+
+  const canUpdate=
+    has(
+      PermissionCode.PROJECT_UPDATE,
+    )
+
   return(
 
     <EntitySelect
@@ -50,6 +67,8 @@ export function ProjectClientCell({
       items={clients}
 
       placeholder="Cliente"
+
+      disabled={!canUpdate}
 
       onChange={client=>{
 

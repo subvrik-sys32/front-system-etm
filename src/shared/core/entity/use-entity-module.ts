@@ -18,6 +18,10 @@ type EntityService<T,CreateDto,UpdateDto=CreateDto>={
   remove:(id:string)=>Promise<void>
 }
 
+export type EntityModuleOptions={
+  enabled?:boolean
+}
+
 export function useEntityModule<
   T extends EntityWithId,
   CreateDto,
@@ -26,6 +30,7 @@ export function useEntityModule<
   key:string,
   service:EntityService<T,CreateDto,UpdateDto>,
   handlers?:CacheHandlers<T>,
+  options?:EntityModuleOptions,
 ){
 
   const qc=useQueryClient()
@@ -40,6 +45,7 @@ export function useEntityModule<
   const query=useQuery<T[]>({
     queryKey:listKey,
     queryFn:service.findAll,
+    enabled:options?.enabled??true,
   })
 
   useEffect(()=>{

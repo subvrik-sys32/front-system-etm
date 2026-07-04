@@ -5,10 +5,20 @@ import {
 } from "@/shared/core/entity/use-entity-module"
 
 import {
+  usePermissions,
+} from "@/features/permissions/hooks/use-permissions"
+
+import {
+  PermissionCode,
+} from "@/shared/core/enums/permission-code.enum"
+
+import {
   prioritiesService,
 } from "../services/priorities.service"
 
 export function usePriorities() {
+
+  const { has } = usePermissions()
 
   const {
 
@@ -25,6 +35,8 @@ export function usePriorities() {
   } = useEntityModule(
     "priorities",
     prioritiesService,
+    undefined,
+    { enabled: has(PermissionCode.MASTER_DATA_READ) },
   )
 
   return {

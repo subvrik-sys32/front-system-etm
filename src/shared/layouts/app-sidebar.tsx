@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { usePathname, useRouter } from "next/navigation"
 
 import { useAuthStore } from "@/features/auth/store/auth-store"
@@ -119,6 +119,18 @@ export function AppSidebar() {
       mode === "closed" &&
       lastVisibleMode === "preview"
     )
+
+  // Prefetch de todas las rutas de navegación al montar el sidebar,
+  // para que el click no espere al RSC del servidor.
+  useEffect(() => {
+
+    for (const section of NAVIGATION) {
+      for (const item of section.items) {
+        router.prefetch(item.href)
+      }
+    }
+
+  }, [router])
 
   return (
 

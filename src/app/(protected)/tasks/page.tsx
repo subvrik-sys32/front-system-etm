@@ -1,22 +1,20 @@
+"use client"
+
+import { useSearchParams } from "next/navigation"
+
 import { TaskActions } from "@/features/tasks/components/actions/task-actions"
 
 import {
   TaskPageContent,
 } from "@/features/tasks/components/task-page-content"
 
-type Props={
-  searchParams:Promise<{
-    taskId?:string
-  }>
-}
+export default function TasksPage(){
 
-export default async function TasksPage({
-  searchParams,
-}:Props){
+  const searchParams =
+    useSearchParams()
 
-  const {
-    taskId,
-  }=await searchParams
+  const taskId =
+    searchParams.get("taskId") ?? undefined
 
   return(
 

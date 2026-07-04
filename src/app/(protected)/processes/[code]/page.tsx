@@ -1,3 +1,7 @@
+"use client"
+
+import { useParams, useSearchParams } from "next/navigation"
+
 import {
   ProcessPageContent,
 } from "@/features/processes/components/process-page-content"
@@ -10,29 +14,19 @@ import type {
   ProcessCode,
 } from "@/features/tasks/types/task.types"
 
-type Props={
-  params:Promise<{
-    code:string
-  }>
-  searchParams:Promise<{
-    taskId?:string
-  }>
-}
-export default async function ProcessPage({
-  params,
-  searchParams,
-}: Props) {
+export default function ProcessPage() {
 
-  const {
-    code,
-  } = await params
+  const params =
+    useParams<{ code:string }>()
 
-  const {
-    taskId,
-  }=await searchParams
+  const searchParams =
+    useSearchParams()
+
+  const taskId =
+    searchParams.get("taskId") ?? undefined
 
   const processCode =
-    code.toUpperCase() as ProcessCode
+    params.code.toUpperCase() as ProcessCode
 
   const process =
     getProcessDefinition(

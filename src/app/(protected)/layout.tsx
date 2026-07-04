@@ -1,16 +1,34 @@
-import { cookies } from "next/headers"
+"use client"
+
 import { ProtectedLayoutClient } from "./protected-layout-client"
 
-export default async function ProtectedLayout({
+function readBootstrapCookie(): boolean {
+
+  if (typeof document === "undefined") {
+    return false
+  }
+
+  return document.cookie
+    .split("; ")
+    .some(entry => entry === "etm-bootstrapped=1")
+
+}
+
+export default function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const cookieStore = await cookies()
-  const hasBootstrapped = cookieStore.get("etm-bootstrapped")?.value === "1"
+
+  const hasBootstrapped =
+    readBootstrapCookie()
 
   return (
-    <ProtectedLayoutClient initialMode={hasBootstrapped ? "refresh" : "init"}>
+    <ProtectedLayoutClient
+      initialMode={
+        hasBootstrapped ? "refresh" : "init"
+      }
+    >
       {children}
     </ProtectedLayoutClient>
   )

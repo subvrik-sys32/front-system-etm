@@ -1,3 +1,7 @@
+"use client"
+
+import { useSearchParams } from "next/navigation"
+
 import {
   ProjectActions,
 } from "@/features/projects/components/actions/project-actions"
@@ -6,21 +10,13 @@ import {
   ProjectPageContent,
 } from "@/features/projects/components/project-page-content"
 
-type Props={
-  searchParams:Promise<{
-    projectId?:string
-  }>
-}
+export default function ProjectsPage(){
 
-export default async function ProjectsPage({
-  searchParams,
-}:Props){
+  const searchParams =
+    useSearchParams()
 
-  console.log("PROJECTS PAGE")
-
-  const {
-    projectId,
-  }=await searchParams
+  const projectId =
+    searchParams.get("projectId") ?? undefined
 
   return(
 

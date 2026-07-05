@@ -1,57 +1,60 @@
 "use client"
 
+import Image from "next/image"
+
 import { PanelLeftClose } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
 
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
 
-export function SidebarHeader() {
+export function SidebarHeader(){
 
-  const mode =
+  const mode=
     useSidebarStore(
-      state => state.mode
+      state=>state.mode,
     )
 
-  const togglePinned =
+  const togglePinned=
     useSidebarStore(
-      state => state.togglePinned
+      state=>state.togglePinned,
     )
 
-  return (
+  return(
 
     <div className="px-3 pb-3 pt-4">
 
-      <div className="flex items-center justify-between rounded-xl bg-white/4 px-3 py-2.5">
+      <div className="relative flex items-center rounded-xl bg-white/4 px-3 py-2.5">
 
-        <div>
+        <div className="flex flex-1 flex-col items-center">
 
-          <h1 className="text-sm font-semibold text-white">
+          <Image
+            src="/icon.svg"
+            alt="ETM SAC"
+            width={140}
+            height={32}
+            priority
+            className="h-12 w-auto"
+          />
 
-            ETM SAC
-
-          </h1>
-
-          <p className="mt-0.5 text-xs text-neutral-500">
-
-            Production ERP
-
+          <p className="mt-1 text-center text-xs text-neutral-500">
+            COMPANY S.A.C.
           </p>
 
         </div>
 
         <button
           onClick={togglePinned}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-neutral-500 transition-all duration-200 hover:bg-white/5 hover:text-white"
+          className="absolute right-3 flex h-7 w-7 items-center justify-center rounded-md text-neutral-500 transition-all duration-200 hover:bg-white/5 hover:text-white"
         >
 
           <PanelLeftClose
             size={14}
             className={cn(
               "transition-transform duration-200",
-              mode === "preview"
-                ? "rotate-180"
-                : "rotate-0"
+              mode==="preview"
+                ?"rotate-180"
+                :"rotate-0",
             )}
           />
 

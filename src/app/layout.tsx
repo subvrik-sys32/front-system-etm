@@ -30,7 +30,7 @@ const geist =
   })
 
 export const metadata: Metadata = {
-  title: "SYSTEM ETM",
+  title: "ETM PROD",
   description:
     "ETM SAC Production System",
 }

@@ -1,5 +1,7 @@
 "use client"
 
+import Image from "next/image"
+
 import { LoginForm } from "@/features/auth/components/login-form"
 
 export default function LoginPage() {
@@ -14,20 +16,27 @@ export default function LoginPage() {
 
       {/* container */}
       <div className="relative w-full max-w-5xl px-6">
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 rounded-2xl overflow-hidden border border-white/10 bg-white/2 backdrop-blur-xl shadow-2xl">
 
           {/* LEFT SIDE */}
           <div className="hidden lg:flex flex-col justify-between p-10 border-r border-white/10 bg-linear-to-br from-[#0A0A0A] to-[#050505]">
 
             <div>
-              <h1 className="text-2xl font-bold tracking-widest">
-                ETM SAC
-              </h1>
 
-              <p className="mt-2 text-sm text-neutral-500">
+              <Image
+                src="/icon.svg"
+                alt="ETM SAC"
+                width={220}
+                height={60}
+                priority
+                className="h-12 w-auto"
+              />
+
+              <p className="mt-4 text-sm text-neutral-500">
                 ERP Industrial de Producción
               </p>
+
             </div>
 
             <div className="space-y-3">
@@ -54,7 +63,7 @@ export default function LoginPage() {
                   Iniciar sesión
                 </h2>
 
-                <p className="text-sm text-neutral-500 mt-1">
+                <p className="mt-1 text-sm text-neutral-500">
                   Accede al sistema de producción
                 </p>
               </div>
@@ -66,7 +75,9 @@ export default function LoginPage() {
           </div>
 
         </div>
+
       </div>
+
     </div>
   )
 }

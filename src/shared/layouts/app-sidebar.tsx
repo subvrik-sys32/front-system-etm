@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef } from "react"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { cn } from "@/shared/utils/utils"
@@ -22,9 +22,12 @@ import { SidebarSection } from "./sidebar-section"
 import { SidebarItem } from "./sidebar-item"
 import { SidebarPresence } from "./sidebar-presence"
 
+let hasPrefetched = false
+
 export function AppSidebar() {
 
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const router = useRouter()
 
   const mode = useSidebarStore(s => s.mode)
@@ -120,9 +123,15 @@ export function AppSidebar() {
       lastVisibleMode === "preview"
     )
 
-  // Prefetch de todas las rutas de navegación al montar el sidebar,
+  // Prefetch de todas las rutas de navegación una sola vez por sesión,
   // para que el click no espere al RSC del servidor.
   useEffect(() => {
+
+    if (hasPrefetched) {
+      return
+    }
+
+    hasPrefetched = true
 
     for (const section of NAVIGATION) {
       for (const item of section.items) {
@@ -180,25 +189,36 @@ export function AppSidebar() {
 
             {section.items.map(item => {
 
+              const [itemPath, itemQuery] =
+                item.href.split("?")
+
+              const itemCode =
+                itemQuery
+                  ?.split("code=")[1]
+                  ?.split("&")[0]
+
               const isActive =
-                pathname === item.href
+                itemCode
+                  ? pathname === itemPath &&
+                    searchParams.get("code") === itemCode
+                  : pathname === item.href
 
               const count =
                 item.href === "/projects"
                   ? projectsCount
                   : item.href === "/tasks"
                     ? activeTasksCount
-                    : item.href === "/processes/ct"
+                    : itemCode === "ct"
                       ? processCounts.CT
-                      : item.href === "/processes/pl"
+                      : itemCode === "pl"
                         ? processCounts.PL
-                        : item.href === "/processes/sd"
+                        : itemCode === "sd"
                           ? processCounts.SD
-                          : item.href === "/processes/pt"
+                          : itemCode === "pt"
                             ? processCounts.PT
-                            : item.href === "/processes/en"
+                            : itemCode === "en"
                               ? processCounts.EN
-                              : item.href === "/processes/ds"
+                              : itemCode === "ds"
                                 ? processCounts.DS
                                 : undefined
 

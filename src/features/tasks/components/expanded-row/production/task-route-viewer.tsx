@@ -92,7 +92,7 @@ export function TaskRouteViewer({
                   )
 
                   router.push(
-                    `/processes/${processCode}?taskId=${taskId}`
+                    `/processes?code=${processCode}&taskId=${taskId}`
                   )
 
                 }}

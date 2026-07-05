@@ -33,32 +33,32 @@ export const NAVIGATION = [
     items: [
       {
         label: "Corte",
-        href: "/processes/ct",
+        href: "/processes?code=ct",
         icon: Scissors,
       },
       {
         label: "Plegado",
-        href: "/processes/pl",
+        href: "/processes?code=pl",
         icon: FoldHorizontal,
       },
       {
         label: "Soldadura",
-        href: "/processes/sd",
+        href: "/processes?code=sd",
         icon: Wrench,
       },
       {
         label: "Pintura",
-        href: "/processes/pt",
+        href: "/processes?code=pt",
         icon: PaintBucket,
       },
       {
         label: "Ensamble",
-        href: "/processes/en",
+        href: "/processes?code=en",
         icon: Package,
       },
       {
         label: "Despacho",
-        href: "/processes/ds",
+        href: "/processes?code=ds",
         icon: Truck,
       },
     ],

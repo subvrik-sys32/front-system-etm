@@ -1,6 +1,6 @@
 "use client"
 
-import { useParams, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 
 import {
   ProcessPageContent,
@@ -16,17 +16,17 @@ import type {
 
 export default function ProcessPage() {
 
-  const params =
-    useParams<{ code:string }>()
-
   const searchParams =
     useSearchParams()
 
   const taskId =
     searchParams.get("taskId") ?? undefined
 
+  const codeParam =
+    searchParams.get("code") ?? "ct"
+
   const processCode =
-    params.code.toUpperCase() as ProcessCode
+    codeParam.toUpperCase() as ProcessCode
 
   const process =
     getProcessDefinition(

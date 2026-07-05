@@ -245,7 +245,7 @@ export function AppSidebar() {
 
       <SidebarPresence />
 
-      <div className="border-t border-white/5 p-3">
+      <div className="p-3">
 
         <div className="rounded-xl bg-white/3 px-3 py-3 hover:bg-white/6 transition-all duration-200">
 

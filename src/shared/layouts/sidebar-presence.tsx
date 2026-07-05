@@ -74,7 +74,7 @@ export function SidebarPresence() {
 
   return (
 
-    <div className="border-t border-white/5 select-none px-3 py-3">
+    <div className="select-none px-3 py-3">
 
       <div className="mb-2 flex items-center justify-between">
 

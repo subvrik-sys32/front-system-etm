@@ -17,7 +17,7 @@ export default function LoginPage() {
       {/* container */}
       <div className="relative w-full max-w-5xl px-6">
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 rounded-2xl overflow-hidden border border-white/10 bg-white/2 backdrop-blur-xl shadow-2xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 rounded-2xl overflow-hidden bg-white/2 backdrop-blur-xl shadow-2xl">
 
           {/* LEFT SIDE */}
           <div className="hidden lg:flex flex-col justify-between p-10 border-r border-white/10 bg-linear-to-br from-[#0A0A0A] to-[#050505]">
@@ -30,11 +30,11 @@ export default function LoginPage() {
                 width={220}
                 height={60}
                 priority
-                className="h-12 w-auto"
+                className="h-21 w-auto"
               />
 
               <p className="mt-4 text-sm text-neutral-500">
-                ERP Industrial de Producción
+                Sistema de Producción
               </p>
 
             </div>

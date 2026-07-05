@@ -152,7 +152,7 @@ export function AppLoadingScreen({
                   width={42}
                   height={42}
                   priority
-                  className="h-6 w-auto"
+                  className="h-8 w-auto"
                 />
 
               )}

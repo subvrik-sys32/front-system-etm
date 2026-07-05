@@ -41,19 +41,10 @@ import{
   RealtimeProvider,
 }from"@/shared/realtime/realtime-provider"
 
-function setBootstrapCookie(){
-
-  document.cookie=
-    "etm-bootstrapped=1; path=/; max-age=86400; samesite=lax"
-
-}
-
 export function ProtectedLayoutClient({
   children,
-  initialMode,
 }:{
   children:ReactNode
-  initialMode:"init"|"refresh"
 }){
 
   const router=
@@ -114,8 +105,6 @@ export function ProtectedLayoutClient({
           permissions,
         )
 
-        setBootstrapCookie()
-
         setBootstrapDone(
           true,
         )
@@ -148,7 +137,6 @@ export function ProtectedLayoutClient({
       <AppLoadingScreen
         isReady={bootstrapDone}
         onComplete={()=>setShowLoading(false)}
-        mode={initialMode}
       />
     )
 

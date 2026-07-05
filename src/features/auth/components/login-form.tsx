@@ -6,6 +6,8 @@ import {
 
 import {
   Loader2,
+  Eye,
+  EyeOff,
 } from "lucide-react"
 
 import {
@@ -56,6 +58,12 @@ export function LoginForm(){
     setPassword,
   ]=
     useState("")
+
+  const[
+    showPassword,
+    setShowPassword,
+  ]=
+    useState(false)
 
   const[
     error,
@@ -135,22 +143,46 @@ export function LoginForm(){
         placeholder="admin@etmsac.com"
         type="email"
         autoComplete="email"
-        className="w-full rounded-xl border border-white/8 bg-[#0A0A0A] px-3 py-2.5 text-sm outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-xl bg-[#0A0A0A] px-3 py-2.5 text-sm outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60"
       />
 
-      <input
-        value={password}
-        disabled={loading}
-        onChange={e=>
-          setPassword(
-            e.target.value,
-          )
-        }
-        placeholder="Contraseña"
-        type="password"
-        autoComplete="current-password"
-        className="w-full rounded-xl border border-white/8 bg-[#0A0A0A] px-3 py-2.5 text-sm outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60"
-      />
+      <div className="relative">
+
+        <input
+          value={password}
+          disabled={loading}
+          onChange={e=>
+            setPassword(
+              e.target.value,
+            )
+          }
+          placeholder="Contraseña"
+          type={showPassword ? "text" : "password"}
+          autoComplete="current-password"
+          className="w-full rounded-xl bg-[#0A0A0A] px-3 py-2.5 pr-10 text-sm outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+        />
+
+        <button
+          type="button"
+          disabled={loading}
+          onClick={()=>
+            setShowPassword(
+              value=>!value,
+            )
+          }
+          tabIndex={-1}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-neutral-300 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+
+          {showPassword ? (
+            <EyeOff size={16} />
+          ) : (
+            <Eye size={16} />
+          )}
+
+        </button>
+
+      </div>
 
       <div className="h-5">
 

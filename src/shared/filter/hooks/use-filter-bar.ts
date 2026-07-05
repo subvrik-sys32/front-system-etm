@@ -22,8 +22,8 @@ import {
 } from "../store/filter-store"
 
 import {
-  useUsers,
-} from "@/features/users/hooks/use-users"
+  useUsersDirectory,
+} from "@/features/users/hooks/use-users-directory"
 
 import {
   useClients,
@@ -51,7 +51,7 @@ export function useFilterBar(module: FilterModule) {
   const [editingChip, setEditingChip] =
     useState<FilterChip | undefined>()
 
-  const { users } = useUsers()
+  const { users } = useUsersDirectory()
 
   const { clients } = useClients()
 

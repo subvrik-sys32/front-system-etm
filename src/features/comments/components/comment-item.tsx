@@ -38,22 +38,23 @@ export function CommentItem({
 
     <div className="group animate-comment-in flex gap-2.5 rounded-lg bg-white/3 px-3 py-2.5 transition-colors hover:bg-white/6">
 
-      {user.avatarUrl?(
-        <img
-          src={user.avatarUrl}
-          alt={user.name}
-          className="h-8 w-8 shrink-0 rounded-full object-cover"
-        />
-      ):(
-        <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
-          style={{
-            backgroundColor:user.color,
-          }}
-        >
-          {user.name.charAt(0).toUpperCase()}
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-white/5 ring-1 ring-white/8 text-xs font-semibold text-white shadow-inner">
+
+        {user.avatarUrl ? (
+
+            <img
+            src={user.avatarUrl}
+            alt={user.name}
+            className="h-full w-full object-cover"
+            />
+
+        ) : (
+
+            user.name.charAt(0).toUpperCase()
+
+        )}
+
         </div>
-      )}
 
       <div className="min-w-0 flex-1">
 
@@ -100,7 +101,7 @@ export function CommentItem({
 
         </div>
 
-        <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-neutral-300">
+        <p className="mt-1 whitespace-pre-wrap wrap-break-word text-sm leading-6 text-neutral-300">
           {comment.message}
         </p>
 

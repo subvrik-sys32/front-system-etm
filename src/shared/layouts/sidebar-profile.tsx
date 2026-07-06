@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { ProfilePreviewPanel } from "@/features/profile"
+import { ProfileMentionBadge } from "@/features/notifications/components/profile-mention-badge"
 
 import { cn } from "@/shared/utils/utils"
 
@@ -133,6 +134,8 @@ export function SidebarProfile({
               </div>
 
               <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-[#0A0A0A]" />
+
+              <ProfileMentionBadge className="absolute -top-0.5 -right-0.5 ring-2 ring-[#090909]" />
 
             </div>
 

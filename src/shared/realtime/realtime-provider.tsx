@@ -35,6 +35,13 @@ export function RealtimeProvider({
 
     const controller = new AbortController()
 
+    // Esta bandera pertenece a ESTA ejecución del efecto.
+    // Si React desmonta (Strict Mode double-invoke, unmount real, etc.),
+    // la marcamos true y cualquier mensaje que llegue después por este
+    // canal específico se descarta, sin importar cuánto tarde el socket
+    // en cerrarse del lado del servidor.
+    let stale = false
+
     fetchEventSource(
       `${process.env.NEXT_PUBLIC_API_URL}/realtime/events`,
       {
@@ -75,6 +82,10 @@ export function RealtimeProvider({
 
         onmessage(message) {
 
+          // canal invalidado: aunque el servidor todavía no cerró
+          // el socket, este efecto ya fue desmontado. No procesar.
+          if (stale) return
+
           if (!message.data || message.data.trim() === "") {
             return
           }
@@ -106,6 +117,7 @@ export function RealtimeProvider({
     )
 
     return () => {
+      stale = true
       controller.abort()
     }
 

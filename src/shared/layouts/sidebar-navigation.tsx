@@ -8,6 +8,7 @@ import { getNavItemMeta } from "./sidebar-nav-item-meta"
 import { SidebarItem } from "./sidebar-item"
 import { SidebarPresence } from "./sidebar-presence"
 import { SidebarSection } from "./sidebar-section"
+import { NotificationBell } from "@/features/notifications/components/notification-bell"
 
 import type { ProcessCounts } from "./hooks/use-sidebar-counts"
 
@@ -41,6 +42,10 @@ export function SidebarNavigation({
           "linear-gradient(to bottom,transparent,black 4px,black calc(100% - 4px),transparent)",
       }}
     >
+
+      <div className="mb-3">
+        <NotificationBell />
+      </div>
 
       {NAVIGATION.map((section,index)=>(
 

@@ -22,6 +22,14 @@ import{
   userHandler,
 }from"../handlers/user-handler"
 
+import{
+  notificationHandler,
+}from"../handlers/notification-handler"
+
+import{
+  commentHandler,
+}from"../handlers/comment-handler"
+
 const handlers={
 
   TASK:taskHandler,
@@ -33,6 +41,10 @@ const handlers={
   PROCESS:processHandler,
 
   USER:userHandler,
+
+  NOTIFICATION:notificationHandler,
+
+  COMMENT:commentHandler,
 
 }as const
 

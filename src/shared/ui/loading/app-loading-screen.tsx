@@ -125,7 +125,7 @@ export function AppLoadingScreen({
 
   return(
 
-    <div className="fixed inset-0 z-[9999] bg-[#050505]">
+    <div className="fixed inset-0 z-9999 bg-[#050505]">
 
       <LoadingBackground/>
 

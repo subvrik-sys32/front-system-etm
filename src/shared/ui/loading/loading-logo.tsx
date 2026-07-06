@@ -23,7 +23,7 @@ export const LoadingLogo = memo(function LoadingLogo({
           width={42}
           height={42}
           priority
-          className="block h-8 w-8 select-none"
+          className="block select-none"
         />
 
       )}

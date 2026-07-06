@@ -34,7 +34,7 @@ export function SidebarHeader(){
             width={140}
             height={32}
             priority
-            className="h-12 w-auto"
+            className="h-12 w-12"
           />
 
           <p className="mt-1 text-center text-xs text-neutral-500">

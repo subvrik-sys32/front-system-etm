@@ -30,7 +30,7 @@ export default function LoginPage() {
                 width={220}
                 height={60}
                 priority
-                className="h-21 w-auto"
+                className="block h-21 w-21 select-none"
               />
 
               <p className="mt-4 text-sm text-neutral-500">

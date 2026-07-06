@@ -27,8 +27,8 @@ export default function LoginPage() {
               <Image
                 src="/icon.svg"
                 alt="ETM SAC"
-                width={220}
-                height={60}
+                width={180}
+                height={180}
                 priority
                 className="block select-none"
               />

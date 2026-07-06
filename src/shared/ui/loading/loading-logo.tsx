@@ -20,8 +20,8 @@ export const LoadingLogo = memo(function LoadingLogo({
         <Image
           src="/icon.svg"
           alt="ETM SAC"
-          width={42}
-          height={42}
+          width={51}
+          height={51}
           priority
           className="block select-none"
         />

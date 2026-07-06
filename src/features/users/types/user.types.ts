@@ -34,6 +34,12 @@ export interface User{
 
   online:boolean
 
+  avatarUrl:string | null
+
+  phone:string | null
+
+  position:string | null
+
   deletedAt:string | null
 
   createdAt:string

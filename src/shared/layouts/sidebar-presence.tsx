@@ -6,8 +6,6 @@ import { useAuthStore } from "@/features/auth/store/auth-store"
 import { useUsersDirectory } from "@/features/users/hooks/use-users-directory"
 import { cn } from "@/shared/utils/utils"
 
-// Altura máxima del bloque de presencia antes de activar scroll interno.
-// Ajusta este valor si quieres mostrar más o menos filas antes de scrollear.
 const MAX_LIST_HEIGHT = 168
 
 export function SidebarPresence() {
@@ -35,9 +33,6 @@ export function SidebarPresence() {
   const hasOnlineUsers =
     onlineUsers.length > 0
 
-  // Mientras no haya un usuario actual resuelto (carga inicial o
-  // logout en curso), no sabemos a quién excluir de la lista.
-  // Mostrar un skeleton evita el parpadeo de vernos a nosotros mismos.
   if (!currentUser) {
 
     return (
@@ -54,12 +49,12 @@ export function SidebarPresence() {
 
         <div className="space-y-1.5">
 
-          <div className="flex items-center gap-2 px-2 py-1.5">
+          <div className="flex items-center gap-2 rounded-xl bg-white/3 px-2.5 py-2">
             <div className="h-5 w-5 shrink-0 rounded-full bg-white/5 animate-pulse" />
             <div className="h-2.5 w-20 rounded bg-white/5 animate-pulse" />
           </div>
 
-          <div className="flex items-center gap-2 px-2 py-1.5">
+          <div className="flex items-center gap-2 rounded-xl bg-white/3 px-2.5 py-2">
             <div className="h-5 w-5 shrink-0 rounded-full bg-white/5 animate-pulse" />
             <div className="h-2.5 w-16 rounded bg-white/5 animate-pulse" />
           </div>
@@ -95,7 +90,7 @@ export function SidebarPresence() {
       {hasOnlineUsers ? (
 
         <div
-          className="erp-scrollbar space-y-0.5 overflow-y-auto pr-1"
+          className="erp-scrollbar space-y-1 overflow-y-auto pr-1"
           style={{ maxHeight: MAX_LIST_HEIGHT }}
         >
 
@@ -103,19 +98,37 @@ export function SidebarPresence() {
 
             <div
               key={user.id}
-              className="flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-white/4"
+              className="flex items-center gap-2 rounded-xl bg-white/3 px-2.5 py-2 transition-all duration-200 hover:bg-white/6"
             >
 
-              <span className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/8 text-[10px] font-semibold text-white">
+              {/* avatar wrapper: no overflow-hidden here, so the status
+                  badge below isn't clipped by the circular mask */}
+              <div className="relative h-5 w-5 shrink-0">
 
-                {user.name[0]?.toUpperCase() ?? "?"}
+                <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-white/8 text-[10px] font-semibold text-white">
+
+                  {user.avatarUrl ? (
+
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.name}
+                      className="h-full w-full object-cover"
+                    />
+
+                  ) : (
+
+                    user.name[0]?.toUpperCase() ?? "?"
+
+                  )}
+
+                </div>
 
                 <span
                   aria-hidden="true"
                   className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-[#0A0A0A]"
                 />
 
-              </span>
+              </div>
 
               <span className="truncate text-xs font-medium text-neutral-300">
                 {user.name}
@@ -129,7 +142,7 @@ export function SidebarPresence() {
 
       ) : (
 
-        <div className="flex items-center gap-2 px-2 py-1.5">
+        <div className="flex items-center gap-2 rounded-xl bg-white/3 px-2.5 py-2">
 
           <span
             aria-hidden="true"

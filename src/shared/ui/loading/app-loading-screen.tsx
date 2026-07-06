@@ -139,7 +139,7 @@ export function AppLoadingScreen({
               logo={logo}
             />
 
-            <p className="mt-5 text-base font-semibold text-white">
+            <p className="mt-1 text-base font-semibold text-white">
               Sincronizando datos
             </p>
 

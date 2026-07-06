@@ -14,15 +14,15 @@ export const LoadingLogo=
 
     return(
 
-      <div className="flex h-28 w-full items-center justify-center">
+      <div className="flex h-27 w-full items-center justify-center">
 
         {logo??(
 
           <Image
             src="/icon.svg"
             alt="ETM SAC"
-            width={80}
-            height={80}
+            width={83}
+            height={83}
             priority
             draggable={false}
             className="block h-20 w-20 select-none object-contain"

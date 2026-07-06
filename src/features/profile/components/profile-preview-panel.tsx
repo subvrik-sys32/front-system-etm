@@ -80,8 +80,6 @@ export function ProfilePreviewPanel({
 
           </div>
 
-          <span className="absolute bottom-0.5 right-0.5 z-20 h-3.5 w-3.5 rounded-full border-2 border-[#0A0A0A] bg-green-400" />
-
         </button>
 
         <div className="mt-2.5 flex justify-center">

@@ -238,18 +238,18 @@ export function DynamicBadge({
       }}
     >
 
-      <div className="relative flex w-full items-center justify-center">
+      <div
+        className={cn(
+          "w-full items-center",
+          (showChevron || showRemove)
+            ? "grid grid-cols-[1fr_auto_1fr] gap-x-2"
+            : "flex justify-center",
+        )}
+      >
 
-        <div
-          className={cn(
+        {(showChevron || showRemove) && <span aria-hidden />}
 
-            "flex min-w-0 items-center gap-1.5",
-
-            reserveActionsSpace &&
-              "pr-8"
-
-          )}
-        >
+        <div className="flex min-w-0 items-center justify-center gap-1.5">
 
           {Icon && (
 
@@ -273,7 +273,7 @@ export function DynamicBadge({
 
         {(showChevron || showRemove) && (
 
-          <div className="absolute right-0 flex items-center">
+          <div className="relative ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center">
 
             {showChevron && (
 
@@ -284,10 +284,10 @@ export function DynamicBadge({
                 }}
                 className={cn(
 
-                  "transition-all duration-200",
+                  "absolute inset-0 transition-all duration-200 ease-out",
 
                   showRemove &&
-                    "opacity-50 group-hover:-translate-x-4 group-hover:opacity-0",
+                    "opacity-50 group-hover:scale-75 group-hover:opacity-0",
 
                   !showRemove &&
                     "opacity-50",
@@ -330,13 +330,19 @@ export function DynamicBadge({
                 style={{
                   color:actionColor,
                 }}
-                className="absolute right-0 cursor-pointer opacity-0 transition-all duration-200 group-hover:opacity-100"
+                className={cn(
+
+                  "absolute inset-0 flex cursor-pointer items-center justify-center transition-all duration-200 ease-out",
+
+                  "scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100",
+
+                )}
               >
 
                 <X
                   size={12}
                   strokeWidth={2.5}
-                  className="transition-all duration-150 hover:scale-110"
+                  className="transition-transform duration-150 hover:scale-110"
                 />
 
               </span>

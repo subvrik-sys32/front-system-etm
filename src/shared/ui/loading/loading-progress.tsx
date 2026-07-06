@@ -15,7 +15,7 @@ export const LoadingProgress = memo(function LoadingProgress({
 
   return (
 
-    <div className="mt-6 flex items-center gap-3">
+    <div className="flex items-center gap-3">
 
       <span className="w-9 shrink-0 text-right text-xs font-medium tabular-nums text-white/70">
 

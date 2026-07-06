@@ -6,13 +6,7 @@ import { LoginForm } from "@/features/auth/components/login-form"
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen w-full bg-[#050505] text-white flex items-center justify-center relative overflow-hidden">
-
-      {/* ambient background */}
-      <div className="absolute inset-0">
-        <div className="absolute top-50 left-1/2 -translate-x-1/2 w-150 h-150 bg-white/5 blur-[140px] rounded-full" />
-        <div className="absolute bottom-50 right-50 w-125 h-125 bg-white/5 blur-[140px] rounded-full" />
-      </div>
+    <div className="min-h-screen w-full bg-[#050505] text-white flex items-center justify-center">
 
       {/* container */}
       <div className="relative w-full max-w-5xl px-6">
@@ -27,13 +21,16 @@ export default function LoginPage() {
               <Image
                 src="/icon.svg"
                 alt="ETM SAC"
-                width={180}
-                height={180}
+                width={160}
+                height={160}
                 priority
                 className="block select-none"
               />
+              <p className="mt-2 text-xl text-neutral-500">
+                COMPANY S.A.C.
+              </p>
 
-              <p className="mt-4 text-sm text-neutral-500">
+              <p className="mt-4 text-xm text-neutral-500">
                 Sistema de Producción
               </p>
 
@@ -46,7 +43,7 @@ export default function LoginPage() {
 
               <div className="h-px w-full bg-white/5" />
 
-              <p className="text-[11px] text-neutral-600">
+              <p className="text-xs text-neutral-600">
                 Sistema interno versión 1.0
               </p>
             </div>

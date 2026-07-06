@@ -66,6 +66,11 @@ export function LoginForm(){
     useState(false)
 
   const[
+    success,
+    setSuccess,
+  ]=useState(false)
+
+  const[
     error,
     setError,
   ]=
@@ -103,6 +108,8 @@ export function LoginForm(){
         result.permissions,
       )
 
+      setSuccess(true)
+
       router.replace(
         "/projects",
       )
@@ -122,7 +129,7 @@ export function LoginForm(){
       setLoading(false)
 
     }
-
+    
   }
 
   return(
@@ -200,19 +207,45 @@ export function LoginForm(){
 
       <button
         disabled={loading}
-        className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-black transition-all duration-200 hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-neutral-300"
+        className={`flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+          success
+            ? "bg-emerald-500 text-white"
+            : "bg-white text-black hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-neutral-300"
+        }`}
       >
 
-        {loading?(
+        {success?(
           <>
+
+            <svg
+              className="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+
+              <path d="M5 13l4 4L19 7"/>
+
+            </svg>
+
+            <span>
+              Acceso concedido
+            </span>
+
+          </>
+        ):loading?(
+          <>
+
             <Loader2
               size={16}
               className="animate-spin"
             />
 
             <span>
-              Ingresando...
+              Verificando credenciales...
             </span>
+
           </>
         ):(
           "Entrar"

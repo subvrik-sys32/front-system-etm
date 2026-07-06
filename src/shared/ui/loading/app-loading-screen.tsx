@@ -131,31 +131,31 @@ export function AppLoadingScreen({
 
       <div className="absolute bottom-8 right-8">
 
-        <div className="w-85 rounded-2xl bg-white/4 p-6 shadow-[0_20px_80px_rgba(0,0,0,.45)] backdrop-blur-2xl">
+        <div className="w-90 overflow-hidden rounded-2xl border border-white/6 bg-white/4 shadow-[0_20px_80px_rgba(0,0,0,.45)] backdrop-blur-2xl">
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col items-center px-6 pt-6">
 
             <LoadingLogo
               logo={logo}
             />
 
-            <div>
+            <p className="mt-5 text-base font-semibold text-white">
+              Sincronizando datos
+            </p>
 
-              <p className="text-sm font-semibold text-white">
-                Sincronizando datos
-              </p>
-
-              <p className="mt-1 text-xs text-neutral-500">
-                Esto no tomará mucho...
-              </p>
-
-            </div>
+            <p className="mt-1 text-xs text-neutral-500">
+              Esto no tomará mucho...
+            </p>
 
           </div>
 
-          <LoadingProgress
-            progress={progress}
-          />
+          <div className="px-6 pt-6 pb-7">
+
+            <LoadingProgress
+              progress={progress}
+            />
+
+          </div>
 
         </div>
 

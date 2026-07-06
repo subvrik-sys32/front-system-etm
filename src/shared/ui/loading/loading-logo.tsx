@@ -13,15 +13,15 @@ export const LoadingLogo = memo(function LoadingLogo({
 
   return (
 
-    <div className="flex h-18 w-18 items-center justify-center">
+    <div className="flex items-center justify-center">
 
       {logo ?? (
 
         <Image
           src="/icon.svg"
           alt="ETM SAC"
-          width={51}
-          height={51}
+          width={80}
+          height={80}
           priority
           className="block select-none"
         />

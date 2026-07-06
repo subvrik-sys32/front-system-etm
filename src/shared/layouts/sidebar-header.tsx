@@ -31,8 +31,8 @@ export function SidebarHeader(){
           <Image
             src="/icon.svg"
             alt="ETM SAC"
-            width={90}
-            height={90}
+            width={80}
+            height={80}
             priority
             className="block select-none"
           />

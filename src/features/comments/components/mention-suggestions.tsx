@@ -1,11 +1,21 @@
 "use client"
 
-interface MentionableUser{
-  id:string
-  username:string|null
-  name:string
-  avatarUrl:string|null
-  color:string
+import {
+  PopoverContent,
+} from "@/components/ui/popover"
+
+import {
+  Command,
+  CommandGroup,
+  CommandList,
+} from "@/components/ui/command"
+
+interface MentionableUser {
+  id: string
+  username: string | null
+  name: string
+  avatarUrl: string | null
+  color: string
 }
 
 type Props = {
@@ -15,41 +25,59 @@ type Props = {
 
 export function MentionSuggestions({ users, onSelect }: Props) {
 
-  if (users.length === 0) return null
-
   return (
 
-    <div className="absolute bottom-full left-0 mb-1.5 w-64 overflow-hidden rounded-xl border border-white/10 bg-neutral-900 shadow-2xl">
+    <PopoverContent
+      align="start"
+      side="top"
+      sideOffset={8}
+      onOpenAutoFocus={(e) => e.preventDefault()}
+      className="w-64 border border-white/10 bg-[#101012] p-2"
+    >
 
-      {users.slice(0, 6).map((user) => (
+      <Command className="bg-transparent">
 
-        <button
-          key={user.id}
-          type="button"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => onSelect(user.username ?? user.name)}
-          className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-white/5"
-        >
+        <CommandList className="erp-scrollbar max-h-64 overflow-y-auto">
 
-          {user.avatarUrl ? (
-            <img src={user.avatarUrl} alt={user.name} className="h-6 w-6 rounded-full object-cover" />
-          ) : (
-            <div
-              className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold text-white"
-              style={{ backgroundColor: user.color }}
-            >
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-          )}
+          <CommandGroup>
 
-          <span className="truncate text-sm text-neutral-200">{user.name}</span>
-          <span className="ml-auto shrink-0 text-xs text-neutral-500">@{user.username}</span>
+            {users.slice(0, 6).map(user => (
 
-        </button>
+              <button
+                key={user.id}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => onSelect(user.username ?? user.name)}
+                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-white/5"
+              >
 
-      ))}
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-white/5 ring-1 ring-white/8 text-[10px] font-semibold text-white shadow-inner">
 
-    </div>
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={user.name} className="h-full w-full object-cover" />
+                  ) : (
+                    user.name.charAt(0).toUpperCase()
+                  )}
+
+                </div>
+
+                <span className="truncate text-sm text-neutral-200">{user.name}</span>
+
+                {user.username && (
+                  <span className="ml-auto shrink-0 text-xs text-neutral-500">@{user.username}</span>
+                )}
+
+              </button>
+
+            ))}
+
+          </CommandGroup>
+
+        </CommandList>
+
+      </Command>
+
+    </PopoverContent>
 
   )
 

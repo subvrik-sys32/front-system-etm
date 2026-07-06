@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, KeyboardEvent, ChangeEvent } from "react"
 import { SendHorizontal, X } from "lucide-react"
 import { PrimaryAction } from "@/shared/ui/actions/primary-action"
 import { IconAction } from "@/shared/ui/actions/icon-action"
+import { Popover, PopoverAnchor } from "@/components/ui/popover"
 import { useCreateComment } from "../hooks/use-create-comment"
 import { useUpdateComment } from "../hooks/use-update-comment"
 import { useMentionableUsers } from "../hooks/use-mentionable-users"
@@ -43,6 +44,8 @@ export function CommentComposer({
         u.username?.toLowerCase().includes(mentionQuery.toLowerCase()) ||
         u.name.toLowerCase().includes(mentionQuery.toLowerCase()),
       )
+
+  const mentionOpen = mentionQuery !== null && filteredUsers.length > 0
 
   const detectMentionQuery = (value: string, cursor: number) => {
 
@@ -136,23 +139,36 @@ export function CommentComposer({
 
       )}
 
-      <div className="relative flex min-h-0 flex-1 flex-col">
+      <Popover
+        open={mentionOpen}
+        onOpenChange={(next) => {
+          if (!next) setMentionQuery(null)
+        }}
+      >
 
-        {mentionQuery !== null && filteredUsers.length > 0 && (
+        <PopoverAnchor asChild>
+
+          <div className="relative flex min-h-0 flex-1 flex-col">
+
+            <textarea
+              ref={textareaRef}
+              value={message}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              disabled={busy}
+              placeholder="Escribe una observación... usá @ para mencionar"
+              className="text-sm font-medium min-h-9 flex-1 resize-none bg-transparent text-white outline-none placeholder:text-neutral-600"
+            />
+
+          </div>
+
+        </PopoverAnchor>
+
+        {mentionOpen && (
           <MentionSuggestions users={filteredUsers} onSelect={handleSelectMention} />
         )}
 
-        <textarea
-          ref={textareaRef}
-          value={message}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          disabled={busy}
-          placeholder="Escribe una observación... usá @ para mencionar"
-          className="text-sm font-medium min-h-9 flex-1 resize-none bg-transparent text-white outline-none placeholder:text-neutral-600"
-        />
-
-      </div>
+      </Popover>
 
       <div className="mt-1 flex justify-end">
 

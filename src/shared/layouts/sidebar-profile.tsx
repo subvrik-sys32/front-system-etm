@@ -16,6 +16,7 @@ type SidebarProfileProps = {
   setProfileOpen: (open: boolean) => void
   toggleProfile: () => void
   canOpenProfile: boolean
+  panelHeight: number
 
   containerRef: RefObject<HTMLDivElement | null>
   panelRef: RefObject<HTMLDivElement | null>
@@ -23,12 +24,15 @@ type SidebarProfileProps = {
   cardRef: RefObject<HTMLDivElement | null>
 }
 
+const OVERLAP = 24
+
 export function SidebarProfile({
   onEditProfile,
   profileOpen,
   setProfileOpen,
   toggleProfile,
   canOpenProfile,
+  panelHeight,
   containerRef,
   panelRef,
   contentRef,
@@ -42,22 +46,21 @@ export function SidebarProfile({
 
   return (
 
-    <div
-      ref={containerRef}
-      className="relative overflow-hidden rounded-xl bg-white/3 transition-colors duration-200 hover:bg-white/6"
-    >
+    <div ref={containerRef} className="relative">
 
       <div
-        ref={panelRef}
-        className={cn(
-          "grid overflow-hidden transition-[grid-template-rows] duration-300 ease-out",
-          profileOpen
-            ? "grid-rows-[1fr]"
-            : "grid-rows-[0fr]",
-        )}
+        className="absolute inset-x-0 bottom-full z-0 overflow-hidden rounded-xl bg-[#1D1D1D] transition-[height] duration-300 ease-out"
+        style={{
+          height: profileOpen ? panelHeight + OVERLAP + 30 : 0,
+          transform: `translateY(${OVERLAP}px)`,
+        }}
       >
 
-        <div className="min-h-0">
+        <div
+          ref={panelRef}
+          className="absolute inset-x-0 bottom-0 overflow-hidden"
+          style={{ height: panelHeight + OVERLAP + 30 }}
+        >
 
           <ProfilePreviewPanel
             contentRef={contentRef}
@@ -76,10 +79,7 @@ export function SidebarProfile({
 
       <div
         ref={cardRef}
-        className={cn(
-          "px-3 py-3",
-          profileOpen && "border-t border-white/5",
-        )}
+        className="relative z-10 rounded-xl bg-[#090909] px-3 py-3 transition-colors duration-300 hover:bg-[#101010]"
       >
 
         <div className="flex items-center justify-between gap-2">

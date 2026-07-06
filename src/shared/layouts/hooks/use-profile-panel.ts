@@ -12,257 +12,288 @@ const SAFE_MARGIN = 16
 
 export function useProfilePanel() {
 
-  const [profileOpen,setProfileOpen]=useState(false)
-  const [canOpenProfile,setCanOpenProfile]=useState(true)
-  const [presenceCollapsed,setPresenceCollapsed]=useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [canOpenProfile, setCanOpenProfile] = useState(true)
+  const [presenceCollapsed, setPresenceCollapsed] = useState(false)
 
-  const containerRef=useRef<HTMLDivElement|null>(null)
-  const panelRef=useRef<HTMLDivElement|null>(null)
-  const contentRef=useRef<HTMLDivElement|null>(null)
-  const cardRef=useRef<HTMLDivElement|null>(null)
+  const [panelHeight, setPanelHeight] = useState(0)
 
-  const pendingOpenRef=useRef(false)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const panelRef = useRef<HTMLDivElement | null>(null)
+  const contentRef = useRef<HTMLDivElement | null>(null)
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
-  const fitsInViewport=useCallback(()=>{
+  const pendingOpenRef = useRef(false)
 
-    const container=containerRef.current
-    const content=contentRef.current
-    const card=cardRef.current
+  const presenceHeightRef = useRef(0)
+  const presenceObserverRef = useRef<ResizeObserver | null>(null)
 
-    if(!container||!content||!card){
+  const presenceRef = useCallback((node: HTMLDivElement | null) => {
+
+    presenceObserverRef.current?.disconnect()
+    presenceObserverRef.current = null
+
+    if (!node) {
+      return
+    }
+
+    presenceHeightRef.current = node.getBoundingClientRect().height
+
+    const observer = new ResizeObserver(entries => {
+
+      const height = entries[0]?.contentRect.height
+
+      if (height != null) {
+        presenceHeightRef.current = height
+      }
+
+    })
+
+    observer.observe(node)
+    presenceObserverRef.current = observer
+
+  }, [])
+
+  const fitsInViewport = useCallback(() => {
+
+    const container = containerRef.current
+    const content = contentRef.current
+    const card = cardRef.current
+
+    if (!container || !content || !card) {
       return true
     }
 
-    const aside=container.closest("aside")
+    const aside = container.closest("aside")
 
-    if(!aside){
+    if (!aside) {
       return true
     }
 
-    const asideRect=aside.getBoundingClientRect()
-    const cardRect=card.getBoundingClientRect()
+    const asideRect = aside.getBoundingClientRect()
+    const cardRect = card.getBoundingClientRect()
 
-    const availableHeight=
-      cardRect.top-
-      asideRect.top-
+    const availableHeight =
+      cardRect.top -
+      asideRect.top -
       SAFE_MARGIN
 
-    const requiredHeight=
+    const requiredHeight =
       content.getBoundingClientRect().height
 
-    return requiredHeight<=availableHeight
+    return requiredHeight <= availableHeight
 
-  },[])
+  }, [])
 
-  const closeProfile=useCallback(()=>{
+  const closeProfile = useCallback(() => {
 
     setProfileOpen(false)
-    setPresenceCollapsed(false)
 
-  },[])
+  }, [])
 
-  const update=useCallback(()=>{
+  const update = useCallback(() => {
 
-    const canOpen=fitsInViewport()
+    const container = containerRef.current
+    const card = cardRef.current
+
+    if (!container || !card) {
+      return
+    }
+
+    const aside = container.closest("aside")
+
+    if (!aside) {
+      return
+    }
+
+    const asideRect = aside.getBoundingClientRect()
+    const cardRect = card.getBoundingClientRect()
+    const bottomLimit = asideRect.bottom - SAFE_MARGIN
+
+    const baseOverflows = cardRect.bottom > bottomLimit
+
+    if (baseOverflows && !presenceCollapsed) {
+      setPresenceCollapsed(true)
+      return
+    }
+
+    if (pendingOpenRef.current) {
+
+      pendingOpenRef.current = false
+
+      const fitsNow = fitsInViewport()
+
+      setCanOpenProfile(fitsNow)
+
+      if (fitsNow) {
+        setProfileOpen(true)
+      } else {
+        setPresenceCollapsed(false)
+      }
+
+      return
+
+    }
+
+    if (
+      !profileOpen &&
+      presenceCollapsed &&
+      !baseOverflows
+    ) {
+
+      const cardBottomWithPresence =
+        cardRect.bottom + presenceHeightRef.current
+
+      if (cardBottomWithPresence <= bottomLimit) {
+        setPresenceCollapsed(false)
+      }
+
+    }
+
+    const canOpen = fitsInViewport()
 
     setCanOpenProfile(canOpen)
 
-    if(profileOpen&&!canOpen){
+    if (profileOpen && !canOpen) {
       closeProfile()
     }
 
-  },[
+  }, [
     fitsInViewport,
     profileOpen,
+    presenceCollapsed,
     closeProfile,
   ])
 
-  function toggleProfile(){
+  function toggleProfile() {
 
-    if(profileOpen){
+    if (profileOpen) {
       closeProfile()
       return
     }
 
-    if(fitsInViewport()){
+    // Paso 1: ¿entra con "en línea" tal como está?
+    if (fitsInViewport()) {
       setCanOpenProfile(true)
       setProfileOpen(true)
       return
     }
 
-    pendingOpenRef.current=true
+    pendingOpenRef.current = true
     setPresenceCollapsed(true)
 
   }
 
-  useLayoutEffect(()=>{
-
-    if(!pendingOpenRef.current){
-      return
-    }
-
-    pendingOpenRef.current=false
-
-    const fitsNow=fitsInViewport()
-
-    setCanOpenProfile(fitsNow)
-
-    if(fitsNow){
-      setProfileOpen(true)
-    }else{
-      setPresenceCollapsed(false)
-    }
-
-  },[
-    presenceCollapsed,
-    fitsInViewport,
-  ])
-
-  useEffect(()=>{
+  useLayoutEffect(() => {
 
     update()
 
-  },[update])
+  }, [update])
 
-  useEffect(()=>{
+  useEffect(() => {
 
-    const aside=
+    const aside =
       containerRef.current?.closest("aside")
 
-    if(!aside){
+    if (!aside) {
       return
     }
 
-    const observer=
+    const observer =
       new ResizeObserver(update)
 
     observer.observe(aside)
 
-    return()=>observer.disconnect()
+    return () => observer.disconnect()
 
-  },[update])
+  }, [update])
 
-  useEffect(()=>{
+  useEffect(() => {
 
-    const content=contentRef.current
+    const content = contentRef.current
 
-    if(!content){
+    if (!content) {
       return
     }
 
-    const observer=
-      new ResizeObserver(update)
+    const observer = new ResizeObserver(entries => {
+
+      const height = entries[0]?.contentRect.height
+
+      if (height != null) {
+        setPanelHeight(height)
+      }
+
+      update()
+
+    })
 
     observer.observe(content)
 
-    return()=>observer.disconnect()
+    return () => observer.disconnect()
 
-  },[update])
+  }, [update])
 
-  useEffect(()=>{
+  useEffect(() => {
 
-    window.addEventListener(
-      "resize",
-      update,
-    )
+    window.addEventListener("resize", update)
 
-    return()=>window.removeEventListener(
-      "resize",
-      update,
-    )
+    return () => window.removeEventListener("resize", update)
 
-  },[update])
+  }, [update])
 
-  useEffect(()=>{
+  useEffect(() => {
 
-    if(!window.visualViewport){
+    if (!window.visualViewport) {
       return
     }
 
-    const viewport=window.visualViewport
+    window.visualViewport.addEventListener("resize", update)
 
-    let lastScale=viewport.scale
-    let lastWidth=viewport.width
-    let lastHeight=viewport.height
+    return () => window.visualViewport?.removeEventListener("resize", update)
 
-    function handleViewportChange(){
+  }, [update])
 
-      if(
-        viewport.scale!==lastScale||
-        viewport.width!==lastWidth||
-        viewport.height!==lastHeight
-      ){
+  useEffect(() => {
 
-        lastScale=viewport.scale
-        lastWidth=viewport.width
-        lastHeight=viewport.height
-
-        closeProfile()
-
-        requestAnimationFrame(update)
-
-      }
-
+    return () => {
+      presenceObserverRef.current?.disconnect()
     }
 
-    viewport.addEventListener(
-      "resize",
-      handleViewportChange,
-    )
+  }, [])
 
-    return()=>viewport.removeEventListener(
-      "resize",
-      handleViewportChange,
-    )
+  useEffect(() => {
 
-  },[
-    closeProfile,
-    update,
-  ])
-
-  useEffect(()=>{
-
-    if(!profileOpen){
+    if (!profileOpen) {
       return
     }
 
-    function handlePointerDown(
-      e:PointerEvent,
-    ){
+    function handlePointerDown(e: PointerEvent) {
 
-      if(
-        containerRef.current&&
-        !containerRef.current.contains(
-          e.target as Node,
-        )
-      ){
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         closeProfile()
       }
 
     }
 
-    document.addEventListener(
-      "pointerdown",
-      handlePointerDown,
-    )
+    document.addEventListener("pointerdown", handlePointerDown)
 
-    return()=>document.removeEventListener(
-      "pointerdown",
-      handlePointerDown,
-    )
+    return () => document.removeEventListener("pointerdown", handlePointerDown)
 
-  },[
-    profileOpen,
-    closeProfile,
-  ])
+  }, [profileOpen, closeProfile])
 
-  return{
+  return {
 
     profileOpen,
     setProfileOpen,
     toggleProfile,
     canOpenProfile,
     presenceCollapsed,
+    presenceRef,
+    panelHeight,
 
     containerRef,
     panelRef,

@@ -1,33 +1,30 @@
 "use client"
 
-import { usePathname, useSearchParams } from "next/navigation"
+import { usePathname,useSearchParams } from "next/navigation"
 
 import { NAVIGATION } from "./navigation"
 import { getNavItemMeta } from "./sidebar-nav-item-meta"
 import { SidebarItem } from "./sidebar-item"
-import { SidebarPresence } from "./sidebar-presence"
 import { SidebarSection } from "./sidebar-section"
 
 import type { ProcessCounts } from "./hooks/use-sidebar-counts"
 
-type SidebarNavigationProps = {
-  projectsCount: number
-  activeTasksCount: number
-  processCounts: ProcessCounts
-  presenceCollapsed: boolean
+type SidebarNavigationProps={
+  projectsCount:number
+  activeTasksCount:number
+  processCounts:ProcessCounts
 }
 
 export function SidebarNavigation({
   projectsCount,
   activeTasksCount,
   processCounts,
-  presenceCollapsed,
-}: SidebarNavigationProps) {
+}:SidebarNavigationProps){
 
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname=usePathname()
+  const searchParams=useSearchParams()
 
-  return (
+  return(
 
     <div
       className="erp-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-3 py-3 scrollbar-gutter-stable"
@@ -39,19 +36,19 @@ export function SidebarNavigation({
       }}
     >
 
-      {NAVIGATION.map(section => (
+      {NAVIGATION.map(section=>(
 
         <SidebarSection
           key={section.title}
           title={section.title}
         >
 
-          {section.items.map(item => {
+          {section.items.map(item=>{
 
-            const {
+            const{
               isActive,
               count,
-            } = getNavItemMeta({
+            }=getNavItemMeta({
               item,
               pathname,
               searchParams,
@@ -60,7 +57,7 @@ export function SidebarNavigation({
               processCounts,
             })
 
-            return (
+            return(
 
               <SidebarItem
                 key={item.href}
@@ -78,10 +75,6 @@ export function SidebarNavigation({
         </SidebarSection>
 
       ))}
-
-      <SidebarPresence
-        collapsed={presenceCollapsed}
-      />
 
     </div>
 

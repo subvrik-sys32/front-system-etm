@@ -11,8 +11,7 @@ import { useAuthStore } from "@/features/auth/store/auth-store"
 type Props = {
   onEdit: () => void
   onRemoveAvatar?: () => Promise<void> | void
-  // Nodo que se mide para saber la altura REAL del contenido, sin importar
-  // que un ancestro (el grid colapsable en SidebarProfile) esté clippeado.
+
   contentRef?: RefObject<HTMLDivElement | null>
 }
 
@@ -27,7 +26,10 @@ export function ProfilePreviewPanel({
 
   return (
 
-    <div ref={contentRef} className="px-4 py-4">
+    <div
+      ref={contentRef}
+      className="px-4 py-4"
+    >
 
       <div className="flex flex-col items-center">
 
@@ -96,9 +98,9 @@ export function ProfilePreviewPanel({
 
       </div>
 
-      <div className="mt-3 space-y-1">
+      <div className="mt-1.5 space-y-1">
 
-        <div className="flex items-center gap-2.5 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-white/4">
+        <div className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-white/4">
 
           <Mail size={13} className="shrink-0 text-neutral-500" />
 
@@ -108,7 +110,7 @@ export function ProfilePreviewPanel({
 
         </div>
 
-        <div className="flex items-center gap-2.5 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-white/4">
+        <div className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-white/4">
 
           <Phone size={13} className="shrink-0 text-neutral-500" />
 
@@ -118,7 +120,7 @@ export function ProfilePreviewPanel({
 
         </div>
 
-        <div className="flex items-center gap-2.5 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-white/4">
+        <div className="flex items-center gap-2 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-white/4">
 
           <Briefcase size={13} className="shrink-0 text-neutral-500" />
 

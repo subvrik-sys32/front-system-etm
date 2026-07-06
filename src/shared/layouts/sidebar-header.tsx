@@ -5,7 +5,6 @@ import Image from "next/image"
 import { PanelLeftClose } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
-
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
 
 export function SidebarHeader(){
@@ -28,14 +27,18 @@ export function SidebarHeader(){
 
         <div className="flex flex-1 flex-col items-center">
 
-          <Image
-            src="/icon.svg"
-            alt="ETM SAC"
-            width={80}
-            height={80}
-            priority
-            className="block select-none"
-          />
+          <div className="relative h-20 w-20 shrink-0">
+
+            <Image
+              src="/icon.svg"
+              alt="ETM SAC"
+              fill
+              priority
+              draggable={false}
+              className="select-none object-contain"
+            />
+
+          </div>
 
           <p className="mt-1 text-center text-xs text-neutral-500">
             COMPANY S.A.C.

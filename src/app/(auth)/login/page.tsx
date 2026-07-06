@@ -22,15 +22,18 @@ export default function LoginPage() {
 
               <div className="flex h-28 items-center">
 
-                <Image
-                  src="/icon.svg"
-                  alt="ETM SAC"
-                  width={160}
-                  height={160}
-                  priority
-                  draggable={false}
-                  className="block h-28 w-auto select-none object-contain"
-                />
+                <div className="relative h-28 w-28 shrink-0">
+
+                  <Image
+                    src="/icon.svg"
+                    alt="ETM SAC"
+                    fill
+                    priority
+                    draggable={false}
+                    className="select-none object-contain"
+                  />
+
+                </div>
 
               </div>
 

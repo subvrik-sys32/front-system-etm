@@ -2,10 +2,14 @@
 
 import { useEffect,useState } from "react"
 
-import Image from "next/image"
+import type { ReactNode } from "react"
+
+import { LoadingBackground } from "./loading-background"
+import { LoadingLogo } from "./loading-logo"
+import { LoadingProgress } from "./loading-progress"
 
 type Props={
-  logo?:React.ReactNode
+  logo?:ReactNode
   isReady?:boolean
   onComplete?:()=>void
 }
@@ -99,42 +103,31 @@ export function AppLoadingScreen({
   useEffect(()=>{
 
     if(
-      progress>=100&&
-      onComplete
+      progress<100||
+      !onComplete
     ){
-
-      const timeout=setTimeout(
-        onComplete,
-        250,
-      )
-
-      return()=>clearTimeout(
-        timeout,
-      )
-
+      return
     }
+
+    const timeout=setTimeout(
+      onComplete,
+      250,
+    )
+
+    return()=>clearTimeout(
+      timeout,
+    )
 
   },[
     progress,
     onComplete,
   ])
 
-  const displayProgress=
-    Math.round(
-      progress,
-    )
-
   return(
 
-    <div className="fixed inset-0 z-9999 bg-[#050505]">
+    <div className="fixed inset-0 z-[9999] bg-[#050505]">
 
-      <div className="absolute inset-0">
-
-        <div className="absolute left-1/2 top-1/3 h-150 w-150 -translate-x-1/2 rounded-full bg-white/5 blur-[160px]" />
-
-        <div className="absolute bottom-0 right-0 h-120 w-120 rounded-full bg-white/4 blur-[140px]" />
-
-      </div>
+      <LoadingBackground/>
 
       <div className="absolute bottom-8 right-8">
 
@@ -142,22 +135,9 @@ export function AppLoadingScreen({
 
           <div className="flex items-center gap-4">
 
-            <div className="flex h-18 w-18 items-center justify-center">
-
-              {logo??(
-
-                <Image
-                  src="/icon.svg"
-                  alt="ETM SAC"
-                  width={42}
-                  height={42}
-                  priority
-                  className="h-8 w-auto"
-                />
-
-              )}
-
-            </div>
+            <LoadingLogo
+              logo={logo}
+            />
 
             <div>
 
@@ -173,26 +153,9 @@ export function AppLoadingScreen({
 
           </div>
 
-          <div className="mt-6 flex items-center gap-3">
-
-            <span className="w-9 shrink-0 text-right text-xs font-medium tabular-nums text-white/70">
-
-              {displayProgress}%
-
-            </span>
-
-            <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white/6">
-
-              <div
-                className="h-full rounded-full bg-white/40 transition-[width] duration-150 ease-out"
-                style={{
-                  width:`${displayProgress}%`,
-                }}
-              />
-
-            </div>
-
-          </div>
+          <LoadingProgress
+            progress={progress}
+          />
 
         </div>
 

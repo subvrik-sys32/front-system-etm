@@ -29,6 +29,9 @@ export function ProcessExpandedRow({
   const processCode=
     processTask.workflowStep?.processCode
 
+  const workflowStepId=
+    processTask.workflowStep?.id
+
   const isMaterialProcess=
     processCode==="CT"||
     processCode==="PL"||
@@ -118,19 +121,23 @@ export function ProcessExpandedRow({
 
         </div>
 
-        <div className="mt-3">
+        {workflowStepId&&(
 
-          <EntityExpandedSection
-            title="OBSERVACIONES"
-          >
+          <div className="mt-3">
 
-            <ProcessCommentsPanel
-              taskId={processTask.task.id}
-            />
+            <EntityExpandedSection
+              title="OBSERVACIONES"
+            >
 
-          </EntityExpandedSection>
+              <ProcessCommentsPanel
+                workflowStepId={workflowStepId}
+              />
 
-        </div>
+            </EntityExpandedSection>
+
+          </div>
+
+        )}
 
       </EntityExpandedContent>
 

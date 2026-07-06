@@ -142,7 +142,7 @@ export function AppLoadingScreen({
 
           <div className="flex items-center gap-4">
 
-            <div className="flex h-18 w-18 items-center justify-center rounded-2xl bg-white/5">
+            <div className="flex h-18 w-18 items-center justify-center">
 
               {logo??(
 

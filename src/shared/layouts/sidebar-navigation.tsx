@@ -30,9 +30,9 @@ export function SidebarNavigation({
       className="erp-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-3 py-3 scrollbar-gutter-stable"
       style={{
         maskImage:
-          "linear-gradient(to bottom,transparent,black 16px,black calc(100% - 16px),transparent)",
+          "linear-gradient(to bottom,transparent,black 4px,black calc(100% - 4px),transparent)",
         WebkitMaskImage:
-          "linear-gradient(to bottom,transparent,black 16px,black calc(100% - 16px),transparent)",
+          "linear-gradient(to bottom,transparent,black 4px,black calc(100% - 4px),transparent)",
       }}
     >
 

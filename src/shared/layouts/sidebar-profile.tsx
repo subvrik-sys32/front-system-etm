@@ -46,12 +46,17 @@ export function SidebarProfile({
 
   return (
 
-    <div ref={containerRef} className="relative">
+    <div
+      ref={containerRef}
+      className="relative"
+    >
 
       <div
         className="absolute inset-x-0 bottom-full z-0 overflow-hidden rounded-xl bg-[#1D1D1D] transition-[height] duration-300 ease-out"
         style={{
-          height: profileOpen ? panelHeight + OVERLAP + 30 : 0,
+          height: profileOpen
+            ? panelHeight + OVERLAP + 30
+            : 0,
           transform: `translateY(${OVERLAP}px)`,
         }}
       >
@@ -59,7 +64,9 @@ export function SidebarProfile({
         <div
           ref={panelRef}
           className="absolute inset-x-0 bottom-0 overflow-hidden"
-          style={{ height: panelHeight + OVERLAP + 30 }}
+          style={{
+            height: panelHeight + OVERLAP + 30,
+          }}
         >
 
           <ProfilePreviewPanel
@@ -72,6 +79,25 @@ export function SidebarProfile({
 
             }}
           />
+
+          <div
+            aria-hidden="true"
+            className={cn(
+              "pointer-events-none absolute inset-x-5 bottom-0 transition-opacity duration-300",
+              profileOpen
+                ? "opacity-100"
+                : "opacity-0",
+            )}
+          >
+
+            <div
+              className="h-2 w-full rounded-full bg-black/25"
+              style={{
+                filter: "blur(4px)",
+              }}
+            />
+
+          </div>
 
         </div>
 

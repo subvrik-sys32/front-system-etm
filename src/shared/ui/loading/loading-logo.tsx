@@ -18,7 +18,7 @@ export const LoadingLogo=
 
         {logo??(
 
-          <div className="relative h-20 w-20 shrink-0">
+          <div className="relative h-28 w-28 shrink-0">
 
             <Image
               src="/icon.svg"

@@ -40,7 +40,7 @@ export function SidebarHeader(){
 
           </div>
 
-          <p className="mt-1 text-center text-xs text-neutral-500">
+          <p className="text-center text-xs text-neutral-500">
             COMPANY S.A.C.
           </p>
 

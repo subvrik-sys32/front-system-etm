@@ -20,7 +20,7 @@ export default function LoginPage() {
 
             <div>
 
-              <div className="flex h-28 items-center">
+              <div className="flex h-28 w-full items-center">
 
                 <div className="relative h-28 w-28 shrink-0">
 
@@ -37,7 +37,7 @@ export default function LoginPage() {
 
               </div>
 
-              <p className="mt-2 text-xl text-neutral-500">
+              <p className="text-xl text-neutral-500">
                 COMPANY S.A.C.
               </p>
 

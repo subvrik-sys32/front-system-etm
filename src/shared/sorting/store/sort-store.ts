@@ -4,15 +4,15 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 export type TaskSortMode=
-  | "priority"
-  | "delivery"
-  | "sequence"
-  | "manual"
+  |"manual"
+  |"priority"
+  |"delivery"
+  |"sequence"
 
 export type ProjectSortMode=
-  | "delivery"
-  | "sequence"
-  | "manual"
+  |"manual"
+  |"delivery"
+  |"sequence"
 
 type SortStore={
 
@@ -38,10 +38,10 @@ export const useSortStore=
       set=>({
 
         taskSortMode:
-          "priority",
+          "manual",
 
         projectSortMode:
-          "sequence",
+          "manual",
 
         setTaskSortMode:
           taskSortMode=>
@@ -60,10 +60,40 @@ export const useSortStore=
       }),
 
       {
+
         name:
           "prod-erp-sort",
-      }
 
-    )
+        version:
+          2,
+
+        migrate:(
+          persistedState:any,
+          version,
+        )=>{
+
+          if(version<2){
+
+            return{
+
+              ...persistedState,
+
+              taskSortMode:
+                "manual",
+
+              projectSortMode:
+                "manual",
+
+            }
+
+          }
+
+          return persistedState
+
+        },
+
+      },
+
+    ),
 
   )

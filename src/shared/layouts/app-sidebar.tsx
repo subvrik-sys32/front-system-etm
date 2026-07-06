@@ -72,7 +72,7 @@ export function AppSidebar() {
         }}
         className={cn(
 
-          "isolate z-50 flex w-62 flex-col overflow-hidden bg-[#0A0A0A] ring-1 ring-white/5 will-change-transform transform-gpu transition-all duration-200 ease-out",
+          "isolate z-50 flex w-62 flex-col overflow-hidden bg-[#0A0A0A] ring-1 ring-white/5 will-change-transform transform-gpu transition-all duration-200 ease-out select-none",
           previewGeometry
             ? "fixed left-0 top-5 h-[calc(100vh-40px)] rounded-r-2xl border border-white/5 shadow-[0_2px_8px_rgba(0,0,0,.08),0_12px_32px_rgba(0,0,0,.12)]"
             : "fixed left-0 top-0 h-screen border-r border-white/5",
@@ -90,10 +90,7 @@ export function AppSidebar() {
             projectsCount={projectsCount}
             activeTasksCount={activeTasksCount}
             processCounts={processCounts}
-          />
-
-          <SidebarPresence
-            collapsed={presenceCollapsed}
+            presenceCollapsed={presenceCollapsed}
             presenceRef={presenceRef}
           />
 

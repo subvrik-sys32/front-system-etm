@@ -89,6 +89,8 @@ export function useProfilePanel() {
 
     setProfileOpen(false)
 
+    setPresenceCollapsed(false)
+
   }, [])
 
   const update = useCallback(() => {
@@ -112,11 +114,6 @@ export function useProfilePanel() {
 
     const baseOverflows = cardRect.bottom > bottomLimit
 
-    if (baseOverflows && !presenceCollapsed) {
-      setPresenceCollapsed(true)
-      return
-    }
-
     if (pendingOpenRef.current) {
 
       pendingOpenRef.current = false
@@ -132,21 +129,6 @@ export function useProfilePanel() {
       }
 
       return
-
-    }
-
-    if (
-      !profileOpen &&
-      presenceCollapsed &&
-      !baseOverflows
-    ) {
-
-      const cardBottomWithPresence =
-        cardRect.bottom + presenceHeightRef.current
-
-      if (cardBottomWithPresence <= bottomLimit) {
-        setPresenceCollapsed(false)
-      }
 
     }
 
@@ -172,7 +154,6 @@ export function useProfilePanel() {
       return
     }
 
-    // Paso 1: ¿entra con "en línea" tal como está?
     if (fitsInViewport()) {
       setCanOpenProfile(true)
       setProfileOpen(true)

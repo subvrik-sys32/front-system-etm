@@ -1,10 +1,12 @@
 "use client"
 
+import { Fragment } from "react"
 import { usePathname,useSearchParams } from "next/navigation"
 
 import { NAVIGATION } from "./navigation"
 import { getNavItemMeta } from "./sidebar-nav-item-meta"
 import { SidebarItem } from "./sidebar-item"
+import { SidebarPresence } from "./sidebar-presence"
 import { SidebarSection } from "./sidebar-section"
 
 import type { ProcessCounts } from "./hooks/use-sidebar-counts"
@@ -13,12 +15,16 @@ type SidebarNavigationProps={
   projectsCount:number
   activeTasksCount:number
   processCounts:ProcessCounts
+  presenceCollapsed:boolean
+  presenceRef?:(node:HTMLDivElement|null)=>void
 }
 
 export function SidebarNavigation({
   projectsCount,
   activeTasksCount,
   processCounts,
+  presenceCollapsed,
+  presenceRef,
 }:SidebarNavigationProps){
 
   const pathname=usePathname()
@@ -36,43 +42,55 @@ export function SidebarNavigation({
       }}
     >
 
-      {NAVIGATION.map(section=>(
+      {NAVIGATION.map((section,index)=>(
 
-        <SidebarSection
-          key={section.title}
-          title={section.title}
-        >
+        <Fragment key={section.title}>
 
-          {section.items.map(item=>{
+          <SidebarSection
+            title={section.title}
+          >
 
-            const{
-              isActive,
-              count,
-            }=getNavItemMeta({
-              item,
-              pathname,
-              searchParams,
-              projectsCount,
-              activeTasksCount,
-              processCounts,
-            })
+            {section.items.map(item=>{
 
-            return(
+              const{
+                isActive,
+                count,
+              }=getNavItemMeta({
+                item,
+                pathname,
+                searchParams,
+                projectsCount,
+                activeTasksCount,
+                processCounts,
+              })
 
-              <SidebarItem
-                key={item.href}
-                href={item.href}
-                label={item.label}
-                icon={item.icon}
-                active={isActive}
-                count={count}
-              />
+              return(
 
-            )
+                <SidebarItem
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                  icon={item.icon}
+                  active={isActive}
+                  count={count}
+                />
 
-          })}
+              )
 
-        </SidebarSection>
+            })}
+
+          </SidebarSection>
+
+          {index===NAVIGATION.length-1&&(
+
+            <SidebarPresence
+              collapsed={presenceCollapsed}
+              presenceRef={presenceRef}
+            />
+
+          )}
+
+        </Fragment>
 
       ))}
 

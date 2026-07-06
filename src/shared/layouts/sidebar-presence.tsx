@@ -84,14 +84,10 @@ export function SidebarPresence({
 
     <div ref={presenceRef} className="select-none px-3 py-3">
 
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2">
 
         <span className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-600">
           En línea
-        </span>
-
-        <span className="flex h-5 min-w-5 items-center justify-center rounded-lg bg-white/5 px-1.5 text-[11px] font-semibold text-neutral-400">
-          {onlineUsers.length}
         </span>
 
       </div>

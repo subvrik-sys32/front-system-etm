@@ -29,7 +29,7 @@ export default function LoginPage() {
                   height={160}
                   priority
                   draggable={false}
-                  className="block h-20 w-auto select-none object-contain"
+                  className="block h-28 w-auto select-none object-contain"
                 />
 
               </div>

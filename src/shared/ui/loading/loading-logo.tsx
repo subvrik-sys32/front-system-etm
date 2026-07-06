@@ -13,7 +13,7 @@ export const LoadingLogo = memo(function LoadingLogo({
 
   return (
 
-    <div className="flex items-center justify-center">
+    <div className="flex items-center justify-center px-6 pt-9">
 
       {logo ?? (
 

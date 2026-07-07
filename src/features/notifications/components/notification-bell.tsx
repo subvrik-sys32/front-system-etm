@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Bell, Loader2 } from "lucide-react"
+import { Bell, History, Loader2 } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
@@ -18,6 +18,7 @@ import { useUnreadCount } from "../hooks/use-unread-count"
 import { useMarkNotificationRead } from "../hooks/use-mark-notification-read"
 import { useMarkAllNotificationsRead } from "../hooks/use-mark-all-read"
 import { NotificationItem } from "./notification-item"
+import { NotificationHistoryDialog } from "./notification-history-dialog"
 import type { Notification } from "../types/notification.types"
 
 function resolveNotificationHref(notification: Notification) {
@@ -37,6 +38,7 @@ function resolveNotificationHref(notification: Notification) {
 export function NotificationBell() {
 
   const [open, setOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const router = useRouter()
 
   const sidebarMode = useSidebarStore(s => s.mode)
@@ -73,100 +75,128 @@ export function NotificationBell() {
 
   }
 
+  const handleOpenHistory = () => {
+    setOpen(false)
+    setHistoryOpen(true)
+  }
+
   return (
 
-    <Popover open={open} onOpenChange={setOpen}>
+    <>
 
-      <PopoverTrigger asChild>
+      <Popover open={open} onOpenChange={setOpen}>
 
-        <button
-          type="button"
-          className={cn(
-            "mx-1 flex h-8 w-[calc(100%-8px)] items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors",
-            open
-              ? "bg-white/6 text-white"
-              : "text-neutral-400 hover:bg-white/4 hover:text-white",
-          )}
+        <PopoverTrigger asChild>
+
+          <button
+            type="button"
+            className={cn(
+              "mx-1 flex h-8 w-[calc(100%-8px)] items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors",
+              open
+                ? "bg-white/6 text-white"
+                : "text-neutral-400 hover:bg-white/4 hover:text-white",
+            )}
+          >
+
+            <Bell size={14} />
+
+            <span>Notificaciones</span>
+
+            {count > 0 && (
+              <span className="ml-auto flex h-6 w-8 items-center justify-center rounded-lg bg-cyan-500 text-xs font-semibold text-white animate-pulse">
+                {count > 9 ? "9+" : count}
+              </span>
+            )}
+
+          </button>
+
+        </PopoverTrigger>
+
+        <PopoverContent
+          side="right"
+          align="start"
+          sideOffset={8}
+          className="z-90 w-80 border border-white/10 bg-[#101012] p-0"
         >
 
-          <Bell size={14} />
+          <div className="flex items-center justify-between px-3.5 py-3">
+            <span className="text-sm font-semibold text-neutral-200">Notificaciones</span>
 
-          <span>Notificaciones</span>
+            {count > 0 && (
+              <button
+                type="button"
+                onClick={() => markAllAsRead()}
+                className="text-xs font-medium text-cyan-300 transition-colors hover:text-cyan-200"
+              >
+                Limpiar
+              </button>
+            )}
+          </div>
 
-          {count > 0 && (
-            <span className="ml-auto flex h-6 w-8 items-center justify-center rounded-lg bg-cyan-500 text-xs font-semibold text-white animate-pulse">
-              {count > 9 ? "9+" : count}
-            </span>
-          )}
+          <div className="max-h-96 overflow-y-auto erp-scrollbar px-2 pb-2">
 
-        </button>
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-sm text-neutral-500">Cargando...</p>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-1.5 py-8 text-center">
+                <Bell size={20} className="text-neutral-700" />
+                <p className="text-sm text-neutral-500">No tenés notificaciones</p>
+              </div>
+            ) : (
+              <div className="space-y-1">
 
-      </PopoverTrigger>
+                {notifications.map(notification => (
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    onClick={handleSelect}
+                    onMarkRead={markAsRead}
+                  />
+                ))}
 
-      <PopoverContent
-        side="right"
-        align="start"
-        sideOffset={8}
-        className="z-90 w-80 border border-white/10 bg-[#101012] p-0"
-      >
+                {hasMore && (
+                  <button
+                    type="button"
+                    onClick={() => loadMore()}
+                    disabled={loadingMore}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-medium text-neutral-400 transition-colors hover:bg-white/5 hover:text-neutral-200 disabled:opacity-50"
+                  >
+                    {loadingMore
+                      ? <Loader2 size={12} className="animate-spin" />
+                      : "Cargar más"}
+                  </button>
+                )}
 
-        <div className="flex items-center justify-between px-3.5 py-3">
-          <span className="text-sm font-semibold text-neutral-200">Notificaciones</span>
+              </div>
+            )}
 
-          {count > 0 && (
+          </div>
+
+          <div className="border-t border-white/5 p-2">
+
             <button
               type="button"
-              onClick={() => markAllAsRead()}
-              className="text-xs font-medium text-cyan-300 transition-colors hover:text-cyan-200"
+              onClick={handleOpenHistory}
+              className="flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium text-neutral-400 transition-colors hover:bg-white/5 hover:text-neutral-200"
             >
-              Marcar todas
+              <History size={13} />
+              Ver historial
             </button>
-          )}
-        </div>
 
-        <div className="max-h-96 overflow-y-auto erp-scrollbar px-2 pb-2">
+          </div>
 
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <p className="text-sm text-neutral-500">Cargando...</p>
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-1.5 py-8 text-center">
-              <Bell size={20} className="text-neutral-700" />
-              <p className="text-sm text-neutral-500">No tenés notificaciones</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
+        </PopoverContent>
 
-              {notifications.map(notification => (
-                <NotificationItem
-                  key={notification.id}
-                  notification={notification}
-                  onClick={handleSelect}
-                />
-              ))}
+      </Popover>
 
-              {hasMore && (
-                <button
-                  type="button"
-                  onClick={() => loadMore()}
-                  disabled={loadingMore}
-                  className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-medium text-neutral-400 transition-colors hover:bg-white/5 hover:text-neutral-200 disabled:opacity-50"
-                >
-                  {loadingMore
-                    ? <Loader2 size={12} className="animate-spin" />
-                    : "Cargar más"}
-                </button>
-              )}
+      <NotificationHistoryDialog
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+      />
 
-            </div>
-          )}
-
-        </div>
-
-      </PopoverContent>
-
-    </Popover>
+    </>
 
   )
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { AtSign, MessageSquare } from "lucide-react"
+import { AtSign, Check, MessageSquare } from "lucide-react"
 import { formatNotificationDate } from "../utils/format-notification-date"
 import { WORKFLOW_STATUS_DEFINITIONS } from "@/features/workflow/constants/workflow-status-definitions"
 import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
@@ -9,9 +9,10 @@ import type { Notification } from "../types/notification.types"
 type Props = {
   notification: Notification
   onClick: (notification: Notification) => void
+  onMarkRead?: (id: string) => void
 }
 
-export function NotificationItem({ notification, onClick }: Props) {
+export function NotificationItem({ notification, onClick, onMarkRead }: Props) {
 
   const { actor, task, workflowStep } = notification
   const isMention = notification.type === "MENTION"
@@ -27,7 +28,7 @@ export function NotificationItem({ notification, onClick }: Props) {
     <button
       type="button"
       onClick={() => onClick(notification)}
-      className="flex w-full items-start gap-2.5 rounded-xl px-2.5 py-2.5 text-left transition-colors hover:bg-white/5"
+      className="group flex w-full items-start gap-2.5 rounded-xl px-2.5 py-2.5 text-left transition-colors hover:bg-white/5"
     >
 
       <div className="relative shrink-0">
@@ -74,6 +75,28 @@ export function NotificationItem({ notification, onClick }: Props) {
                   icon={status.icon}
                 />
               </div>
+            )}
+
+            {!notification.read && onMarkRead && (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMarkRead(notification.id)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onMarkRead(notification.id)
+                  }
+                }}
+                title="Marcar como leída"
+                className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-500 opacity-0 transition-all hover:bg-white/10 hover:text-cyan-300 group-hover:opacity-100"
+              >
+                <Check size={12} strokeWidth={2.5} />
+              </span>
             )}
 
             {!notification.read && (

@@ -22,4 +22,12 @@ export const notificationsApi={
     await api.patch("/notifications/read-all")
   },
 
+  async remove(id:string){
+    await api.delete(`/notifications/${id}`)
+  },
+
+  async removeAll(){
+    await api.delete("/notifications")
+  },
+
 }

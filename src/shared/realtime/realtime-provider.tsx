@@ -106,6 +106,12 @@ export function RealtimeProvider({
 
         onerror(error) {
 
+          // el efecto ya se desmontó y abortó esta conexión a propósito:
+          // no dejar que fetchEventSource la revida con un retry.
+          if (controller.signal.aborted) {
+            throw error
+          }
+
           // si ya hicimos logout, no seguir reintentando en loop
           if (!authSession.get()) {
             throw error // corta el retry automático de fetchEventSource

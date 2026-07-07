@@ -12,7 +12,6 @@ import { useSidebarPrefetch } from "./hooks/use-sidebar-prefetch"
 import { useProfilePanel } from "./hooks/use-profile-panel"
 import { SidebarHeader } from "./sidebar-header"
 import { SidebarNavigation } from "./sidebar-navigation"
-import { SidebarPresence } from "./sidebar-presence"
 import { SidebarProfile } from "./sidebar-profile"
 
 export function AppSidebar() {
@@ -25,7 +24,11 @@ export function AppSidebar() {
 
   const leaveTimeout = useRef<NodeJS.Timeout | null>(null)
 
-  const { projectsCount, activeTasksCount, processCounts } = useSidebarCounts()
+  const {
+    projectsCount,
+    activeTasksCount,
+    processCounts,
+  } = useSidebarCounts()
 
   useSidebarPrefetch()
 
@@ -43,7 +46,8 @@ export function AppSidebar() {
     cardRef,
   } = useProfilePanel()
 
-  const preview = mode === "preview"
+  const preview =
+    mode === "preview"
 
   const previewGeometry =
     mode === "preview" ||
@@ -59,7 +63,9 @@ export function AppSidebar() {
       <aside
         onMouseEnter={() =>
           leaveTimeout.current &&
-          clearTimeout(leaveTimeout.current)
+          clearTimeout(
+            leaveTimeout.current,
+          )
         }
         onMouseLeave={() => {
 
@@ -67,11 +73,14 @@ export function AppSidebar() {
             return
           }
 
-          leaveTimeout.current = setTimeout(close, 200)
+          leaveTimeout.current =
+            setTimeout(
+              close,
+              200,
+            )
 
         }}
         className={cn(
-
           "isolate z-50 flex w-62 flex-col overflow-hidden bg-[#0A0A0A] ring-1 ring-white/5 will-change-transform transform-gpu transition-all duration-200 ease-out select-none",
           previewGeometry
             ? "fixed left-0 top-5 h-[calc(100vh-40px)] rounded-r-2xl border border-white/5 shadow-[0_2px_8px_rgba(0,0,0,.08),0_12px_32px_rgba(0,0,0,.12)]"
@@ -84,7 +93,7 @@ export function AppSidebar() {
 
         <SidebarHeader />
 
-        <div className="min-h-0 flex-1 flex flex-col">
+        <div className="flex min-h-0 flex-1 flex-col">
 
           <SidebarNavigation
             projectsCount={projectsCount}
@@ -99,7 +108,11 @@ export function AppSidebar() {
         <div className="shrink-0 select-none p-3 pt-0">
 
           <SidebarProfile
-            onEditProfile={() => setProfileEditOpen(true)}
+            onEditProfile={() =>
+              setProfileEditOpen(
+                true,
+              )
+            }
             profileOpen={profileOpen}
             setProfileOpen={setProfileOpen}
             toggleProfile={toggleProfile}
@@ -117,7 +130,11 @@ export function AppSidebar() {
 
       <ProfileDialog
         open={profileEditOpen}
-        onClose={() => setProfileEditOpen(false)}
+        onClose={() =>
+          setProfileEditOpen(
+            false,
+          )
+        }
       />
 
     </>

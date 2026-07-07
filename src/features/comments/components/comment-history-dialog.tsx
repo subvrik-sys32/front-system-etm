@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search } from "lucide-react"
+import { Search, Trash2 } from "lucide-react"
 
 import {
   Dialog,
@@ -11,7 +11,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
+import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
+import { preventNestedDialogClose } from "@/shared/ui/dialogs/prevent-nested-dialog-close"
+import { useCloseSidebarPreview } from "@/shared/layouts/hooks/use-close-sidebar-preview"
+
 import { useComments } from "../hooks/use-comments"
+import { useDeleteComment } from "../hooks/use-delete-comment"
 import { CommentList } from "./comment-list"
 import { EmptyComments } from "./empty-comments"
 import type { Comment, CommentTarget } from "../types/comment.types"
@@ -30,8 +35,15 @@ export function CommentHistoryDialog({
   onEditComment,
 }: Props) {
 
+  useCloseSidebarPreview(
+    open,
+  )
+
   const [search, setSearch] = useState("")
+  const [pendingDelete, setPendingDelete] = useState<Comment | null>(null)
+
   const { comments, loading } = useComments(target)
+  const { deleteComment } = useDeleteComment(target)
 
   const filteredComments = search.trim()
     ? comments.filter(c =>
@@ -45,52 +57,88 @@ export function CommentHistoryDialog({
     onOpenChange(false)
   }
 
+  const handleConfirmDelete = () => {
+
+    if (!pendingDelete) return
+
+    deleteComment(pendingDelete)
+    setPendingDelete(null)
+
+  }
+
   return (
 
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
 
-      <DialogContent className="flex h-[70vh] max-w-lg flex-col gap-0 overflow-hidden p-0">
+      <Dialog open={open} onOpenChange={onOpenChange}>
 
-        <DialogHeader className="border-b border-white/5 px-4 py-3.5">
-          <DialogTitle className="text-sm font-semibold text-neutral-200">
-            Historial de comentarios
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            Historial completo de comentarios
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent
+          className="flex h-[70vh] max-w-lg flex-col gap-0 overflow-hidden p-0"
+          onPointerDownOutside={preventNestedDialogClose}
+          onInteractOutside={preventNestedDialogClose}
+        >
 
-        <div className="border-b border-white/5 px-4 py-2.5">
+          <DialogHeader className="border-b border-white/5 px-4 py-3.5">
+            <DialogTitle className="text-sm font-semibold text-neutral-200">
+              Historial de comentarios
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Historial completo de comentarios
+            </DialogDescription>
+          </DialogHeader>
 
-          <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2">
-            <Search size={15} className="shrink-0 text-neutral-500" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar en comentarios..."
-              className="w-full bg-transparent text-sm text-neutral-200 outline-none placeholder:text-neutral-600"
-            />
+          <div className="border-b border-white/5 px-4 py-2.5">
+
+            <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2">
+              <Search size={15} className="shrink-0 text-neutral-500" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar en comentarios..."
+                className="w-full bg-transparent text-sm text-neutral-200 outline-none placeholder:text-neutral-600"
+              />
+            </div>
+
           </div>
 
-        </div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+            {loading ? (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-sm text-neutral-500">Cargando...</p>
+              </div>
+            ) : filteredComments.length === 0 ? (
+              <EmptyComments />
+            ) : (
+              <CommentList
+                comments={filteredComments}
+                onEdit={handleEdit}
+                onDelete={setPendingDelete}
+              />
+            )}
 
-          {loading ? (
-            <div className="flex h-full items-center justify-center">
-              <p className="text-sm text-neutral-500">Cargando...</p>
-            </div>
-          ) : filteredComments.length === 0 ? (
-            <EmptyComments />
-          ) : (
-            <CommentList comments={filteredComments} onEdit={handleEdit} />
-          )}
+          </div>
 
-        </div>
+        </DialogContent>
 
-      </DialogContent>
+      </Dialog>
 
-    </Dialog>
+      <ActionDialog
+        open={!!pendingDelete}
+        title="Eliminar comentario"
+        description={
+          pendingDelete
+            ? `¿Eliminar el comentario de ${pendingDelete.user.name}? Esta acción no se puede deshacer.`
+            : ""
+        }
+        icon={Trash2}
+        confirmLabel="Eliminar"
+        variant="danger"
+        onClose={() => setPendingDelete(null)}
+        onConfirm={handleConfirmDelete}
+      />
+
+    </>
 
   )
 

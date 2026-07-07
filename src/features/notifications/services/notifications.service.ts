@@ -5,4 +5,6 @@ export const notificationsService={
   getUnreadCount:notificationsApi.getUnreadCount,
   markAsRead:notificationsApi.markAsRead,
   markAllAsRead:notificationsApi.markAllAsRead,
+  remove:notificationsApi.remove,
+  removeAll:notificationsApi.removeAll,
 }

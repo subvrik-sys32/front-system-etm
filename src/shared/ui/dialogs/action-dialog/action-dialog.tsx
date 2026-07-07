@@ -20,6 +20,8 @@ import {
   cn,
 } from "@/shared/utils/utils"
 
+import { preventNestedDialogClose } from "@/shared/ui/dialogs/prevent-nested-dialog-close"
+
 type Props = {
   open: boolean
 
@@ -58,17 +60,23 @@ export function ActionDialog({
 
     <Dialog
       open={open}
-      onOpenChange={(nextOpen) => {
+      onOpenChange={nextOpen => {
 
-        if (!nextOpen) {
-          onClose()
+        if(nextOpen){
+          return
         }
+
+        requestAnimationFrame(
+          onClose,
+        )
 
       }}
     >
 
       <DialogContent
         className="max-w-90 rounded-2xl border border-white/10 bg-[#101012] p-5 text-white shadow-2xl"
+        onPointerDownOutside={preventNestedDialogClose}
+        onInteractOutside={preventNestedDialogClose}
       >
 
         <DialogHeader>

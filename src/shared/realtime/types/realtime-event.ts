@@ -11,7 +11,8 @@ export type RealtimeAction=
   |"CREATED"
   |"UPDATED"
   |"DELETED"
-  |"REORDERED"
+  |"DELETED_ALL"
+  |"REORDERED"  
 
 export interface RealtimeEvent{
 

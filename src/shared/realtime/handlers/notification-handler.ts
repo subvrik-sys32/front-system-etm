@@ -17,6 +17,8 @@ export function notificationHandler(
 
       const notification = event.payload as Notification
 
+      let inserted = false
+
       queryClient.setQueryData<InfiniteData<NotificationsPage>>(
         ["notifications"],
         current => {
@@ -28,6 +30,8 @@ export function notificationHandler(
           )
 
           if (alreadyExists) return current
+
+          inserted = true
 
           const [firstPage, ...rest] = current.pages
 
@@ -42,10 +46,76 @@ export function notificationHandler(
         },
       )
 
-      queryClient.setQueryData<number>(
-        ["notifications", "unread-count"],
-        current => (current ?? 0) + 1,
+      if (inserted) {
+        queryClient.setQueryData<number>(
+          ["notifications", "unread-count"],
+          current => (current ?? 0) + 1,
+        )
+      }
+
+      return
+
+    }
+
+    case "DELETED": {
+
+      const payload = event.payload as { id: string } | undefined
+
+      if (!payload) return
+
+      let wasUnread = false
+
+      queryClient.setQueryData<InfiniteData<NotificationsPage>>(
+        ["notifications"],
+        current => {
+
+          if (!current) return current
+
+          return {
+            ...current,
+            pages: current.pages.map(page => ({
+              ...page,
+              items: page.items.filter(n => {
+                if (n.id === payload.id) {
+                  wasUnread = !n.read
+                  return false
+                }
+                return true
+              }),
+            })),
+          }
+
+        },
       )
+
+      if (wasUnread) {
+        queryClient.setQueryData<number>(
+          ["notifications", "unread-count"],
+          current => Math.max(0, (current ?? 0) - 1),
+        )
+      }
+
+      return
+
+    }
+
+    case "DELETED_ALL": {
+
+      queryClient.setQueryData<InfiniteData<NotificationsPage>>(
+        ["notifications"],
+        current => {
+
+          if (!current) return current
+
+          return {
+            ...current,
+            pages: current.pages.map(page => ({ ...page, items: [] })),
+          }
+
+        },
+      )
+
+      queryClient.setQueryData<number>(["notifications", "unread-count"], 0)
 
       return
 

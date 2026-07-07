@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, Search } from "lucide-react"
+import { Eraser, Loader2, Search } from "lucide-react"
 
 import {
   Dialog,
@@ -77,23 +77,24 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
 
         <DialogHeader className="flex-row items-center justify-between border-b border-white/5 px-4 py-3.5 space-y-0">
 
-          <DialogTitle className="text-sm font-semibold text-neutral-200">
+        <DialogTitle className="text-sm font-semibold text-neutral-200">
             Historial de notificaciones
-          </DialogTitle>
+        </DialogTitle>
 
-          <DialogDescription className="sr-only">
+        <DialogDescription className="sr-only">
             Historial completo de notificaciones
-          </DialogDescription>
+        </DialogDescription>
 
-          {hasUnread && (
+        {hasUnread && (
             <button
-              type="button"
-              onClick={() => markAllAsRead()}
-              className="mr-6 text-xs font-medium text-cyan-300 transition-colors hover:text-cyan-200"
+            type="button"
+            onClick={() => markAllAsRead()}
+            title="Limpiar notificaciones"
+            className="mr-8 flex h-6 w-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-white/8 hover:text-cyan-300"
             >
-              Limpiar
+            <Eraser size={14} />
             </button>
-          )}
+        )}
 
         </DialogHeader>
 

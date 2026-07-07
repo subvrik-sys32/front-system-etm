@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Bell, History, Loader2 } from "lucide-react"
+import { Eraser, Bell, History, Loader2 } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
@@ -131,9 +131,10 @@ export function NotificationBell() {
               type="button"
               onClick={() => markAllAsRead()}
               disabled={visibleNotifications.length === 0}
-              className="text-xs font-medium text-cyan-300 transition-colors hover:text-cyan-200 disabled:cursor-not-allowed disabled:text-neutral-600"
+              title="Limpiar notificaciones"
+              className="flex h-6 w-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-white/8 hover:text-cyan-300 disabled:cursor-not-allowed disabled:text-neutral-700 disabled:hover:bg-transparent"
             >
-              Limpiar
+              <Eraser size={14} />
             </button>
 
           </div>

@@ -49,6 +49,11 @@ export function NotificationBell() {
   const { markAsRead } = useMarkNotificationRead()
   const { markAllAsRead } = useMarkAllNotificationsRead()
 
+  // El popover solo muestra lo pendiente. Una vez marcada (individual o
+  // "Limpiar"), desaparece de acá — el registro completo queda en el
+  // historial (NotificationHistoryDialog), que sí muestra todo.
+  const visibleNotifications = notifications.filter(n => !n.read)
+
   // El sidebar puede colapsarse solo (modo preview + mouse leave). Cuando
   // eso pasa, cerramos el panel aunque el usuario no haya clickeado afuera.
   useEffect(() => {
@@ -122,15 +127,15 @@ export function NotificationBell() {
           <div className="flex items-center justify-between px-3.5 py-3">
             <span className="text-sm font-semibold text-neutral-200">Notificaciones</span>
 
-            {count > 0 && (
-              <button
-                type="button"
-                onClick={() => markAllAsRead()}
-                className="text-xs font-medium text-cyan-300 transition-colors hover:text-cyan-200"
-              >
-                Limpiar
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => markAllAsRead()}
+              disabled={visibleNotifications.length === 0}
+              className="text-xs font-medium text-cyan-300 transition-colors hover:text-cyan-200 disabled:cursor-not-allowed disabled:text-neutral-600"
+            >
+              Limpiar
+            </button>
+
           </div>
 
           <div className="max-h-96 overflow-y-auto erp-scrollbar px-2 pb-2">
@@ -139,15 +144,15 @@ export function NotificationBell() {
               <div className="flex items-center justify-center py-8">
                 <p className="text-sm text-neutral-500">Cargando...</p>
               </div>
-            ) : notifications.length === 0 ? (
+            ) : visibleNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-1.5 py-8 text-center">
                 <Bell size={20} className="text-neutral-700" />
-                <p className="text-sm text-neutral-500">No tienes notificaciones</p>
+                <p className="text-sm text-neutral-500">No tenés notificaciones</p>
               </div>
             ) : (
               <div className="space-y-1">
 
-                {notifications.map(notification => (
+                {visibleNotifications.map(notification => (
                   <NotificationItem
                     key={notification.id}
                     notification={notification}

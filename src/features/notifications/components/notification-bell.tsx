@@ -148,7 +148,7 @@ export function NotificationBell() {
             ) : visibleNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-1.5 py-8 text-center">
                 <Bell size={20} className="text-neutral-700" />
-                <p className="text-sm text-neutral-500">No tenés notificaciones</p>
+                <p className="text-sm text-neutral-500">No tienes notificaciones</p>
               </div>
             ) : (
               <div className="space-y-1">

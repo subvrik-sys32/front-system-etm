@@ -156,7 +156,7 @@ export function CommentComposer({
               onChange={handleChange}
               onKeyDown={handleKeyDown}
               disabled={busy}
-              placeholder="Escribe una observación... usá @ para mencionar"
+              placeholder="Escribe una observación... y usa @ para mencionar"
               className="text-sm font-medium min-h-9 flex-1 resize-none bg-transparent text-white outline-none placeholder:text-neutral-600"
             />
 

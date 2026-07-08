@@ -52,6 +52,13 @@ export function useCreateComment(target:CommentTarget){
         createdAt: now,
         updatedAt: now,
         deletedAt: null,
+        // Flag interno (no existe en la respuesta real del servidor):
+        // permite que el ítem de la lista muestre su propio loader y
+        // bloquee edición/borrado SOLO en este comentario, sin tocar el
+        // resto del entorno ni el composer de texto. Al reemplazarse
+        // por el comentario real en onSuccess, este flag desaparece
+        // solo (el objeto que viene del server no lo tiene).
+        pending: true,
         user: {
           id: currentUser?.id ?? "",
           username: currentUser?.username ?? "",
@@ -99,6 +106,16 @@ export function useCreateComment(target:CommentTarget){
 
   return {
     createComment: mutation.mutateAsync,
+    // OJO al usar esto en la UI: no lo uses para deshabilitar el
+    // textarea/composer de mensajes. El comentario ya aparece optimista
+    // en la lista, así que el usuario debe poder seguir escribiendo y
+    // enviar otro mientras este todavía se confirma en el servidor. Este
+    // flag es más útil para, por ejemplo, deshabilitar el botón de
+    // enviar solo el instante del click (evitar doble-submit del MISMO
+    // mensaje), no para trabar el resto del entorno. El estado
+    // "publicándose" de ESTE comentario puntual se lee del propio
+    // comentario con `comment.pending` (ver optimisticComment más
+    // arriba), no de acá.
     creating: mutation.isPending,
   }
 

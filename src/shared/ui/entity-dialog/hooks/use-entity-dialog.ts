@@ -59,6 +59,11 @@ export function useEntityDialog({
 
     )
 
+  const[
+    saving,
+    setSaving,
+  ]=useState(false)
+
   useEffect(()=>{
 
     if(!open){
@@ -97,11 +102,13 @@ export function useEntityDialog({
 
     useMemo(
 
-      ()=>form.name.trim().length>0,
+      ()=>form.name.trim().length>0&&!saving,
 
       [
 
         form.name,
+
+        saving,
 
       ],
 
@@ -115,17 +122,34 @@ export function useEntityDialog({
 
     }
 
-    await onSave({
+    setSaving(true)
 
-      ...form,
+    try {
 
-      name:form.name.trim(),
+      await onSave({
 
-      icon:fixedIcon??form.icon,
+        ...form,
 
-    })
+        name:form.name.trim(),
 
-    onClose()
+        icon:fixedIcon??form.icon,
+
+      })
+
+      onClose()
+
+    } catch {
+
+      // El error ya se muestra vía toast desde el onError de la
+      // mutation (useEntityModule). Acá solo evitamos cerrar el
+      // dialog para que el usuario no pierda lo que escribió y pueda
+      // corregir (ej. nombre duplicado) sin volver a abrir el form.
+
+    } finally {
+
+      setSaving(false)
+
+    }
 
   }
 

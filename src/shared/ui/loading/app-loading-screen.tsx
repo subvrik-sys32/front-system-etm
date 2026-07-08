@@ -5,7 +5,6 @@ import { useEffect,useState } from "react"
 import type { ReactNode } from "react"
 
 import { LoadingBackground } from "./loading-background"
-import { LoadingLogo } from "./loading-logo"
 import { LoadingProgress } from "./loading-progress"
 
 type Props={

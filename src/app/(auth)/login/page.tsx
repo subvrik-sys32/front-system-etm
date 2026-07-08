@@ -20,7 +20,7 @@ export default function LoginPage() {
 
             <div>
 
-              <div className="flex h-full w-full items-center">
+              <div className="flex h-28 w-full items-center">
 
                 <div className="relative h-28 w-28 shrink-0">
 

@@ -135,14 +135,6 @@ export function AppLoadingScreen({
 
           <div className="flex flex-col items-center">
 
-            <LoadingLogo
-              logo={logo}
-            />
-
-            <p className="mt-1 text-[10px] font-semibold tracking-[0.18em] text-neutral-500">
-              COMPANY S.A.C.
-            </p>
-
             <p className="mt-5 text-[18px] font-semibold tracking-tight text-white">
               Sincronizando datos
             </p>

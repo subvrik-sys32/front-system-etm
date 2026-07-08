@@ -56,13 +56,25 @@ export function ProjectClientCell({
       PermissionCode.PROJECT_UPDATE,
     )
 
+  // project.client es un snapshot embebido que viaja pegado al
+  // proyecto desde el fetch original: no se entera si el cliente se
+  // edita desde OTRA fila o desde datos maestros (solo se invalida la
+  // lista ["clients"], no ["projects"]). Acá lo resolvemos contra la
+  // lista viva de clientes, que sí está siempre sincronizada; si por
+  // algún motivo no aparece ahí (ej. recién creado y aún no llegó el
+  // refetch), caemos al snapshot para no romper el badge.
+  const client=
+    clients.find(
+      c=>c.id===project.client?.id,
+    )??project.client
+
   return(
 
     <EntitySelect
 
       collection="clients"
 
-      value={project.client}
+      value={client}
 
       items={clients}
 

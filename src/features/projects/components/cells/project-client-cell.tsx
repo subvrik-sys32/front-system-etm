@@ -68,6 +68,8 @@ export function ProjectClientCell({
       c=>c.id===project.client?.id,
     )??project.client
 
+  console.log("CLIENTS EN ESTA FILA:", project.name, clients.length, clients.map(c=>c.name))
+  
   return(
 
     <EntitySelect

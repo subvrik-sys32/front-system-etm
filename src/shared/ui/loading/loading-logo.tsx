@@ -14,7 +14,7 @@ export const LoadingLogo=
 
     return(
 
-      <div className="flex h-28 w-full items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center">
 
         {logo??(
 

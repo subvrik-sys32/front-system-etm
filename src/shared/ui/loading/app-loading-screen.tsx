@@ -133,7 +133,7 @@ export function AppLoadingScreen({
 
         <div className="w-[320px] overflow-hidden rounded-3xl bg-linear-to-b from-white/5 to-white/2.5 shadow-[0_24px_70px_rgba(0,0,0,.55)] backdrop-blur-3xl">
 
-          <div className="flex flex-col items-center px-7 pt-7">
+          <div className="flex flex-col items-center">
 
             <LoadingLogo
               logo={logo}

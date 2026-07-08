@@ -28,14 +28,23 @@ export function CommentItem({
   const { has }=usePermissions()
   const { user }=comment
 
+  const isPending=Boolean((comment as { pending?: boolean }).pending)
+
   const isOwner=currentUser?.id===user.id
   const canDeleteAny=has(PermissionCode.COMMENT_DELETE_ANY)
 
-  const canEdit=isOwner
-  const canDelete=isOwner||canDeleteAny
+  // Un comentario pendiente todavía no tiene id real del servidor:
+  // no se puede editar ni borrar hasta que se confirme (onSuccess lo
+  // reemplaza por el comentario real y este flag desaparece solo).
+  const canEdit=isOwner&&!isPending
+  const canDelete=(isOwner||canDeleteAny)&&!isPending
 
   return(
-    <div className="group animate-comment-in flex gap-2.5 rounded-lg bg-white/3 px-3 py-2.5 transition-colors hover:bg-white/6">
+    <div
+      className={`group animate-comment-in flex gap-2.5 rounded-lg bg-white/3 px-3 py-2.5 transition-colors hover:bg-white/6 ${
+        isPending?"opacity-60":""
+      }`}
+    >
         <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-white/5 ring-1 ring-white/8 text-xs font-semibold text-white shadow-inner">
         {user.avatarUrl ? (
             <img
@@ -54,9 +63,16 @@ export function CommentItem({
               <span className="truncate text-sm font-semibold text-neutral-200">
                 {user.name}
               </span>
-              <span className="text-xs text-neutral-500">
-                {formatCommentDate(comment.createdAt)}
-              </span>
+              {isPending ? (
+                <span className="flex items-center gap-1 text-xs text-neutral-500">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neutral-400" />
+                  Enviando…
+                </span>
+              ) : (
+                <span className="text-xs text-neutral-500">
+                  {formatCommentDate(comment.createdAt)}
+                </span>
+              )}
             </div>
           </div>
           {(canEdit||canDelete)&&(

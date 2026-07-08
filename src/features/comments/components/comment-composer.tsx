@@ -27,12 +27,19 @@ export function CommentComposer({
   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const { createComment, creating } = useCreateComment(target)
+  const { createComment } = useCreateComment(target)
   const { updateComment, updating } = useUpdateComment(target)
   const { users } = useMentionableUsers()
 
   const isEditing = !!editingComment
-  const busy = creating || updating
+
+  // "busy" ahora SOLO refleja edición (una acción puntual, tiene sentido
+  // esperar su confirmación antes de permitir tocar de nuevo el mismo
+  // comentario). Crear NO bloquea nada: el comentario ya aparece
+  // optimista en la lista (con su propio loader en CommentItem), así que
+  // el usuario debe poder seguir escribiendo y mandar otro de inmediato,
+  // sin esperar los ~1.3s que tarda el servidor en confirmar.
+  const busy = updating
 
   useEffect(() => {
     setMessage(editingComment?.message ?? "")
@@ -84,19 +91,32 @@ export function CommentComposer({
     onCancelEdit?.()
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
 
     const trimmed = message.trim()
     if (!trimmed || busy) return
 
     if (isEditing && editingComment) {
 
-      await updateComment({ id: editingComment.id, dto: { message: trimmed } })
-      onCancelEdit?.()
+      // Editar sí espera confirmación: es una acción puntual sobre UN
+      // comentario ya existente, no algo que se manda en ráfaga como
+      // crear. Cerramos el modo edición recién cuando el servidor
+      // confirma, para no dar por hecho un cambio que podría fallar.
+      updateComment({ id: editingComment.id, dto: { message: trimmed } })
+        .then(() => onCancelEdit?.())
+        .catch(() => {
+          // El rollback visual ya lo maneja useUpdateComment (si tiene
+          // el mismo patrón optimista); acá no hace falta nada más.
+        })
 
     } else {
 
-      await createComment({ message: trimmed })
+      // NO se espera esto. onMutate ya insertó el comentario optimista
+      // de forma síncrona antes de que esta función siga corriendo, así
+      // que el textarea puede limpiarse YA, sin esperar al servidor.
+      createComment({ message: trimmed }).catch(() => {
+        // El rollback (si falla de verdad) ya lo maneja useCreateComment.
+      })
 
     }
 
@@ -174,9 +194,9 @@ export function CommentComposer({
 
         <PrimaryAction
           label={
-            busy
-              ? isEditing ? "Guardando..." : "Publicando..."
-              : isEditing ? "Guardar" : "Publicar"
+            isEditing
+              ? (busy ? "Guardando..." : "Guardar")
+              : "Publicar"
           }
           icon={SendHorizontal}
           onClick={handleSubmit}

@@ -6,6 +6,7 @@ export type RealtimeEntity=
   |"USER"
   |"ROLE"
   |"PERMISSION"
+  |"CLIENT"
 
 export type RealtimeAction=
   |"CREATED"

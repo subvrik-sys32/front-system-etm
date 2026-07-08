@@ -30,6 +30,10 @@ import{
   commentHandler,
 }from"../handlers/comment-handler"
 
+import {
+  clientHandler,
+} from "../handlers/client-handler"
+
 const handlers={
 
   TASK:taskHandler,
@@ -45,6 +49,8 @@ const handlers={
   NOTIFICATION:notificationHandler,
 
   COMMENT:commentHandler,
+
+  CLIENT: clientHandler,
 
 }as const
 

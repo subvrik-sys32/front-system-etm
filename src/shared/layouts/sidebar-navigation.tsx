@@ -1,23 +1,26 @@
 "use client"
 
 import { Fragment } from "react"
-import { usePathname,useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 
 import { NAVIGATION } from "./navigation"
 import { getNavItemMeta } from "./sidebar-nav-item-meta"
 import { SidebarItem } from "./sidebar-item"
 import { SidebarPresence } from "./sidebar-presence"
 import { SidebarSection } from "./sidebar-section"
+
 import { NotificationBell } from "@/features/notifications/components/notification-bell"
+
+import { useAuthStore } from "@/features/auth/store/auth-store"
 
 import type { ProcessCounts } from "./hooks/use-sidebar-counts"
 
-type SidebarNavigationProps={
-  projectsCount:number
-  activeTasksCount:number
-  processCounts:ProcessCounts
-  presenceCollapsed:boolean
-  presenceRef?:(node:HTMLDivElement|null)=>void
+type SidebarNavigationProps = {
+  projectsCount: number
+  activeTasksCount: number
+  processCounts: ProcessCounts
+  presenceCollapsed: boolean
+  presenceRef?: (node: HTMLDivElement | null) => void
 }
 
 export function SidebarNavigation({
@@ -26,12 +29,16 @@ export function SidebarNavigation({
   processCounts,
   presenceCollapsed,
   presenceRef,
-}:SidebarNavigationProps){
+}: SidebarNavigationProps) {
 
-  const pathname=usePathname()
-  const searchParams=useSearchParams()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
-  return(
+  const user = useAuthStore(
+    state => state.user,
+  )
+
+  return (
 
     <div
       className="erp-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-3 py-3 scrollbar-gutter-stable"
@@ -47,57 +54,73 @@ export function SidebarNavigation({
         <NotificationBell />
       </div>
 
-      {NAVIGATION.map((section,index)=>(
+      {NAVIGATION.map((section, index) => {
 
-        <Fragment key={section.title}>
+        const items = section.items.filter(
+          item =>
+            !(
+              user?.role?.code === "OPERARIO" &&
+              item.href === "/admin/users"
+            ),
+        )
 
-          <SidebarSection
-            title={section.title}
-          >
+        if (items.length === 0) {
+          return null
+        }
 
-            {section.items.map(item=>{
+        return (
 
-              const{
-                isActive,
-                count,
-              }=getNavItemMeta({
-                item,
-                pathname,
-                searchParams,
-                projectsCount,
-                activeTasksCount,
-                processCounts,
-              })
+          <Fragment key={section.title}>
 
-              return(
+            <SidebarSection
+              title={section.title}
+            >
 
-                <SidebarItem
-                  key={item.href}
-                  href={item.href}
-                  label={item.label}
-                  icon={item.icon}
-                  active={isActive}
-                  count={count}
-                />
+              {items.map(item => {
 
-              )
+                const {
+                  isActive,
+                  count,
+                } = getNavItemMeta({
+                  item,
+                  pathname,
+                  searchParams,
+                  projectsCount,
+                  activeTasksCount,
+                  processCounts,
+                })
 
-            })}
+                return (
 
-          </SidebarSection>
+                  <SidebarItem
+                    key={item.href}
+                    href={item.href}
+                    label={item.label}
+                    icon={item.icon}
+                    active={isActive}
+                    count={count}
+                  />
 
-          {index===NAVIGATION.length-1&&(
+                )
 
-            <SidebarPresence
-              collapsed={presenceCollapsed}
-              presenceRef={presenceRef}
-            />
+              })}
 
-          )}
+            </SidebarSection>
 
-        </Fragment>
+            {index === NAVIGATION.length - 1 && (
 
-      ))}
+              <SidebarPresence
+                collapsed={presenceCollapsed}
+                presenceRef={presenceRef}
+              />
+
+            )}
+
+          </Fragment>
+
+        )
+
+      })}
 
     </div>
 

@@ -40,6 +40,7 @@ export function NotificationBell() {
 
   const [open, setOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [selectingId, setSelectingId] = useState<string | null>(null) // nuevo
 
   const router = useRouter()
 
@@ -79,26 +80,41 @@ export function NotificationBell() {
     notification: Notification,
   ) => {
 
-    if (!notification.read) {
+    setSelectingId(notification.id) // nuevo
 
-      await markAsRead(
-        notification.id,
+    try {
+
+      if (!notification.read) {
+
+        await markAsRead(
+          notification.id,
+        )
+
+      }
+
+      setOpen(false)
+
+      // Solo cerrar cuando el sidebar estaba en preview.
+      if (sidebarMode === "preview") {
+
+        closeSidebar()
+
+      }
+
+      router.push(
+        resolveNotificationHref(notification),
       )
 
+      // Si tras confirmar con page.tsx se detecta que el Router Cache
+      // impide recibir un nuevo focusedTaskId estando en la misma ruta,
+      // descomentar la siguiente línea para forzar refetch del Server Component:
+      // router.refresh()
+
+    } finally {
+
+      setSelectingId(null) // nuevo
+
     }
-
-    setOpen(false)
-
-    // Solo cerrar cuando el sidebar estaba en preview.
-    if (sidebarMode === "preview") {
-
-      closeSidebar()
-
-    }
-
-    router.push(
-      resolveNotificationHref(notification),
-    )
 
   }
 
@@ -231,6 +247,7 @@ export function NotificationBell() {
                     notification={notification}
                     onClick={handleSelect}
                     onMarkRead={markAsRead}
+                    isSelecting={selectingId === notification.id} // nuevo
                   />
 
                 ))}

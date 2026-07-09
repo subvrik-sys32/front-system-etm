@@ -1,35 +1,56 @@
 "use client"
 
-import { AtSign, Check, MessageSquare, Trash2 } from "lucide-react"
+import {
+  AtSign,
+  Check,
+  Loader2,
+  MessageSquare,
+  Trash2,
+} from "lucide-react"
+
 import { formatNotificationDate } from "../utils/format-notification-date"
 import { WORKFLOW_STATUS_DEFINITIONS } from "@/features/workflow/constants/workflow-status-definitions"
 import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
+
 import type { Notification } from "../types/notification.types"
 
 type Props = {
   notification: Notification
-  onClick: (notification: Notification) => void
-  onMarkRead?: (id: string) => void
+  onClick: (notification: Notification) => void | Promise<void>
+  onMarkRead?: (id: string) => void | Promise<unknown>
   onDelete?: (notification: Notification) => void
+
+  isSelecting?: boolean
 }
 
-export function NotificationItem({ notification, onClick, onMarkRead, onDelete }: Props) {
+export function NotificationItem({
+  notification,
+  onClick,
+  onMarkRead,
+  onDelete,
+  isSelecting = false,
+}: Props) {
 
   const { actor, task, workflowStep } = notification
-  const isMention = notification.type === "MENTION"
 
-  const contextLabel = `${task.project.projectCode} | ${task.project.name}`
+  const isMention =
+    notification.type === "MENTION"
 
-  const status = workflowStep
-    ? WORKFLOW_STATUS_DEFINITIONS[workflowStep.status]
-    : undefined
+  const contextLabel =
+    `${task.project.projectCode} | ${task.project.name}`
+
+  const status =
+    workflowStep
+      ? WORKFLOW_STATUS_DEFINITIONS[workflowStep.status]
+      : undefined
 
   return (
 
     <button
       type="button"
+      disabled={isSelecting}
       onClick={() => onClick(notification)}
-      className="group flex w-full items-start gap-2.5 rounded-xl px-2.5 py-2.5 text-left transition-colors hover:bg-white/5"
+      className="group flex w-full items-start gap-2.5 rounded-xl px-2.5 py-2.5 text-left transition-colors hover:bg-white/5 disabled:pointer-events-none disabled:opacity-70"
     >
 
       <div className="relative shrink-0">
@@ -37,17 +58,47 @@ export function NotificationItem({ notification, onClick, onMarkRead, onDelete }
         <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-white/5 ring-1 ring-white/8 text-xs font-semibold text-white shadow-inner">
 
           {actor.avatarUrl ? (
-            <img src={actor.avatarUrl} alt={actor.name} className="h-full w-full object-cover" />
+
+            <img
+              src={actor.avatarUrl}
+              alt={actor.name}
+              className="h-full w-full object-cover"
+            />
+
           ) : (
+
             actor.name.charAt(0).toUpperCase()
+
           )}
 
         </div>
 
-        <div className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-[#101012] ${isMention ? "bg-cyan-500" : "bg-neutral-600"}`}>
-          {isMention
-            ? <AtSign size={9} strokeWidth={3} className="text-white" />
-            : <MessageSquare size={9} strokeWidth={3} className="text-white" />}
+        <div
+          className={`absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-[#101012] ${
+            isMention
+              ? "bg-cyan-500"
+              : "bg-neutral-600"
+          }`}
+        >
+
+          {isMention ? (
+
+            <AtSign
+              size={9}
+              strokeWidth={3}
+              className="text-white"
+            />
+
+          ) : (
+
+            <MessageSquare
+              size={9}
+              strokeWidth={3}
+              className="text-white"
+            />
+
+          )}
+
         </div>
 
       </div>
@@ -57,84 +108,154 @@ export function NotificationItem({ notification, onClick, onMarkRead, onDelete }
         <div className="flex items-start justify-between gap-2">
 
           <div className="min-w-0 flex-1">
+
             <span className="block truncate text-sm font-semibold text-neutral-200">
               {actor.name}
             </span>
+
             <span className="block text-sm text-neutral-400">
-              {isMention ? "te mencionó" : "comentó"}
+              {isMention
+                ? "te mencionó"
+                : "comentó"}
             </span>
+
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
 
             {status && (
+
               <div className="origin-right scale-[0.8]">
+
                 <DynamicBadge
                   compact
                   label={status.label}
                   color={status.color}
                   icon={status.icon}
                 />
+
               </div>
+
             )}
 
-            {!notification.read && onMarkRead && (
+            {!notification.read && onMarkRead && !isSelecting && (
+
               <span
                 role="button"
                 tabIndex={0}
-                onClick={(e) => {
+                onClick={e => {
+
                   e.stopPropagation()
+
                   onMarkRead(notification.id)
+
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
+                onKeyDown={e => {
+
+                  if (
+                    e.key === "Enter" ||
+                    e.key === " "
+                  ) {
+
                     e.preventDefault()
                     e.stopPropagation()
+
                     onMarkRead(notification.id)
+
                   }
+
                 }}
                 title="Marcar como leída"
                 className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-500 opacity-0 transition-all hover:bg-white/10 hover:text-cyan-300 group-hover:opacity-100"
               >
-                <Check size={12} strokeWidth={2.5} />
+
+                <Check
+                  size={12}
+                  strokeWidth={2.5}
+                />
+
               </span>
+
             )}
 
-            {onDelete && (
+            {onDelete && !isSelecting && (
+
               <span
                 role="button"
                 tabIndex={0}
-                onClick={(e) => {
+                onClick={e => {
+
                   e.stopPropagation()
+
                   onDelete(notification)
+
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
+                onKeyDown={e => {
+
+                  if (
+                    e.key === "Enter" ||
+                    e.key === " "
+                  ) {
+
                     e.preventDefault()
                     e.stopPropagation()
+
                     onDelete(notification)
+
                   }
+
                 }}
                 title="Eliminar notificación"
                 className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-500 opacity-0 transition-all hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100"
               >
-                <Trash2 size={12} strokeWidth={2.5} />
+
+                <Trash2
+                  size={12}
+                  strokeWidth={2.5}
+                />
+
               </span>
+
             )}
 
-            {!notification.read && (
-              <span className="h-2 w-2 shrink-0 rounded-full bg-cyan-400" />
+            {isSelecting ? (
+
+              <Loader2
+                size={13}
+                className="animate-spin text-cyan-400"
+              />
+
+            ) : (
+
+              !notification.read && (
+
+                <span className="h-2 w-2 shrink-0 rounded-full bg-cyan-400" />
+
+              )
+
             )}
 
           </div>
 
         </div>
 
-        <p className="mt-1 truncate text-xs text-neutral-500">{contextLabel}</p>
+        <p className="mt-1 truncate text-xs text-neutral-500">
 
-        <p className="mt-1 line-clamp-2 text-sm text-neutral-400">{notification.messageSnippet}</p>
+          {contextLabel}
 
-        <p className="mt-1 text-[11px] text-neutral-600">{formatNotificationDate(notification.createdAt)}</p>
+        </p>
+
+        <p className="mt-1 line-clamp-2 text-sm text-neutral-400">
+
+          {notification.messageSnippet}
+
+        </p>
+
+        <p className="mt-1 text-[11px] text-neutral-600">
+
+          {formatNotificationDate(notification.createdAt)}
+
+        </p>
 
       </div>
 

@@ -61,9 +61,9 @@ import{
   ProcessTable,
 }from"../table/process-table"
 
-import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog" // nuevo — verifica esta ruta
+import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
 
-import { History } from "lucide-react" // nuevo
+import { History, Loader2 } from "lucide-react" // Loader2 nuevo
 
 type Props={
 
@@ -92,9 +92,9 @@ export function ProcessPageContent({
   ]=useState(false)
 
   const[
-    historyDialogOpen, // nuevo
-    setHistoryDialogOpen, // nuevo
-  ]=useState(false) // nuevo
+    historyDialogOpen,
+    setHistoryDialogOpen,
+  ]=useState(false)
 
   const{
     tasks,
@@ -131,6 +131,8 @@ export function ProcessPageContent({
       task=>
         task.workflowStep?.status==="REVIEWED",
     ).length
+
+  const isResolvingNotification = Boolean(focusedTaskId) && loading // nuevo
 
   async function handleExport(
 
@@ -218,6 +220,13 @@ export function ProcessPageContent({
         />
 
       </EntityExpandProvider>
+
+      {isResolvingNotification && ( // nuevo
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-xl border border-white/10 bg-[#101012] px-4 py-3 text-sm text-white shadow-2xl">
+          <Loader2 size={16} className="animate-spin text-neutral-400" />
+          Buscando el proceso de la notificación...
+        </div>
+      )}
 
       <ActionDialog
         open={historyDialogOpen}

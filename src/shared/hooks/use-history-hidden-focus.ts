@@ -1,4 +1,4 @@
-// use-history-hidden-focus.ts (completo, actualizado)
+// use-history-hidden-focus.ts
 "use client"
 
 import {
@@ -24,20 +24,12 @@ export function useHistoryHiddenFocus<T>({
   onHistoryRequired,
 }: Params<T>) {
 
-  const notifiedForRef = useRef<string | null>(null) // nuevo
+  const resolvedForRef = useRef<string | null>(null)
 
   useEffect(() => {
 
     if (!focusedId) {
-      notifiedForRef.current = null // nuevo: reset cuando ya no hay foco
-      return
-    }
-
-    if (notifiedForRef.current === focusedId) { // nuevo: ya preguntamos por este id, no insistir
-      return
-    }
-
-    if (showHistory) {
+      resolvedForRef.current = null
       return
     }
 
@@ -46,6 +38,19 @@ export function useHistoryHiddenFocus<T>({
     )
 
     if (isVisible) {
+      // Ya se puede ver (sea porque siempre fue visible, o porque
+      // el usuario ya confirmó el diálogo antes). Marcado como resuelto
+      // para que un futuro toggle no vuelva a preguntar por este mismo id.
+      resolvedForRef.current = focusedId
+      return
+    }
+
+    if (resolvedForRef.current === focusedId) {
+      // Ya se preguntó (o resolvió) para este id. No insistir.
+      return
+    }
+
+    if (showHistory) {
       return
     }
 
@@ -54,7 +59,7 @@ export function useHistoryHiddenFocus<T>({
     )
 
     if (existsHidden) {
-      notifiedForRef.current = focusedId // nuevo: marcar como ya notificado
+      resolvedForRef.current = focusedId
       onHistoryRequired?.()
     }
 

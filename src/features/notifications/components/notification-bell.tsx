@@ -22,6 +22,8 @@ import { NotificationHistoryDialog } from "./notification-history-dialog"
 
 import type { Notification } from "../types/notification.types"
 
+import { useFocusRequestStore } from "@/shared/navigation/store/focus-request-store"
+
 function resolveNotificationHref(notification: Notification) {
 
   if (notification.workflowStep) {
@@ -46,6 +48,10 @@ export function NotificationBell() {
 
   const sidebarMode = useSidebarStore(s => s.mode)
   const closeSidebar = useSidebarStore(s => s.close)
+
+  const requestFocus = useFocusRequestStore(
+    s => s.requestFocus,
+  )
 
   const {
     notifications,
@@ -101,14 +107,21 @@ export function NotificationBell() {
 
       }
 
+      requestFocus(
+
+        notification.workflowStep
+          ? "process"
+          : "task",
+
+        notification.workflowStep
+          ? notification.workflowStep.id
+          : notification.taskId,
+
+      )
+
       router.push(
         resolveNotificationHref(notification),
       )
-
-      // Si tras confirmar con page.tsx se detecta que el Router Cache
-      // impide recibir un nuevo focusedTaskId estando en la misma ruta,
-      // descomentar la siguiente línea para forzar refetch del Server Component:
-      // router.refresh()
 
     } finally {
 

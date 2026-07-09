@@ -19,7 +19,7 @@ export function Sonner(){
         duration:4000,
 
         className:
-          "!bg-[#18181b] !border !border-white/10 !text-white shadow-2xl",
+          "!bg-[#18181b] !text-white shadow-2xl",
 
       }}
 

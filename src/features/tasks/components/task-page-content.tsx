@@ -23,7 +23,7 @@ import { TaskSortButton } from "@/shared/sorting/components/task-sort-button"
 import { HistoryToggleButton } from "@/shared/history/components/history-toggle-button"
 
 import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
-import { History, Loader2 } from "lucide-react" // Loader2 nuevo
+import { History } from "lucide-react"
 
 import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 
@@ -165,13 +165,6 @@ export function TaskPageContent({
         />
 
       </EntityExpandProvider>
-
-      {isResolvingNotification && ( // nuevo
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-xl border border-white/10 bg-[#101012] px-4 py-3 text-sm text-white shadow-2xl">
-          <Loader2 size={16} className="animate-spin text-neutral-400" />
-          Buscando la tarea de la notificación...
-        </div>
-      )}
 
       <ActionDialog
         open={historyDialogOpen}

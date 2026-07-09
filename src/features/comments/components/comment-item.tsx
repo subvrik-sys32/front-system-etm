@@ -1,128 +1,133 @@
 "use client"
-import {
-  Check,
-  CheckCheck,
-  Pencil,
-  Trash2,
-} from "lucide-react"
-import { useQuery } from "@tanstack/react-query"
-import { IconAction } from "@/shared/ui/actions/icon-action"
-import { useAuthStore } from "@/features/auth/store/auth-store"
-import { usePermissions } from "@/features/permissions/hooks/use-permissions"
-import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
-import { formatCommentDate } from "../utils/format-comment-date"
+import { useEffect, useState } from "react"
+import { Trash2 } from "lucide-react"
+import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
+import { useComments } from "../hooks/use-comments"
+import { useDeleteComment } from "../hooks/use-delete-comment"
 import { commentsService } from "../services/comments.service"
-import type { Comment } from "../types/comment.types"
-
+import { CommentList } from "./comment-list"
+import { EmptyComments } from "./empty-comments"
+import { CommentHistoryDialog } from "./comment-history-dialog"
+import type {
+  Comment,
+  CommentTarget,
+} from "../types/comment.types"
 type Props={
-  comment:Comment
-  onEdit?:(comment:Comment)=>void
-  onDelete?:(comment:Comment)=>void
+  target:CommentTarget
+  onEditComment?:(comment:Comment)=>void
 }
-
-export function CommentItem({
-  comment,
-  onEdit,
-  onDelete,
+export function CommentTimeline({
+  target,
+  onEditComment,
 }:Props){
-  const currentUser=useAuthStore(s=>s.user)
-  const { has }=usePermissions()
-  const { user }=comment
-  const isPending=Boolean((comment as { pending?: boolean }).pending)
-  const isOwner=currentUser?.id===user.id
-  const canDeleteAny=has(PermissionCode.COMMENT_DELETE_ANY)
-  const canEdit=isOwner&&!isPending
-  const canDelete=(isOwner||canDeleteAny)&&!isPending
+  const[
+    historyOpen,
+    setHistoryOpen,
+  ]=useState(false)
+  const[
+    pendingDelete,
+    setPendingDelete,
+  ]=useState<Comment|null>(null)
+  const{
+    comments,
+    loading,
+  }=useComments(target)
+  const{
+    deleteComment,
+  }=useDeleteComment(target)
 
-  // El doble check solo le sirve al autor del comentario. Se hidrata
-  // con fetch inicial y luego se actualiza solo, en vivo, cuando llega
-  // el evento realtime COMMENT_READ_STATUS (ver comment-read-status-handler).
-  const { data: readStatus }=useQuery({
-    queryKey:["comment-read-status",comment.id],
-    queryFn:()=>commentsService.getReadStatus(comment.id),
-    enabled:isOwner&&!isPending,
-  })
+  const targetId = target.scope === "task" ? target.taskId : target.workflowStepId
 
+  // Los comentarios recientes se ven directamente acá, sin necesidad
+  // de abrir "Ver historial". Si ya hay comentarios cargados, se
+  // consideran vistos: marcamos como leídas las notificaciones de
+  // este target igual que en CommentHistoryDialog.
+  useEffect(() => {
+
+    if (loading || comments.length === 0) return
+
+    commentsService
+      .markCommentsAsRead(target)
+      .catch(() => {
+        // no crítico
+      })
+
+  }, [loading, comments.length, target.scope, targetId])
+
+  function handleConfirmDelete(){
+    if(!pendingDelete){
+      return
+    }
+    deleteComment(
+      pendingDelete,
+    )
+    setPendingDelete(
+      null,
+    )
+  }
   return(
-    <div
-      className={`group animate-comment-in flex gap-2.5 rounded-lg bg-white/3 px-3 py-2.5 transition-colors hover:bg-white/6 ${
-        isPending?"opacity-60":""
-      }`}
-    >
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-white/5 ring-1 ring-white/8 text-xs font-semibold text-white shadow-inner">
-        {user.avatarUrl ? (
-            <img
-            src={user.avatarUrl}
-            alt={user.name}
-            className="h-full w-full object-cover"
-            />
-        ) : (
-            user.name.charAt(0).toUpperCase()
-        )}
+    <>
+      <div className="flex h-full min-h-0 flex-col rounded-xl bg-white/2">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5">
+          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-neutral-300">
+            Últimos comentarios
+          </span>
+          <button
+            type="button"
+            onClick={()=>
+              setHistoryOpen(
+                true,
+              )
+            }
+            className="text-sm font-medium text-neutral-300 transition-colors hover:text-cyan-300"
+          >
+            Ver historial →
+          </button>
         </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="truncate text-sm font-semibold text-neutral-200">
-                {user.name}
-              </span>
-              {isPending ? (
-                <span className="flex items-center gap-1 text-xs text-neutral-500">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neutral-400" />
-                  Enviando…
-                </span>
-              ) : (
-                <span className="text-xs text-neutral-500">
-                  {formatCommentDate(comment.createdAt)}
-                </span>
-              )}
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
+          {loading?(
+            <div className="flex h-full items-center justify-center">
+              <p className="text-sm text-neutral-500">
+                Cargando...
+              </p>
             </div>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {(canEdit||canDelete)&&(
-              <div className="flex items-center gap-0.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                {canEdit&&(
-                  <IconAction
-                    icon={Pencil}
-                    onClick={()=>
-                      onEdit?.(comment)
-                    }
-                  />
-                )}
-                {canDelete&&(
-                  <IconAction
-                    icon={Trash2}
-                    variant="danger"
-                    onClick={()=>
-                      onDelete?.(comment)
-                    }
-                  />
-                )}
-              </div>
-            )}
-            {isOwner&&!isPending&&readStatus&&(
-              <span
-                title={
-                  readStatus.allRead
-                    ?"Visto por todos"
-                    :`Visto por ${readStatus.readCount}/${readStatus.total}`
-                }
-                className="shrink-0"
-              >
-                {readStatus.allRead ? (
-                  <CheckCheck size={14} strokeWidth={2.5} className="text-cyan-400" />
-                ) : (
-                  <Check size={14} strokeWidth={2.5} className="text-neutral-500" />
-                )}
-              </span>
-            )}
-          </div>
+          ):comments.length===0?(
+            <EmptyComments/>
+          ):(
+            <CommentList
+              comments={comments}
+              onEdit={onEditComment}
+              onDelete={setPendingDelete}
+            />
+          )}
         </div>
-        <p className="mt-1 whitespace-pre-wrap wrap-break-word text-sm leading-6 text-neutral-300">
-          {comment.message}
-        </p>
+        <CommentHistoryDialog
+          target={target}
+          open={historyOpen}
+          onOpenChange={setHistoryOpen}
+          onEditComment={onEditComment}
+        />
       </div>
-    </div>
+      <ActionDialog
+        open={!!pendingDelete}
+        title="Eliminar comentario"
+        description={
+          pendingDelete
+            ?`¿Eliminar el comentario de ${pendingDelete.user.name}? Esta acción no se puede deshacer.`
+            :""
+        }
+        icon={Trash2}
+        confirmLabel="Eliminar"
+        variant="danger"
+        onClose={()=>
+          setPendingDelete(
+            null,
+          )
+        }
+        onConfirm={
+          handleConfirmDelete
+        }
+      />
+    </>
   )
 }

@@ -41,6 +41,10 @@ import {
   UserColorSection,
 } from "../user-color-section"
 
+import {
+  validateUser,
+} from "../../hooks/validate-user"
+
 type Props={
 
   open:boolean
@@ -150,6 +154,12 @@ export function UserDialog({
       ),
     )
 
+  const[
+    attempted,
+    setAttempted,
+  ]=
+    useState(false)
+
   useEffect(()=>{
 
     setForm(
@@ -157,6 +167,8 @@ export function UserDialog({
         user,
       ),
     )
+
+    setAttempted(false)
 
   },[
     user,
@@ -188,49 +200,35 @@ export function UserDialog({
   const isEditing=
     !!user
 
-  const passwordValid=
+  const errors=
+    validateUser({
 
-    isEditing
+      name:form.name,
 
-      ?(
+      username:form.username,
 
-        !form.isChangingPassword ||
+      email:form.email,
 
-        (
+      password:form.password,
 
-          form.password.length>=8 &&
+      confirmPassword:form.confirmPassword,
 
-          form.password===
+      roleId:form.roleId,
 
-          form.confirmPassword
+      isEditing,
 
-        )
+      isChangingPassword:form.isChangingPassword,
 
-      )
+    })
 
-      :(
-
-        form.password.length>=8 &&
-
-        form.password===
-
-        form.confirmPassword
-
-      )
+  const isValid=
+    Object.keys(errors).length===0
 
   const canSave=
 
     !loading &&
 
-    form.name.trim()!=="" &&
-
-    form.username.trim()!=="" &&
-
-    form.email.trim()!=="" &&
-
-    form.roleId!=="" &&
-
-    passwordValid
+    isValid
 
   function buildPayload(){
 
@@ -268,13 +266,17 @@ export function UserDialog({
       ),
     )
 
+    setAttempted(false)
+
     onClose()
 
   }
 
   async function save(){
 
-    if(!canSave){
+    if(!isValid){
+
+      setAttempted(true)
 
       return
 
@@ -345,10 +347,15 @@ export function UserDialog({
 
       icon={UserPlus}
 
-      canSave={
-        canSave &&
-        !createUser.isPending &&
-        !updateUser.isPending
+      canSave={canSave}
+      saving={
+        createUser.isPending ||
+        updateUser.isPending
+      }
+      savingLabel={
+        user
+          ? "Guardando cambios..."
+          : "Creando usuario..."
       }
 
       saveLabel={
@@ -408,6 +415,12 @@ export function UserDialog({
           isEditing={isEditing}
 
           isChangingPassword={form.isChangingPassword}
+
+          errors={
+            attempted
+              ? errors
+              : undefined
+          }
 
           onChangingPasswordChange={isChangingPassword=>
 

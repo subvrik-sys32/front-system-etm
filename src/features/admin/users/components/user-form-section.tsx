@@ -12,10 +12,6 @@ import {
 } from "lucide-react"
 
 import {
-  cn,
-} from "@/shared/utils/utils"
-
-import {
   Input,
 } from "@/components/ui/input"
 
@@ -26,6 +22,10 @@ import {
 import {
   FormSection,
 } from "@/shared/ui/dialogs/form-dialog/form-section"
+
+import type {
+  UserErrors,
+} from "../hooks/validate-user"
 
 type Props={
 
@@ -42,6 +42,8 @@ type Props={
   isEditing:boolean
 
   isChangingPassword:boolean
+
+  errors?:UserErrors
 
   onChangingPasswordChange:(
     value:boolean
@@ -85,6 +87,8 @@ export function UserFormSection({
 
   isChangingPassword,
 
+  errors,
+
   onChangingPasswordChange,
 
   onNameChange,
@@ -110,17 +114,6 @@ export function UserFormSection({
 
     isChangingPassword
 
-  const passwordsMatch=
-
-    password.trim()!=="" &&
-    confirmPassword.trim()!=="" &&
-    password===confirmPassword
-
-  const passwordTooShort=
-
-    password.length>0 &&
-    password.length<8
-
   return(
 
     <FormSection
@@ -130,10 +123,11 @@ export function UserFormSection({
 
       <div className="grid grid-cols-2 gap-4">
 
-        <FormField label="Nombre">
+        <FormField label="Nombre" error={errors?.name}>
 
           <Input
             value={name}
+            placeholder="Ej. Martin Montes"
             onChange={event=>
 
               onNameChange(
@@ -145,10 +139,11 @@ export function UserFormSection({
 
         </FormField>
 
-        <FormField label="Usuario">
+        <FormField label="Usuario" error={errors?.username}>
 
           <Input
             value={username}
+            placeholder="Ej. MMontes"
             onChange={event=>
 
               onUsernameChange(
@@ -162,11 +157,12 @@ export function UserFormSection({
 
       </div>
 
-      <FormField label="Correo">
+      <FormField label="Correo" error={errors?.email}>
 
         <Input
           type="email"
           value={email}
+          placeholder="Ej. martinmontes@etmsac.com"
           onChange={event=>
 
             onEmailChange(
@@ -238,7 +234,10 @@ export function UserFormSection({
 
           <div className="grid grid-cols-2 gap-4">
 
-            <FormField label="Nueva contraseña">
+            <FormField
+              label="Nueva contraseña"
+              error={errors?.password}
+            >
 
               <div className="relative">
 
@@ -250,6 +249,7 @@ export function UserFormSection({
                   }
                   autoComplete="new-password"
                   value={password}
+                  placeholder="Mínimo 8 caracteres"
                   onChange={event=>
 
                     onPasswordChange(
@@ -289,29 +289,12 @@ export function UserFormSection({
 
               </div>
 
-                <div className="mt-2 h-4 text-xs">
-
-                <span
-                    className={cn(
-
-                    "transition-colors",
-
-                    passwordTooShort
-                        ? "text-amber-400"
-                        : "text-transparent"
-
-                    )}
-                >
-
-                    La contraseña debe tener al menos 8 caracteres
-
-                </span>
-
-                </div>
-
             </FormField>
 
-            <FormField label="Confirmar contraseña">
+            <FormField
+              label="Confirmar contraseña"
+              error={errors?.confirmPassword}
+            >
 
               <Input
                 type={
@@ -321,6 +304,7 @@ export function UserFormSection({
                 }
                 autoComplete="new-password"
                 value={confirmPassword}
+                placeholder="Repite la contraseña"
                 onChange={event=>
 
                   onConfirmPasswordChange(
@@ -329,29 +313,6 @@ export function UserFormSection({
 
                 }
               />
-
-                <div className="mt-2 h-4 text-xs">
-
-                <span
-                    className={cn(
-
-                    passwordsMatch
-                        ? "text-emerald-400"
-                        : "text-red-400",
-
-                    confirmPassword.length===0 &&
-                        "text-transparent"
-
-                    )}
-                >
-
-                    {passwordsMatch
-                    ? "Las contraseñas coinciden"
-                    : "Las contraseñas no coinciden"}
-
-                </span>
-
-                </div>
 
             </FormField>
 

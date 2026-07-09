@@ -9,12 +9,14 @@ import { FormDialog } from "@/shared/ui/dialogs/form-dialog/form-dialog"
 
 import { getCurrentStep } from "@/features/workflow/selectors/get-current-step"
 
-import { useTaskForm } from "../../hooks/use-task-form"
+import { TaskFormValue, useTaskForm } from "../../hooks/use-task-form"
 import { useTasks } from "../../hooks/use-tasks"
 
 import { TaskForm } from "../form/task-form"
 
 import type { Task } from "../../types/task.types"
+import type { TaskFormErrors } from "../form/types"
+
 
 type Props={
   open:boolean
@@ -22,6 +24,83 @@ type Props={
   projectId?:string
   task?:Task
   promptOpenAfterCreate?:boolean
+}
+
+function validateTask(
+  form: TaskFormValue,
+  projectLocked: boolean,
+): TaskFormErrors {
+
+  const errors: TaskFormErrors = {}
+
+  if (!projectLocked && !form.projectId) {
+    errors.projectId = "Selecciona un proyecto"
+  }
+
+  if (!form.reference.trim()) {
+    errors.reference = "Falta completar"
+  }
+
+  if (form.lotNumber <= 0) {
+    errors.lotNumber = "Falta completar"
+  }
+
+  if (form.route.length === 0) {
+    errors.route = "Selecciona al menos un proceso"
+  }
+
+  if (!form.deliveryDate) {
+    errors.deliveryDate = "Selecciona una fecha"
+  }
+
+  if (!form.priorityId) {
+    errors.priorityId = "Selecciona una prioridad"
+  }
+
+  if (!form.materialId) {
+    errors.materialId = "Selecciona un material"
+  }
+
+  if (!form.thicknessId) {
+    errors.thicknessId = "Selecciona un espesor"
+  }
+
+  if (form.pieces <= 0) {
+    errors.pieces = "Falta completar"
+  }
+
+  const requiresAssembly =
+    form.route.includes("EN")
+
+  const requiresPaint =
+    form.route.includes("PT")
+
+  if (
+    requiresAssembly &&
+    form.assemblyCount <= 0
+  ) {
+    errors.assemblyCount =
+      "Ingresa la cantidad ensamblada"
+  }
+
+  if (
+    requiresPaint &&
+    !form.colorId
+  ) {
+    errors.colorId =
+      "Selecciona un color"
+  }
+
+  if (
+    requiresPaint &&
+    form.paintKg <= 0
+  ) {
+    errors.paintKg =
+      "Ingresa los kg de pintura"
+  }
+
+  return errors
+
 }
 
 export function TaskDialog({
@@ -69,15 +148,46 @@ export function TaskDialog({
     setPendingData,
   ]=useState<ReturnType<typeof buildTask>|null>(null)
 
-  const close=()=>onClose()
+  const[
+    saving,
+    setSaving,
+  ]=useState(false)
+
+  const[
+    attempted,
+    setAttempted,
+  ]=useState(false)
+
+  const projectLocked=!!projectId
+
+  const errors=
+    validateTask(
+      form,
+      projectLocked,
+    )
+
+  const isValid=
+    Object.keys(errors).length===0
+
+  const close=()=>{
+
+    setAttempted(false)
+
+    onClose()
+
+  }
 
   const save=async()=>{
 
-    if(!canSave){
+    if(!isValid){
+
+      setAttempted(true)
 
       return
 
     }
+
+    setSaving(true)
 
     try{
 
@@ -105,6 +215,8 @@ export function TaskDialog({
           setPendingData(data)
 
           setConfirmRouteReset(true)
+
+          setSaving(false)
 
           return
 
@@ -151,6 +263,8 @@ export function TaskDialog({
 
         setConfirmOpenTask(true)
 
+        setSaving(false)
+
         return
 
       }
@@ -163,6 +277,10 @@ export function TaskDialog({
         "TASK SAVE ERROR",
         error,
       )
+
+    }finally{
+
+      setSaving(false)
 
     }
 
@@ -180,11 +298,20 @@ export function TaskDialog({
             : "Nueva tarea"
         }
         icon={Plus}
-        canSave={canSave}
+        canSave={
+          canSave &&
+          isValid
+        }
+        saving={saving}
         saveLabel={
           task
             ? "Guardar cambios"
             : "Crear tarea"
+        }
+        savingLabel={
+          task
+            ? "Guardando cambios..."
+            : "Creando tarea..."
         }
         onClose={close}
         onSave={save}
@@ -198,7 +325,12 @@ export function TaskDialog({
               form.projectId,
           }}
           update={update}
-          projectLocked={!!projectId}
+          projectLocked={projectLocked}
+          errors={
+            attempted
+              ? errors
+              : undefined
+          }
         />
 
       </FormDialog>
@@ -224,6 +356,8 @@ export function TaskDialog({
 
           if(task&&pendingData){
 
+            setSaving(true)
+
             try{
 
               await updateTask({
@@ -240,6 +374,10 @@ export function TaskDialog({
                 "TASK UPDATE ERROR",
                 error,
               )
+
+            }finally{
+
+              setSaving(false)
 
             }
 

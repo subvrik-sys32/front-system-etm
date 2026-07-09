@@ -49,9 +49,6 @@ export function NotificationBell() {
   const { markAsRead } = useMarkNotificationRead()
   const { markAllAsRead } = useMarkAllNotificationsRead()
 
-  // El popover solo muestra lo pendiente. Una vez marcada (individual o
-  // "Limpiar"), desaparece de acá — el registro completo queda en el
-  // historial (NotificationHistoryDialog), que sí muestra todo.
   const visibleNotifications = notifications.filter(n => !n.read)
 
   // El sidebar puede colapsarse solo (modo preview + mouse leave). Cuando
@@ -118,6 +115,7 @@ export function NotificationBell() {
         </PopoverTrigger>
 
         <PopoverContent
+          data-sidebar-popover
           side="right"
           align="start"
           sideOffset={8}

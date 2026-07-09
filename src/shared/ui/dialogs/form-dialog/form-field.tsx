@@ -1,11 +1,12 @@
 type Props = {
   label: string
-
+  error?: string
   children: React.ReactNode
 }
 
 export function FormField({
   label,
+  error,
   children,
 }: Props) {
 
@@ -20,6 +21,16 @@ export function FormField({
       </p>
 
       {children}
+
+      {error && (
+
+        <p className="text-xs font-medium text-red-400">
+
+          * {error}
+
+        </p>
+
+      )}
 
     </div>
 

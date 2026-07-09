@@ -53,12 +53,17 @@ export function SidebarProfile({
     >
 
       <div
-        className="absolute inset-x-0 bottom-full z-0 overflow-hidden rounded-xl bg-[#1D1D1D] transition-[height] duration-300 ease-out"
+        aria-hidden={!profileOpen}
+        className={cn(
+          "absolute inset-x-0 bottom-full z-0 overflow-hidden rounded-xl bg-[#1D1D1D]",
+          "origin-bottom transition-[transform,opacity] duration-300 ease-out",
+          profileOpen
+            ? "opacity-100"
+            : "pointer-events-none opacity-0",
+        )}
         style={{
-          height: profileOpen
-            ? panelHeight + OVERLAP + 30
-            : 0,
-          transform: `translateY(${OVERLAP}px)`,
+          height: panelHeight + OVERLAP + 30,
+          transform: `translateY(${profileOpen ? OVERLAP : OVERLAP + 16}px)`,
         }}
       >
 

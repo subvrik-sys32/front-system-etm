@@ -45,6 +45,8 @@ type Props<T extends EntityBase> = {
   onDelete: (id: string) => Promise<void>
 
   disabled?: boolean
+
+  variant?: "default" | "color"
 }
 
 export function EntitySelect<T extends EntityBase>({
@@ -57,6 +59,7 @@ export function EntitySelect<T extends EntityBase>({
   onEdit,
   onDelete,
   disabled = false,
+  variant = "default",
 }: Props<T>) {
 
   const {
@@ -180,6 +183,7 @@ export function EntitySelect<T extends EntityBase>({
                     label={item.name}
                     icon={item.icon}
                     color={item.color}
+                    variant={variant}
                     selected={value?.id === item.id}
                     onSelect={() => handleSelect(item)}
                     onEdit={

@@ -11,6 +11,7 @@ import type { TaskFormSectionProps } from "./types"
 export function TaskProjectSection({
   form,
   update,
+  errors,
 }: TaskFormSectionProps) {
 
   return (
@@ -20,9 +21,9 @@ export function TaskProjectSection({
       icon={Folder}
     >
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
 
-        <p className="text-sm font-semibold text-neutral-400">
+        <p className="text-sm font-medium text-neutral-300">
           Proyecto
         </p>
 
@@ -38,6 +39,16 @@ export function TaskProjectSection({
           />
 
         </div>
+
+        {errors?.projectId && (
+
+          <p className="text-xs font-medium text-red-400">
+
+            * {errors.projectId}
+
+          </p>
+
+        )}
 
       </div>
 

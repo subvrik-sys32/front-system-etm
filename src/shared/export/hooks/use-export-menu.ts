@@ -12,7 +12,7 @@ export function useExportMenu(){
 
   const[
     open,
-    setOpen,
+    setOpenRaw,
   ]=useState(false)
 
   const[
@@ -22,6 +22,20 @@ export function useExportMenu(){
     ExportFormat|
     undefined
   >()
+
+  function setOpen(next:boolean){
+
+    setOpenRaw(next)
+
+    if(!next){
+
+      setSelectedFormat(
+        undefined,
+      )
+
+    }
+
+  }
 
   function handleBack(){
 
@@ -47,7 +61,7 @@ export function useExportMenu(){
       undefined,
     )
 
-    setOpen(false)
+    setOpenRaw(false)
 
   }
 

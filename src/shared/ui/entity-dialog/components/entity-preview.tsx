@@ -28,21 +28,25 @@ export function EntityPreview({
 
   return(
 
-    <div className="flex justify-center">
+    <div className="flex justify-center py-3">
 
-      <DynamicBadge
-        label={
-          value.name ||
-          "Preview"
-        }
-        icon={
-          value.icon
-        }
-        color={
-          value.color
-        }
-        variant={variant}
-      />
+      <div className="scale-125">
+
+        <DynamicBadge
+          label={
+            value.name ||
+            "Preview"
+          }
+          icon={
+            value.icon
+          }
+          color={
+            value.color
+          }
+          variant={variant}
+        />
+
+      </div>
 
     </div>
 

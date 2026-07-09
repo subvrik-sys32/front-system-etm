@@ -22,7 +22,9 @@ type Props = {
   title: string
   icon: LucideIcon
   canSave: boolean
+  saving?: boolean
   saveLabel?: string
+  savingLabel?: string
   children: React.ReactNode
   onClose: () => void
   onSave: () => void
@@ -33,7 +35,9 @@ export function FormDialog({
   title,
   icon,
   canSave,
+  saving = false,
   saveLabel,
+  savingLabel,
   children,
   onClose,
   onSave,
@@ -42,6 +46,10 @@ export function FormDialog({
   const handleOpenChange = (
     value: boolean
   ) => {
+
+    if (saving) {
+      return
+    }
 
     if (!value) {
       onClose()
@@ -73,7 +81,9 @@ export function FormDialog({
 
           <FormDialogFooter
             canSave={canSave}
+            saving={saving}
             saveLabel={saveLabel}
+            savingLabel={savingLabel}
             onCancel={onClose}
             onSave={onSave}
           />

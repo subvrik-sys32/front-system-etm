@@ -30,12 +30,15 @@ type Form = {
   deliveryDate: string | null
 }
 
+type Errors = Partial<Record<keyof Form, string>>
+
 type Props = {
   form: Form
   update: (value: Partial<Form>) => void
+  errors?: Errors
 }
 
-export function ProjectForm({ form, update }: Props) {
+export function ProjectForm({ form, update, errors }: Props) {
 
   const { clients, create, update: updateClient, remove: removeClient } = useClients()
   const { stages, create: createStage, update: updateStage, remove: removeStage } = useStages()
@@ -57,7 +60,7 @@ export function ProjectForm({ form, update }: Props) {
       <FormSection title="Información principal" icon={FolderKanban}>
         <div className="grid grid-cols-2 gap-4">
 
-          <FormField label="Código de proyecto *">
+          <FormField label="Código de proyecto *" error={errors?.projectCode}>
             <Input
               value={form.projectCode}
               placeholder="26-001-M"
@@ -67,7 +70,7 @@ export function ProjectForm({ form, update }: Props) {
             />
           </FormField>
 
-          <FormField label="Nombre de proyecto *">
+          <FormField label="Nombre de proyecto *" error={errors?.name}>
             <Input
               value={form.name}
               placeholder="TABLERO AUTOSOPORTADO - TTA"
@@ -83,7 +86,7 @@ export function ProjectForm({ form, update }: Props) {
       <FormSection title="Relaciones" icon={Users}>
         <div className="grid grid-cols-2 gap-4">
 
-          <FormField label="Cliente *">
+          <FormField label="Cliente *" error={errors?.clientId}>
             <EntitySelect
               collection="clients"
               value={selectedClient}
@@ -98,7 +101,7 @@ export function ProjectForm({ form, update }: Props) {
             />
           </FormField>
 
-          <FormField label="Project Manager *">
+          <FormField label="Project Manager *" error={errors?.pmId}>
             <UserSelect
               value={selectedPm}
               items={pms}
@@ -115,7 +118,7 @@ export function ProjectForm({ form, update }: Props) {
       <FormSection title="Control" icon={Settings2}>
         <div className="grid grid-cols-3 gap-4">
 
-          <FormField label="Etapa *">
+          <FormField label="Etapa *" error={errors?.stageId}>
             <EntitySelect
               collection="stages"
               value={selectedStage}
@@ -130,7 +133,7 @@ export function ProjectForm({ form, update }: Props) {
             />
           </FormField>
 
-          <FormField label="Estado *">
+          <FormField label="Estado *" error={errors?.statusId}>
             <EntitySelect
               collection="statuses"
               value={selectedStatus}
@@ -145,7 +148,7 @@ export function ProjectForm({ form, update }: Props) {
             />
           </FormField>
 
-          <FormField label="Fecha de entrega *">
+          <FormField label="Fecha de entrega *" error={errors?.deliveryDate}>
             <Input
               type="date"
               value={form.deliveryDate ?? ""}

@@ -42,6 +42,8 @@ export function TaskInfoSection({
 
   update,
 
+  errors,
+
 }:TaskFormSectionProps){
 
   const{
@@ -101,7 +103,7 @@ export function TaskInfoSection({
 
       <div className="grid grid-cols-2 gap-6">
 
-        <FormField label="Nombre de tarea *">
+        <FormField label="Nombre de tarea *" error={errors?.reference}>
 
           <Input
             value={form.reference}
@@ -116,7 +118,7 @@ export function TaskInfoSection({
 
         </FormField>
 
-        <FormField label="Lote *">
+        <FormField label="Lote *" error={errors?.lotNumber}>
 
           <Input
             value={
@@ -152,7 +154,7 @@ export function TaskInfoSection({
 
       <div className="mt-3">
 
-        <FormField label="Ruta de producción *">
+        <FormField label="Ruta de producción *" error={errors?.route}>
 
           <ProcessRoutePicker
             value={form.route}
@@ -169,7 +171,7 @@ export function TaskInfoSection({
 
       <div className="mt-3 grid grid-cols-3 gap-4">
 
-        <FormField label="Fecha de entrega *">
+        <FormField label="Fecha de entrega *" error={errors?.deliveryDate}>
 
           <Input
             type="date"
@@ -182,7 +184,7 @@ export function TaskInfoSection({
 
         </FormField>
 
-        <FormField label="Prioridad *">
+        <FormField label="Prioridad *" error={errors?.priorityId}>
 
           <EntitySelect
             collection="priorities"
@@ -202,7 +204,10 @@ export function TaskInfoSection({
 
         </FormField>
 
-        <FormField label="Color de pintura">
+        <FormField
+          label="Color de pintura"
+          error={errors?.colorId}
+        >
 
           <div
             className={
@@ -214,13 +219,13 @@ export function TaskInfoSection({
 
             <EntitySelect
               collection="colors"
+              variant="color"
               value={selectedColor}
               items={colors}
               placeholder="Color"
-              onChange={entity=>
+              onChange={entity =>
                 update({
-                  colorId:
-                    entity?.id??null,
+                  colorId: entity?.id ?? null,
                 })
               }
               onCreate={createColor}
@@ -236,27 +241,30 @@ export function TaskInfoSection({
 
       <div className="mt-3 grid grid-cols-2 gap-4">
 
-        <FormField label="Ensamblados">
+        <FormField
+          label="Ensamblados"
+          error={errors?.assemblyCount}
+        >
 
           <Input
             disabled={!hasAssembly}
             value={
-              form.assemblyCount===0
+              form.assemblyCount === 0
                 ? ""
                 : String(form.assemblyCount)
             }
             inputMode="numeric"
             placeholder="1"
-            onChange={event=>{
+            onChange={event => {
 
-              const value=
+              const value =
                 event.target.value
 
               update({
 
                 assemblyCount:
 
-                  value===""
+                  value === ""
 
                     ? 0
 
@@ -269,29 +277,32 @@ export function TaskInfoSection({
 
         </FormField>
 
-        <FormField label="Kg pintura">
+        <FormField
+          label="Kg pintura"
+          error={errors?.paintKg}
+        >
 
           <Input
             type="number"
             step="0.01"
             disabled={!hasPaint}
             value={
-              form.paintKg===0
+              form.paintKg === 0
                 ? ""
                 : String(form.paintKg)
             }
             inputMode="decimal"
             placeholder="0"
-            onChange={event=>{
+            onChange={event => {
 
-              const value=
+              const value =
                 event.target.value
 
               update({
 
                 paintKg:
 
-                  value===""
+                  value === ""
 
                     ? 0
 

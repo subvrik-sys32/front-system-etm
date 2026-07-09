@@ -95,7 +95,7 @@ export function PopoverContent({
 
       }}
       className={cn(
-        "z-30",
+        "z-40",
         "pointer-events-auto",
         "flex",
         "flex-col",

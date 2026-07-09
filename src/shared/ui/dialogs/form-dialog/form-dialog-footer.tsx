@@ -1,20 +1,25 @@
+"use client"
+
+import { Loader2 } from "lucide-react"
+
 import {
   cn,
 } from "@/shared/utils/utils"
 
 type Props = {
   canSave: boolean
-
+  saving?: boolean
   saveLabel?: string
-
+  savingLabel?: string
   onCancel: () => void
-
   onSave: () => void
 }
 
 export function FormDialogFooter({
   canSave,
+  saving = false,
   saveLabel = "Guardar",
+  savingLabel = "Guardando...",
   onCancel,
   onSave,
 }: Props) {
@@ -25,8 +30,9 @@ export function FormDialogFooter({
 
       <button
         type="button"
+        disabled={saving}
         onClick={onCancel}
-        className="rounded-xl bg-white/5 px-4 py-2.5 text-sm font-medium text-neutral-300 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+        className="rounded-xl bg-white/5 px-4 py-2.5 text-sm font-medium text-neutral-300 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
 
         Cancelar
@@ -35,17 +41,29 @@ export function FormDialogFooter({
 
       <button
         type="button"
-        disabled={!canSave}
+        disabled={saving}
         onClick={onSave}
         className={cn(
-          "rounded-xl px-5 py-2.5 text-sm font-semibold transition",
-          canSave
-            ? "bg-white text-black hover:bg-neutral-200"
-            : "cursor-not-allowed bg-white/10 text-neutral-600"
+          "flex min-w-38 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition",
+
+          saving
+            ? "cursor-not-allowed bg-white/10 text-neutral-400"
+            : canSave
+              ? "bg-white text-black hover:bg-neutral-200"
+              : "bg-white/10 text-neutral-400 hover:bg-white/15",
         )}
       >
 
-        {saveLabel}
+        {saving && (
+
+          <Loader2
+            size={16}
+            className="animate-spin"
+          />
+
+        )}
+
+        {saving ? savingLabel : saveLabel}
 
       </button>
 

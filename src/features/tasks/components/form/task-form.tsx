@@ -20,6 +20,7 @@ export function TaskForm({
   form,
   update,
   projectLocked,
+  errors,
 }: TaskFormSectionProps) {
 
   return (
@@ -30,16 +31,19 @@ export function TaskForm({
         form={form}
         update={update}
         projectLocked={projectLocked}
+        errors={errors}
       />
 
       <TaskInfoSection
         form={form}
         update={update}
+        errors={errors}
       />
 
       <TaskMaterialSection
         form={form}
         update={update}
+        errors={errors}
       />
 
     </div>

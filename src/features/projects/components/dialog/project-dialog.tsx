@@ -14,87 +14,151 @@ import { useProjects } from "../../hooks/use-projects"
 
 import type { Project } from "../../types/project.types"
 
-type Props={
-  open:boolean
-  onClose:()=>void
-  project?:Project
+type Props = {
+  open: boolean
+  onClose: () => void
+  project?: Project
+}
+
+type ProjectErrors = Partial<
+  Record<
+    | "projectCode"
+    | "name"
+    | "clientId"
+    | "pmId"
+    | "stageId"
+    | "statusId"
+    | "deliveryDate",
+    string
+  >
+>
+
+// Mismo formato que exige el backend (CreateProjectDto): 26-001-M
+const PROJECT_CODE_REGEX = /^\d{2}-\d{3}-[A-Z]$/
+
+function validateProject(
+  form: {
+    projectCode: string
+    name: string
+    clientId: string
+    pmId: string
+    stageId: string
+    statusId: string
+    deliveryDate: string | null
+  },
+): ProjectErrors {
+  const errors: ProjectErrors = {}
+
+  if (!form.projectCode.trim()) {
+    errors.projectCode = "Falta completar"
+  } else if (!PROJECT_CODE_REGEX.test(form.projectCode.trim())) {
+    errors.projectCode = "Formato inválido (ej. 26-001-M)"
+  }
+
+  if (!form.name.trim()) {
+    errors.name = "Falta completar"
+  }
+
+  if (!form.clientId) {
+    errors.clientId = "Selecciona un cliente"
+  }
+
+  if (!form.pmId) {
+    errors.pmId = "Selecciona un PM"
+  }
+
+  if (!form.stageId) {
+    errors.stageId = "Selecciona una etapa"
+  }
+
+  if (!form.statusId) {
+    errors.statusId = "Selecciona un estado"
+  }
+
+  if (!form.deliveryDate) {
+    errors.deliveryDate = "Selecciona una fecha"
+  }
+
+  return errors
 }
 
 export function ProjectDialog({
   open,
   onClose,
   project,
-}:Props){
-
-  const{
+}: Props) {
+  const {
     form,
     update: updateForm,
     reset,
     buildProject,
     canSave,
-  }=useProjectForm(project)
+  } = useProjectForm(project)
 
-  const{
+  const {
     create,
     update,
-  }=useProjects()
+  } = useProjects()
 
-  const router=useRouter()
+  const router = useRouter()
 
-  const[
+  const [
     confirmOpenProject,
     setConfirmOpenProject,
-  ]=useState(false)
+  ] = useState(false)
 
-  const[
+  const [
     createdProjectId,
     setCreatedProjectId,
-  ]=useState<string|null>(null)
+  ] = useState<string | null>(null)
 
-  const[
+  const [
     saving,
     setSaving,
-  ]=useState(false)
+  ] = useState(false)
 
-  const close=()=>{
+  const [
+    attempted,
+    setAttempted,
+  ] = useState(false)
 
+  const errors = validateProject(form)
+
+  const isValid =
+    Object.keys(errors).length === 0
+
+  const close = () => {
     reset()
 
-    onClose()
+    setAttempted(false)
 
+    onClose()
   }
 
-  const save=async()=>{
-
-    if(!canSave){
+  const save = async () => {
+    if (!isValid) {
+      setAttempted(true)
 
       return
-
     }
 
     setSaving(true)
 
-    const dto=buildProject()
+    const dto = buildProject()
 
-    try{
-
-      if(project){
-
+    try {
+      if (project) {
         await update({
-
-          id:project.id,
-
+          id: project.id,
           dto,
-
         })
 
         close()
 
         return
-
       }
 
-      const createdProject=
+      const createdProject =
         await create(dto)
 
       close()
@@ -106,26 +170,19 @@ export function ProjectDialog({
       setConfirmOpenProject(
         true,
       )
-
-    }catch(error){
-
+    } catch (error) {
+      // El toast de error lo muestra el interceptor global en api-client.ts
       console.error(
         "PROJECT SAVE ERROR",
         error,
       )
-
-    }finally{
-
+    } finally {
       setSaving(false)
-
     }
-
   }
 
-  return(
-
+  return (
     <>
-
       <FormDialog
         open={open}
         title={
@@ -136,59 +193,56 @@ export function ProjectDialog({
         icon={Plus}
         canSave={
           canSave &&
-          !saving
+          isValid
         }
+        saving={saving}
         saveLabel={
           project
             ? "Guardar cambios"
             : "Crear proyecto"
         }
+        savingLabel={
+          project
+            ? "Guardando cambios..."
+            : "Creando proyecto..."
+        }
         onClose={close}
         onSave={save}
       >
-
         <ProjectForm
           form={form}
           update={updateForm}
+          errors={
+            attempted
+              ? errors
+              : undefined
+          }
         />
-
       </FormDialog>
 
       <ActionDialog
         open={confirmOpenProject}
         title="Abrir proyecto"
-        description="
-          El proyecto fue creado correctamente.
-          ¿Deseas abrirlo ahora?
-        "
+        description="El proyecto fue creado correctamente. ¿Deseas abrirlo ahora?"
         cancelLabel="Más tarde"
         confirmLabel="Abrir"
-        onClose={()=>{
-
+        onClose={() => {
           setCreatedProjectId(null)
 
           setConfirmOpenProject(false)
-
         }}
-        onConfirm={()=>{
-
-          if(createdProjectId){
-
+        onConfirm={() => {
+          if (createdProjectId) {
             router.push(
               `/projects?projectId=${createdProjectId}`,
             )
-
           }
 
           setCreatedProjectId(null)
 
           setConfirmOpenProject(false)
-
         }}
       />
-
     </>
-
   )
-
 }

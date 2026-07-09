@@ -43,7 +43,7 @@ import {
 
 export function useFilterBar(module: FilterModule) {
 
-  const [open, setOpen] = useState(false)
+  const [open, setOpenRaw] = useState(false)
 
   const [selectedField, setSelectedField] =
     useState<FilterField | undefined>()
@@ -76,6 +76,16 @@ export function useFilterBar(module: FilterModule) {
   const removeFilter = useFilterStore(
     state => state.removeFilter
   )
+
+  const setOpen = useCallback((next: boolean) => {
+
+    setOpenRaw(next)
+
+    if (!next) {
+      setSelectedField(undefined)
+    }
+
+  }, [])
 
   const availableOptions = useMemo(() => {
 
@@ -165,7 +175,7 @@ export function useFilterBar(module: FilterModule) {
       })
 
       setSelectedField(undefined)
-      setOpen(false)
+      setOpenRaw(false)
 
     },
     [module, selectedField, addFilter]

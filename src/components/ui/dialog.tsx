@@ -96,7 +96,7 @@ export function DialogOverlay({
 
     <DialogPrimitive.Overlay
       className={cn(
-        "fixed inset-0 z-15",
+        "fixed inset-0 z-40",
         "bg-black/50",
         "backdrop-blur-sm",
         className
@@ -129,7 +129,7 @@ export function DialogContent({
           "fixed",
           "left-1/2",
           "top-1/2",
-          "z-20",
+          "z-40",
           "w-full",
           "max-w-lg",
           "max-h-[90vh]",
@@ -144,6 +144,7 @@ export function DialogContent({
           "p-6",
           "shadow-2xl",
           "outline-none",
+          "select-none",
           className
         )}
       >

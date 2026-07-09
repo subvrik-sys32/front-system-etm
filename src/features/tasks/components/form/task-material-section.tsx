@@ -16,6 +16,7 @@ import type { TaskFormSectionProps } from "./types"
 export function TaskMaterialSection({
   form,
   update,
+  errors,
 }: TaskFormSectionProps) {
 
   const{
@@ -49,7 +50,7 @@ export function TaskMaterialSection({
 
       <div className="grid grid-cols-3 gap-4">
 
-        <FormField label="Material *">
+        <FormField label="Material *" error={errors?.materialId}>
 
           <EntitySelect
             collection="materials"
@@ -69,7 +70,7 @@ export function TaskMaterialSection({
 
         </FormField>
 
-        <FormField label="Espesor *">
+        <FormField label="Espesor *" error={errors?.thicknessId}>
 
           <EntitySelect
             collection="thicknesses"
@@ -89,7 +90,7 @@ export function TaskMaterialSection({
 
         </FormField>
 
-        <FormField label="Piezas *">
+        <FormField label="Piezas *" error={errors?.pieces}>
 
           <Input
             value={

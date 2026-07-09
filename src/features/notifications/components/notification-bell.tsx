@@ -61,16 +61,14 @@ export function NotificationBell() {
 
   }, [sidebarMode])
 
-  const handleSelect = (notification: Notification) => {
+  const handleSelect = async (notification: Notification) => {
 
     if (!notification.read) {
-      markAsRead(notification.id)
+      await markAsRead(notification.id)
     }
 
     setOpen(false)
 
-    // Si el sidebar está en preview, no queda colgado esperando el
-    // mouseleave (200ms) al navegar por click: lo cerramos ya mismo.
     closeSidebar()
 
     router.push(resolveNotificationHref(notification))

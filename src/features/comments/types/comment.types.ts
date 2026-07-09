@@ -32,8 +32,13 @@ export type CommentTarget=
   | { scope:"task"; taskId:string }
   | { scope:"workflowStep"; workflowStepId:string }
 
-export type CommentReadStatus={
+export type CommentReadState =
+  | "SENT"
+  | "READ_PARTIAL"
+  | "READ_ALL"
+
+export interface CommentReadStatus{
   total:number
   readCount:number
-  allRead:boolean
+  status:CommentReadState
 }

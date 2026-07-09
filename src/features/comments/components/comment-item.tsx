@@ -101,19 +101,39 @@ export function CommentItem({
                 )}
               </div>
             )}
-            {isOwner&&!isPending&&readStatus&&(
+            {isOwner && !isPending && readStatus && (
               <span
-                title={
-                  readStatus.allRead
-                    ?"Visto por todos"
-                    :`Visto por ${readStatus.readCount}/${readStatus.total}`
-                }
                 className="shrink-0"
+                title={
+                  readStatus.status === "SENT"
+                    ? "Enviado"
+                    : readStatus.status === "READ_PARTIAL"
+                      ? `Visto por ${readStatus.readCount}/${readStatus.total}`
+                      : "Visto por todos"
+                }
               >
-                {readStatus.allRead ? (
-                  <CheckCheck size={14} strokeWidth={2.5} className="text-cyan-400" />
-                ) : (
-                  <Check size={14} strokeWidth={2.5} className="text-neutral-500" />
+                {readStatus.status === "SENT" && (
+                  <Check
+                    size={14}
+                    strokeWidth={2.5}
+                    className="text-neutral-500"
+                  />
+                )}
+
+                {readStatus.status === "READ_PARTIAL" && (
+                  <Check
+                    size={14}
+                    strokeWidth={2.5}
+                    className="text-green-400"
+                  />
+                )}
+
+                {readStatus.status === "READ_ALL" && (
+                  <CheckCheck
+                    size={14}
+                    strokeWidth={2.5}
+                    className="text-cyan-400"
+                  />
                 )}
               </span>
             )}

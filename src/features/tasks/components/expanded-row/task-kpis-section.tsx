@@ -73,7 +73,7 @@ export function TaskKpisSection({
                   value:task.pieces,
                 },
                 {
-                  label:"Factor",
+                  label:"UNIDADES",
                   value:task.assemblyCount,
                 },
                 {

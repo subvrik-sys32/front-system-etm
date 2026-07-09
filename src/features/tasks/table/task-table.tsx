@@ -9,6 +9,7 @@ import type { Task } from "../types/task.types"
 
 import { useHydrated } from "@/shared/hooks/use-hydrated"
 import { useFocusedRow } from "@/shared/hooks/use-focused-row"
+import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus" // nuevo
 
 import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
@@ -36,6 +37,7 @@ type Props = {
   search: string
   showHistory: boolean
   reorderTasks: (tasks: Task[]) => Promise<unknown>
+  onHistoryRequired?: () => void // nuevo
 }
 
 export function TaskTable({
@@ -45,6 +47,7 @@ export function TaskTable({
   search,
   showHistory,
   reorderTasks,
+  onHistoryRequired, // nuevo
 }: Props) {
 
   const hydrated = useHydrated()
@@ -59,6 +62,7 @@ export function TaskTable({
   useFocusedRow({
     focusedId: focusedTaskId,
     setExpandedRowId: expand.setExpandedRowId,
+    retryKey: showHistory, // nuevo
   })
 
   const filteredTasks = useTaskSearch(tasks, search)
@@ -98,19 +102,28 @@ export function TaskTable({
       return
     }
 
-    const exists = displayedTasks.some(
+    const existsAnywhere = sortedTasks.some( // cambiado: era displayedTasks
       task => task.id === expand.expandedRowId,
     )
 
-    if (!exists) {
+    if (!existsAnywhere) {
       expand.setExpandedRowId(null)
     }
 
   }, [
-    displayedTasks,
+    sortedTasks, // cambiado: era displayedTasks
     expand.expandedRowId,
     expand.setExpandedRowId,
   ])
+
+  useHistoryHiddenFocus({ // nuevo bloque completo
+    focusedId: focusedTaskId,
+    showHistory,
+    visibleItems: displayedTasks,
+    allItems: sortedTasks,
+    getId: task => task.id,
+    onHistoryRequired,
+  })
 
   const dragApi = useRowDragReorder({
     items: displayedTasks,

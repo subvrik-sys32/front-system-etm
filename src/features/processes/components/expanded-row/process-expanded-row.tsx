@@ -126,7 +126,7 @@ export function ProcessExpandedRow({
           <div className="mt-3">
 
             <EntityExpandedSection
-              title="OBSERVACIONES"
+              title="MENSAJES"
             >
 
               <ProcessCommentsPanel

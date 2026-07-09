@@ -22,6 +22,10 @@ import { TaskSortButton } from "@/shared/sorting/components/task-sort-button"
 
 import { HistoryToggleButton } from "@/shared/history/components/history-toggle-button"
 
+import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog" // nuevo
+
+import { History } from "lucide-react" // nuevo
+
 import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 
 import { useTasks } from "@/features/tasks/hooks/use-tasks"
@@ -47,6 +51,11 @@ export function TaskPageContent({
     showHistory,
     setShowHistory,
   ]=useState(false)
+
+  const[
+    historyDialogOpen, // nuevo
+    setHistoryDialogOpen, // nuevo
+  ]=useState(false) // nuevo
 
   const{
     tasks,
@@ -151,9 +160,24 @@ export function TaskPageContent({
           search={search}
           showHistory={showHistory}
           reorderTasks={reorderTasks}
+          onHistoryRequired={()=>setHistoryDialogOpen(true)}
         />
 
       </EntityExpandProvider>
+
+      <ActionDialog
+        open={historyDialogOpen}
+        icon={History}
+        title="Esta tarea pertenece al historial"
+        description="Para verla debes mostrar los elementos históricos."
+        confirmLabel="Mostrar historial"
+        cancelLabel="Cancelar"
+        onClose={()=>setHistoryDialogOpen(false)}
+        onConfirm={()=>{
+          setShowHistory(true)
+          setHistoryDialogOpen(false)
+        }}
+      />
 
     </div>
 

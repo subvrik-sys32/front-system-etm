@@ -202,6 +202,7 @@ export function useRowDragReorder<T>({
       >
         <div
           ref={el => { rowEls.current[rowId] = el }}
+          data-expanded-row-id={rowId}
           className="grid min-w-0 items-center border-b border-white/5"
           style={{
             gridTemplateColumns: templateColumns,

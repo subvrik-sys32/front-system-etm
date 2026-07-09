@@ -4,19 +4,21 @@ import {
   useEffect,
 } from "react"
 
-type Props={
-  focusedId?:string
-  setExpandedRowId:(id:string|null)=>void
+type Props = {
+  focusedId?: string
+  setExpandedRowId: (id: string | null) => void
+  retryKey?: unknown // 👈 nuevo
 }
 
 export function useFocusedRow({
   focusedId,
   setExpandedRowId,
-}:Props){
+  retryKey, // 👈 nuevo
+}: Props) {
 
-  useEffect(()=>{
+  useEffect(() => {
 
-    if(!focusedId){
+    if (!focusedId) {
       return
     }
 
@@ -24,23 +26,23 @@ export function useFocusedRow({
       focusedId
     )
 
-    let attempts=0
+    let attempts = 0
 
-    const interval=
-      setInterval(()=>{
+    const interval =
+      setInterval(() => {
 
-        const expanded=
+        const expanded =
           document.querySelector(
             `[data-expanded-row-id="${focusedId}"]`
           ) as HTMLElement | null
 
-        if(!expanded){
+        if (!expanded) {
 
           attempts++
 
-          if(
-            attempts>=20
-          ){
+          if (
+            attempts >= 20
+          ) {
 
             clearInterval(
               interval
@@ -54,9 +56,9 @@ export function useFocusedRow({
 
         expanded.scrollIntoView({
 
-          behavior:"smooth",
+          behavior: "smooth",
 
-          block:"center",
+          block: "center",
 
         })
 
@@ -64,16 +66,17 @@ export function useFocusedRow({
           interval
         )
 
-      },50)
+      }, 50)
 
-    return()=>
+    return () =>
       clearInterval(
         interval
       )
 
-  },[
+  }, [
     focusedId,
     setExpandedRowId,
+    retryKey, // nuevo: reinicia el polling cuando cambia (ej. showHistory)
   ])
 
 }

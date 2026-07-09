@@ -7,6 +7,7 @@ import {
 
 import { useHydrated } from "@/shared/hooks/use-hydrated"
 import { useFocusedRow } from "@/shared/hooks/use-focused-row"
+import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus" // nuevo
 
 import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 
@@ -38,6 +39,7 @@ type Props = {
   loading: boolean
   focusedTaskId?: string
   showHistory: boolean
+  onHistoryRequired?: () => void // nuevo
 }
 
 export function ProcessTable({
@@ -47,6 +49,7 @@ export function ProcessTable({
   loading,
   focusedTaskId,
   showHistory,
+  onHistoryRequired, // nuevo
 }: Props) {
 
   const hydrated = useHydrated()
@@ -59,6 +62,7 @@ export function ProcessTable({
   useFocusedRow({
     focusedId: focusedTaskId,
     setExpandedRowId: expand.setExpandedRowId,
+    retryKey: showHistory, // nuevo
   })
 
   const filteredTasks = useProcessSearch(processTasks, search)
@@ -111,20 +115,29 @@ export function ProcessTable({
       return
     }
 
-    const exists = displayedTasks.some(
+    const existsAnywhere = orderedTasks.some( // cambiado: era displayedTasks
       processTask =>
-        processTask.task.id === expand.expandedRowId,
+        processAccess.task(processTask).id === expand.expandedRowId, // alineado con rowId
     )
 
-    if (!exists) {
+    if (!existsAnywhere) {
       expand.setExpandedRowId(null)
     }
 
   }, [
-    displayedTasks,
+    orderedTasks, // cambiado: era displayedTasks
     expand.expandedRowId,
     expand.setExpandedRowId,
   ])
+
+  useHistoryHiddenFocus({ // nuevo bloque completo
+    focusedId: focusedTaskId,
+    showHistory,
+    visibleItems: displayedTasks,
+    allItems: orderedTasks,
+    getId: processTask => processAccess.task(processTask).id,
+    onHistoryRequired,
+  })
 
   const columns = useMemo(
     () => buildProcessColumns(),

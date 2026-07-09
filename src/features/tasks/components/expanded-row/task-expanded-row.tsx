@@ -69,7 +69,7 @@ export function TaskExpandedRow({
           <div className="w-[50%]">
 
             <EntityExpandedSection
-              title="OBSERVACIONES"
+              title="MENSAJES"
             >
 
               <TaskCommentsPanel

@@ -83,6 +83,7 @@ export function EntityTableItem<T>({
           :(
 
             <div
+              data-expanded-row-id={id}
               className="grid min-w-0 items-center border-b border-white/5 transition-colors"
               style={{
                 gridTemplateColumns:templateColumns,

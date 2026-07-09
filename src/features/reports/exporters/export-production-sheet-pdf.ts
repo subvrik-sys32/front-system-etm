@@ -169,7 +169,7 @@ function buildSummary(sheet: ProductionSheet) {
       {
         width: "33%",
         stack: [
-          { text: "OBSERVACIONES", bold: true, margin: [0, 0, 0, 8] },
+          { text: "MENSAJES", bold: true, margin: [0, 0, 0, 8] },
           { canvas: observationLines },
         ],
       },

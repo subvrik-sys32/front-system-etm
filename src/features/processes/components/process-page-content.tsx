@@ -61,6 +61,10 @@ import{
   ProcessTable,
 }from"../table/process-table"
 
+import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog" // nuevo — verifica esta ruta
+
+import { History } from "lucide-react" // nuevo
+
 type Props={
 
   processCode:ProcessCode
@@ -86,6 +90,11 @@ export function ProcessPageContent({
     showHistory,
     setShowHistory,
   ]=useState(false)
+
+  const[
+    historyDialogOpen, // nuevo
+    setHistoryDialogOpen, // nuevo
+  ]=useState(false) // nuevo
 
   const{
     tasks,
@@ -205,9 +214,24 @@ export function ProcessPageContent({
           loading={loading}
           focusedTaskId={focusedTaskId}
           showHistory={showHistory}
+          onHistoryRequired={()=>setHistoryDialogOpen(true)}
         />
 
       </EntityExpandProvider>
+
+      <ActionDialog
+        open={historyDialogOpen}
+        icon={History}
+        title="Este proceso pertenece al historial"
+        description="Para verlo debes mostrar los elementos históricos."
+        confirmLabel="Mostrar historial"
+        cancelLabel="Cancelar"
+        onClose={()=>setHistoryDialogOpen(false)}
+        onConfirm={()=>{
+          setShowHistory(true)
+          setHistoryDialogOpen(false)
+        }}
+      />
 
     </div>
 

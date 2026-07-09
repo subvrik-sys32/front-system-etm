@@ -88,7 +88,7 @@ export function TaskRouteViewer({
                 {isCurrent && (
 
                   <span
-                    className="pointer-events-none absolute -top-4.5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.1em]"
+                    className="pointer-events-none absolute -top-4.5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[9px] font-bold uppercase tracking-widest"
                     style={{
                       color:process.color,
                     }}

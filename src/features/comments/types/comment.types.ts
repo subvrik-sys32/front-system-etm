@@ -31,3 +31,9 @@ export interface UpdateCommentDto{
 export type CommentTarget=
   | { scope:"task"; taskId:string }
   | { scope:"workflowStep"; workflowStepId:string }
+
+export type CommentReadStatus={
+  total:number
+  readCount:number
+  allRead:boolean
+}

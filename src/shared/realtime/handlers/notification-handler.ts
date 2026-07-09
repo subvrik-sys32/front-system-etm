@@ -57,6 +57,39 @@ export function notificationHandler(
 
     }
 
+    case "BULK_READ": {
+      const payload = event.payload as { ids: string[] } | undefined
+      if (!payload) return
+      const idSet = new Set(payload.ids)
+      let readNowCount = 0
+      queryClient.setQueryData<InfiniteData<NotificationsPage>>(
+        ["notifications"],
+        current => {
+          if (!current) return current
+          return {
+            ...current,
+            pages: current.pages.map(page => ({
+              ...page,
+              items: page.items.map(n => {
+                if (idSet.has(n.id) && !n.read) {
+                  readNowCount += 1
+                  return { ...n, read: true }
+                }
+                return n
+              }),
+            })),
+          }
+        },
+      )
+      if (readNowCount > 0) {
+        queryClient.setQueryData<number>(
+          ["notifications", "unread-count"],
+          current => Math.max(0, (current ?? 0) - readNowCount),
+        )
+      }
+      return
+    }
+
     case "DELETED": {
 
       const payload = event.payload as { id: string } | undefined

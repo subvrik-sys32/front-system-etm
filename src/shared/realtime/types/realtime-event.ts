@@ -11,6 +11,7 @@ export type RealtimeEntity=
 export type RealtimeAction=
   |"CREATED"
   |"UPDATED"
+  |"BULK_READ"  
   |"DELETED"
   |"DELETED_ALL"
   |"REORDERED"  

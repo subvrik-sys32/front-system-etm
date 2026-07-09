@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Search, Trash2 } from "lucide-react"
 
 import {
@@ -17,6 +17,7 @@ import { useCloseSidebarPreview } from "@/shared/layouts/hooks/use-close-sidebar
 
 import { useComments } from "../hooks/use-comments"
 import { useDeleteComment } from "../hooks/use-delete-comment"
+import { commentsService } from "../services/comments.service"
 import { CommentList } from "./comment-list"
 import { EmptyComments } from "./empty-comments"
 import type { Comment, CommentTarget } from "../types/comment.types"
@@ -44,6 +45,24 @@ export function CommentHistoryDialog({
 
   const { comments, loading } = useComments(target)
   const { deleteComment } = useDeleteComment(target)
+
+  const targetId = target.scope === "task" ? target.taskId : target.workflowStepId
+
+  // Al abrir el historial, marcamos como leídas las notificaciones de
+  // esta tarea/step. Es la acción explícita de "vine y vi los
+  // comentarios" que dispara el doble check para quien comentó.
+  useEffect(() => {
+
+    if (!open) return
+
+    commentsService
+      .markCommentsAsRead(target)
+      .catch(() => {
+        // no crítico: si falla, el usuario simplemente puede
+        // marcar como leído manualmente desde la campana
+      })
+
+  }, [open, target.scope, targetId])
 
   const filteredComments = search.trim()
     ? comments.filter(c =>

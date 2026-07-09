@@ -37,6 +37,8 @@ type DynamicBadgeProps={
 
   active?:boolean
 
+  pulse?:boolean
+
   placeholder?:boolean
 
   showChevron?:boolean
@@ -86,6 +88,8 @@ export function DynamicBadge({
   muted=false,
 
   active=false,
+
+  pulse=false,
 
   placeholder=false,
 
@@ -179,6 +183,8 @@ export function DynamicBadge({
           : "min-h-8 py-1.5",
 
         "transition-all duration-150 ease-out",
+
+        pulse && "animate-pulse",
 
         widthClasses[width],
 

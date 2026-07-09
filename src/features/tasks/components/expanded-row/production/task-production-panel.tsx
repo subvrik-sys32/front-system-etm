@@ -105,22 +105,32 @@ export function TaskProductionPanel({
 
   const progressContent=(
 
-    <div className="flex min-w-0 items-center gap-2">
+    <div className="flex min-w-0 flex-col items-center gap-1">
 
-      <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-white/5">
+      <div className="flex w-full min-w-0 items-center gap-2">
 
-        <div
-          className="h-full rounded-full bg-cyan-500 transition-all"
-          style={{
-            width:`${workflowView.progress}%`,
-          }}
-        />
+        <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-white/5">
+
+          <div
+            className="h-full rounded-full bg-cyan-500 transition-all"
+            style={{
+              width:`${workflowView.progress}%`,
+            }}
+          />
+
+        </div>
+
+        <span className="w-12 shrink-0 text-center text-xl font-bold leading-none text-cyan-400">
+
+          {workflowView.progress}%
+
+        </span>
 
       </div>
 
-      <span className="w-12 shrink-0 text-center text-xl font-bold leading-none text-cyan-400">
+      <span className="whitespace-nowrap text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
 
-        {workflowView.progress}%
+        AVANCE DE LA TAREA
 
       </span>
 
@@ -186,15 +196,15 @@ export function TaskProductionPanel({
 
           <div className="hidden items-center justify-center gap-8 xl:flex">
 
-            <div className="w-80">
-
-              {progressContent}
-
-            </div>
-
             <div className="max-w-36 min-w-0 shrink">
 
               {statusContent}
+
+            </div>
+
+            <div className="w-80">
+
+              {progressContent}
 
             </div>
 

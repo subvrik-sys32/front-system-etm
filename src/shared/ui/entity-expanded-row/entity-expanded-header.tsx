@@ -26,7 +26,7 @@ export function EntityExpandedHeader({
 
   return (
 
-    <div className="mb-4 flex items-start justify-between">
+    <div className="mb-4 flex items-start justify-between select-none">
 
       <div>
 

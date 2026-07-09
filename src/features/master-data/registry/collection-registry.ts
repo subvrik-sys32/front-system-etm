@@ -89,7 +89,7 @@ export const collectionRegistry:
 
         "factory",
         "tool",
-        "hammer",
+        "fold",
         "drill",
 
         "scissors",

@@ -18,7 +18,7 @@ export function EntityTableCell({
 
     <div
       className={cn(
-        "min-w-0 px-2.5 py-2.5 text-xs font-medium text-neutral-200",
+        "min-w-0 px-2.5 py-2.5 text-xs font-medium text-neutral-200 select-none",
         align==="left" && "text-left",
         align==="center" && "text-center",
         align==="right" && "text-right"

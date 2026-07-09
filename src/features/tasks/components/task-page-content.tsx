@@ -108,7 +108,7 @@ export function TaskPageContent({
 
       <EntityToolbar
         left={
-          <div className="flex flex-wrap items-center gap-2 py-1">
+          <div className="flex flex-wrap items-center gap-2 py-1 select-none">
 
             <BackToProjectButton/>
 

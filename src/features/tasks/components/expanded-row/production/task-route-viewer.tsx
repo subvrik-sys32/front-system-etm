@@ -51,7 +51,7 @@ export function TaskRouteViewer({
 
     <div className="flex justify-center">
 
-      <div className="flex flex-wrap justify-center gap-2">
+      <div className="flex flex-wrap justify-center gap-2 pt-5">
 
         {PROCESS_ENTRIES.map(
           ([code])=>{
@@ -88,7 +88,7 @@ export function TaskRouteViewer({
                 {isCurrent && (
 
                   <span
-                    className="pointer-events-none absolute -top-4.5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[9px] font-bold uppercase tracking-widest"
+                    className="pointer-events-none absolute -top-4.5 left-1/2 -translate-x-1/2 hidden whitespace-nowrap text-[9px] font-bold uppercase tracking-widest sm:block"
                     style={{
                       color:process.color,
                     }}

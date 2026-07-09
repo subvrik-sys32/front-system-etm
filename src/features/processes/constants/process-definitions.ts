@@ -34,7 +34,7 @@ Record<
   PL:{
     code:"PL",
     label:"Plegado",
-    icon:"hammer",
+    icon:"fold",
     color:"#8B5CF6",
   },
 

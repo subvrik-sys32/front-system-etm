@@ -15,7 +15,7 @@ export function EntityTableHeader<T>({
   return (
 
     <div
-      className="grid bg-white/2"
+      className="grid bg-white/2 select-none"
       style={{
         gridTemplateColumns:
           columns
@@ -32,7 +32,7 @@ export function EntityTableHeader<T>({
 
         <div
           key={column.id}
-          className="px-2.5 py-3 text-center text-sm font-semibold tracking-[0.08em]"
+          className="px-2.5 py-3 text-center text-sm font-semibold tracking-[0.08em] select-none"
         >
 
           {column.title}

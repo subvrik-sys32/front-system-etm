@@ -35,7 +35,7 @@ export default function ProcessPage() {
 
   return(
 
-    <main className="h-full bg-[#050505] px-8 py-10 text-white">
+    <main className="h-full bg-[#050505] px-8 py-10 text-white select-none">
 
       <section className="space-y-6">
 

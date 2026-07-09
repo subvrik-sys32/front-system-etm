@@ -25,9 +25,9 @@ import {
   FileText,
   Flame,
   FolderKanban,
+  FoldHorizontal,
   Gauge,
   HardHat,
-  Hammer,
   InspectionPanel,
   Layers3,
   LucideIcon,
@@ -80,7 +80,7 @@ export const ENTITY_ICONS = {
   // PROCESOS
 
   scissors: Scissors,
-  hammer: Hammer,
+  fold: FoldHorizontal,
   flame: Flame,
   paint: PaintBucket,
   package: Package,

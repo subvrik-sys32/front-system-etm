@@ -8,7 +8,7 @@ export default function LoginPage() {
 
   return (
 
-    <div className="flex min-h-screen w-full items-center justify-center bg-[#050505] text-white">
+    <div className="flex min-h-screen w-full items-center justify-center bg-[#050505] text-white select-none">
 
       <div className="relative w-full max-w-5xl px-6">
 

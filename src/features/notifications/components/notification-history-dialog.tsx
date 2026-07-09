@@ -22,25 +22,12 @@ import { useMarkAllNotificationsRead } from "../hooks/use-mark-all-read"
 import { useDeleteNotification } from "../hooks/use-delete-notification"
 import { useDeleteAllNotifications } from "../hooks/use-delete-all-notifications"
 import { NotificationItem } from "./notification-item"
+import { resolveNotificationHref } from "../utils/resolve-notification-href"
 import type { Notification } from "../types/notification.types"
 
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
-}
-
-function resolveNotificationHref(notification: Notification) {
-
-  if (notification.workflowStep) {
-
-    const code = notification.workflowStep.processCode.toLowerCase()
-
-    return `/processes?code=${code}&taskId=${notification.taskId}`
-
-  }
-
-  return `/tasks?taskId=${notification.taskId}`
-
 }
 
 export function NotificationHistoryDialog({ open, onOpenChange }: Props) {

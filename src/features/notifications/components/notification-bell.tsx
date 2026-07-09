@@ -19,28 +19,9 @@ import { useMarkNotificationRead } from "../hooks/use-mark-notification-read"
 import { useMarkAllNotificationsRead } from "../hooks/use-mark-all-read"
 import { NotificationItem } from "./notification-item"
 import { NotificationHistoryDialog } from "./notification-history-dialog"
+import { resolveNotificationHref } from "../utils/resolve-notification-href"
 
 import type { Notification } from "../types/notification.types"
-
-function resolveNotificationHref(notification: Notification) {
-
-  // Token de solicitud de foco: identifica ESTA navegación en particular,
-  // no la tarea/proceso destino. Se genera en cada clic para que dos
-  // notificaciones sobre la misma entidad produzcan navegaciones distintas
-  // y el flujo de scroll/expand/historial se re-ejecute siempre.
-  const focus = crypto.randomUUID()
-
-  if (notification.workflowStep) {
-
-    const code = notification.workflowStep.processCode.toLowerCase()
-
-    return `/processes?code=${code}&taskId=${notification.taskId}&focus=${focus}`
-
-  }
-
-  return `/tasks?taskId=${notification.taskId}&focus=${focus}`
-
-}
 
 export function NotificationBell() {
 

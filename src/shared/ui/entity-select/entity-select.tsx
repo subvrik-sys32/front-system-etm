@@ -97,12 +97,18 @@ export function EntitySelect<T extends EntityBase>({
     : `Crear ${placeholder}`
 
   async function handleSubmit(dto: EntityForm) {
-    const result = editing
-      ? await onEdit({ id: editing.id, dto })
-      : await onCreate(dto)
+    if (editing) {
+      const result = await onEdit({
+        id: editing.id,
+        dto,
+      })
 
-    onChange(result)
-    closeDialog()
+      onChange(result)
+    } else {
+      await onCreate(dto)
+    }
+
+    closeDialog() 
   }
 
   return (

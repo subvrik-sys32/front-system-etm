@@ -1,4 +1,3 @@
-// use-history-hidden-focus.ts
 "use client"
 
 import {
@@ -8,6 +7,7 @@ import {
 
 type Params<T> = {
   focusedId?: string
+  focusToken?: string
   showHistory: boolean
   visibleItems: T[]
   allItems: T[]
@@ -17,6 +17,7 @@ type Params<T> = {
 
 export function useHistoryHiddenFocus<T>({
   focusedId,
+  focusToken,
   showHistory,
   visibleItems,
   allItems,
@@ -26,9 +27,17 @@ export function useHistoryHiddenFocus<T>({
 
   const resolvedForRef = useRef<string | null>(null)
 
+  // La clave de deduplicación es la SOLICITUD (id + token de foco),
+  // no la identidad de la entidad. Sin token (rutas que no lo envían:
+  // Projects, Search, Dashboard, links antiguos) cae al comportamiento
+  // anterior: dedup solo por focusedId.
+  const requestKey = focusedId
+    ? `${focusedId}:${focusToken ?? ""}`
+    : null
+
   useEffect(() => {
 
-    if (!focusedId) {
+    if (!requestKey) {
       resolvedForRef.current = null
       return
     }
@@ -40,13 +49,14 @@ export function useHistoryHiddenFocus<T>({
     if (isVisible) {
       // Ya se puede ver (sea porque siempre fue visible, o porque
       // el usuario ya confirmó el diálogo antes). Marcado como resuelto
-      // para que un futuro toggle no vuelva a preguntar por este mismo id.
-      resolvedForRef.current = focusedId
+      // para que un futuro toggle no vuelva a preguntar por esta misma
+      // solicitud.
+      resolvedForRef.current = requestKey
       return
     }
 
-    if (resolvedForRef.current === focusedId) {
-      // Ya se preguntó (o resolvió) para este id. No insistir.
+    if (resolvedForRef.current === requestKey) {
+      // Ya se preguntó (o resolvió) para esta solicitud exacta. No insistir.
       return
     }
 
@@ -59,11 +69,12 @@ export function useHistoryHiddenFocus<T>({
     )
 
     if (existsHidden) {
-      resolvedForRef.current = focusedId
+      resolvedForRef.current = requestKey
       onHistoryRequired?.()
     }
 
   }, [
+    requestKey,
     focusedId,
     showHistory,
     visibleItems,

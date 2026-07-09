@@ -71,6 +71,8 @@ type Props={
 
   focusedTaskId?:string
 
+  focusToken?:string
+
 }
 
 export function ProcessPageContent({
@@ -78,6 +80,8 @@ export function ProcessPageContent({
   processCode,
 
   focusedTaskId,
+
+  focusToken,
 
 }:Props){
 
@@ -132,7 +136,7 @@ export function ProcessPageContent({
         task.workflowStep?.status==="REVIEWED",
     ).length
 
-  const isResolvingNotification = Boolean(focusedTaskId) && loading // nuevo
+  const isResolvingNotification = Boolean(focusedTaskId) && loading
 
   async function handleExport(
 
@@ -215,6 +219,7 @@ export function ProcessPageContent({
           search={search}
           loading={loading}
           focusedTaskId={focusedTaskId}
+          focusToken={focusToken}
           showHistory={showHistory}
           onHistoryRequired={()=>setHistoryDialogOpen(true)}
         />

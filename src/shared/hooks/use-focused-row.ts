@@ -7,13 +7,13 @@ import {
 type Props = {
   focusedId?: string
   setExpandedRowId: (id: string | null) => void
-  retryKey?: unknown // 👈 nuevo
+  retryKey?: unknown
 }
 
 export function useFocusedRow({
   focusedId,
   setExpandedRowId,
-  retryKey, // 👈 nuevo
+  retryKey,
 }: Props) {
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export function useFocusedRow({
   }, [
     focusedId,
     setExpandedRowId,
-    retryKey, // nuevo: reinicia el polling cuando cambia (ej. showHistory)
+    retryKey,
   ])
 
 }

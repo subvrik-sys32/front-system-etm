@@ -35,10 +35,12 @@ import{ REPORT_EXPORT_SCOPES }from"@/shared/export/constants/export-config"
 
 type Props={
   focusedTaskId?:string
+  focusToken?:string
 }
 
 export function TaskPageContent({
   focusedTaskId,
+  focusToken,
 }:Props){
 
   const[
@@ -78,7 +80,7 @@ export function TaskPageContent({
         ),
     ).length
 
-  const isResolvingNotification = Boolean(focusedTaskId) && loading // nuevo
+  const isResolvingNotification = Boolean(focusedTaskId) && loading
 
   async function handleExport(
     format:"pdf"|"excel",
@@ -158,6 +160,7 @@ export function TaskPageContent({
           tasks={tasks}
           loading={loading}
           focusedTaskId={focusedTaskId}
+          focusToken={focusToken}
           search={search}
           showHistory={showHistory}
           reorderTasks={reorderTasks}

@@ -9,7 +9,7 @@ import type { Task } from "../types/task.types"
 
 import { useHydrated } from "@/shared/hooks/use-hydrated"
 import { useFocusedRow } from "@/shared/hooks/use-focused-row"
-import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus" // nuevo
+import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus"
 
 import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
@@ -34,20 +34,22 @@ type Props = {
   tasks: Task[]
   loading: boolean
   focusedTaskId?: string
+  focusToken?: string
   search: string
   showHistory: boolean
   reorderTasks: (tasks: Task[]) => Promise<unknown>
-  onHistoryRequired?: () => void // nuevo
+  onHistoryRequired?: () => void
 }
 
 export function TaskTable({
   tasks,
   loading,
   focusedTaskId,
+  focusToken,
   search,
   showHistory,
   reorderTasks,
-  onHistoryRequired, // nuevo
+  onHistoryRequired,
 }: Props) {
 
   const hydrated = useHydrated()
@@ -62,7 +64,10 @@ export function TaskTable({
   useFocusedRow({
     focusedId: focusedTaskId,
     setExpandedRowId: expand.setExpandedRowId,
-    retryKey: showHistory, // nuevo
+    // Se reinicia el polling de scroll/expand cuando:
+    // - llega una nueva solicitud de foco (focusToken cambia), o
+    // - el historial pasa a visible (showHistory cambia)
+    retryKey: `${focusToken ?? ""}:${showHistory}`,
   })
 
   const filteredTasks = useTaskSearch(tasks, search)
@@ -102,7 +107,7 @@ export function TaskTable({
       return
     }
 
-    const existsAnywhere = sortedTasks.some( // cambiado: era displayedTasks
+    const existsAnywhere = sortedTasks.some(
       task => task.id === expand.expandedRowId,
     )
 
@@ -111,13 +116,14 @@ export function TaskTable({
     }
 
   }, [
-    sortedTasks, // cambiado: era displayedTasks
+    sortedTasks,
     expand.expandedRowId,
     expand.setExpandedRowId,
   ])
 
-  useHistoryHiddenFocus({ // nuevo bloque completo
+  useHistoryHiddenFocus({
     focusedId: focusedTaskId,
+    focusToken,
     showHistory,
     visibleItems: displayedTasks,
     allItems: sortedTasks,

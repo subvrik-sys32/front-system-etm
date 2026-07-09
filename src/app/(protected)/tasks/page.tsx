@@ -16,6 +16,9 @@ export default function TasksPage(){
   const taskId =
     searchParams.get("taskId") ?? undefined
 
+  const focusToken =
+    searchParams.get("focus") ?? undefined
+
   return(
 
     <main className="h-full bg-[#050505] px-8 py-10 text-white select-none">
@@ -46,6 +49,7 @@ export default function TasksPage(){
 
         <TaskPageContent
           focusedTaskId={taskId}
+          focusToken={focusToken}
         />
 
       </section>

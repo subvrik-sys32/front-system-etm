@@ -24,15 +24,21 @@ import type { Notification } from "../types/notification.types"
 
 function resolveNotificationHref(notification: Notification) {
 
+  // Token de solicitud de foco: identifica ESTA navegación en particular,
+  // no la tarea/proceso destino. Se genera en cada clic para que dos
+  // notificaciones sobre la misma entidad produzcan navegaciones distintas
+  // y el flujo de scroll/expand/historial se re-ejecute siempre.
+  const focus = crypto.randomUUID()
+
   if (notification.workflowStep) {
 
     const code = notification.workflowStep.processCode.toLowerCase()
 
-    return `/processes?code=${code}&taskId=${notification.taskId}`
+    return `/processes?code=${code}&taskId=${notification.taskId}&focus=${focus}`
 
   }
 
-  return `/tasks?taskId=${notification.taskId}`
+  return `/tasks?taskId=${notification.taskId}&focus=${focus}`
 
 }
 
@@ -40,7 +46,7 @@ export function NotificationBell() {
 
   const [open, setOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
-  const [selectingId, setSelectingId] = useState<string | null>(null) // nuevo
+  const [selectingId, setSelectingId] = useState<string | null>(null)
 
   const router = useRouter()
 
@@ -80,7 +86,7 @@ export function NotificationBell() {
     notification: Notification,
   ) => {
 
-    setSelectingId(notification.id) // nuevo
+    setSelectingId(notification.id)
 
     try {
 
@@ -105,14 +111,13 @@ export function NotificationBell() {
         resolveNotificationHref(notification),
       )
 
-      // Si tras confirmar con page.tsx se detecta que el Router Cache
-      // impide recibir un nuevo focusedTaskId estando en la misma ruta,
-      // descomentar la siguiente línea para forzar refetch del Server Component:
-      // router.refresh()
+      // Ya no hace falta forzar refetch: el token `focus` cambia el
+      // query string en cada clic, así que el Router siempre trata
+      // esto como una navegación nueva, incluso hacia la misma tarea.
 
     } finally {
 
-      setSelectingId(null) // nuevo
+      setSelectingId(null)
 
     }
 
@@ -247,7 +252,7 @@ export function NotificationBell() {
                     notification={notification}
                     onClick={handleSelect}
                     onMarkRead={markAsRead}
-                    isSelecting={selectingId === notification.id} // nuevo
+                    isSelecting={selectingId === notification.id}
                   />
 
                 ))}

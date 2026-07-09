@@ -22,6 +22,9 @@ export default function ProcessPage() {
   const taskId =
     searchParams.get("taskId") ?? undefined
 
+  const focusToken =
+    searchParams.get("focus") ?? undefined
+
   const codeParam =
     searchParams.get("code") ?? "ct"
 
@@ -66,6 +69,7 @@ export default function ProcessPage() {
             <ProcessPageContent
               processCode={processCode}
               focusedTaskId={taskId}
+              focusToken={focusToken}
             />
 
       </section>

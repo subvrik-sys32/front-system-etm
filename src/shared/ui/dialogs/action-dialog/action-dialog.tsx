@@ -38,7 +38,7 @@ type Props = {
 
   onClose: () => void
 
-  onConfirm: () => void
+  onConfirm: () => void | Promise<void>
 }
 
 export function ActionDialog({
@@ -62,7 +62,7 @@ export function ActionDialog({
       open={open}
       onOpenChange={nextOpen => {
 
-        if(nextOpen){
+        if (nextOpen) {
           return
         }
 
@@ -113,17 +113,12 @@ export function ActionDialog({
           </button>
 
           <button
-            onClick={() => {
-
-              onConfirm()
-              onClose()
-
-            }}
+            onClick={onConfirm}
             className={cn(
               "rounded-xl px-5 py-3 text-sm font-semibold transition",
               danger
                 ? "bg-red-500 text-white hover:bg-red-400"
-                : "bg-white text-black hover:bg-neutral-200"
+                : "bg-white text-black hover:bg-neutral-200",
             )}
           >
 

@@ -84,16 +84,27 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
 
   }
 
-  const handleConfirmDeleteAll = () => {
-    deleteAll()
+  const handleConfirmDeleteAll = async () => {
+
+    await deleteAll()
+
+    setConfirmDeleteAll(false)
+
   }
 
-  const handleConfirmDeleteOne = () => {
+  const handleConfirmDeleteOne = async () => {
 
-    if (!pendingDelete) return
+    if (!pendingDelete) {
+      return
+    }
 
-    deleteNotification(pendingDelete)
-    setPendingDelete(null)
+    await deleteNotification(
+      pendingDelete,
+    )
+
+    setPendingDelete(
+      null,
+    )
 
   }
 

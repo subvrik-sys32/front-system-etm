@@ -7,6 +7,7 @@ export type RealtimeEntity=
   |"ROLE"
   |"PERMISSION"
   |"CLIENT"
+  |"COMMENT"
   |"COMMENT_READ_STATUS"
 
 export type RealtimeAction=

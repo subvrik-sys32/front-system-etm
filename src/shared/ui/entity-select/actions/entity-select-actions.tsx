@@ -13,11 +13,13 @@ import {
 type Props = {
   onEdit?: () => void
   onDelete?: () => void
+  color?: string
 }
 
 export function EntitySelectActionMenu({
   onEdit,
   onDelete,
+  color,
 }: Props) {
 
   const hasActions = !!(onEdit || onDelete)
@@ -33,16 +35,22 @@ export function EntitySelectActionMenu({
         <button
           type="button"
           onPointerDown={(e) => e.stopPropagation()}
-          className="flex h-8 w-8 items-center justify-center rounded-md text-white/40 transition hover:bg-white/5 hover:text-white"
+          className="flex h-8 w-8 items-center justify-center rounded-md transition-all hover:bg-white/5 hover:text-white"
+          style={{
+            color: color ?? "rgba(255,255,255,0.4)",
+          }}
         >
-          <MoreHorizontal size={16} />
+          <MoreHorizontal
+            size={16}
+            strokeWidth={2.5}
+          />
         </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="w-44 rounded-lg border border-white/10 bg-[#141416] p-1 z-9999"
+        className="z-9999 w-44 rounded-lg border border-white/10 bg-[#141416] p-1"
       >
 
         {onEdit && (
@@ -54,7 +62,10 @@ export function EntitySelectActionMenu({
             }}
             className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white"
           >
-            <Pencil size={14} className="text-white/50" />
+            <Pencil
+              size={14}
+              className="text-white/50"
+            />
             Editar
           </DropdownMenuItem>
         )}

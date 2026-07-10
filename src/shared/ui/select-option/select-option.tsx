@@ -64,6 +64,11 @@ export function SelectOption({
       actions.edit ||
       actions.delete
     )
+  const actionColor =
+    selected && isColor
+      ? badge.text
+      : "#A1A1AA" // zinc-400
+
   return (
     <CommandItem
       value={label}
@@ -119,6 +124,7 @@ export function SelectOption({
               <EntitySelectActionMenu
                 onEdit={actions.edit}
                 onDelete={actions.delete}
+                color={actionColor}
               />
             </div>
           )}

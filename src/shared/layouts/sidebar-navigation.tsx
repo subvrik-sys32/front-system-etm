@@ -56,13 +56,15 @@ export function SidebarNavigation({
 
       {NAVIGATION.map((section, index) => {
 
-        const items = section.items.filter(
-          item =>
-            !(
-              user?.role?.code === "OPERARIO" &&
-              item.href === "/admin/users"
-            ),
-        )
+      const restrictedRoles = ["OPERARIO", "PROJECT_MANAGER"]
+
+      const items = section.items.filter(
+        item =>
+          !(
+            restrictedRoles.includes(user?.role?.code ?? "") &&
+            item.href === "/admin/users"
+          ),
+      )
 
         if (items.length === 0) {
           return null

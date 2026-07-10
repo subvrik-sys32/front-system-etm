@@ -8,6 +8,7 @@ import {
   Trash2,
 } from "lucide-react"
 
+import { cn } from "@/shared/utils/utils"
 import { formatNotificationDate } from "../utils/format-notification-date"
 import { WORKFLOW_STATUS_DEFINITIONS } from "@/features/workflow/constants/workflow-status-definitions"
 import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
@@ -21,6 +22,19 @@ type Props = {
   onDelete?: (notification: Notification) => void
 
   isSelecting?: boolean
+
+  // Si la tarea de esta notificación está en historial (completada) o
+  // activa. Se calcula en el padre (Dialog / Bell) contra la misma
+  // cache ["tasks"], con el mismo criterio para todas las notis,
+  // tengan o no workflowStep (procesos vs. tareas autosoportadas).
+  isHistorical?: boolean
+
+  // Modo confirmación: la tarea de esta notificación está en historial.
+  // Mantiene el header (avatar + nombre + acción) y agrega el mensaje
+  // de confirmación debajo, en vez de reemplazar todo el item.
+  isConfirming?: boolean
+  onConfirm?: (notification: Notification) => void | Promise<void>
+  onCancelConfirm?: () => void
 }
 
 export function NotificationItem({
@@ -29,6 +43,10 @@ export function NotificationItem({
   onMarkRead,
   onDelete,
   isSelecting = false,
+  isHistorical,
+  isConfirming = false,
+  onConfirm,
+  onCancelConfirm,
 }: Props) {
 
   const { actor, task, workflowStep } = notification
@@ -43,6 +61,82 @@ export function NotificationItem({
     workflowStep
       ? WORKFLOW_STATUS_DEFINITIONS[workflowStep.status]
       : undefined
+
+  if (isConfirming) {
+
+    return (
+
+      <div className="flex w-full items-start gap-2.5 rounded-xl px-2.5 py-2.5">
+
+        <div className="relative shrink-0">
+
+          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-white/5 ring-1 ring-white/8 text-xs font-semibold text-white shadow-inner">
+
+            {actor.avatarUrl ? (
+
+              <img
+                src={actor.avatarUrl}
+                alt={actor.name}
+                className="h-full w-full object-cover"
+              />
+
+            ) : (
+
+              actor.name.charAt(0).toUpperCase()
+
+            )}
+
+          </div>
+
+        </div>
+
+        <div className="min-w-0 flex-1">
+
+          <span className="block truncate text-sm font-semibold text-neutral-200">
+            {actor.name}
+          </span>
+
+          <span className="block text-sm text-neutral-400">
+            {isMention
+              ? "te mencionó"
+              : "comentó"}
+          </span>
+
+          <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg bg-white/5 px-2 py-1.5">
+
+            <span className="text-xs text-neutral-400">
+              Esta tarea está en el historial
+            </span>
+
+            <div className="flex shrink-0 items-center gap-1">
+
+              <button
+                type="button"
+                onClick={onCancelConfirm}
+                className="flex h-6 items-center rounded-md px-2 text-xs font-medium text-neutral-500 transition-colors hover:bg-white/8 hover:text-neutral-200"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onConfirm?.(notification)}
+                className="flex h-6 items-center rounded-md bg-cyan-500/15 px-2 text-xs font-semibold text-cyan-300 transition-colors hover:bg-cyan-500/25"
+              >
+                Ver igual
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    )
+
+  }
 
   return (
 
@@ -244,6 +338,37 @@ export function NotificationItem({
           {contextLabel}
 
         </p>
+
+        <div className="mt-1 flex items-center gap-1">
+
+          <span className="rounded-md bg-white/5 px-1.5 py-0.5 text-[10px] font-medium text-neutral-500">
+
+            {workflowStep
+              ? `PROCESO · ${workflowStep.processCode}`
+              : "TAREA"}
+
+          </span>
+
+          {isHistorical !== undefined && (
+
+            <span
+              className={cn(
+                "rounded-md px-1.5 py-0.5 text-[10px] font-medium",
+                isHistorical
+                  ? "bg-white/5 text-neutral-500"
+                  : "bg-cyan-500/10 text-cyan-400",
+              )}
+            >
+
+              {isHistorical
+                ? "HISTÓRICO"
+                : "ACTIVO"}
+
+            </span>
+
+          )}
+
+        </div>
 
         <p className="mt-1 line-clamp-2 text-sm text-neutral-400">
 

@@ -41,6 +41,7 @@ type Props = {
   focusToken?: string
   showHistory: boolean
   onHistoryRequired?: () => void
+  onResolvingChange?: (resolving: boolean) => void
 }
 
 export function ProcessTable({
@@ -52,6 +53,7 @@ export function ProcessTable({
   focusToken,
   showHistory,
   onHistoryRequired,
+  onResolvingChange,
 }: Props) {
 
   const hydrated = useHydrated()
@@ -143,6 +145,7 @@ export function ProcessTable({
     allItems: orderedTasks,
     getId: processTask => processAccess.task(processTask).id,
     onHistoryRequired,
+    onResolvingChange,
   })
 
   const columns = useMemo(

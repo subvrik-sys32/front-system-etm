@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { Eraser, Bell, History, Loader2 } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
@@ -21,6 +22,8 @@ import { NotificationItem } from "./notification-item"
 import { NotificationHistoryDialog } from "./notification-history-dialog"
 import { resolveNotificationHref } from "../utils/resolve-notification-href"
 
+import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
+import type { Task } from "@/features/tasks/types/task.types"
 import type { Notification } from "../types/notification.types"
 
 export function NotificationBell() {
@@ -28,8 +31,10 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [selectingId, setSelectingId] = useState<string | null>(null)
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
 
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const sidebarMode = useSidebarStore(s => s.mode)
   const closeSidebar = useSidebarStore(s => s.close)
@@ -63,11 +68,53 @@ export function NotificationBell() {
     sidebarMode,
   ])
 
+  // Lee la cache de ["tasks"] (misma queryKey que usa useTasks) para
+  // saber si la tarea de la notificación está oculta en historial,
+  // reusando el mismo criterio que TaskTable (isWorkflowCompleted).
+  // Sin fetch nuevo. Si la cache está vacía, no bloqueamos: el caso
+  // se resuelve del lado de la página vía el fallback silencioso de
+  // useHistoryHiddenFocus.
+  //
+  // Criterio unificado: es la ÚNICA fuente de verdad para decidir si
+  // se pregunta "¿Ver igual?", sin importar si la notificación tiene
+  // workflowStep (proceso) o no (tarea autosoportada).
+  function isTaskHistorical(taskId: string): boolean {
+
+    const tasks = queryClient.getQueryData<Task[]>(["tasks"])
+
+    const task = tasks?.find(t => t.id === taskId)
+
+    if (!task) {
+      return false
+    }
+
+    return isWorkflowCompleted(task.workflowSteps)
+
+  }
+
   const handleSelect = async (
     notification: Notification,
   ) => {
 
+    if (isTaskHistorical(notification.taskId)) {
+
+      setConfirmingId(notification.id)
+
+      return
+
+    }
+
+    await proceedToNotification(notification)
+
+  }
+
+  const proceedToNotification = async (
+    notification: Notification,
+    fromConfirm = false,
+  ) => {
+
     setSelectingId(notification.id)
+    setConfirmingId(null)
 
     try {
 
@@ -89,7 +136,7 @@ export function NotificationBell() {
       }
 
       router.push(
-        resolveNotificationHref(notification),
+        resolveNotificationHref(notification, { history: fromConfirm }),
       )
 
       // Ya no hace falta forzar refetch: el token `focus` cambia el
@@ -231,9 +278,13 @@ export function NotificationBell() {
                   <NotificationItem
                     key={notification.id}
                     notification={notification}
+                    isHistorical={isTaskHistorical(notification.taskId)}
                     onClick={handleSelect}
                     onMarkRead={markAsRead}
                     isSelecting={selectingId === notification.id}
+                    isConfirming={confirmingId === notification.id}
+                    onConfirm={n => proceedToNotification(n, true)}
+                    onCancelConfirm={() => setConfirmingId(null)}
                   />
 
                 ))}

@@ -64,9 +64,6 @@ export function TaskTable({
   useFocusedRow({
     focusedId: focusedTaskId,
     setExpandedRowId: expand.setExpandedRowId,
-    // Se reinicia el polling de scroll/expand cuando:
-    // - llega una nueva solicitud de foco (focusToken cambia), o
-    // - el historial pasa a visible (showHistory cambia)
     retryKey: `${focusToken ?? ""}:${showHistory}`,
   })
 
@@ -121,6 +118,9 @@ export function TaskTable({
     expand.setExpandedRowId,
   ])
 
+  // Red de seguridad silenciosa: si la tarea focused no está visible
+  // (por ej. el Bell no tenía cache de ["tasks"] para decidir antes
+  // de navegar), auto-activa showHistory sin preguntar nada.
   useHistoryHiddenFocus({
     focusedId: focusedTaskId,
     focusToken,

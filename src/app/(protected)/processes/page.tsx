@@ -25,6 +25,9 @@ export default function ProcessPage() {
   const focusToken =
     searchParams.get("focus") ?? undefined
 
+  const initialShowHistory =
+    searchParams.get("history") === "1"
+
   const codeParam =
     searchParams.get("code") ?? "ct"
 
@@ -33,10 +36,10 @@ export default function ProcessPage() {
 
   const process =
     getProcessDefinition(
-      processCode
+      processCode,
     )
 
-  return(
+  return (
 
     <main className="h-full bg-[#050505] px-8 py-10 text-white select-none">
 
@@ -60,17 +63,16 @@ export default function ProcessPage() {
 
           </div>
 
-          <div className="shrink-0">
-
-          </div>
+          <div className="shrink-0" />
 
         </header>
 
-            <ProcessPageContent
-              processCode={processCode}
-              focusedTaskId={taskId}
-              focusToken={focusToken}
-            />
+        <ProcessPageContent
+          processCode={processCode}
+          focusedTaskId={taskId}
+          focusToken={focusToken}
+          initialShowHistory={initialShowHistory}
+        />
 
       </section>
 

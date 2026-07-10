@@ -9,7 +9,10 @@ import { EntityExpandProvider } from "@/shared/ui/entity-table/features/expansio
 import { ExportMenu } from "@/shared/export/components/export-menu"
 import { PRODUCTION_EXPORT_SCOPES } from "@/shared/export/constants/export-config"
 
-import type { ExportFormat, ExportScope } from "@/shared/export/types/export.types"
+import type {
+  ExportFormat,
+  ExportScope,
+} from "@/shared/export/types/export.types"
 
 import { useTasks } from "@/features/tasks/hooks/use-tasks"
 import type { ProcessCode } from "@/features/tasks/types/task.types"
@@ -25,41 +28,63 @@ type Props = {
   processCode: ProcessCode
   focusedTaskId?: string
   focusToken?: string
+  initialShowHistory?: boolean
 }
 
 export function ProcessPageContent({
   processCode,
   focusedTaskId,
   focusToken,
+  initialShowHistory = false,
 }: Props) {
 
   const [search, setSearch] = useState("")
-  const [showHistory, setShowHistory] = useState(false)
+  const [showHistory, setShowHistory] =
+    useState(initialShowHistory)
 
-  // Igual que TaskPageContent: se enciende mientras se resuelve la
-  // solicitud de foco, para no dejar un frame sin overlay/blur entre
-  // el cierre del popover de notificaciones y la tarea quedando visible.
-  const [resolvingFocus, setResolvingFocus] = useState(false)
+  const [resolvingFocus, setResolvingFocus] =
+    useState(false)
 
-  const { tasks, loading } = useTasks()
+  const {
+    tasks,
+    loading,
+  } = useTasks()
 
-  const { processDefinition, processTasks } = useProcesses({
+  const {
+    processDefinition,
+    processTasks,
+  } = useProcesses({
     processCode,
     tasks,
   })
 
-  const { exportPdf, exportExcel } = useProductionSheet(processTasks, processCode)
+  const {
+    exportPdf,
+    exportExcel,
+  } = useProductionSheet(
+    processTasks,
+    processCode,
+  )
 
-  const completedCount = processTasks.filter(
-    task => task.workflowStep?.status === "REVIEWED",
-  ).length
+  const completedCount =
+    processTasks.filter(
+      task =>
+        task.workflowStep?.status === "REVIEWED",
+    ).length
 
   const showResolvingOverlay =
-    Boolean(focusedTaskId) && resolvingFocus
+    Boolean(focusedTaskId) &&
+    resolvingFocus
 
-  async function handleExport(format: ExportFormat, scope: ExportScope) {
+  async function handleExport(
+    format: ExportFormat,
+    scope: ExportScope,
+  ) {
 
-    if (scope !== "active" && scope !== "history") {
+    if (
+      scope !== "active" &&
+      scope !== "history"
+    ) {
       return
     }
 
@@ -82,14 +107,19 @@ export function ProcessPageContent({
 
             <BackToTaskButton />
 
-            <EntityToolbarSearch value={search} onChange={setSearch} />
+            <EntityToolbarSearch
+              value={search}
+              onChange={setSearch}
+            />
 
             <FilterBar module="processes" />
 
             <HistoryToggleButton
               count={completedCount}
               active={showHistory}
-              onClick={() => setShowHistory(value => !value)}
+              onClick={() =>
+                setShowHistory(v => !v)
+              }
             />
 
             <ExportMenu
@@ -111,17 +141,23 @@ export function ProcessPageContent({
           focusedTaskId={focusedTaskId}
           focusToken={focusToken}
           showHistory={showHistory}
-          onHistoryRequired={() => setShowHistory(true)}
-          onResolvingChange={setResolvingFocus}
+          onHistoryRequired={() =>
+            setShowHistory(true)
+          }
+          onResolvingChange={
+            setResolvingFocus
+          }
         />
 
       </EntityExpandProvider>
 
       {showResolvingOverlay && (
+
         <div
           aria-hidden
           className="pointer-events-none fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
         />
+
       )}
 
     </div>

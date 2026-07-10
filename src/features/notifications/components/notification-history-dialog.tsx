@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useQueryClient } from "@tanstack/react-query"
 import { Eraser, Loader2, Search, Trash2 } from "lucide-react"
 import { useCloseSidebarPreview } from "@/shared/layouts/hooks/use-close-sidebar-preview"
 
@@ -25,8 +24,6 @@ import { useDeleteAllNotifications } from "../hooks/use-delete-all-notifications
 import { NotificationItem } from "./notification-item"
 import { resolveNotificationHref } from "../utils/resolve-notification-href"
 
-import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
-import type { Task } from "@/features/tasks/types/task.types"
 import type { Notification } from "../types/notification.types"
 
 type Props = {
@@ -46,7 +43,6 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
 
   const router = useRouter()
-  const queryClient = useQueryClient()
 
   const { notifications, loading, loadMore, hasMore, loadingMore } = useNotifications()
   const { markAsRead } = useMarkNotificationRead()
@@ -66,38 +62,15 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
   const hasUnread = notifications.some(n => !n.read)
   const hasAny = notifications.length > 0
 
-  // Mismo criterio que NotificationBell: lee la cache de ["tasks"]
-  // (misma queryKey que useTasks) para saber si la tarea ya está en
-  // historial, sin hacer fetch nuevo. Si la cache está vacía, no
-  // bloqueamos: se resuelve del lado de la página vía el fallback
-  // silencioso de useHistoryHiddenFocus.
-  //
-  // Criterio unificado: es la ÚNICA fuente de verdad para decidir si
-  // se pregunta "¿Ver igual?", sin importar si la notificación tiene
-  // workflowStep (proceso) o no (tarea autosoportada).
-  function isTaskHistorical(taskId: string): boolean {
-
-    const tasks = queryClient.getQueryData<Task[]>(["tasks"])
-
-    const task = tasks?.find(t => t.id === taskId)
-
-    if (!task) {
-      return false
-    }
-
-    return isWorkflowCompleted(task.workflowSteps)
-
-  }
-
   const handleSelect = (notification: Notification) => {
 
-    if (isTaskHistorical(notification.taskId)) {
+  if (notification.route.history) {
 
-      setConfirmingId(notification.id)
+    setConfirmingId(notification.id)
 
-      return
+    return
 
-    }
+  }
 
     proceedToNotification(notification)
 
@@ -227,7 +200,7 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
                   <NotificationItem
                     key={notification.id}
                     notification={notification}
-                    isHistorical={isTaskHistorical(notification.taskId)}
+                    isHistorical={notification.route.history}
                     onClick={handleSelect}
                     onMarkRead={markAsRead}
                     onDelete={setPendingDelete}

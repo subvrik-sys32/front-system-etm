@@ -1,3 +1,5 @@
+import type { ProcessCode } from "@/features/tasks/types/task.types"
+
 export type NotificationType = "MENTION" | "COMMENT"
 
 export type WorkflowStatusValue =
@@ -7,6 +9,12 @@ export type WorkflowStatusValue =
   | "PAUSED"
   | "COMPLETED"
   | "REVIEWED"
+
+export interface NotificationRoute {
+  module: "tasks" | "processes"
+  history: boolean
+  processCode?: ProcessCode
+}
 
 export interface NotificationActor {
   id: string
@@ -25,7 +33,11 @@ export interface Notification {
   workflowStepId: string | null
   commentId: string
   messageSnippet: string
+
+  route: NotificationRoute
+
   actor: NotificationActor
+
   task: {
     id: string
     reference: string
@@ -35,6 +47,7 @@ export interface Notification {
       name: string
     }
   }
+
   workflowStep: {
     id: string
     processCode: string

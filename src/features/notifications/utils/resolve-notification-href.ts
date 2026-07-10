@@ -6,11 +6,20 @@ export function resolveNotificationHref(
 ) {
 
   const focus = crypto.randomUUID()
-  const historyParam = opts?.history ? "&history=1" : ""
 
-  if (notification.workflowStep) {
-    const code = notification.workflowStep.processCode.toLowerCase()
-    return `/processes?code=${code}&taskId=${notification.taskId}&focus=${focus}${historyParam}`
+  const history =
+    opts?.history ??
+    notification.route.history
+
+  const historyParam =
+    history
+      ? "&history=1"
+      : ""
+
+  if (notification.route.module === "processes") {
+
+    return `/processes?code=${notification.route.processCode?.toLowerCase()}&taskId=${notification.taskId}&focus=${focus}${historyParam}`
+
   }
 
   return `/tasks?taskId=${notification.taskId}&focus=${focus}${historyParam}`

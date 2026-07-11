@@ -51,7 +51,7 @@ export function AppSidebar() {
         className={cn(
           "isolate z-40 flex flex-col overflow-hidden bg-[#0A0A0A] ring-1 ring-white/5 will-change-transform transform-gpu transition-all duration-200 ease-out select-none",
           "fixed left-0 top-0 h-screen border-r border-white/5",
-          collapsed ? "w-[72px]" : "w-62",
+          collapsed ? "w-18" : "w-62",
           mode === "closed" ? "translate-x-[-110%]" : "translate-x-0",
         )}
       >

@@ -1,4 +1,4 @@
-  import { api } from '@/lib/api'
+import { api } from '@/lib/api';
 import { EngineeringFile } from '../types/engineering-file';
 
 export const engineeringApi = {
@@ -6,7 +6,9 @@ export const engineeringApi = {
     const formData = new FormData();
     formData.append('file', file);
     return api
-      .post<EngineeringFile>('/engineering/files/upload', formData)
+      .post<EngineeringFile>('/engineering/files/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
       .then((r) => r.data);
   },
 
@@ -16,7 +18,8 @@ export const engineeringApi = {
     api.get<EngineeringFile>(`/engineering/files/${id}`).then((r) => r.data),
 
   // URL directa al DXF crudo, consumida por dxf-viewer en el navegador
-  getRawUrl: (id: string) => `${process.env.NEXT_PUBLIC_API_URL}/engineering/files/${id}/raw`,
+  getRawUrl: (id: string) =>
+    `${process.env.NEXT_PUBLIC_API_URL}/engineering/files/${id}/raw`,
 
   remove: (id: string) => api.delete(`/engineering/files/${id}`).then((r) => r.data),
 };

@@ -29,7 +29,7 @@ export function AppSidebar() {
     processCounts,
   } = useSidebarCounts()
 
-  useSidebarPrefetch()
+  const { prefetchOnHover } = useSidebarPrefetch()
 
   const {
     profileOpen,
@@ -66,6 +66,7 @@ export function AppSidebar() {
             processCounts={processCounts}
             presenceCollapsed={presenceCollapsed || collapsed}
             presenceRef={presenceRef}
+            prefetchOnHover={prefetchOnHover}
           />
         </div>
 

@@ -10,6 +10,7 @@ type Props = {
   icon: React.ElementType
   count?: number
   collapsed?: boolean
+  onMouseEnter?: () => void
 }
 
 export function SidebarItem({
@@ -19,6 +20,7 @@ export function SidebarItem({
   icon: Icon,
   count,
   collapsed,
+  onMouseEnter,
 }: Props) {
 
   return (
@@ -26,6 +28,7 @@ export function SidebarItem({
     <Link
       href={href}
       title={collapsed ? label : undefined}
+      onMouseEnter={onMouseEnter}
       className={cn(
         "mx-1 flex h-8 items-center rounded-md text-sm font-medium transition-colors",
         collapsed ? "justify-center px-0" : "gap-2 px-3",

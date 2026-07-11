@@ -22,6 +22,7 @@ type SidebarNavigationProps = {
   processCounts: ProcessCounts
   presenceCollapsed: boolean
   presenceRef?: (node: HTMLDivElement | null) => void
+  prefetchOnHover?: (href: string) => void
 }
 
 export function SidebarNavigation({
@@ -31,6 +32,7 @@ export function SidebarNavigation({
   processCounts,
   presenceCollapsed,
   presenceRef,
+  prefetchOnHover,
 }: SidebarNavigationProps) {
 
   const pathname = usePathname()
@@ -95,6 +97,12 @@ export function SidebarNavigation({
                   processCounts,
                 })
 
+                // Las rutas con query param (/processes?code=...)
+                // no se prefetchean al montar el sidebar — recién
+                // se prefetchean al pasar el mouse por encima.
+                const hasQuery =
+                  item.href.includes("?")
+
                 return (
 
                   <SidebarItem
@@ -105,6 +113,11 @@ export function SidebarNavigation({
                     icon={item.icon}
                     active={isActive}
                     count={count}
+                    onMouseEnter={
+                      hasQuery
+                        ? () => prefetchOnHover?.(item.href)
+                        : undefined
+                    }
                   />
 
                 )

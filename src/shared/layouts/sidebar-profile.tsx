@@ -9,6 +9,12 @@ import { useAuthStore } from "@/features/auth/store/auth-store"
 import { ProfilePreviewPanel } from "@/features/profile"
 import { ProfileMentionBadge } from "@/features/notifications/components/profile-mention-badge"
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
 import { cn } from "@/shared/utils/utils"
 
 type SidebarProfileProps = {
@@ -61,35 +67,72 @@ export function SidebarProfile({
 
       <div className="flex flex-col items-center gap-2">
 
-        <button
-          onClick={onEditProfile}
-          title={user?.name ?? "Mi perfil"}
-          className="relative h-9 w-9 shrink-0 rounded-full"
+        <Popover
+          open={profileOpen}
+          onOpenChange={open => {
+
+            if (open && !canOpenProfile) {
+              return
+            }
+
+            setProfileOpen(open)
+
+          }}
         >
 
-          <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-white/3 text-sm font-semibold text-white shadow-inner">
+          <PopoverTrigger asChild>
 
-            {user?.avatarUrl ? (
+            <button
+              title={user?.name ?? "Mi perfil"}
+              disabled={!canOpenProfile}
+              className="relative h-9 w-9 shrink-0 rounded-full disabled:cursor-not-allowed disabled:opacity-60"
+            >
 
-              <img
-                src={user.avatarUrl}
-                alt={user.name}
-                className="h-full w-full object-cover"
-              />
+              <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-white/3 text-sm font-semibold text-white shadow-inner">
 
-            ) : (
+                {user?.avatarUrl ? (
 
-              user?.name?.[0]?.toUpperCase() ?? "?"
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="h-full w-full object-cover"
+                  />
 
-            )}
+                ) : (
 
-          </div>
+                  user?.name?.[0]?.toUpperCase() ?? "?"
 
-          <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-[#0A0A0A]" />
+                )}
 
-          <ProfileMentionBadge className="absolute -top-0.5 -right-0.5 ring-2 ring-[#090909]" />
+              </div>
 
-        </button>
+              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-[#0A0A0A]" />
+
+              <ProfileMentionBadge className="absolute -top-0.5 -right-0.5 ring-2 ring-[#090909]" />
+
+            </button>
+
+          </PopoverTrigger>
+
+          <PopoverContent
+            data-sidebar-popover
+            side="right"
+            align="end"
+            sideOffset={8}
+            className="z-90 w-72 border border-white/10 bg-[#1D1D1D] p-0"
+          >
+
+            <ProfilePreviewPanel
+              contentRef={contentRef}
+              onEdit={() => {
+                setProfileOpen(false)
+                onEditProfile()
+              }}
+            />
+
+          </PopoverContent>
+
+        </Popover>
 
         <button
           onClick={handleLogout}

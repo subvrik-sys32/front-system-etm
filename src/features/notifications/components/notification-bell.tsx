@@ -155,7 +155,7 @@ export function NotificationBell({ collapsed }: Props) {
 
               {collapsed && count > 0 && (
 
-                <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-semibold text-white">
+                <span className="absolute -right-3 -top-3 flex h-4 w-4 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-semibold text-white">
 
                   {count > 9
                     ? "9+"

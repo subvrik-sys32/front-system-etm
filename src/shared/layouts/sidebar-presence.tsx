@@ -1,10 +1,17 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { Users } from "lucide-react"
 
+import { cn } from "@/shared/utils/utils"
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { useUsersDirectory } from "@/features/users/hooks/use-users-directory"
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 import { SidebarSection } from "./sidebar-section"
 
@@ -17,10 +24,62 @@ type Props = {
   presenceRef?: (node: HTMLDivElement | null) => void
 }
 
+function UserRow({
+  user,
+}: {
+  user: { id: string; name: string; avatarUrl?: string | null }
+}) {
+
+  return (
+
+    <div
+      key={user.id}
+      className="flex items-center gap-2 rounded-xl bg-white/3 px-2.5 py-2 transition-all duration-200 hover:bg-white/6"
+    >
+
+      <div className="relative h-5 w-5 shrink-0">
+
+        <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-white/8 text-[10px] font-semibold text-white">
+
+          {user.avatarUrl ? (
+
+            <img
+              src={user.avatarUrl}
+              alt={user.name}
+              className="h-full w-full object-cover"
+            />
+
+          ) : (
+
+            user.name[0]?.toUpperCase() ?? "?"
+
+          )}
+
+        </div>
+
+        <span
+          aria-hidden="true"
+          className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-[#0A0A0A]"
+        />
+
+      </div>
+
+      <span className="truncate text-xs font-medium text-neutral-300">
+        {user.name}
+      </span>
+
+    </div>
+
+  )
+
+}
+
 export function SidebarPresence({
   collapsed = false,
   presenceRef,
 }: Props) {
+
+  const [open, setOpen] = useState(false)
 
   const currentUser =
     useAuthStore(s => s.user)
@@ -101,30 +160,80 @@ export function SidebarPresence({
 
       <div ref={presenceRef} className="select-none">
 
-        <SidebarSection title="En línea" collapsed>
+        <Popover
+          open={open}
+          onOpenChange={setOpen}
+        >
 
-          <div
-            title={`${onlineUsers.length} en línea`}
-            className="mx-1 flex h-8 w-8 items-center justify-center rounded-md text-neutral-400"
+          <SidebarSection title="En línea" collapsed>
+
+            <PopoverTrigger asChild>
+
+              <button
+                type="button"
+                title={`${onlineUsers.length} en línea`}
+                className={cn(
+                  "mx-1 flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+                  open
+                    ? "bg-white/6 text-white"
+                    : "text-neutral-400 hover:bg-white/4 hover:text-white",
+                )}
+              >
+
+                <span className="relative flex items-center justify-center">
+
+                  <Users size={14} />
+
+                  <span className="absolute -right-3 -top-3 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-semibold text-white">
+
+                    {onlineUsers.length > 9
+                      ? "9+"
+                      : onlineUsers.length}
+
+                  </span>
+
+                </span>
+
+              </button>
+
+            </PopoverTrigger>
+
+          </SidebarSection>
+
+          <PopoverContent
+            data-sidebar-popover
+            side="right"
+            align="start"
+            sideOffset={8}
+            className="z-90 w-72 border border-white/10 bg-[#101012] p-0"
           >
 
-            <span className="relative flex items-center justify-center">
+            <div className="flex items-center justify-between px-3.5 py-3">
 
-              <Users size={14} />
-
-              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-semibold text-white">
-
-                {onlineUsers.length > 9
-                  ? "9+"
-                  : onlineUsers.length}
-
+              <span className="text-sm font-semibold text-neutral-200">
+                En línea
               </span>
 
-            </span>
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-500/15 px-1.5 text-[11px] font-semibold text-emerald-400">
+                {onlineUsers.length}
+              </span>
 
-          </div>
+            </div>
 
-        </SidebarSection>
+            <div
+              className="erp-scrollbar space-y-1 overflow-y-auto px-2 pb-2"
+              style={{ maxHeight: 320 }}
+            >
+
+              {onlineUsers.map(user => (
+                <UserRow key={user.id} user={user} />
+              ))}
+
+            </div>
+
+          </PopoverContent>
+
+        </Popover>
 
       </div>
 
@@ -144,45 +253,7 @@ export function SidebarPresence({
         >
 
           {onlineUsers.map(user => (
-
-            <div
-              key={user.id}
-              className="flex items-center gap-2 rounded-xl bg-white/3 px-2.5 py-2 transition-all duration-200 hover:bg-white/6"
-            >
-
-              <div className="relative h-5 w-5 shrink-0">
-
-                <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-white/8 text-[10px] font-semibold text-white">
-
-                  {user.avatarUrl ? (
-
-                    <img
-                      src={user.avatarUrl}
-                      alt={user.name}
-                      className="h-full w-full object-cover"
-                    />
-
-                  ) : (
-
-                    user.name[0]?.toUpperCase() ?? "?"
-
-                  )}
-
-                </div>
-
-                <span
-                  aria-hidden="true"
-                  className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-[#0A0A0A]"
-                />
-
-              </div>
-
-              <span className="truncate text-xs font-medium text-neutral-300">
-                {user.name}
-              </span>
-
-            </div>
-
+            <UserRow key={user.id} user={user} />
           ))}
 
         </div>

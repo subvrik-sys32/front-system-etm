@@ -24,6 +24,9 @@ export type EntityModuleOptions={
 
 const SINGULARS: Record<string, string> = {
   processes: "process",
+  priorities: "priority",
+  statuses: "status",
+  thicknesses: "thickness",
 }
 
 function toSingular(key: string): string {

@@ -24,7 +24,11 @@ import { resolveNotificationHref } from "../utils/resolve-notification-href"
 
 import type { Notification } from "../types/notification.types"
 
-export function NotificationBell() {
+type Props = {
+  collapsed?: boolean
+}
+
+export function NotificationBell({ collapsed }: Props) {
 
   const [open, setOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -34,7 +38,6 @@ export function NotificationBell() {
   const router = useRouter()
 
   const sidebarMode = useSidebarStore(s => s.mode)
-  const closeSidebar = useSidebarStore(s => s.close)
 
   const {
     notifications,
@@ -101,20 +104,9 @@ export function NotificationBell() {
 
       setOpen(false)
 
-      // Solo cerrar cuando el sidebar estaba en preview.
-      if (sidebarMode === "preview") {
-
-        closeSidebar()
-
-      }
-
       router.push(
         resolveNotificationHref(notification, { history: fromConfirm }),
       )
-
-      // Ya no hace falta forzar refetch: el token `focus` cambia el
-      // query string en cada clic, así que el Router siempre trata
-      // esto como una navegación nueva, incluso hacia la misma tarea.
 
     } finally {
 
@@ -127,12 +119,6 @@ export function NotificationBell() {
   const handleOpenHistory = () => {
 
     setOpen(false)
-
-    if (sidebarMode === "preview") {
-
-      closeSidebar()
-
-    }
 
     setHistoryOpen(true)
 
@@ -151,21 +137,45 @@ export function NotificationBell() {
 
           <button
             type="button"
+            title={collapsed ? "Notificaciones" : undefined}
             className={cn(
-              "mx-1 flex h-8 w-[calc(100%-8px)] items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors",
+              "flex h-8 items-center rounded-md text-sm font-medium transition-colors",
+              collapsed
+                ? "w-8 justify-center px-0"
+                : "mx-1 w-[calc(100%-8px)] gap-2 px-3",
               open
                 ? "bg-white/6 text-white"
                 : "text-neutral-400 hover:bg-white/4 hover:text-white",
             )}
           >
 
-            <Bell size={14} />
+            <span className="relative flex items-center justify-center">
 
-            <span>
-              Notificaciones
+              <Bell size={14} />
+
+              {collapsed && count > 0 && (
+
+                <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-semibold text-white">
+
+                  {count > 9
+                    ? "9+"
+                    : count}
+
+                </span>
+
+              )}
+
             </span>
 
-            {count > 0 && (
+            {!collapsed && (
+
+              <span>
+                Notificaciones
+              </span>
+
+            )}
+
+            {!collapsed && count > 0 && (
 
               <span className="ml-auto flex h-6 w-8 items-center justify-center rounded-lg bg-cyan-500 text-xs font-semibold text-white animate-pulse">
 

@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react"
 
-import { useCloseSidebarPreview } from "@/shared/layouts/hooks/use-close-sidebar-preview"
-
 import {
   Dialog,
   DialogContent,
@@ -27,10 +25,6 @@ type Props = {
 }
 
 export function ProfileDialog({ open, onClose }: Props) {
-
-  useCloseSidebarPreview(
-    open,
-  )
 
   const {
     profile,

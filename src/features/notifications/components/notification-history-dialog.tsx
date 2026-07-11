@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Eraser, Loader2, Search, Trash2 } from "lucide-react"
-import { useCloseSidebarPreview } from "@/shared/layouts/hooks/use-close-sidebar-preview"
 
 import {
   Dialog,
@@ -32,10 +31,6 @@ type Props = {
 }
 
 export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
-
-  useCloseSidebarPreview(
-    open,
-  )
 
   const [search, setSearch] = useState("")
   const [confirmDeleteAll, setConfirmDeleteAll] = useState(false)

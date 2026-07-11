@@ -13,7 +13,6 @@ import {
 
 import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
 import { preventNestedDialogClose } from "@/shared/ui/dialogs/prevent-nested-dialog-close"
-import { useCloseSidebarPreview } from "@/shared/layouts/hooks/use-close-sidebar-preview"
 
 import { useComments } from "../hooks/use-comments"
 import { useDeleteComment } from "../hooks/use-delete-comment"
@@ -35,10 +34,6 @@ export function CommentHistoryDialog({
   onOpenChange,
   onEditComment,
 }: Props) {
-
-  useCloseSidebarPreview(
-    open,
-  )
 
   const [search, setSearch] = useState("")
   const [pendingDelete, setPendingDelete] = useState<Comment | null>(null)

@@ -3,6 +3,7 @@
 import type { RefObject } from "react"
 
 import { useRouter } from "next/navigation"
+import { LogOut } from "lucide-react"
 
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { ProfilePreviewPanel } from "@/features/profile"
@@ -11,6 +12,8 @@ import { ProfileMentionBadge } from "@/features/notifications/components/profile
 import { cn } from "@/shared/utils/utils"
 
 type SidebarProfileProps = {
+  collapsed?: boolean
+
   onEditProfile: () => void
 
   profileOpen: boolean
@@ -28,6 +31,7 @@ type SidebarProfileProps = {
 const OVERLAP = 24
 
 export function SidebarProfile({
+  collapsed,
   onEditProfile,
   profileOpen,
   setProfileOpen,
@@ -44,6 +48,61 @@ export function SidebarProfile({
 
   const user = useAuthStore(s => s.user)
   const logout = useAuthStore(s => s.logout)
+
+  const handleLogout = () => {
+    logout()
+    requestAnimationFrame(() => {
+      router.replace("/login")
+    })
+  }
+
+  if (collapsed) {
+    return (
+
+      <div className="flex flex-col items-center gap-2">
+
+        <button
+          onClick={onEditProfile}
+          title={user?.name ?? "Mi perfil"}
+          className="relative h-9 w-9 shrink-0 rounded-full"
+        >
+
+          <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-white/3 text-sm font-semibold text-white shadow-inner">
+
+            {user?.avatarUrl ? (
+
+              <img
+                src={user.avatarUrl}
+                alt={user.name}
+                className="h-full w-full object-cover"
+              />
+
+            ) : (
+
+              user?.name?.[0]?.toUpperCase() ?? "?"
+
+            )}
+
+          </div>
+
+          <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-[#0A0A0A]" />
+
+          <ProfileMentionBadge className="absolute -top-0.5 -right-0.5 ring-2 ring-[#090909]" />
+
+        </button>
+
+        <button
+          onClick={handleLogout}
+          title="Salir"
+          className="flex h-8 w-8 items-center justify-center rounded-md text-neutral-400 transition hover:bg-white/5 hover:text-white"
+        >
+          <LogOut size={14} />
+        </button>
+
+      </div>
+
+    )
+  }
 
   return (
 
@@ -78,11 +137,8 @@ export function SidebarProfile({
           <ProfilePreviewPanel
             contentRef={contentRef}
             onEdit={() => {
-
               setProfileOpen(false)
-
               onEditProfile()
-
             }}
           />
 
@@ -188,17 +244,7 @@ export function SidebarProfile({
           )}
 
           <button
-            onClick={() => {
-
-              logout()
-
-              requestAnimationFrame(() => {
-
-                router.replace("/login")
-
-              })
-
-            }}
+            onClick={handleLogout}
             className="shrink-0 rounded-md px-2 py-1 text-xs text-neutral-400 transition hover:bg-white/5 hover:text-white"
           >
             Salir

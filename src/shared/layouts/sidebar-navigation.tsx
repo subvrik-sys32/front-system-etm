@@ -16,6 +16,7 @@ import { useAuthStore } from "@/features/auth/store/auth-store"
 import type { ProcessCounts } from "./hooks/use-sidebar-counts"
 
 type SidebarNavigationProps = {
+  collapsed?: boolean
   projectsCount: number
   activeTasksCount: number
   processCounts: ProcessCounts
@@ -24,6 +25,7 @@ type SidebarNavigationProps = {
 }
 
 export function SidebarNavigation({
+  collapsed,
   projectsCount,
   activeTasksCount,
   processCounts,
@@ -50,21 +52,21 @@ export function SidebarNavigation({
       }}
     >
 
-      <div className="mb-3">
-        <NotificationBell />
+      <div className={collapsed ? "mb-3 flex justify-center" : "mb-3"}>
+        <NotificationBell collapsed={collapsed} />
       </div>
 
       {NAVIGATION.map((section, index) => {
 
-      const restrictedRoles = ["OPERARIO", "PROJECT_MANAGER"]
+        const restrictedRoles = ["OPERARIO", "PROJECT_MANAGER"]
 
-      const items = section.items.filter(
-        item =>
-          !(
-            restrictedRoles.includes(user?.role?.code ?? "") &&
-            item.href === "/admin/users"
-          ),
-      )
+        const items = section.items.filter(
+          item =>
+            !(
+              restrictedRoles.includes(user?.role?.code ?? "") &&
+              item.href === "/admin/users"
+            ),
+        )
 
         if (items.length === 0) {
           return null
@@ -76,6 +78,7 @@ export function SidebarNavigation({
 
             <SidebarSection
               title={section.title}
+              collapsed={collapsed}
             >
 
               {items.map(item => {
@@ -96,6 +99,7 @@ export function SidebarNavigation({
 
                   <SidebarItem
                     key={item.href}
+                    collapsed={collapsed}
                     href={item.href}
                     label={item.label}
                     icon={item.icon}

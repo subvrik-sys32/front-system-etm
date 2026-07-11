@@ -8,6 +8,7 @@ import {
   Package,
   Truck,
   Users,
+  DraftingCompass,
 } from "lucide-react"
 
 export const NAVIGATION = [
@@ -25,6 +26,13 @@ export const NAVIGATION = [
         href: "/tasks",
         icon: ClipboardList,
       },
+
+      {
+        label: "Engineering",
+        href: "/engineering",
+        icon: DraftingCompass,
+      },
+
     ],
   },
 

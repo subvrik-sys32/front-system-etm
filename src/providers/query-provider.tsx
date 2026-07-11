@@ -17,9 +17,9 @@ function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 1000 * 10,
-        refetchInterval: 1000 * 15,  // refetch cada 15s, sin importar foco/stale
-        refetchOnWindowFocus: true,
+        staleTime: 1000 * 60,        // el realtime mantiene la cache al día;
+                                      // esto solo protege datos que no dependen de eventos SSE
+        refetchOnWindowFocus: true,  // red de seguridad puntual, no periódica
         gcTime: 1000 * 60 * 30,
         retry: 1,
       },

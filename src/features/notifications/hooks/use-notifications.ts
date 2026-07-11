@@ -14,7 +14,6 @@ export function useNotifications(){
       notificationsService.getAll({ cursor: pageParam, take: PAGE_SIZE }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    refetchInterval: 60_000, // fallback, ya no es la vía principal (llega por SSE)
   })
 
   const notifications = query.data?.pages.flatMap(page => page.items) ?? []

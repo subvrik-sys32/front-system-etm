@@ -2,7 +2,10 @@
 
 import Image from "next/image"
 
-import { PanelLeftClose, X } from "lucide-react"
+import {
+  EyeOff,
+  PanelLeftClose,
+} from "lucide-react"
 
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
 
@@ -46,7 +49,10 @@ export function SidebarHeader({ collapsed }: Props) {
               title="Expandir"
               className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
             >
-              <PanelLeftClose size={15} className="rotate-180" />
+              <PanelLeftClose
+                size={15}
+                className="rotate-180"
+              />
             </button>
 
           </div>
@@ -67,12 +73,15 @@ export function SidebarHeader({ collapsed }: Props) {
             </div>
 
             <div className="mt-2 flex flex-col items-center">
+
               <h1 className="whitespace-nowrap text-[12px] font-semibold tracking-[0.16em] text-white/90">
                 COMPANY S.A.C.
               </h1>
+
               <p className="mt-0.5 whitespace-nowrap text-[10px] tracking-[0.12em] text-neutral-500">
                 ERP INDUSTRIAL
               </p>
+
             </div>
 
             <div className="absolute right-3 top-3 flex items-center gap-1">
@@ -87,10 +96,10 @@ export function SidebarHeader({ collapsed }: Props) {
 
               <button
                 onClick={toggleClosed}
-                title="Ocultar"
+                title="Ocultar barra lateral"
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
               >
-                <X size={15} />
+                <EyeOff size={15} />
               </button>
 
             </div>

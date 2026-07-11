@@ -22,6 +22,14 @@ export type EntityModuleOptions={
   enabled?:boolean
 }
 
+const SINGULARS: Record<string, string> = {
+  processes: "process",
+}
+
+function toSingular(key: string): string {
+  return SINGULARS[key] ?? key.slice(0, -1)
+}
+
 export function useEntityModule<
   T extends EntityWithId,
   CreateDto,
@@ -38,7 +46,7 @@ export function useEntityModule<
   const listKey=[key] as const
 
   const entityKey=(id:string)=>[
-    key.slice(0,-1),
+    toSingular(key),
     id,
   ] as const
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 
 import {
   fetchEventSource,
@@ -19,6 +20,7 @@ export function RealtimeProvider({
 }) {
 
   const user = useAuthStore(s => s.user)
+  const queryClient = useQueryClient()
 
   useEffect(() => {
 
@@ -42,6 +44,12 @@ export function RealtimeProvider({
     // en cerrarse del lado del servidor.
     let stale = false
 
+    // true recién después de la primera conexión exitosa.
+    // Sirve para no invalidar todo en el montaje inicial (ya se hace
+    // fetch normal al montar cada useQuery) — solo cuando se reabre
+    // el stream tras haberse caído por un corte de red/deploy/etc.
+    let hasConnectedOnce = false
+
     fetchEventSource(
       `${process.env.NEXT_PUBLIC_API_URL}/realtime/events`,
       {
@@ -62,7 +70,20 @@ export function RealtimeProvider({
               .get("content-type")
               ?.includes(EventStreamContentType)
           ) {
+
+            if (hasConnectedOnce) {
+              // Se reconectó tras un corte: pudimos habernos perdido
+              // eventos mientras estuvo caída. Invalidar todo fuerza
+              // a que, en el próximo acceso/foco, se traiga lo real.
+              // No dispara requests a ciegas: solo refetchea queries
+              // con observadores montados en este momento.
+              queryClient.invalidateQueries()
+            }
+
+            hasConnectedOnce = true
+
             return
+
           }
 
           if (response.status === 401) {
@@ -117,6 +138,10 @@ export function RealtimeProvider({
             throw error // corta el retry automático de fetchEventSource
           }
 
+          // no relanzar acá: dejamos que fetch-event-source reintente
+          // con su backoff normal. Cuando reabra, onopen dispara la
+          // invalidación si corresponde.
+
         },
 
       },
@@ -127,7 +152,7 @@ export function RealtimeProvider({
       controller.abort()
     }
 
-  }, [user])
+  }, [user, queryClient])
 
   return <>{children}</>
 

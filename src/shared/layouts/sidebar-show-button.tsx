@@ -1,6 +1,6 @@
 "use client"
 
-import { PanelLeftOpen } from "lucide-react"
+import { Eye } from "lucide-react"
 
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
 
@@ -17,10 +17,10 @@ export function SidebarShowButton() {
 
     <button
       onClick={toggleClosed}
-      title="Mostrar sidebar"
+      title="Mostrar barra lateral"
       className="fixed left-3 top-5 z-40 flex h-9 w-9 items-center justify-center rounded-lg bg-[#101012] text-neutral-500 ring-1 ring-white/5 transition-colors hover:bg-white/5 hover:text-white"
     >
-      <PanelLeftOpen size={16} />
+      <Eye size={16} />
     </button>
 
   )

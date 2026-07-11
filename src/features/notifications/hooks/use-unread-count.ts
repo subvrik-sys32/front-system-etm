@@ -8,7 +8,6 @@ export function useUnreadCount(){
   const query=useQuery({
     queryKey:["notifications","unread-count"],
     queryFn:notificationsService.getUnreadCount,
-    refetchInterval:60_000, // fallback, ya no es la vía principal (llega por SSE)
   })
 
   return{

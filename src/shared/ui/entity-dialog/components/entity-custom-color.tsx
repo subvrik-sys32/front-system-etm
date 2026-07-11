@@ -1,4 +1,10 @@
 import {
+  useEffect,
+  useMemo,
+  useRef,
+} from "react"
+
+import {
   Input,
 } from "@/components/ui/input"
 
@@ -10,6 +16,10 @@ import {
   hexToRgb,
   rgbToHex,
 } from "@/shared/utils/color-utils"
+
+import {
+  useNativeEvent,
+} from "@/shared/hooks/use-native-event"
 
 const channels=[
   ["r","R"],
@@ -25,9 +35,71 @@ export function EntityCustomColor({
 }:EntityEditorProps){
 
   const rgb=
-    hexToRgb(
-      value.color,
+    useMemo(
+      ()=>
+        hexToRgb(
+          value.color,
+        ),
+      [value.color],
     )
+
+  const colorInputRef=
+    useRef<HTMLInputElement>(null)
+
+  // El "onChange" de React para type="color" mapea al evento
+  // nativo "input", que dispara en cada frame mientras se
+  // arrastra dentro del picker. Usamos el evento nativo "change"
+  // en su lugar: el navegador lo dispara UNA sola vez, al soltar
+  // o cerrar el picker, así el usuario se mueve libre dentro del
+  // selector y recién ahí se propaga el color hacia afuera.
+  useNativeEvent(
+    colorInputRef,
+    "change",
+    event=>{
+
+      const nextColor=
+        (event.target as HTMLInputElement)
+          .value
+
+      onChange({
+
+        ...value,
+
+        color:
+          nextColor,
+
+      })
+
+    },
+  )
+
+  // Sincroniza el swatch del input nativo cuando el color cambia
+  // desde OTRA fuente (hex, RGB, presets), sin interferir con una
+  // interacción de arrastre en curso (esa se maneja arriba).
+  useEffect(()=>{
+
+    const input=
+      colorInputRef.current
+
+    if(
+      !input
+    ){
+
+      return
+
+    }
+
+    if(
+      input.value!==
+      value.color
+    ){
+
+      input.value=
+        value.color
+
+    }
+
+  },[value.color])
 
   function updateRgb(
 
@@ -132,15 +204,9 @@ export function EntityCustomColor({
         <div className="relative h-9 w-20 shrink-0 overflow-hidden">
 
           <input
+            ref={colorInputRef}
             type="color"
-            value={value.color}
-            onChange={event=>
-
-              updateHex(
-                event.target.value,
-              )
-
-            }
+            defaultValue={value.color}
             className="absolute inset-0 h-full w-full scale-150 cursor-pointer"
           />
 

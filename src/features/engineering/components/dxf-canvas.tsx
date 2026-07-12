@@ -80,12 +80,18 @@ function extractEntities(dxf: any): Entity[] {
         out.push({ kind: 'circle', center: e.center, radius: e.radius, color });
         break;
       case 'ARC':
+        // FIX: dxf-parser ya entrega startAngle/endAngle en RADIANES
+        // (ver node_modules/dxf-parser/src/entities/arc.ts, code 50/51:
+        // entity.startAngle = Math.PI / 180 * curr.value).
+        // Antes este código volvía a multiplicar por Math.PI/180,
+        // lo que colapsaba el barrido del arco a un ángulo casi nulo
+        // (ej. un arco de 180° quedaba en ~3° -> se veía como un punto).
         out.push({
           kind: 'arc',
           center: e.center,
           radius: e.radius,
-          startAngle: (e.startAngle * Math.PI) / 180,
-          endAngle: (e.endAngle * Math.PI) / 180,
+          startAngle: e.startAngle,
+          endAngle: e.endAngle,
           color,
         });
         break;
@@ -190,6 +196,13 @@ export const DxfCanvas = ({ url }: DxfCanvasProps) => {
         ctx.arc(e.center.x, e.center.y, e.radius, 0, Math.PI * 2);
         ctx.stroke();
       } else if (e.kind === 'arc') {
+        // NOTA: ctx.scale(scale, -scale) invierte el eje Y, lo que
+        // también invierte el sentido de barrido visual del arco.
+        // Para arcos de exactamente 180° (como los ojales de este
+        // archivo) no cambia el resultado, pero si en otros DXF ves
+        // arcos "al revés" (el complementario del que esperabas),
+        // agregá `true` como quinto argumento (anticlockwise):
+        // ctx.arc(e.center.x, e.center.y, e.radius, e.startAngle, e.endAngle, true);
         ctx.arc(e.center.x, e.center.y, e.radius, e.startAngle, e.endAngle);
         ctx.stroke();
       } else if (e.kind === 'text') {

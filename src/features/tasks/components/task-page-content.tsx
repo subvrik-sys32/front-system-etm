@@ -1,3 +1,4 @@
+// features/tasks/components/task-page-content.tsx
 "use client"
 
 import { useState } from "react"
@@ -15,6 +16,13 @@ import {
 import { BackToProjectButton } from "@/features/projects/components/actions/back-to-project-button"
 
 import { TaskTable } from "@/features/tasks/table"
+
+import {
+  TaskPipelineBoard,
+  TaskViewToggle,
+  useTaskView,
+  usePipelineTasks,
+} from "@/features/tasks/pipeline"
 
 import { FilterBar } from "@/shared/filter/components/filter-bar"
 
@@ -53,6 +61,11 @@ export function TaskPageContent({
   ]=useState(initialShowHistory)
 
   const{
+    view,
+    setView,
+  }=useTaskView()
+
+  const{
     tasks,
     loading,
     reorderTasks,
@@ -65,6 +78,12 @@ export function TaskPageContent({
   }=useTaskExport(
     tasks,
   )
+
+  const pipelineTasks=usePipelineTasks({
+    tasks,
+    search,
+    showHistory,
+  })
 
   const completedCount=
     tasks.filter(
@@ -142,24 +161,40 @@ export function TaskPageContent({
               onExport={handleExport}
             />
 
+            <TaskViewToggle
+              value={view}
+              onChange={setView}
+            />
+
           </div>
         }
       />
 
-      <EntityExpandProvider>
+      {view==="table"?(
 
-        <TaskTable
-          tasks={tasks}
+        <EntityExpandProvider>
+
+          <TaskTable
+            tasks={tasks}
+            loading={loading}
+            focusedTaskId={focusedTaskId}
+            focusToken={focusToken}
+            search={search}
+            showHistory={showHistory}
+            reorderTasks={reorderTasks}
+            onHistoryRequired={()=>setShowHistory(true)}
+          />
+
+        </EntityExpandProvider>
+
+      ):(
+
+        <TaskPipelineBoard
+          tasks={pipelineTasks}
           loading={loading}
-          focusedTaskId={focusedTaskId}
-          focusToken={focusToken}
-          search={search}
-          showHistory={showHistory}
-          reorderTasks={reorderTasks}
-          onHistoryRequired={()=>setShowHistory(true)}
         />
 
-      </EntityExpandProvider>
+      )}
 
     </div>
 

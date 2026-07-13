@@ -19,11 +19,13 @@ import {
 type Props=
   PropsWithChildren<{
     className?:string
+    fade?:boolean
   }>
 
 export function HorizontalScroll({
   children,
   className,
+  fade=true,
 }:Props){
 
   const {
@@ -68,27 +70,35 @@ export function HorizontalScroll({
 
       </div>
 
-      <div
-        style={{
-          opacity:leftOpacity,
-          transform:
-            leftOpacity
-              ? "translateX(0)"
-              : "translateX(-10px)",
-        }}
-        className="pointer-events-none absolute inset-y-0 left-0 w-28 bg-linear-to-r from-[#0D0D10] via-[#0D0D10]/90 to-transparent transition-all duration-500 ease-out"
-      />
+      {fade&&(
 
-      <div
-        style={{
-          opacity:rightOpacity,
-          transform:
-            rightOpacity
-              ? "translateX(0)"
-              : "translateX(10px)",
-        }}
-        className="pointer-events-none absolute inset-y-0 right-0 w-28 bg-linear-to-l from-[#0D0D10] via-[#0D0D10]/90 to-transparent transition-all duration-500 ease-out"
-      />
+        <>
+
+          <div
+            style={{
+              opacity:leftOpacity,
+              transform:
+                leftOpacity
+                  ? "translateX(0)"
+                  : "translateX(-10px)",
+            }}
+            className="pointer-events-none absolute inset-y-0 left-0 w-28 bg-linear-to-r from-[#0D0D10] via-[#0D0D10]/90 to-transparent transition-all duration-500 ease-out"
+          />
+
+          <div
+            style={{
+              opacity:rightOpacity,
+              transform:
+                rightOpacity
+                  ? "translateX(0)"
+                  : "translateX(10px)",
+            }}
+            className="pointer-events-none absolute inset-y-0 right-0 w-28 bg-linear-to-l from-[#0D0D10] via-[#0D0D10]/90 to-transparent transition-all duration-500 ease-out"
+          />
+
+        </>
+
+      )}
 
     </div>
 

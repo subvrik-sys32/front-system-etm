@@ -1,0 +1,66 @@
+"use client"
+
+import { useMemo } from "react"
+
+import type { Task } from "@/features/tasks/types/task.types"
+
+import { useTaskSearch } from "@/features/tasks/hooks/use-task-search"
+
+import { useFilterStore } from "@/shared/filter/store/filter-store"
+import { filterTasks } from "@/shared/filter/selectors/filter-tasks"
+
+import { useSortStore } from "@/shared/sorting/store/sort-store"
+import { createTaskView } from "@/shared/sorting/engine/sort-engine"
+
+import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
+
+type Params = {
+  tasks: Task[]
+  search: string
+  showHistory: boolean
+}
+
+export function usePipelineTasks({
+  tasks,
+  search,
+  showHistory,
+}: Params): Task[] {
+
+  const searched = useTaskSearch(tasks, search)
+
+  const filters = useFilterStore(
+    s => s.filters.tasks,
+  )
+
+  const visible = filterTasks({
+    tasks: searched,
+    filters,
+  })
+
+  const taskSortMode = useSortStore(
+    s => s.taskSortMode,
+  )
+
+  const sorted = useMemo(
+    () => createTaskView({
+      base: visible,
+      mode: taskSortMode,
+    }),
+    [visible, taskSortMode],
+  )
+
+  return useMemo(() => {
+
+    if (showHistory) {
+
+      return sorted
+
+    }
+
+    return sorted.filter(
+      task => !isWorkflowCompleted(task.workflowSteps),
+    )
+
+  }, [sorted, showHistory])
+
+}

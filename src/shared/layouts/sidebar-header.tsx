@@ -31,7 +31,7 @@ export function SidebarHeader({ collapsed }: Props) {
 
         {collapsed ? (
 
-          <div className="flex flex-col items-center gap-2 rounded-2xl bg-linear-to-b from-white/5 to-white/2.5 px-3 py-4">
+          <div className="flex flex-col items-center rounded-2xl bg-linear-to-b from-white/5 to-white/2.5 px-3 py-4">
 
             <div className="relative h-9 w-9">
               <Image
@@ -44,16 +44,28 @@ export function SidebarHeader({ collapsed }: Props) {
               />
             </div>
 
-            <button
-              onClick={toggleCollapsed}
-              title="Expandir"
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
-            >
-              <PanelLeftClose
-                size={15}
-                className="rotate-180"
-              />
-            </button>
+            <div className="mt-4 flex flex-col items-center gap-2">
+
+              <button
+                onClick={toggleCollapsed}
+                title="Expandir"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
+              >
+                <PanelLeftClose
+                  size={15}
+                  className="rotate-180"
+                />
+              </button>
+
+              <button
+                onClick={toggleClosed}
+                title="Ocultar barra lateral"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
+              >
+                <EyeOff size={15} />
+              </button>
+
+            </div>
 
           </div>
 

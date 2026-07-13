@@ -14,11 +14,13 @@ import { TaskPipelineHeader } from "../table/task-pipeline-header"
 
 type Props = {
   tasks: Task[]
+  kpiTasks: Task[]
   loading?: boolean
 }
 
 export function TaskPipelineBoard({
   tasks,
+  kpiTasks,
   loading = false,
 }: Props) {
 
@@ -80,10 +82,10 @@ export function TaskPipelineBoard({
     <div className="w-full">
 
       <TaskPipelineHeader
-        tasks={tasks}
+        tasks={kpiTasks}
       />
 
-      <HorizontalScroll fade={false}>
+      <HorizontalScroll>
 
         {PIPELINE_PROCESS_ORDER.map(
           code => (

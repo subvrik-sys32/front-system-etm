@@ -20,11 +20,16 @@ type Params = {
   showHistory: boolean
 }
 
+type PipelineTasksResult = {
+  boardTasks: Task[]
+  kpiTasks: Task[]
+}
+
 export function usePipelineTasks({
   tasks,
   search,
   showHistory,
-}: Params): Task[] {
+}: Params): PipelineTasksResult {
 
   const searched = useTaskSearch(tasks, search)
 
@@ -49,7 +54,7 @@ export function usePipelineTasks({
     [visible, taskSortMode],
   )
 
-  return useMemo(() => {
+  const boardTasks = useMemo(() => {
 
     if (showHistory) {
 
@@ -62,5 +67,10 @@ export function usePipelineTasks({
     )
 
   }, [sorted, showHistory])
+
+  return {
+    boardTasks,
+    kpiTasks: sorted,
+  }
 
 }

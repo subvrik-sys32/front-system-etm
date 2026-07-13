@@ -21,7 +21,7 @@ export function TaskViewToggle({
       {(
         [
           { key: "table", label: "Tabla" },
-          { key: "pipeline", label: "Pipeline" },
+          { key: "pipeline", label: "Kanban" },
         ] as const
       ).map(
         option => (

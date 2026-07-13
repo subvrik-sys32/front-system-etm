@@ -79,7 +79,10 @@ export function TaskPageContent({
     tasks,
   )
 
-  const pipelineTasks=usePipelineTasks({
+  const {
+    boardTasks: pipelineTasks,
+    kpiTasks: pipelineKpiTasks,
+  } = usePipelineTasks({
     tasks,
     search,
     showHistory,
@@ -191,6 +194,7 @@ export function TaskPageContent({
 
         <TaskPipelineBoard
           tasks={pipelineTasks}
+          kpiTasks={pipelineKpiTasks}
           loading={loading}
         />
 

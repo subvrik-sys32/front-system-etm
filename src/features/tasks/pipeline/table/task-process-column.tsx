@@ -87,7 +87,7 @@ export function TaskProcessColumn({
 
           {tasks.length === 0 && (
 
-            <div className="rounded-lg border border-dashed border-white/10 py-6 text-center text-xs text-neutral-600">
+            <div className="flex h-12 items-center justify-center rounded-xl bg-white/2 px-3 text-sm font-medium text-neutral-500">
               Sin tareas
             </div>
 

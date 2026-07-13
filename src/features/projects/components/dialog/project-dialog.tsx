@@ -34,7 +34,7 @@ type ProjectErrors = Partial<
 >
 
 // Mismo formato que exige el backend (CreateProjectDto): 26-001-M
-const PROJECT_CODE_REGEX = /^\d{2}-\d{3}-[A-Z]$/
+const PROJECT_CODE_REGEX = /^\d{2}-\d{3}-(?:M|E|EM)$/
 
 function validateProject(
   form: {

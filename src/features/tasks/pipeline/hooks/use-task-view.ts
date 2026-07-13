@@ -1,42 +1,30 @@
 "use client"
 
-import {
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from "react"
+import { useState } from "react"
 
 import type { TaskView } from "../actions/task-view-toggle"
 
 const STORAGE_KEY = "tasks:view"
 
-const useIsomorphicLayoutEffect =
-  typeof window !== "undefined"
-    ? useLayoutEffect
-    : useEffect
+function getInitialView(): TaskView {
+
+  if (typeof window === "undefined") {
+    return "table"
+  }
+
+  const stored =
+    window.localStorage.getItem(STORAGE_KEY)
+
+  return stored === "pipeline"
+    ? "pipeline"
+    : "table"
+
+}
 
 export function useTaskView() {
 
   const [view, setView] =
-    useState<TaskView>("table")
-
-  useIsomorphicLayoutEffect(() => {
-
-    const stored =
-      window.localStorage.getItem(
-        STORAGE_KEY,
-      )
-
-    if (
-      stored === "table" ||
-      stored === "pipeline"
-    ) {
-
-      setView(stored)
-
-    }
-
-  }, [])
+    useState<TaskView>(getInitialView)
 
   function updateView(
     next: TaskView,

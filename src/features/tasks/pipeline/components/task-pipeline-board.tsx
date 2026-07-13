@@ -11,6 +11,9 @@ import { getTaskProcesses } from "../utils/get-task-process"
 
 import { TaskProcessColumn } from "../table/task-process-column"
 import { TaskPipelineHeader } from "../table/task-pipeline-header"
+import { TaskPipelineSkeleton } from "../components/task-pipeline-skeleton"
+
+import { TaskDialog } from "@/features/tasks/components/dialog/task-dialog"
 
 type Props = {
   tasks: Task[]
@@ -29,13 +32,17 @@ export function TaskPipelineBoard({
     setExpandedTaskId,
   ] = useState<string | null>(null)
 
+  const [
+    openTaskDialog,
+    setOpenTaskDialog,
+  ] = useState(false)
+
   function toggleTask(taskId: string) {
 
-    setExpandedTaskId(
-      current =>
-        current === taskId
-          ? null
-          : taskId,
+    setExpandedTaskId(current =>
+      current === taskId
+        ? null
+        : taskId,
     )
 
   }
@@ -67,43 +74,56 @@ export function TaskPipelineBoard({
 
   if (loading) {
 
-    return (
-
-      <div className="flex w-full items-center justify-center py-20 text-sm text-neutral-500">
-        Cargando pipeline...
-      </div>
-
-    )
+    return <TaskPipelineSkeleton />
 
   }
 
   return (
 
-    <div className="w-full">
+    <>
 
-      <TaskPipelineHeader
-        tasks={kpiTasks}
-      />
+      <div className="w-full">
 
-      <HorizontalScroll>
+        <TaskPipelineHeader
+          tasks={kpiTasks}
+        />
 
-        {PIPELINE_PROCESS_ORDER.map(
-          code => (
+        <HorizontalScroll>
 
-            <TaskProcessColumn
-              key={code}
-              processCode={code}
-              tasks={columns.get(code) ?? []}
-              expandedTaskId={expandedTaskId}
-              onToggleTask={toggleTask}
-            />
+          {PIPELINE_PROCESS_ORDER.map(
+            code => (
 
-          ),
-        )}
+              <TaskProcessColumn
+                key={code}
+                processCode={code}
+                tasks={columns.get(code) ?? []}
+                expandedTaskId={expandedTaskId}
+                onToggleTask={toggleTask}
+                onCreateTask={() =>
+                  setOpenTaskDialog(true)
+                }
+              />
 
-      </HorizontalScroll>
+            ),
+          )}
 
-    </div>
+        </HorizontalScroll>
+
+      </div>
+
+      {openTaskDialog && (
+
+        <TaskDialog
+          open
+          promptOpenAfterCreate
+          onClose={() =>
+            setOpenTaskDialog(false)
+          }
+        />
+
+      )}
+
+    </>
 
   )
 

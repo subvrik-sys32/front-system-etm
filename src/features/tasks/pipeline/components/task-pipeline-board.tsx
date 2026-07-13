@@ -10,6 +10,7 @@ import { PIPELINE_PROCESS_ORDER } from "../utils/process-columns"
 import { getTaskProcesses } from "../utils/get-task-process"
 
 import { TaskProcessColumn } from "../table/task-process-column"
+import { TaskPipelineHeader } from "../table/task-pipeline-header"
 
 type Props = {
   tasks: Task[]
@@ -76,23 +77,31 @@ export function TaskPipelineBoard({
 
   return (
 
-    <HorizontalScroll fade={false}>
+    <div className="w-full">
 
-      {PIPELINE_PROCESS_ORDER.map(
-        code => (
+      <TaskPipelineHeader
+        tasks={tasks}
+      />
 
-          <TaskProcessColumn
-            key={code}
-            processCode={code}
-            tasks={columns.get(code) ?? []}
-            expandedTaskId={expandedTaskId}
-            onToggleTask={toggleTask}
-          />
+      <HorizontalScroll fade={false}>
 
-        ),
-      )}
+        {PIPELINE_PROCESS_ORDER.map(
+          code => (
 
-    </HorizontalScroll>
+            <TaskProcessColumn
+              key={code}
+              processCode={code}
+              tasks={columns.get(code) ?? []}
+              expandedTaskId={expandedTaskId}
+              onToggleTask={toggleTask}
+            />
+
+          ),
+        )}
+
+      </HorizontalScroll>
+
+    </div>
 
   )
 

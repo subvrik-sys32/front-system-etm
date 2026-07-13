@@ -130,65 +130,73 @@ export function TaskPageContent({
 
   return(
 
-    <div className="relative mx-auto flex h-full min-h-0 w-full max-w-400 flex-col">
+    <div className="relative mx-auto flex h-full min-h-0 w-full max-w-400 flex-col overflow-hidden">
 
-      <EntityToolbar
-        left={
-          <div className="flex flex-wrap items-center gap-2 py-1 select-none">
+      <div className="shrink-0">
 
-            <BackToProjectButton/>
+        <EntityToolbar
+          left={
+            <div className="flex flex-wrap items-center gap-2 py-1 select-none">
 
-            <EntityToolbarSearch
-              value={search}
-              onChange={setSearch}
-            />
+              <BackToProjectButton/>
 
-            <FilterBar
-              module="tasks"
-            />
+              <EntityToolbarSearch
+                value={search}
+                onChange={setSearch}
+              />
 
-            <TaskSortButton/>
+              <FilterBar
+                module="tasks"
+              />
 
-            <HistoryToggleButton
-              count={completedCount}
-              active={showHistory}
-              onClick={()=>
-                setShowHistory(
-                  value=>!value,
-                )
-              }
-            />
+              <TaskSortButton/>
 
-            <ExportMenu
-              scopes={REPORT_EXPORT_SCOPES}
-              onExport={handleExport}
-            />
+              <HistoryToggleButton
+                count={completedCount}
+                active={showHistory}
+                onClick={()=>
+                  setShowHistory(
+                    value=>!value,
+                  )
+                }
+              />
 
-            <TaskViewToggle
-              value={view}
-              onChange={setView}
-            />
+              <ExportMenu
+                scopes={REPORT_EXPORT_SCOPES}
+                onExport={handleExport}
+              />
 
-          </div>
-        }
-      />
+              <TaskViewToggle
+                value={view}
+                onChange={setView}
+              />
+
+            </div>
+          }
+        />
+
+      </div>
 
       {view==="table"?(
 
-        <EntityExpandProvider>
+        <div className="min-h-0 flex-1 overflow-hidden">
 
-          <TaskTable
-            tasks={tasks}
-            loading={loading}
-            focusedTaskId={focusedTaskId}
-            focusToken={focusToken}
-            search={search}
-            showHistory={showHistory}
-            reorderTasks={reorderTasks}
-            onHistoryRequired={()=>setShowHistory(true)}
-          />
+          <EntityExpandProvider>
 
-        </EntityExpandProvider>
+            <TaskTable
+              tasks={tasks}
+              loading={loading}
+              focusedTaskId={focusedTaskId}
+              focusToken={focusToken}
+              search={search}
+              showHistory={showHistory}
+              reorderTasks={reorderTasks}
+              onHistoryRequired={()=>setShowHistory(true)}
+            />
+
+          </EntityExpandProvider>
+
+        </div>
 
       ):(
 

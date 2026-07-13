@@ -43,21 +43,25 @@ export default function RootLayout({
 
   return (
 
-    <html lang="es">
+    <html lang="es" className="h-full overflow-hidden">
 
-      <body className={geist.className}>
+      <body className={`${geist.className} h-full overflow-hidden`}>
 
         <ApiClientProvider />
 
-          <QueryProvider>
+        <QueryProvider>
 
-            <RealtimeProvider>
+          <RealtimeProvider>
+
+            <div className="flex h-full min-h-0 flex-col overflow-hidden">
 
               {children}
 
-            </RealtimeProvider>
+            </div>
 
-          </QueryProvider>
+          </RealtimeProvider>
+
+        </QueryProvider>
 
         <Sonner />
 

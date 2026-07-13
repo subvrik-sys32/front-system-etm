@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 
 import type { Task } from "@/features/tasks/types/task.types"
 
-import { HorizontalScroll } from "@/shared/ui/horizontal-scroll/horizontal-scroll"
+import { PipelineScroll } from "@/shared/ui/pipeline-scroll/pipeline-scroll"
 
 import { PIPELINE_PROCESS_ORDER } from "../utils/process-columns"
 import { getTaskProcesses } from "../utils/get-task-process"
@@ -80,38 +80,32 @@ export function TaskPipelineBoard({
 
   return (
 
-    <>
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
 
-      <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <TaskPipelineHeader
+        tasks={kpiTasks}
+      />
 
-        <TaskPipelineHeader
-          tasks={kpiTasks}
-        />
+      <div className="mt-4 flex min-h-0 flex-1 overflow-hidden">
 
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <PipelineScroll>
 
-          <HorizontalScroll>
+          {PIPELINE_PROCESS_ORDER.map(code => (
 
-            {PIPELINE_PROCESS_ORDER.map(
-              code => (
+            <TaskProcessColumn
+              key={code}
+              processCode={code}
+              tasks={columns.get(code) ?? []}
+              expandedTaskId={expandedTaskId}
+              onToggleTask={toggleTask}
+              onCreateTask={() =>
+                setOpenTaskDialog(true)
+              }
+            />
 
-                <TaskProcessColumn
-                  key={code}
-                  processCode={code}
-                  tasks={columns.get(code) ?? []}
-                  expandedTaskId={expandedTaskId}
-                  onToggleTask={toggleTask}
-                  onCreateTask={() =>
-                    setOpenTaskDialog(true)
-                  }
-                />
+          ))}
 
-              ),
-            )}
-
-          </HorizontalScroll>
-
-        </div>
+        </PipelineScroll>
 
       </div>
 
@@ -127,7 +121,7 @@ export function TaskPipelineBoard({
 
       )}
 
-    </>
+    </div>
 
   )
 

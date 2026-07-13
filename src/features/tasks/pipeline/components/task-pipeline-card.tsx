@@ -1,5 +1,7 @@
 "use client"
 
+import { cn } from "@/shared/utils/utils"
+
 import { KanbanCardFromTask } from "@/features/tasks/components/kanban-card/kanban-card-from-task"
 
 import type { Task } from "@/features/tasks/types/task.types"
@@ -23,25 +25,33 @@ export function TaskPipelineCard({
     <button
       type="button"
       onClick={onToggle}
-      className="block w-full overflow-hidden rounded-xl text-left transition-[max-height] duration-300 ease-out"
-      style={{
-        maxHeight: expanded ? 224 : 48,
-      }}
+      className="block w-full text-left"
     >
 
-      {expanded ? (
+      <div
+        className={cn(
+          "overflow-hidden rounded-xl transition-all duration-200 ease-out",
+          expanded
+            ? "shadow-xl"
+            : "",
+        )}
+      >
 
-        <KanbanCardFromTask
-          task={task}
-        />
+        {expanded ? (
 
-      ) : (
+          <KanbanCardFromTask
+            task={task}
+          />
 
-        <TaskPipelineCardCompact
-          task={task}
-        />
+        ) : (
 
-      )}
+          <TaskPipelineCardCompact
+            task={task}
+          />
+
+        )}
+
+      </div>
 
     </button>
 

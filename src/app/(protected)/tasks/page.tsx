@@ -24,31 +24,31 @@ export default function TasksPage() {
 
   return (
 
-    <main className="h-full bg-[#050505] px-8 py-10 text-white select-none">
+    <main className="flex h-full flex-col bg-[#050505] px-8 py-10 text-white select-none">
 
-      <section className="space-y-6">
+      <header className="flex flex-wrap items-start justify-between gap-4">
 
-        <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
 
-          <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-widest">
+            TAREAS
+          </h1>
 
-            <h1 className="text-2xl font-bold tracking-widest">
-              TAREAS
-            </h1>
+          <p className="mt-2 text-sm text-neutral-500">
+            Gestión de tareas y procesos
+          </p>
 
-            <p className="mt-2 text-sm text-neutral-500">
-              Gestión de tareas y procesos
-            </p>
+        </div>
 
-          </div>
+        <div className="shrink-0">
 
-          <div className="shrink-0">
+          <TaskActions />
 
-            <TaskActions />
+        </div>
 
-          </div>
+      </header>
 
-        </header>
+      <section className="mt-6 flex-1 min-h-0">
 
         <TaskPageContent
           focusedTaskId={taskId}

@@ -98,12 +98,12 @@ export function HorizontalScroll({
         onMouseLeave={stopDragging}
         onClickCapture={handleClickCapture}
         style={maskStyle}
-        className="hide-scrollbar h-full min-h-0 overflow-x-auto overflow-y-hidden overscroll-x-contain cursor-grab select-none scrollbar-none active:cursor-grabbing"
+        className="hide-scrollbar flex-1 min-h-0 overflow-x-auto overflow-y-hidden overscroll-x-contain cursor-grab select-none scrollbar-none active:cursor-grabbing"
       >
 
         <div
           className={cn(
-            "flex h-full min-h-full w-max gap-4",
+            "flex h-full min-h-0 w-max items-start gap-4",
             className,
           )}
         >

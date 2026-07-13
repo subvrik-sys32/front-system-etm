@@ -33,7 +33,7 @@ export function TaskViewToggle({
               onChange(option.key)
             }
             className={cn(
-              "rounded-md px-3 py-1.5 text-sm font-semibold transition",
+              "rounded-md px-3 py-0.5 text-sm font-semibold transition",
               value === option.key
                 ? "bg-white/10 text-white"
                 : "text-neutral-500 hover:text-neutral-300",

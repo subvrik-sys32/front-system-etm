@@ -68,7 +68,7 @@ export function ProcessMiniCard({
       <div className="mb-3 flex items-center justify-between">
 
         <span
-          className="text-xs font-bold uppercase tracking-[0.18em]"
+          className="text-xs font-bold uppercase truncate tracking-[0.18em]"
           style={{
             color:textColor,
           }}
@@ -97,7 +97,7 @@ export function ProcessMiniCard({
               className="min-w-0 flex-1 border-l border-white/10 pl-3 first:border-l-0 first:pl-0"
             >
 
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-neutral-500">
+              <p className="text-xs font-bold uppercase truncate tracking-[0.16em] text-neutral-500">
 
                 {row.label}
 
@@ -106,8 +106,8 @@ export function ProcessMiniCard({
               <div
                 className={
                   row.editable===false
-                    ?"mt-1 text-sm font-semibold leading-tight text-neutral-400"
-                    :"mt-1 text-sm font-bold leading-tight"
+                    ?"mt-1 text-sm font-semibold leading-tight truncate text-neutral-400"
+                    :"mt-1 text-sm font-bold leading-tight truncate"
                 }
                 style={
                   row.editable===false
@@ -122,7 +122,7 @@ export function ProcessMiniCard({
 
               {row.secondary && (
 
-                <p className="mt-0.5 text-xs leading-tight text-neutral-400">
+                <p className="mt-0.5 text-xs leading-tight truncate text-neutral-400">
 
                   {row.secondary}
 

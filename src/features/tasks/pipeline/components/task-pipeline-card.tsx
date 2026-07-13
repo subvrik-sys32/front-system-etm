@@ -25,7 +25,7 @@ export function TaskPipelineCard({
       onClick={onToggle}
       className="block w-full overflow-hidden rounded-xl text-left transition-[max-height] duration-300 ease-out"
       style={{
-        maxHeight: expanded ? 220 : 44,
+        maxHeight: expanded ? 224 : 48,
       }}
     >
 

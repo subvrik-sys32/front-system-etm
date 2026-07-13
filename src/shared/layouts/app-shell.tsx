@@ -22,14 +22,14 @@ export function AppShell({ children }: Props) {
         : CLOSED_RAIL_WIDTH
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="h-screen overflow-hidden bg-[#050505] text-white">
 
       <AppSidebar />
 
       <SidebarShowButton />
 
       <main
-        className="min-h-screen min-w-0 overflow-x-hidden transition-[margin] duration-200 ease-out"
+        className="h-screen min-w-0 overflow-x-hidden overflow-y-auto transition-[margin] duration-200 ease-out"
         style={{
           marginLeft,
         }}

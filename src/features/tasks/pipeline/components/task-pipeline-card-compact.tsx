@@ -18,7 +18,11 @@ export function TaskPipelineCardCompact({
 
   return (
 
-    <div className="flex h-11 items-center gap-2.5 rounded-xl bg-white/2 px-3 transition hover:bg-white/4">
+    <div className="flex h-12 items-center gap-2.5 rounded-xl bg-white/2 px-3 transition hover:bg-white/4">
+
+      <span className="shrink-0 text-sm font-semibold text-neutral-100">
+        #{String(task.taskNumber).padStart(3, "0")}
+      </span>
 
       <span
         className="size-1.5 shrink-0 rounded-full"
@@ -26,10 +30,6 @@ export function TaskPipelineCardCompact({
           backgroundColor: task.priority.color,
         }}
       />
-
-      <span className="shrink-0 text-sm font-semibold text-neutral-100">
-        #{String(task.taskNumber).padStart(3, "0")}
-      </span>
 
       <span
         title={task.reference}
@@ -41,7 +41,7 @@ export function TaskPipelineCardCompact({
       </span>
 
       <span
-        className="shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold"
+        className="flex h-5 shrink-0 items-center whitespace-nowrap rounded-md px-2 text-xs font-semibold leading-none"
         style={{
           color: status.color,
           backgroundColor: `${status.color}20`,

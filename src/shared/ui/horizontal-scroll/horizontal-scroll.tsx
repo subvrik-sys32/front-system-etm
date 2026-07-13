@@ -88,7 +88,7 @@ export function HorizontalScroll({
 
   return (
 
-    <div className="relative overflow-hidden">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden">
 
       <div
         ref={containerRef}
@@ -98,12 +98,12 @@ export function HorizontalScroll({
         onMouseLeave={stopDragging}
         onClickCapture={handleClickCapture}
         style={maskStyle}
-        className="hide-scrollbar overflow-x-auto overflow-y-hidden overscroll-x-contain cursor-grab select-none scrollbar-none active:cursor-grabbing"
+        className="hide-scrollbar h-full min-h-0 overflow-x-auto overflow-y-hidden overscroll-x-contain cursor-grab select-none scrollbar-none active:cursor-grabbing"
       >
 
         <div
           className={cn(
-            "flex w-max gap-4",
+            "flex h-full min-h-full w-max gap-4",
             className,
           )}
         >

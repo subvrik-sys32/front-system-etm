@@ -82,32 +82,36 @@ export function TaskPipelineBoard({
 
     <>
 
-      <div className="w-full">
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">
 
         <TaskPipelineHeader
           tasks={kpiTasks}
         />
 
-        <HorizontalScroll>
+        <div className="min-h-0 flex-1 overflow-hidden">
 
-          {PIPELINE_PROCESS_ORDER.map(
-            code => (
+          <HorizontalScroll>
 
-              <TaskProcessColumn
-                key={code}
-                processCode={code}
-                tasks={columns.get(code) ?? []}
-                expandedTaskId={expandedTaskId}
-                onToggleTask={toggleTask}
-                onCreateTask={() =>
-                  setOpenTaskDialog(true)
-                }
-              />
+            {PIPELINE_PROCESS_ORDER.map(
+              code => (
 
-            ),
-          )}
+                <TaskProcessColumn
+                  key={code}
+                  processCode={code}
+                  tasks={columns.get(code) ?? []}
+                  expandedTaskId={expandedTaskId}
+                  onToggleTask={toggleTask}
+                  onCreateTask={() =>
+                    setOpenTaskDialog(true)
+                  }
+                />
 
-        </HorizontalScroll>
+              ),
+            )}
+
+          </HorizontalScroll>
+
+        </div>
 
       </div>
 

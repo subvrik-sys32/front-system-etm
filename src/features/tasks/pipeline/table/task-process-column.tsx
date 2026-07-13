@@ -28,9 +28,9 @@ export function TaskProcessColumn({
   const badge = getBadgeColors(definition.color, "subtle")
 
   return (
-    <div className="flex w-72 shrink-0 flex-col gap-3">
+    <div className="flex h-full w-72 shrink-0 flex-col gap-3">
       <div
-        className="flex items-center gap-2 border-b-2 pb-2"
+        className="flex shrink-0 items-center gap-2 border-b-2 pb-2"
         style={{ borderColor: definition.color }}
       >
         <span
@@ -52,27 +52,33 @@ export function TaskProcessColumn({
           {tasks.length}
         </span>
       </div>
-      <div className="hide-scrollbar flex max-h-[calc(100vh-320px)] flex-col gap-2 overflow-y-auto overscroll-contain scrollbar-none">
-        {tasks.map((task) => (
-          <TaskPipelineCard
-            key={task.id}
-            task={task}
-            expanded={expandedTaskId === task.id}
-            onToggle={() => onToggleTask(task.id)}
-          />
-        ))}
-        {tasks.length === 0 && !onCreateTask && (
-          <div className="rounded-lg border border-dashed border-white/10 py-6 text-center text-xs text-neutral-600">
-            Sin tareas
-          </div>
-        )}
-        {onCreateTask && (
+
+      <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none">
+        <div className="flex flex-col gap-2">
+          {tasks.map((task) => (
+            <TaskPipelineCard
+              key={task.id}
+              task={task}
+              expanded={expandedTaskId === task.id}
+              onToggle={() => onToggleTask(task.id)}
+            />
+          ))}
+          {tasks.length === 0 && !onCreateTask && (
+            <div className="rounded-lg border border-dashed border-white/10 py-6 text-center text-xs text-neutral-600">
+              Sin tareas
+            </div>
+          )}
+        </div>
+      </div>
+
+      {onCreateTask && (
+        <div className="shrink-0">
           <TaskPipelinePlaceholder
             processCode={processCode}
             tasks={tasks}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

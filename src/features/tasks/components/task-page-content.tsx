@@ -130,7 +130,7 @@ export function TaskPageContent({
 
   return(
 
-    <div className="relative mx-auto w-full max-w-400">
+    <div className="relative mx-auto flex h-full min-h-0 w-full max-w-400 flex-col">
 
       <EntityToolbar
         left={
@@ -192,11 +192,15 @@ export function TaskPageContent({
 
       ):(
 
-        <TaskPipelineBoard
-          tasks={pipelineTasks}
-          kpiTasks={pipelineKpiTasks}
-          loading={loading}
-        />
+        <div className="min-h-0 flex-1 overflow-hidden">
+
+          <TaskPipelineBoard
+            tasks={pipelineTasks}
+            kpiTasks={pipelineKpiTasks}
+            loading={loading}
+          />
+
+        </div>
 
       )}
 

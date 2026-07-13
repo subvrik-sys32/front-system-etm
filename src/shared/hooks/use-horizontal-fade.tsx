@@ -6,88 +6,69 @@ import {
   useState,
 } from "react"
 
-const THRESHOLD=4
+const FADE_SIZE = 36
 
-type Props={
-  containerRef:RefObject<HTMLDivElement|null>
+type Props = {
+  containerRef: RefObject<HTMLDivElement | null>
 }
 
-type FadeState={
-  leftOpacity:number
-  rightOpacity:number
+type FadeState = {
+  leftFade: number
+  rightFade: number
 }
 
 export function useHorizontalFade({
   containerRef,
-}:Props){
+}: Props) {
 
-  const [
-    fade,
-    setFade,
-  ]=useState<FadeState>({
-    leftOpacity:0,
-    rightOpacity:1,
+  const [fade, setFade] = useState<FadeState>({
+    leftFade: 0,
+    rightFade: 0,
   })
 
-  useLayoutEffect(()=>{
+  useLayoutEffect(() => {
 
-    const container=
-      containerRef.current
+    const container = containerRef.current
 
-    if(!container){
+    if (!container) {
       return
     }
 
-    const updateFade=()=>{
+    const updateFade = () => {
 
       const {
         scrollLeft,
         clientWidth,
         scrollWidth,
-      }=container
+      } = container
 
-      const hasOverflow=
-        scrollWidth>
-        clientWidth+
-        THRESHOLD
+      const maxScroll = Math.max(
+        scrollWidth - clientWidth,
+        0,
+      )
 
-      if(
-        !hasOverflow
-      ){
+      if (maxScroll <= 0) {
 
         setFade({
-          leftOpacity:0,
-          rightOpacity:0,
+          leftFade: 0,
+          rightFade: 0,
         })
 
         return
 
       }
 
-      const maxScroll=
-        scrollWidth-
-        clientWidth
-
-      const atStart=
-        scrollLeft<=
-        THRESHOLD
-
-      const atEnd=
-        scrollLeft>=
-        maxScroll-
-        THRESHOLD
-
       setFade({
 
-        leftOpacity:
-          atStart
-            ? 0
-            : 1,
+        leftFade: Math.min(
+          scrollLeft,
+          FADE_SIZE,
+        ),
 
-        rightOpacity:
-          atEnd
-            ? 0
-            : 1,
+        rightFade: Math.min(
+          maxScroll - scrollLeft,
+          FADE_SIZE,
+        ),
 
       })
 
@@ -99,30 +80,31 @@ export function useHorizontalFade({
       "scroll",
       updateFade,
       {
-        passive:true,
-      }
+        passive: true,
+      },
     )
 
-    const resizeObserver=
+    const resizeObserver =
       new ResizeObserver(
-        updateFade
+        updateFade,
       )
 
     resizeObserver.observe(
-      container)
+      container,
+    )
 
-    return()=>{
+    return () => {
 
       container.removeEventListener(
         "scroll",
-        updateFade
+        updateFade,
       )
 
       resizeObserver.disconnect()
 
     }
 
-  },[
+  }, [
     containerRef,
   ])
 

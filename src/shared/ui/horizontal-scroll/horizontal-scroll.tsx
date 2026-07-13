@@ -2,6 +2,7 @@
 
 import {
   PropsWithChildren,
+  useMemo,
 } from "react"
 
 import {
@@ -16,17 +17,17 @@ import {
   useHorizontalFade,
 } from "../../hooks/use-horizontal-fade"
 
-type Props=
+type Props =
   PropsWithChildren<{
-    className?:string
-    fade?:boolean
+    className?: string
+    fade?: boolean
   }>
 
 export function HorizontalScroll({
   children,
   className,
-  fade=true,
-}:Props){
+  fade = true,
+}: Props) {
 
   const {
     containerRef,
@@ -34,16 +35,58 @@ export function HorizontalScroll({
     handleMouseMove,
     handleClickCapture,
     stopDragging,
-  }=useDragScroll()
+  } = useDragScroll()
 
   const {
-    leftOpacity,
-    rightOpacity,
-  }=useHorizontalFade({
+    leftFade,
+    rightFade,
+  } = useHorizontalFade({
     containerRef,
   })
 
-  return(
+  const maskStyle = useMemo(() => {
+
+    if (!fade) {
+      return undefined
+    }
+
+    return {
+
+      WebkitMaskImage: `
+        linear-gradient(
+          to right,
+          transparent 0,
+          black ${leftFade}px,
+          black calc(100% - ${rightFade}px),
+          transparent 100%
+        )
+      `,
+
+      maskImage: `
+        linear-gradient(
+          to right,
+          transparent 0,
+          black ${leftFade}px,
+          black calc(100% - ${rightFade}px),
+          transparent 100%
+        )
+      `,
+
+      WebkitMaskRepeat: "no-repeat",
+      maskRepeat: "no-repeat",
+
+      WebkitMaskSize: "100% 100%",
+      maskSize: "100% 100%",
+
+    }
+
+  }, [
+    fade,
+    leftFade,
+    rightFade,
+  ])
+
+  return (
 
     <div className="relative overflow-hidden">
 
@@ -54,13 +97,14 @@ export function HorizontalScroll({
         onMouseUp={stopDragging}
         onMouseLeave={stopDragging}
         onClickCapture={handleClickCapture}
+        style={maskStyle}
         className="hide-scrollbar overflow-x-auto overflow-y-hidden overscroll-x-contain cursor-grab select-none scrollbar-none active:cursor-grabbing"
       >
 
         <div
           className={cn(
             "flex w-max gap-4",
-            className
+            className,
           )}
         >
 
@@ -69,36 +113,6 @@ export function HorizontalScroll({
         </div>
 
       </div>
-
-      {fade&&(
-
-        <>
-
-          <div
-            style={{
-              opacity:leftOpacity,
-              transform:
-                leftOpacity
-                  ? "translateX(0)"
-                  : "translateX(-10px)",
-            }}
-            className="pointer-events-none absolute inset-y-0 left-0 w-28 bg-linear-to-r from-[#0D0D10] via-[#0D0D10]/90 to-transparent transition-all duration-500 ease-out"
-          />
-
-          <div
-            style={{
-              opacity:rightOpacity,
-              transform:
-                rightOpacity
-                  ? "translateX(0)"
-                  : "translateX(10px)",
-            }}
-            className="pointer-events-none absolute inset-y-0 right-0 w-28 bg-linear-to-l from-[#0D0D10] via-[#0D0D10]/90 to-transparent transition-all duration-500 ease-out"
-          />
-
-        </>
-
-      )}
 
     </div>
 

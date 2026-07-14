@@ -6,302 +6,211 @@ import {
   useRef,
 } from "react"
 
-const DRAG_THRESHOLD=6
-const DRAG_SPEED=1.2
-const WHEEL_MULTIPLIER=3.5
+const DRAG_THRESHOLD = 6
+const DRAG_SPEED = 1.2
+const WHEEL_MULTIPLIER = 3.5
 
 const DRAG_SCROLL_IGNORE_SELECTOR =
   "[data-drag-scroll-ignore]"
 
-// Se dispara apenas detectamos un scroll/drag horizontal real
-// (no en cada click). Cualquier overlay abierto debe cerrarse
-// al escuchar esto, para no quedar desconectado de su tarjeta.
 export const PIPELINE_SCROLL_INTERACTION_EVENT =
   "pipeline-scroll-interaction"
 
-function notifyScrollInteraction(){
+function notifyScrollInteraction() {
 
   window.dispatchEvent(
-    new Event(
-      PIPELINE_SCROLL_INTERACTION_EVENT
-    )
+    new Event(PIPELINE_SCROLL_INTERACTION_EVENT)
   )
 
 }
 
-export function useDragScroll(){
+export function useDragScroll() {
 
-  const containerRef=
+  const containerRef =
     useRef<HTMLDivElement>(null)
 
-  const isDragging=
+  const isDragging =
     useRef(false)
 
-  const dragged=
+  const dragged =
     useRef(false)
 
-  const suppressClick=
+  const suppressClick =
     useRef(false)
 
-  const startX=
+  const startX =
     useRef(0)
 
-  const startScrollLeft=
+  const startScrollLeft =
     useRef(0)
 
-  const handleMouseDown=
-    useCallback((
-      event:React.MouseEvent
-    )=>{
+  const handleMouseDown =
+    useCallback((event: React.MouseEvent) => {
 
-      const target=
-        event.target as HTMLElement
+      const target = event.target as HTMLElement
 
-      if(
-        target.closest(
-          DRAG_SCROLL_IGNORE_SELECTOR
-        )
-      ){
+      if (target.closest(DRAG_SCROLL_IGNORE_SELECTOR)) {
         return
       }
 
-      const container=
-        containerRef.current
+      const container = containerRef.current
 
-      if(!container){
+      if (!container) {
         return
       }
 
-      isDragging.current=true
-      dragged.current=false
+      isDragging.current = true
+      dragged.current = false
 
-      startX.current=
-        event.clientX
+      startX.current = event.clientX
+      startScrollLeft.current = container.scrollLeft
 
-      startScrollLeft.current=
-        container.scrollLeft
+      document.body.style.userSelect = "none"
+      document.body.style.cursor = "grabbing"
 
-      document.body.style.userSelect=
-        "none"
+    }, [])
 
-      document.body.style.cursor=
-        "grabbing"
+  const handleMouseMove =
+    useCallback((event: React.MouseEvent) => {
 
-    },[])
+      const container = containerRef.current
 
-  const handleMouseMove=
-    useCallback((
-      event:React.MouseEvent
-    )=>{
-
-      const container=
-        containerRef.current
-
-      if(
-        !isDragging.current||
-        !container
-      ){
+      if (!isDragging.current || !container) {
         return
       }
 
-      const deltaX=
-        event.clientX-
-        startX.current
+      const deltaX = event.clientX - startX.current
 
-      if(
-        Math.abs(deltaX)>
-        DRAG_THRESHOLD
-      ){
+      if (Math.abs(deltaX) > DRAG_THRESHOLD) {
 
-        // Recién al cruzar el threshold consideramos que es
-        // un drag real (no un click con micro-temblor) y
-        // avisamos para que cualquier overlay abierto se cierre.
-        if(!dragged.current){
+        if (!dragged.current) {
           notifyScrollInteraction()
         }
 
-        dragged.current=true
+        dragged.current = true
 
       }
 
-      container.scrollLeft=
-        startScrollLeft.current-
-        deltaX*
-        DRAG_SPEED
+      container.scrollLeft =
+        startScrollLeft.current - deltaX * DRAG_SPEED
 
-    },[])
+    }, [])
 
-  const stopDragging=
-    useCallback(()=>{
+  const stopDragging =
+    useCallback(() => {
 
-      if(
-        dragged.current
-      ){
+      if (dragged.current) {
 
-        suppressClick.current=true
+        suppressClick.current = true
 
-        window.setTimeout(()=>{
-
-          suppressClick.current=false
-
-        },200)
+        window.setTimeout(() => {
+          suppressClick.current = false
+        }, 200)
 
       }
 
-      isDragging.current=false
+      isDragging.current = false
 
-      document.body.style.userSelect=""
-      document.body.style.cursor=""
+      document.body.style.userSelect = ""
+      document.body.style.cursor = ""
 
-    },[])
+    }, [])
 
-  const handleClickCapture=
-    useCallback((
-      event:React.MouseEvent
-    )=>{
+  const handleClickCapture =
+    useCallback((event: React.MouseEvent) => {
 
-      const target=
-        event.target as HTMLElement
+      const target = event.target as HTMLElement
 
-      if(
-        target.closest(
-          DRAG_SCROLL_IGNORE_SELECTOR
-        )
-      ){
+      if (target.closest(DRAG_SCROLL_IGNORE_SELECTOR)) {
         return
       }
 
-      if(
-        suppressClick.current
-      ){
+      if (suppressClick.current) {
 
         event.preventDefault()
         event.stopPropagation()
 
       }
 
-    },[])
+    }, [])
 
-  useEffect(()=>{
+  useEffect(() => {
 
-    const handleMouseUp=
-      ()=>stopDragging()
+    const handleMouseUp = () => stopDragging()
 
-    window.addEventListener(
-      "mouseup",
-      handleMouseUp
-    )
+    window.addEventListener("mouseup", handleMouseUp)
 
-    return()=>{
-
-      window.removeEventListener(
-        "mouseup",
-        handleMouseUp
-      )
-
+    return () => {
+      window.removeEventListener("mouseup", handleMouseUp)
     }
 
-  },[
-    stopDragging,
-  ])
+  }, [stopDragging])
 
-  useEffect(()=>{
+  useEffect(() => {
 
-    const container=
-      containerRef.current
+    const container = containerRef.current
 
-    if(!container){
+    if (!container) {
       return
     }
 
-    let frame=0
+    let frame = 0
+    let notified = false
 
-    let notified=false
+    const handleWheel = (event: WheelEvent) => {
 
-    const handleWheel=(
-      event:WheelEvent
-    )=>{
-
-      if(
-        Math.abs(event.deltaY)<=
-        Math.abs(event.deltaX)
-      ){
+      // Solo interceptamos gestos principalmente horizontales
+      // o verticales sobre la zona de KPIs. Los gestos verticales
+      // sobre las columnas son interceptados antes por useColumnScroll
+      // con stopImmediatePropagation, así que nunca llegan acá.
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
         return
       }
 
       event.preventDefault()
 
-      if(!notified){
+      if (!notified) {
 
         notifyScrollInteraction()
 
-        notified=true
+        notified = true
 
-        window.setTimeout(()=>{
-          notified=false
-        },250)
+        window.setTimeout(() => {
+          notified = false
+        }, 250)
 
       }
 
-      const delta=
-        event.deltaY*
-        WHEEL_MULTIPLIER
+      const delta = event.deltaY * WHEEL_MULTIPLIER
 
-      cancelAnimationFrame(
-        frame
-      )
+      cancelAnimationFrame(frame)
 
-      frame=
-        requestAnimationFrame(()=>{
-
-          container.scrollLeft+=
-            delta
-
-        })
+      frame = requestAnimationFrame(() => {
+        container.scrollLeft += delta
+      })
 
     }
 
-    container.addEventListener(
-      "wheel",
-      handleWheel,
-      {
-        passive:false,
-      }
-    )
+    container.addEventListener("wheel", handleWheel, { passive: false })
 
-    return()=>{
+    return () => {
 
-      cancelAnimationFrame(
-        frame
-      )
-
-      container.removeEventListener(
-        "wheel",
-        handleWheel
-      )
+      cancelAnimationFrame(frame)
+      container.removeEventListener("wheel", handleWheel)
 
     }
 
-  },[])
+  }, [])
 
-  return{
-
+  return {
     containerRef,
-
     isDragging,
-
     dragged,
-
     suppressClick,
-
     handleMouseDown,
-
     handleMouseMove,
-
     handleClickCapture,
-
     stopDragging,
-
   }
 
 }

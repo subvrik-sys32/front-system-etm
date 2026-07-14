@@ -163,6 +163,8 @@ export function useEntityDialog({
 
     save,
 
+    saving,
+
   }
 
 }

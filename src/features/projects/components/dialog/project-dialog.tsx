@@ -198,12 +198,12 @@ export function ProjectDialog({
         saving={saving}
         saveLabel={
           project
-            ? "Guardar cambios"
+            ? "Guardar"
             : "Crear proyecto"
         }
         savingLabel={
           project
-            ? "Guardando cambios..."
+            ? "Guardando..."
             : "Creando proyecto..."
         }
         onClose={close}

@@ -305,12 +305,12 @@ export function TaskDialog({
         saving={saving}
         saveLabel={
           task
-            ? "Guardar cambios"
+            ? "Guardar"
             : "Crear tarea"
         }
         savingLabel={
           task
-            ? "Guardando cambios..."
+            ? "Guardando..."
             : "Creando tarea..."
         }
         onClose={close}

@@ -354,13 +354,13 @@ export function UserDialog({
       }
       savingLabel={
         user
-          ? "Guardando cambios..."
+          ? "Guardando..."
           : "Creando usuario..."
       }
 
       saveLabel={
         user
-          ? "Guardar cambios"
+          ? "Guardar"
           : "Crear usuario"
       }
 

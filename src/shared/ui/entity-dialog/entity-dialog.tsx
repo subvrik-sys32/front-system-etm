@@ -32,7 +32,7 @@ type Props = {
   showIconPicker: boolean
   previewVariant: "solid" | "subtle"
   onClose: () => void
-  onSubmit: (value: EntityForm) => void
+  onSubmit: (value: EntityForm) => void | Promise<void>
 }
 
 export function EntityDialog({
@@ -54,6 +54,7 @@ export function EntityDialog({
     setForm,
     save,
     canSave,
+    saving,
   } = useEntityDialog({
     open,
     value: initialValue,
@@ -63,7 +64,22 @@ export function EntityDialog({
   })
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+
+        if (saving) {
+          return
+        }
+
+        if (!v) {
+          onClose()
+        }
+
+      }}
+    >
+
       <DialogContent
         onOpenAutoFocus={(e) => {
           e.preventDefault()
@@ -72,7 +88,9 @@ export function EntityDialog({
           })
         }}
       >
+
         <DialogHeader>
+
           <DialogTitle className="flex items-center gap-3">
             <Palette size={18} />
             {title}
@@ -81,6 +99,7 @@ export function EntityDialog({
           <DialogDescription className="sr-only">
             Entity form
           </DialogDescription>
+
         </DialogHeader>
 
         <div className="space-y-5 pt-3">
@@ -106,14 +125,22 @@ export function EntityDialog({
           <EntityCustomColor value={form} onChange={setForm} />
 
           <div className="flex justify-end pt-2">
+
             <EntitySaveButton
               disabled={!canSave}
+              saving={saving}
+              savingLabel="Guardando..."
               onClick={save}
             />
+
           </div>
 
         </div>
+
       </DialogContent>
+
     </Dialog>
+
   )
+
 }

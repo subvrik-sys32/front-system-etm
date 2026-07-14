@@ -1,30 +1,26 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import type { TaskView } from "../actions/task-view-toggle"
 
 const STORAGE_KEY = "tasks:view"
 
-function getInitialView(): TaskView {
-
-  if (typeof window === "undefined") {
-    return "table"
-  }
-
-  const stored =
-    window.localStorage.getItem(STORAGE_KEY)
-
-  return stored === "pipeline"
-    ? "pipeline"
-    : "table"
-
-}
-
 export function useTaskView() {
 
   const [view, setView] =
-    useState<TaskView>(getInitialView)
+    useState<TaskView>("table")
+
+  useEffect(() => {
+
+    const stored =
+      window.localStorage.getItem(STORAGE_KEY)
+
+    if (stored === "pipeline") {
+      setView("pipeline")
+    }
+
+  }, [])
 
   function updateView(
     next: TaskView,

@@ -1,4 +1,3 @@
-// features/tasks/pipeline/task-pipeline-header.tsx
 "use client"
 
 import {
@@ -13,6 +12,7 @@ import type { Task } from "@/features/tasks/types/task.types"
 import { ProcessMiniCard } from "@/shared/ui/mini-card/process-mini-card"
 
 import { getPipelineKpis } from "../utils/get-pipeline-kpis"
+import { PIPELINE_KPI_COLORS } from "../utils/process-columns"
 
 type Props = {
   tasks: Task[]
@@ -31,7 +31,7 @@ export function TaskPipelineHeader({
       <ProcessMiniCard
         label="Tareas"
         icon={ClipboardList}
-        color={"#afafaf"}
+        color={PIPELINE_KPI_COLORS.tasks}
         rows={[
           {
             label: "Total",
@@ -47,7 +47,7 @@ export function TaskPipelineHeader({
       <ProcessMiniCard
         label="Piezas"
         icon={Puzzle}
-        color={"#a6c7d4"}
+        color={PIPELINE_KPI_COLORS.pieces}
         rows={[
           {
             label: "Total",
@@ -65,7 +65,7 @@ export function TaskPipelineHeader({
       <ProcessMiniCard
         label="Urgentes"
         icon={AlertTriangle}
-        color={"#EF4444"}
+        color={PIPELINE_KPI_COLORS.urgent}
         rows={[
           {
             label: "Total",
@@ -83,7 +83,7 @@ export function TaskPipelineHeader({
       <ProcessMiniCard
         label="Avance"
         icon={CheckCircle2}
-        color={"#22C55E"}
+        color={PIPELINE_KPI_COLORS.progress}
         rows={[
           {
             label: "Finalizadas",

@@ -18,6 +18,10 @@ type Props = {
   task: Task
 }
 
+type StageEntity = EntityBase & {
+  code?: string
+}
+
 export function ProjectTaskRow({ task }: Props) {
 
   const router = useRouter()
@@ -26,7 +30,7 @@ export function ProjectTaskRow({ task }: Props) {
 
     const currentStep = getCurrentStep(task.workflowSteps)
 
-    const stage: EntityBase | undefined =
+    const stage: StageEntity | undefined =
       isWorkflowCompleted(task.workflowSteps)
         ? {
             id: "finalized",
@@ -38,6 +42,7 @@ export function ProjectTaskRow({ task }: Props) {
           ? {
               id: currentStep.processCode,
               name: PROCESS_DEFINITIONS[currentStep.processCode].label,
+              code: PROCESS_DEFINITIONS[currentStep.processCode].code,
               icon: PROCESS_DEFINITIONS[currentStep.processCode].icon,
               color: PROCESS_DEFINITIONS[currentStep.processCode].color,
             }
@@ -96,6 +101,7 @@ export function ProjectTaskRow({ task }: Props) {
         }
 
         stageName={stage?.name}
+        stageCode={stage?.code}
         stageColor={stage?.color}
         stageIcon={stage?.icon}
 

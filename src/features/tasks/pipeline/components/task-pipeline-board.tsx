@@ -98,9 +98,6 @@ export function TaskPipelineBoard({
               tasks={columns.get(code) ?? []}
               expandedTaskId={expandedTaskId}
               onToggleTask={toggleTask}
-              onCreateTask={() =>
-                setOpenTaskDialog(true)
-              }
             />
 
           ))}

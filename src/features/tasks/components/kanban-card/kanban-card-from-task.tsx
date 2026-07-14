@@ -36,6 +36,7 @@ export function KanbanCardFromTask({
         task.color?.color
       }
       stageName={stage.label}
+      stageCode={stage.code}
       stageColor={stage.color}
       stageIcon={stage.icon}
       statusName={status.label}

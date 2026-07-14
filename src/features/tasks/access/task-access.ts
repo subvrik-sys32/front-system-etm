@@ -14,6 +14,7 @@ import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 
 type StageLabel = {
   label: string
+  code?: string
   icon: EntityIcon
   color: string
 }
@@ -117,6 +118,8 @@ export const taskAccess = {
     return {
 
       label: definition.label,
+
+      code: definition.code,
 
       icon: definition.icon,
 

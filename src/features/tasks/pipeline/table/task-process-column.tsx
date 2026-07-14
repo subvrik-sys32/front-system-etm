@@ -12,7 +12,6 @@ type Props = {
   tasks: Task[]
   expandedTaskId: string | null
   onToggleTask: (taskId: string) => void
-  onCreateTask?: () => void
 }
 
 export function TaskProcessColumn({
@@ -20,7 +19,6 @@ export function TaskProcessColumn({
   tasks,
   expandedTaskId,
   onToggleTask,
-  onCreateTask,
 }: Props) {
 
   const definition = PROCESS_DEFINITIONS[processCode]
@@ -55,18 +53,14 @@ export function TaskProcessColumn({
 
         </header>
 
-        {onCreateTask && (
+        <div className="border-b border-white/5 p-2">
 
-          <div className="border-b border-white/5 p-2">
+          <TaskPipelinePlaceholder
+            processCode={processCode}
+            tasks={tasks}
+          />
 
-            <TaskPipelinePlaceholder
-              processCode={processCode}
-              tasks={tasks}
-            />
-
-          </div>
-
-        )}
+        </div>
 
       </div>
 
@@ -79,6 +73,7 @@ export function TaskProcessColumn({
             <TaskPipelineCard
               key={task.id}
               task={task}
+              processCode={processCode}
               expanded={expandedTaskId === task.id}
               onToggle={() => onToggleTask(task.id)}
             />

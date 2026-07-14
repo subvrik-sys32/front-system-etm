@@ -1,7 +1,7 @@
-// features/tasks/pipeline/task-pipeline-card-compact.tsx
 "use client"
 
 import { taskAccess } from "@/features/tasks/access/task-access"
+import { getBadgeColors } from "@/shared/utils/badge-colors"
 
 import type { Task } from "@/features/tasks/types/task.types"
 
@@ -15,6 +15,9 @@ export function TaskPipelineCardCompact({
 
   const status =
     taskAccess.statusLabel(task)
+
+  const badge =
+    getBadgeColors(status.color, "subtle")
 
   return (
 
@@ -43,8 +46,8 @@ export function TaskPipelineCardCompact({
       <span
         className="flex h-5 shrink-0 items-center whitespace-nowrap rounded-md px-2 text-xs font-semibold leading-none"
         style={{
-          color: status.color,
-          backgroundColor: `${status.color}20`,
+          color: badge.text,
+          backgroundColor: badge.background,
         }}
       >
 

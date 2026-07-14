@@ -2,14 +2,9 @@
 
 import { Layers3 } from "lucide-react"
 
-import { PIPELINE_PROCESS_ORDER } from "../utils/process-columns"
+import { PIPELINE_PROCESS_ORDER, PIPELINE_KPI_COLORS } from "../utils/process-columns"
 
-const KPI_SKELETON_COLORS = [
-  "#afafaf",
-  "#a6c7d4",
-  "#EF4444",
-  "#22C55E",
-]
+const KPI_SKELETON_COLORS = Object.values(PIPELINE_KPI_COLORS)
 
 function SkeletonMiniCard({
   color,

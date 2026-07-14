@@ -37,6 +37,8 @@ type Props={
 
   stageName?:string
 
+  stageCode?:string
+
   stageColor?:string
 
   stageIcon?:EntityIcon
@@ -66,6 +68,7 @@ export function KanbanCardView({
   colorName,
   colorHex,
   stageName,
+  stageCode,
   stageColor,
   stageIcon,
   statusName,
@@ -221,7 +224,7 @@ export function KanbanCardView({
 
               {StageIcon&&<StageIcon size={15}/>}
 
-              <span>{stageName}</span>
+              <span>{stageCode ?? stageName}</span>
 
             </div>
 

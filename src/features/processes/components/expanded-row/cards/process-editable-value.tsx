@@ -6,6 +6,8 @@ import {
   useState,
 } from "react"
 
+import { Loader2 } from "lucide-react"
+
 type Props = {
   value: string | number | null
   placeholder?: string
@@ -15,7 +17,7 @@ type Props = {
   treatZeroAsEmpty?: boolean
   onSave: (
     value: string | null
-  ) => void
+  ) => void | Promise<void>
 }
 
 export function ProcessEditableValue({
@@ -29,6 +31,8 @@ export function ProcessEditableValue({
 }: Props) {
 
   const [editing, setEditing] = useState(false)
+
+  const [saving, setSaving] = useState(false)
 
   const [draft, setDraft] = useState(
     value===null || value===undefined
@@ -56,7 +60,9 @@ export function ProcessEditableValue({
 
   }, [editing])
 
-  const save = () => {
+  const save = async () => {
+
+    if (saving) return
 
     const normalized = draft.trim()
 
@@ -66,46 +72,75 @@ export function ProcessEditableValue({
       normalized !== "" &&
       Number(normalized) === 0
 
-    if (normalized === "" || isZero) {
-      onSave(null)
-      setEditing(false)
-      return
-    }
+    const toSave =
+      normalized === "" || isZero
+        ? null
+        : normalized
 
-    onSave(normalized)
-    setEditing(false)
+    setSaving(true)
+
+    try {
+
+      await onSave(toSave)
+
+      setEditing(false)
+
+    } catch {
+
+      // se queda en edición para que el usuario pueda reintentar
+      inputRef.current?.focus()
+
+    } finally {
+
+      setSaving(false)
+
+    }
 
   }
 
   if (editing && !disabled) {
 
     return (
-      <input
-        ref={inputRef}
-        type={numeric ? "number" : "text"}
-        value={draft}
-        onChange={event => {
+      <div className="relative flex w-full items-center">
 
-          const next = event.target.value
+        <input
+          ref={inputRef}
+          type={numeric ? "number" : "text"}
+          value={draft}
+          disabled={saving}
+          onChange={event => {
 
-          if (numeric) {
-            if (next !== "" && !/^\d*\.?\d*$/.test(next)) {
-              return
+            const next = event.target.value
+
+            if (numeric) {
+              if (next !== "" && !/^\d*\.?\d*$/.test(next)) {
+                return
+              }
             }
-          }
 
-          setDraft(next)
+            setDraft(next)
 
-        }}
-        onBlur={save}
-        onKeyDown={event => {
+          }}
+          onBlur={save}
+          onKeyDown={event => {
 
-          if (event.key === "Enter") save()
-          if (event.key === "Escape") setEditing(false)
+            if (event.key === "Enter") save()
+            if (event.key === "Escape") setEditing(false)
 
-        }}
-        className="block w-full border-0 bg-transparent p-0 text-left text-sm font-bold leading-tight outline-none"
-      />
+          }}
+          className="block w-full border-0 bg-transparent p-0 pr-5 text-left text-sm font-bold leading-tight outline-none disabled:opacity-60"
+        />
+
+        {saving && (
+
+          <Loader2
+            size={13}
+            className="absolute right-0 animate-spin text-neutral-400"
+          />
+
+        )}
+
+      </div>
     )
 
   }

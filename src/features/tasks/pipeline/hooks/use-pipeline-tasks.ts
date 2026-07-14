@@ -37,10 +37,13 @@ export function usePipelineTasks({
     s => s.filters.tasks,
   )
 
-  const visible = filterTasks({
-    tasks: searched,
-    filters,
-  })
+  const visible = useMemo(
+    () => filterTasks({
+      tasks: searched,
+      filters,
+    }),
+    [searched, filters],
+  )
 
   const taskSortMode = useSortStore(
     s => s.taskSortMode,

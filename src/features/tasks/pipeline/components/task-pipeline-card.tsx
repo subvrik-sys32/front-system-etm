@@ -39,15 +39,28 @@ export function TaskPipelineCard({
     [task, processCode],
   )
 
+  const stepStatus =
+    processTask.workflowStep?.status ?? "QUEUE"
+
   const finalized =
     isWorkflowCompleted(task.workflowSteps)
 
-  // Mientras el step de esta columna esté en "QUEUE" (todavía no
-  // le toca el turno a la tarea), no tiene sentido abrir el
-  // overlay de acciones sobre él.
+  // Esta etapa todavía no le llegó el turno a la tarea.
+  const isFutureStage =
+    stepStatus === "QUEUE"
+
+  // Esta etapa puntual ya fue revisada/cerrada (aunque la tarea
+  // completa siga en curso por otras etapas posteriores).
+  const isCompletedStage =
+    stepStatus === "REVIEWED"
+
+  // Se atenúan visualmente, pero se mantienen clickeables/expandibles.
+  const isDimmed =
+    !finalized &&
+    (isFutureStage || isCompletedStage)
+
   const isReachedStage =
-    processTask.workflowStep != null &&
-    processTask.workflowStep.status !== "QUEUE"
+    !isFutureStage
 
   const { bind, pressed } = useLongPress({
     onLongPress: () => {
@@ -76,6 +89,7 @@ export function TaskPipelineCard({
             "overflow-hidden rounded-xl transition-all duration-200 ease-out",
             expanded && "shadow-xl",
             longPressEnabled && pressed && !overlayOpen && "scale-[0.98] shadow-lg",
+            isDimmed && "opacity-50",
           )}
         >
 

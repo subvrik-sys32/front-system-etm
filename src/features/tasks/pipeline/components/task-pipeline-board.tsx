@@ -27,9 +27,12 @@ export function TaskPipelineBoard({
   loading = false,
 }: Props) {
 
+  // Clave compuesta "taskId:processCode": como la misma tarea
+  // puede aparecer en varias columnas a la vez, expandir en una
+  // no debe expandir sus otras apariciones en el board.
   const [
-    expandedTaskId,
-    setExpandedTaskId,
+    expandedKey,
+    setExpandedKey,
   ] = useState<string | null>(null)
 
   const [
@@ -37,12 +40,12 @@ export function TaskPipelineBoard({
     setOpenTaskDialog,
   ] = useState(false)
 
-  function toggleTask(taskId: string) {
+  function toggleCard(key: string) {
 
-    setExpandedTaskId(current =>
-      current === taskId
+    setExpandedKey(current =>
+      current === key
         ? null
-        : taskId,
+        : key,
     )
 
   }
@@ -96,8 +99,11 @@ export function TaskPipelineBoard({
               key={code}
               processCode={code}
               tasks={columns.get(code) ?? []}
-              expandedTaskId={expandedTaskId}
-              onToggleTask={toggleTask}
+              expandedKey={expandedKey}
+              onToggleCard={toggleCard}
+              onCreateTask={() =>
+                setOpenTaskDialog(true)
+              }
             />
 
           ))}

@@ -10,15 +10,17 @@ import { TaskPipelinePlaceholder } from "../components/task-pipeline-placeholder
 type Props = {
   processCode: ProcessCode
   tasks: Task[]
-  expandedTaskId: string | null
-  onToggleTask: (taskId: string) => void
+  expandedKey: string | null
+  onToggleCard: (key: string) => void
+  onCreateTask?: () => void
 }
 
 export function TaskProcessColumn({
   processCode,
   tasks,
-  expandedTaskId,
-  onToggleTask,
+  expandedKey,
+  onToggleCard,
+  onCreateTask,
 }: Props) {
 
   const definition = PROCESS_DEFINITIONS[processCode]
@@ -53,14 +55,18 @@ export function TaskProcessColumn({
 
         </header>
 
-        <div className="border-b border-white/5 p-2">
+        {onCreateTask && (
 
-          <TaskPipelinePlaceholder
-            processCode={processCode}
-            tasks={tasks}
-          />
+          <div className="border-b border-white/5 p-2">
 
-        </div>
+            <TaskPipelinePlaceholder
+              processCode={processCode}
+              tasks={tasks}
+            />
+
+          </div>
+
+        )}
 
       </div>
 
@@ -68,17 +74,23 @@ export function TaskProcessColumn({
 
         <div className="flex flex-col gap-2 pb-2">
 
-          {tasks.map(task => (
+          {tasks.map(task => {
 
-            <TaskPipelineCard
-              key={task.id}
-              task={task}
-              processCode={processCode}
-              expanded={expandedTaskId === task.id}
-              onToggle={() => onToggleTask(task.id)}
-            />
+            const key = `${task.id}:${processCode}`
 
-          ))}
+            return (
+
+              <TaskPipelineCard
+                key={key}
+                task={task}
+                processCode={processCode}
+                expanded={expandedKey === key}
+                onToggle={() => onToggleCard(key)}
+              />
+
+            )
+
+          })}
 
           {tasks.length === 0 && (
 

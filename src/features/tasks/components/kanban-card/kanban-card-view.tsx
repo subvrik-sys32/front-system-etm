@@ -10,6 +10,10 @@ import {
 } from "@/shared/utils/date-format"
 
 import {
+  getBadgeColors,
+} from "@/shared/utils/badge-colors"
+
+import {
   cn,
 } from "@/shared/utils/utils"
 
@@ -92,6 +96,12 @@ export function KanbanCardView({
 
   const placeholderColor=
     "#64748B"
+
+  const stageBadge=
+    getBadgeColors(stageColor ?? "#64748B","subtle")
+
+  const statusBadge=
+    getBadgeColors(statusColor ?? "#64748B","subtle")
 
   return(
 
@@ -217,8 +227,8 @@ export function KanbanCardView({
             <div
               className="inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-semibold"
               style={{
-                color:stageColor,
-                backgroundColor:`${stageColor}20`,
+                color:stageBadge.text,
+                backgroundColor:stageBadge.background,
               }}
             >
 
@@ -233,8 +243,8 @@ export function KanbanCardView({
           <div
             className="inline-flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-semibold"
             style={{
-              color:statusColor,
-              backgroundColor:`${statusColor}20`,
+              color:statusBadge.text,
+              backgroundColor:statusBadge.background,
             }}
           >
 

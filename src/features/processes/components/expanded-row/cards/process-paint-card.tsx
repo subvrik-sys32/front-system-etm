@@ -44,13 +44,19 @@ export function ProcessPaintCard({ processTask, readOnly = false }: Props) {
   const hasPaintProcess =
     processTask.task.route.includes("PT")
 
-  const locked = readOnly || workflowAccess.isCompleted(processTask)
-
   // en Ensamble/Despacho el step relevante es paintStep, no workflowStep
   const relevantStep =
     readOnly
       ? processTask.paintStep
       : processTask.workflowStep
+
+  const relevantStatus =
+    relevantStep?.status
+
+  const locked =
+    readOnly ||
+    relevantStatus === "COMPLETED" ||
+    relevantStatus === "REVIEWED"
 
   const paintKgReal =
     relevantStep?.paintKgReal ?? null

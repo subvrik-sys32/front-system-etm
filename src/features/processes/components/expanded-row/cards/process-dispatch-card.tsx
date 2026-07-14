@@ -38,9 +38,11 @@ export function ProcessDispatchCard({ processTask }: Props) {
 
   const updateField = useWorkflowStepField()
 
+  const status = workflowAccess.status(processTask)
+
   const locked =
-    workflowAccess.isCompleted(processTask) ||
-    workflowAccess.status(processTask) === "REVIEWED"
+    status === "COMPLETED" ||
+    status === "REVIEWED"
 
   const stepId = workflowAccess.stepId(processTask)
 

@@ -1,11 +1,14 @@
 "use client"
 
+import { useState } from "react"
+
 import type {
   LucideIcon,
 } from "lucide-react"
 
 import {
   AlertTriangle,
+  Loader2,
 } from "lucide-react"
 
 import {
@@ -53,8 +56,37 @@ export function ActionDialog({
   onConfirm,
 }: Props) {
 
+  const [submitting, setSubmitting] = useState(false)
+
   const danger =
     variant === "danger"
+
+  async function handleConfirm() {
+
+    if (submitting) {
+      return
+    }
+
+    setSubmitting(true)
+
+    try {
+
+      await onConfirm()
+
+    } catch {
+
+      // El error ya se comunica vía toast donde corresponda
+      // (ej. safeRequest de useWorkflowStepActions); acá solo
+      // evitamos que la promesa quede sin manejar y que el
+      // diálogo se rompa o quede en un estado inconsistente.
+
+    } finally {
+
+      setSubmitting(false)
+
+    }
+
+  }
 
   return (
 
@@ -62,7 +94,7 @@ export function ActionDialog({
       open={open}
       onOpenChange={nextOpen => {
 
-        if (nextOpen) {
+        if (nextOpen || submitting) {
           return
         }
 
@@ -105,7 +137,8 @@ export function ActionDialog({
 
           <button
             onClick={onClose}
-            className="rounded-xl bg-white/5 px-4 py-2.5 text-sm font-medium text-neutral-300 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+            disabled={submitting}
+            className="rounded-xl bg-white/5 px-4 py-2.5 text-sm font-medium text-neutral-300 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
 
             {cancelLabel}
@@ -113,16 +146,21 @@ export function ActionDialog({
           </button>
 
           <button
-            onClick={onConfirm}
+            onClick={handleConfirm}
+            disabled={submitting}
             className={cn(
-              "rounded-xl px-5 py-3 text-sm font-semibold transition",
+              "flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70",
               danger
                 ? "bg-red-500 text-white hover:bg-red-400"
                 : "bg-white text-black hover:bg-neutral-200",
             )}
           >
 
-            {confirmLabel}
+            {submitting && (
+              <Loader2 size={14} className="animate-spin" />
+            )}
+
+            {submitting ? "Guardando..." : confirmLabel}
 
           </button>
 

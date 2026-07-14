@@ -77,6 +77,20 @@ export function useWorkflowStepActions({
       return false
     }
 
+    const currentStep = task.workflowSteps.find(
+      s => s.id === stepId,
+    )
+
+    if (!currentStep?.operatorId) {
+
+      toast.error(
+        "Debe asignar un operario antes de iniciar el proceso.",
+      )
+
+      return false
+
+    }
+
     return safeRequest(
       () => startStep(stepId),
       "Proceso iniciado.",

@@ -38,7 +38,11 @@ export function ProcessAssemblyCard({ processTask }: Props) {
 
   const updateField = useWorkflowStepField()
 
-  const locked = workflowAccess.isCompleted(processTask)
+  const status = workflowAccess.status(processTask)
+
+  const locked =
+    status === "COMPLETED" ||
+    status === "REVIEWED"
 
   const stepId = workflowAccess.stepId(processTask)
 
@@ -64,7 +68,6 @@ export function ProcessAssemblyCard({ processTask }: Props) {
             <ProcessEditableValue
               numeric
               value={workflowAccess.piecesOutput(processTask) ?? null}
-              suffix="UND"
               disabled={locked}
               onSave={async value => {
 

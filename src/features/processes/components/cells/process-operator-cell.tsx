@@ -1,5 +1,8 @@
 "use client"
 
+import { useMemo } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+
 import {
   UserSelect,
 } from "@/features/users/components/user-select"
@@ -16,6 +19,7 @@ import {
   workflowAccess,
 } from "@/features/workflow/access/workflow-access"
 
+import type { Task } from "@/features/tasks/types/task.types"
 import type {
   ProcessTask,
 } from "../../types/process.types"
@@ -24,9 +28,19 @@ type Props={
   processTask:ProcessTask
 }
 
+// Mismo criterio que WorkflowService.update() en el backend
+// (validateEditable): una vez completado, el step deja de ser editable
+// hasta que se reabra explícitamente.
+const NON_EDITABLE_STATUSES=[
+  "COMPLETED",
+  "REVIEWED",
+] as const
+
 export function ProcessOperatorCell({
   processTask,
 }:Props){
+
+  const queryClient = useQueryClient()
 
   const{
     users,
@@ -35,11 +49,58 @@ export function ProcessOperatorCell({
   const updateField=
     useWorkflowStepField()
 
-  const operators=
-    users.filter(
-      user=>
-        user.role?.code==="OPERARIO",
+  const currentOperatorId =
+    workflowAccess.operator(processTask)?.id
+
+  const currentStepId =
+    workflowAccess.stepId(processTask)
+
+  const status =
+    workflowAccess.status(processTask)
+
+  const isEditable =
+    !NON_EDITABLE_STATUSES.includes(
+      status as typeof NON_EDITABLE_STATUSES[number],
     )
+
+  // Operarios ocupados: tienen un step en PROGRESS
+  // en un step distinto al actual.
+  const busyOperatorIds = useMemo(() => {
+
+    const tasks =
+      queryClient.getQueryData<Task[]>(["tasks"]) ?? []
+
+    const busy = new Set<string>()
+
+    for (const task of tasks) {
+
+      for (const step of task.workflowSteps) {
+
+        if (
+          step.status === "PROGRESS" &&
+          step.operatorId &&
+          step.id !== currentStepId
+        ) {
+          busy.add(step.operatorId)
+        }
+
+      }
+
+    }
+
+    return busy
+
+  }, [queryClient, currentStepId])
+
+  const operators =
+    users
+      .filter(user => user.role?.code === "OPERARIO")
+      .filter(user =>
+        // Siempre mostramos el operario ya asignado a este step,
+        // aunque esté en PROGRESS (puede ser el mismo que estamos editando).
+        user.id === currentOperatorId ||
+        !busyOperatorIds.has(user.id)
+      )
 
   return(
 
@@ -49,18 +110,16 @@ export function ProcessOperatorCell({
       }
       items={operators}
       placeholder="Operario"
+      disabled={!isEditable}
       onChange={async user=>{
 
-        const stepId=
-          workflowAccess.stepId(processTask)
-
-        if(!stepId){
+        if(!currentStepId||!isEditable){
           return
         }
 
         await updateField(
 
-          stepId,
+          currentStepId,
 
           {
             operatorId:user?.id??null,

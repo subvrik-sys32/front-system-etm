@@ -1,25 +1,16 @@
 "use client"
 
-import {
-  TaskProjectSection,
-} from "./task-project-section"
+import { TaskProjectSection } from "./task-project-section"
+import { TaskInfoSection } from "./task-info-section"
+import { TaskMaterialSection } from "./task-material-section"
 
-import {
-  TaskInfoSection,
-} from "./task-info-section"
-
-import {
-  TaskMaterialSection,
-} from "./task-material-section"
-
-import type {
-  TaskFormSectionProps,
-} from "./types"
+import type { TaskFormSectionProps } from "./types"
 
 export function TaskForm({
   form,
   update,
   projectLocked,
+  routeLocked,
   errors,
 }: TaskFormSectionProps) {
 
@@ -37,6 +28,7 @@ export function TaskForm({
       <TaskInfoSection
         form={form}
         update={update}
+        routeLocked={routeLocked}
         errors={errors}
       />
 

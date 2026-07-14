@@ -55,26 +55,6 @@ function getFieldLabel(
 
 }
 
-function hasNumericFieldValue(
-  processTask: ProcessTask,
-  field: WorkflowNumericFieldKey,
-) {
-
-  const value =
-    field === "piecesOutput"
-      ? workflowAccess.piecesOutput(processTask)
-      : field === "plRtReal"
-        ? workflowAccess.plRtReal(processTask)
-        : workflowAccess.paintKgReal(processTask)
-
-  return (
-    value !== null &&
-    value !== undefined &&
-    String(value).trim() !== ""
-  )
-
-}
-
 export function TaskWorkflowOverlay({
   processTask,
   processCode,
@@ -85,11 +65,20 @@ export function TaskWorkflowOverlay({
   const [variant, setVariant] =
     useState<WorkflowFormVariant | null>(null)
 
+  // displayVariant se congela cuando visible pasa a false —
+  // el overlay se desvanece mostrando el último estado,
+  // sin flash de pantalla anterior.
+  const [displayVariant, setDisplayVariant] =
+    useState<WorkflowFormVariant | null>(null)
+
   const savingFields =
     useRef(new Set<string>())
 
   const [anyFieldSaving, setAnyFieldSaving] =
     useState(false)
+
+  const [savedFields, setSavedFields] =
+    useState(new Set<WorkflowNumericFieldKey>())
 
   const locked =
     workflowAccess.isCompleted(processTask)
@@ -100,26 +89,38 @@ export function TaskWorkflowOverlay({
   const skipsSelector =
     status === "PENDING"
 
+  // variant controla la lógica real.
+  // displayVariant solo se actualiza mientras visible es true,
+  // así el contenido visual se "congela" al cerrar.
   useEffect(() => {
 
     if (!visible) {
       return
     }
 
-    if (variant) {
+    setDisplayVariant(variant)
+
+  }, [visible, variant])
+
+  // Al abrir limpio el estado.
+  useEffect(() => {
+
+    if (!visible) {
       return
     }
+
+    setVariant(null)
+    setDisplayVariant(null)
+    setSavedFields(new Set())
+    setAnyFieldSaving(false)
+    savingFields.current.clear()
 
     if (skipsSelector) {
       setVariant("start")
     }
 
-  }, [visible, variant, skipsSelector])
+  }, [visible]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Si el usuario arrastra/hace scroll horizontal de la columna
-  // mientras el overlay está abierto, lo cerramos: no tiene
-  // sentido dejarlo flotando sobre una tarjeta que ya se movió
-  // de vista.
   useEffect(() => {
 
     if (!visible) {
@@ -127,9 +128,7 @@ export function TaskWorkflowOverlay({
     }
 
     function handleScrollInteraction() {
-
-      handleClose()
-
+      onClose()
     }
 
     window.addEventListener(
@@ -146,21 +145,21 @@ export function TaskWorkflowOverlay({
 
     }
 
-  }, [visible])
+  }, [visible, onClose])
 
   const fields =
     useMemo(
 
       () =>
 
-        variant
+        displayVariant
           ? getWorkflowFormFields(
               processCode,
-              variant,
+              displayVariant,
             )
           : [],
 
-      [processCode, variant],
+      [processCode, displayVariant],
 
     )
 
@@ -178,20 +177,18 @@ export function TaskWorkflowOverlay({
     )
 
   const allFieldsSaved =
-    variant === "complete" &&
+    displayVariant === "complete" &&
     numericFields.length > 0 &&
-    numericFields.every(
-      f => hasNumericFieldValue(processTask, f),
-    )
+    numericFields.every(f => savedFields.has(f))
 
   const showFieldsStep =
-    variant === "complete" && !allFieldsSaved
+    displayVariant === "complete" && !allFieldsSaved
 
   const showCompleteStep =
-    variant === "complete" && allFieldsSaved
+    displayVariant === "complete" && allFieldsSaved
 
   function handleFieldSavingChange(
-    field: string,
+    field: WorkflowNumericFieldKey,
     saving: boolean,
   ) {
 
@@ -205,23 +202,36 @@ export function TaskWorkflowOverlay({
 
   }
 
+  function handleFieldSaved(
+    field: WorkflowNumericFieldKey,
+  ) {
+
+    setSavedFields(prev => {
+
+      const next = new Set(prev)
+
+      next.add(field)
+
+      return next
+
+    })
+
+  }
+
   function handleClose() {
-
-    setVariant(null)
-
     onClose()
-
   }
 
   function handleBack() {
 
     setVariant(null)
+    setSavedFields(new Set())
 
   }
 
   const showBackButton =
-    Boolean(variant) &&
-    !(variant === "start" && skipsSelector)
+    Boolean(displayVariant) &&
+    !(displayVariant === "start" && skipsSelector)
 
   return (
 
@@ -277,6 +287,9 @@ export function TaskWorkflowOverlay({
                   onSavingChange={saving =>
                     handleFieldSavingChange(numericFields[0], saving)
                   }
+                  onSaved={() =>
+                    handleFieldSaved(numericFields[0])
+                  }
                 />
 
               </div>
@@ -298,6 +311,9 @@ export function TaskWorkflowOverlay({
                   onSavingChange={saving =>
                     handleFieldSavingChange(field, saving)
                   }
+                  onSaved={() =>
+                    handleFieldSaved(field)
+                  }
                 />
 
               ))}
@@ -308,7 +324,7 @@ export function TaskWorkflowOverlay({
 
         )}
 
-        {variant === "start" && (
+        {displayVariant === "start" && (
 
           <div className="flex items-center justify-between gap-3 rounded-lg bg-white/4 px-3 py-2">
 
@@ -326,7 +342,7 @@ export function TaskWorkflowOverlay({
 
         <div className="flex flex-col gap-2">
 
-          {variant === "start" && (
+          {displayVariant === "start" && (
 
             <div className="flex gap-2">
 
@@ -365,7 +381,7 @@ export function TaskWorkflowOverlay({
 
           )}
 
-          {!variant && (
+          {!displayVariant && (
 
             <WorkflowActionButtons
               processTask={processTask}

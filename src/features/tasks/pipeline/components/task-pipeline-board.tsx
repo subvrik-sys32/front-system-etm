@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import type { Task } from "@/features/tasks/types/task.types"
@@ -56,6 +56,58 @@ export function TaskPipelineBoard({
 
   const { leftFade, rightFade } =
     useHorizontalFade({ containerRef })
+
+  // Snapshot del estado anterior de tasks para detectar
+  // qué step pasó de no-PENDING a PENDING (señal de Revisar).
+  const prevTasksRef = useRef<Task[]>([])
+
+  useEffect(() => {
+
+    const prev = prevTasksRef.current
+
+    if (prev.length === 0) {
+
+      prevTasksRef.current = tasks
+
+      return
+
+    }
+
+    for (const task of tasks) {
+
+      const prevTask = prev.find(t => t.id === task.id)
+
+      if (!prevTask) {
+        continue
+      }
+
+      for (const step of task.workflowSteps) {
+
+        if (step.status !== "PENDING") {
+          continue
+        }
+
+        const prevStep = prevTask.workflowSteps.find(
+          s => s.id === step.id,
+        )
+
+        // Este step pasó de otro estado a PENDING —
+        // es el nuevo proceso activo después de un Revisar.
+        if (prevStep && prevStep.status !== "PENDING") {
+
+          setExpandedKey(`${task.id}:${step.processCode}`)
+
+          break
+
+        }
+
+      }
+
+    }
+
+    prevTasksRef.current = tasks
+
+  }, [tasks])
 
   const updateArrows = useCallback(() => {
 
@@ -163,60 +215,42 @@ export function TaskPipelineBoard({
         onMouseLeave={() => setHoveringHeader(false)}
       >
 
-        {/* Flecha izquierda */}
         <button
           type="button"
           onClick={scrollLeft}
           aria-label="Scrollear izquierda"
           tabIndex={-1}
-          style={{
-            userSelect: "none",
-            WebkitUserSelect: "none",
-          }}
+          style={{ userSelect: "none", WebkitUserSelect: "none" }}
           className={`
             absolute left-2 top-5.5 z-20 -translate-y-1/2
             flex h-7 w-8 items-center justify-center
             rounded-lg bg-[#18181b]/60 backdrop-blur-xl
-            text-neutral-200
-            transition-opacity duration-200
+            text-neutral-200 transition-opacity duration-200
             hover:bg-[#18181b]
-            ${showLeft
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-            }
+            ${showLeft ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
           `}
         >
           <ChevronLeft size={13} strokeWidth={2.5} />
         </button>
 
-        {/* Flecha derecha */}
         <button
           type="button"
           onClick={scrollRight}
           aria-label="Scrollear derecha"
           tabIndex={-1}
-          style={{
-            userSelect: "none",
-            WebkitUserSelect: "none",
-          }}
+          style={{ userSelect: "none", WebkitUserSelect: "none" }}
           className={`
             absolute right-2 top-5.5 z-20 -translate-y-1/2
             flex h-7 w-8 items-center justify-center
             rounded-lg bg-[#18181b]/60 backdrop-blur-xl
-            text-neutral-200
-            transition-opacity duration-200
+            text-neutral-200 transition-opacity duration-200
             hover:bg-[#18181b]
-            ${showRight
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-            }
+            ${showRight ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}
           `}
         >
           <ChevronRight size={13} strokeWidth={2.5} />
         </button>
 
-        {/* Wrapper del fade — overflow-hidden para que el mask
-            tenga dimensiones y funcione correctamente */}
         <div
           style={{
             WebkitMaskImage: `linear-gradient(to right, transparent 0, black ${leftFade}px, black calc(100% - ${rightFade}px), transparent 100%)`,
@@ -241,7 +275,6 @@ export function TaskPipelineBoard({
 
             <div className="flex h-full w-max flex-col">
 
-              {/* Fila KPIs */}
               <div className="flex w-max shrink-0 gap-4">
 
                 {PIPELINE_PROCESS_ORDER.map(code => (
@@ -259,7 +292,6 @@ export function TaskPipelineBoard({
 
               </div>
 
-              {/* Fila tarjetas: scroll vertical por columna */}
               <div
                 data-drag-scroll-ignore
                 className="flex min-h-0 flex-1 w-max gap-4"

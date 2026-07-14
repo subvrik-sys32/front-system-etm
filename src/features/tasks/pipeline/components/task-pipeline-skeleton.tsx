@@ -1,48 +1,44 @@
 "use client"
 
-import { Layers3 } from "lucide-react"
-
 import { PIPELINE_PROCESS_ORDER, PIPELINE_KPI_COLORS } from "../utils/process-columns"
 
 const KPI_SKELETON_COLORS = Object.values(PIPELINE_KPI_COLORS)
 
 function SkeletonMiniCard({
   color,
-}:{
-  color:string
-}){
+}: {
+  color: string
+}) {
 
-  return(
+  return (
 
     <div
       className="flex h-28 flex-col rounded-xl p-4"
       style={{
-        background:`linear-gradient(135deg, ${color}20, #101012)`,
+        background: `linear-gradient(135deg, ${color}20, #101012)`,
       }}
     >
 
       <div className="mb-3 flex items-center justify-between">
 
-        <span className="h-3 w-16 rounded bg-white/10"/>
+        <span className="h-3 w-16 rounded bg-white/10" />
 
-        <span className="size-5 rounded bg-white/10"/>
+        <span className="size-5 rounded bg-white/10" />
 
       </div>
 
       <div className="flex flex-1 gap-4">
 
-        {Array.from({
-          length:2,
-        }).map((_,i)=>(
+        {Array.from({ length: 2 }).map((_, i) => (
 
           <div
             key={i}
             className="min-w-0 flex-1 border-l border-white/10 pl-3 first:border-l-0 first:pl-0"
           >
 
-            <span className="block h-2.5 w-10 rounded bg-white/8"/>
+            <span className="block h-2.5 w-10 rounded bg-white/8" />
 
-            <span className="mt-2 block h-4 w-8 rounded bg-white/12"/>
+            <span className="mt-2 block h-4 w-8 rounded bg-white/12" />
 
           </div>
 
@@ -56,35 +52,27 @@ function SkeletonMiniCard({
 
 }
 
-function SkeletonProcessSummary(){
+function SkeletonColumnOperator() {
 
-  return(
+  return (
 
-    <div className="flex h-16 items-center justify-between rounded-xl bg-white/2 px-4">
+    <div className="flex h-10 items-center justify-between gap-2 px-1">
 
-      <div className="flex items-center gap-3">
+      {/* Badge operario */}
+      <div className="flex flex-1 items-center gap-1.5 rounded-lg bg-white/4 px-2 py-1">
 
-        <span className="flex size-9 items-center justify-center rounded-lg bg-white/8">
+        <span className="size-4 shrink-0 rounded-full bg-white/10" />
 
-          <Layers3 size={18} className="text-white/20"/>
-
-        </span>
-
-        <div>
-
-          <span className="block h-2.5 w-12 rounded bg-white/8"/>
-
-          <span className="mt-2 block h-5 w-8 rounded bg-white/12"/>
-
-        </div>
+        <span className="h-2.5 w-20 rounded bg-white/8" />
 
       </div>
 
-      <div className="border-l border-white/10 pl-4">
+      {/* Badge estado */}
+      <div className="flex shrink-0 items-center gap-1 rounded-lg bg-white/4 px-2 py-1">
 
-        <span className="block h-2.5 w-12 rounded bg-white/8"/>
+        <span className="size-3 rounded bg-white/10" />
 
-        <span className="mt-2 block h-5 w-8 rounded bg-white/12"/>
+        <span className="h-2.5 w-14 rounded bg-white/8" />
 
       </div>
 
@@ -94,35 +82,28 @@ function SkeletonProcessSummary(){
 
 }
 
-const SKELETON_ROWS=[
-  1,
-  .85,
-  .7,
-  .55,
-]
+const SKELETON_ROWS = [1, 0.85, 0.7, 0.55]
 
 function SkeletonCardCompact({
   opacity,
-}:{
-  opacity:number
-}){
+}: {
+  opacity: number
+}) {
 
-  return(
+  return (
 
     <div
       className="flex h-12 items-center gap-2.5 rounded-xl bg-white/2 px-3"
-      style={{
-        opacity,
-      }}
+      style={{ opacity }}
     >
 
-      <span className="h-3.5 w-9 rounded bg-white/10"/>
+      <span className="h-3.5 w-9 rounded bg-white/10" />
 
-      <span className="size-1.5 rounded-full bg-white/15"/>
+      <span className="size-1.5 rounded-full bg-white/15" />
 
-      <span className="h-3.5 flex-1 rounded bg-white/8"/>
+      <span className="h-3.5 flex-1 rounded bg-white/8" />
 
-      <span className="h-5 w-14 rounded-md bg-white/8"/>
+      <span className="h-5 w-14 rounded-md bg-white/8" />
 
     </div>
 
@@ -132,11 +113,11 @@ function SkeletonCardCompact({
 
 function SkeletonColumn({
   code,
-}:{
-  code:string
-}){
+}: {
+  code: string
+}) {
 
-  return(
+  return (
 
     <div className="flex h-full w-72 shrink-0 flex-col overflow-hidden">
 
@@ -144,19 +125,19 @@ function SkeletonColumn({
 
         <div className="flex items-center gap-2 border-b border-white/5 px-3 py-3">
 
-          <span className="size-6 rounded-md bg-white/8"/>
+          <span className="size-6 rounded-md bg-white/8" />
 
-          <span className="size-4 rounded bg-white/8"/>
+          <span className="size-4 rounded bg-white/8" />
 
-          <span className="h-3.5 w-24 rounded bg-white/8"/>
+          <span className="h-3.5 w-24 rounded bg-white/8" />
 
-          <span className="ml-auto h-3.5 w-4 rounded bg-white/5"/>
+          <span className="ml-auto h-3.5 w-4 rounded bg-white/5" />
 
         </div>
 
-        <div className="border-b border-white/5 p-2">
+        <div className="border-b border-white/5 px-2 py-1">
 
-          <SkeletonProcessSummary/>
+          <SkeletonColumnOperator />
 
         </div>
 
@@ -166,7 +147,7 @@ function SkeletonColumn({
 
         <div className="flex flex-col gap-2">
 
-          {SKELETON_ROWS.map((opacity,i)=>(
+          {SKELETON_ROWS.map((opacity, i) => (
 
             <SkeletonCardCompact
               key={i}
@@ -185,15 +166,15 @@ function SkeletonColumn({
 
 }
 
-export function TaskPipelineSkeleton(){
+export function TaskPipelineSkeleton() {
 
-  return(
+  return (
 
     <div className="flex h-full min-h-0 w-full animate-pulse flex-col overflow-hidden">
 
       <div className="grid shrink-0 grid-cols-2 gap-4 lg:grid-cols-4">
 
-        {KPI_SKELETON_COLORS.map((color,i)=>(
+        {KPI_SKELETON_COLORS.map((color, i) => (
 
           <SkeletonMiniCard
             key={i}
@@ -208,7 +189,7 @@ export function TaskPipelineSkeleton(){
 
         <div className="flex h-full gap-4">
 
-          {PIPELINE_PROCESS_ORDER.map(code=>(
+          {PIPELINE_PROCESS_ORDER.map(code => (
 
             <SkeletonColumn
               key={code}

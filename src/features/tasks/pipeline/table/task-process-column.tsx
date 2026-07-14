@@ -5,7 +5,7 @@ import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-defi
 import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
 import { getBadgeColors } from "@/shared/utils/badge-colors"
 import { TaskPipelineCard } from "../components/task-pipeline-card"
-import { TaskPipelinePlaceholder } from "../components/task-pipeline-placeholder"
+import { TaskColumnOperator } from "../components/task-column-operator"
 import { useColumnScroll } from "../hooks/use-column-scroll"
 
 type SharedProps = {
@@ -54,9 +54,9 @@ function ColumnHeader({ processCode, tasks }: SharedProps) {
 
       </header>
 
-      <div className="p-2">
+      <div className="border-b border-white/5 px-2 py-1">
 
-        <TaskPipelinePlaceholder
+        <TaskColumnOperator
           processCode={processCode}
           tasks={tasks}
         />

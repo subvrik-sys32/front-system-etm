@@ -21,6 +21,7 @@ type Props = {
   label: string
   disabled?: boolean
   onSavingChange?: (saving: boolean) => void
+  onSaved?: () => void
 }
 
 export function WorkflowNumericField({
@@ -29,6 +30,7 @@ export function WorkflowNumericField({
   label,
   disabled,
   onSavingChange,
+  onSaved,
 }: Props) {
 
   const updateField = useWorkflowStepField()
@@ -96,6 +98,10 @@ export function WorkflowNumericField({
 
       )
 
+      // Notificamos al overlay que este campo fue guardado
+      // exitosamente en esta sesión.
+      onSaved?.()
+
     } finally {
 
       setSaving(false)
@@ -106,77 +112,62 @@ export function WorkflowNumericField({
 
   }
 
-    return (
+  return (
 
-        <div className="space-y-1">
+    <div className="space-y-1">
 
-        <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
-            {label}
-        </label>
+      <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">
+        {label}
+      </label>
 
-        <div
-            className={cn(
-            "flex h-11 items-center rounded-xl bg-white/3 px-3 transition-all",
-            canSave && "border-white/10",
-            saving && "opacity-70",
-            )}
+      <div
+        className={cn(
+          "flex h-11 items-center rounded-xl bg-white/3 px-3 transition-all",
+          saving && "opacity-70",
+        )}
+      >
+
+        <input
+          type="number"
+          value={draft}
+          disabled={disabled || saving}
+          onChange={event => setDraft(event.target.value)}
+          onKeyDown={event => {
+
+            if (event.key === "Enter") {
+              handleSave()
+            }
+
+          }}
+          placeholder="0"
+          className="w-8 min-w-0 border-0 bg-transparent p-0 text-sm font-bold text-neutral-100 outline-none placeholder:text-neutral-600 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        />
+
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={!canSave}
+          className={cn(
+            "ml-auto flex size-8 shrink-0 items-center justify-center rounded-lg transition-all",
+            isSaved
+              ? "bg-emerald-500 text-white"
+              : canSave
+                ? "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                : "bg-white/5 text-neutral-600",
+          )}
         >
 
-            <input
-            type="number"
-            value={draft}
-            disabled={disabled || saving}
-            onChange={event =>
-                setDraft(event.target.value)
-            }
-            onKeyDown={event => {
+          {saving
+            ? <Loader2 size={14} className="animate-spin" />
+            : <Check size={14} />
+          }
 
-                if (event.key === "Enter") {
-                handleSave()
-                }
+        </button>
 
-            }}
-            placeholder="0"
-            className="w-8 min-w-0 border-0 bg-transparent p-0 text-sm font-bold text-neutral-100 outline-none placeholder:text-neutral-600 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            />
+      </div>
 
-            <button
-                type="button"
-                onClick={handleSave}
-                disabled={!canSave}
-                className={cn(
-                "ml-auto flex size-8 shrink-0 items-center justify-center rounded-lg transition-all",
+    </div>
 
-                isSaved &&
-                    "bg-emerald-500 text-white",
-
-                canSave &&
-                    !isSaved &&
-                    "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30",
-
-                !canSave &&
-                    !isSaved &&
-                    "bg-white/5 text-neutral-600",
-                )}
-            >
-
-                {saving
-                ? (
-                    <Loader2
-                        size={14}
-                        className="animate-spin"
-                    />
-                    )
-                : (
-                    <Check size={14}/>
-                    )}
-
-            </button>
-
-        </div>
-
-        </div>
-
-    )
+  )
 
 }

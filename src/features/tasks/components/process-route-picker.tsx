@@ -27,74 +27,62 @@ import {
 
 type Props = {
   value: ProcessCode[]
-
-  onChange: (
-    value: ProcessCode[]
-  ) => void
+  onChange: (value: ProcessCode[]) => void
+  disabled?: boolean
 }
 
 const PROCESS_ENTRIES =
-  Object.entries(
-    PROCESS_ORDER
-  ).sort(
-    ([, a], [, b]) =>
-      a.order - b.order
+  Object.entries(PROCESS_ORDER).sort(
+    ([, a], [, b]) => a.order - b.order
   )
 
 type ProcessChipProps = {
   processCode: ProcessCode
-
   active: boolean
-
-  onToggle: (
-    code: ProcessCode
-  ) => void
+  disabled: boolean
+  onToggle: (code: ProcessCode) => void
 }
 
 const ProcessChip =
   memo(function ProcessChip({
     processCode,
     active,
+    disabled,
     onToggle,
   }: ProcessChipProps) {
 
     const process =
-      PROCESS_DEFINITIONS[
-        processCode
-      ]
+      PROCESS_DEFINITIONS[processCode]
 
     const Icon =
-      ENTITY_ICONS[
-        process.icon
-      ]
+      ENTITY_ICONS[process.icon]
 
     return (
 
       <div
         role="button"
-        tabIndex={0}
-        onClick={() =>
-          onToggle(
-            processCode
-          )
-        }
+        tabIndex={disabled ? -1 : 0}
+        onClick={() => {
+          if (!disabled) onToggle(processCode)
+        }}
         onKeyDown={event => {
 
-          if(
-            event.key==="Enter" ||
-            event.key===" "
-          ){
+          if (disabled) return
 
+          if (
+            event.key === "Enter" ||
+            event.key === " "
+          ) {
             event.preventDefault()
-
-            onToggle(
-              processCode
-            )
-
+            onToggle(processCode)
           }
 
         }}
-        className="cursor-pointer"
+        className={
+          disabled
+            ? "cursor-not-allowed opacity-50"
+            : "cursor-pointer"
+        }
       >
 
         <DynamicBadge
@@ -115,40 +103,24 @@ const ProcessChip =
 export function ProcessRoutePicker({
   value,
   onChange,
+  disabled = false,
 }: Props) {
 
-  const toggle = (
-    code: ProcessCode
-  ) => {
+  const toggle = (code: ProcessCode) => {
 
-    const exists =
-      value.includes(code)
+    if (disabled) return
+
+    const exists = value.includes(code)
 
     const next =
       exists
-
-        ? value.filter(
-            item =>
-              item !== code
-          )
-
-        : [
-            ...value,
-            code,
-          ]
+        ? value.filter(item => item !== code)
+        : [...value, code]
 
     onChange(
-
       PROCESS_ENTRIES
-        .map(
-          ([code]) =>
-            code as ProcessCode
-        )
-        .filter(
-          code =>
-            next.includes(code)
-        )
-
+        .map(([code]) => code as ProcessCode)
+        .filter(code => next.includes(code))
     )
 
   }
@@ -159,31 +131,23 @@ export function ProcessRoutePicker({
 
       <div className="flex flex-wrap justify-center gap-3">
 
-        {PROCESS_ENTRIES.map(
-          ([code]) => {
+        {PROCESS_ENTRIES.map(([code]) => {
 
-            const processCode =
-              code as ProcessCode
+          const processCode = code as ProcessCode
 
-            return (
+          return (
 
-              <ProcessChip
-                key={processCode}
-                processCode={processCode}
-                active={
-                  value.includes(
-                    processCode
-                  )
-                }
-                onToggle={
-                  toggle
-                }
-              />
+            <ProcessChip
+              key={processCode}
+              processCode={processCode}
+              active={value.includes(processCode)}
+              disabled={disabled}
+              onToggle={toggle}
+            />
 
-            )
+          )
 
-          }
-        )}
+        })}
 
       </div>
 
@@ -193,67 +157,45 @@ export function ProcessRoutePicker({
 
           <div className="flex flex-wrap items-center gap-1.5 text-sm">
 
-            {value.map(
-              (
-                process,
-                index
-              ) => {
+            {value.map((process, index) => {
 
-                const definition =
-                  PROCESS_DEFINITIONS[
-                    process
-                  ]
+              const definition =
+                PROCESS_DEFINITIONS[process]
 
-                const isLast =
-                  index ===
-                  value.length - 1
+              const isLast =
+                index === value.length - 1
 
-                return (
+              return (
 
-                  <Fragment
-                    key={`${process}-${index}`}
+                <Fragment key={`${process}-${index}`}>
+
+                  <span
+                    className={
+                      isLast
+                        ? "font-bold"
+                        : "font-medium text-neutral-500"
+                    }
+                    style={
+                      isLast
+                        ? {
+                            color: definition.color,
+                            textShadow: `0 0 10px ${definition.color}55`,
+                          }
+                        : undefined
+                    }
                   >
+                    {process}
+                  </span>
 
-                    <span
-                      className={
+                  {!isLast && (
+                    <span className="text-neutral-700">→</span>
+                  )}
 
-                        isLast
+                </Fragment>
 
-                          ? "font-bold"
+              )
 
-                          : "font-medium text-neutral-500"
-
-                      }
-                      style={
-                        isLast
-                          ? {
-                              color: definition.color,
-                              textShadow: `0 0 10px ${definition.color}55`,
-                            }
-                          : undefined
-                      }
-                    >
-
-                      {process}
-
-                    </span>
-
-                    {!isLast && (
-
-                      <span className="text-neutral-700">
-
-                        →
-
-                      </span>
-
-                    )}
-
-                  </Fragment>
-
-                )
-
-              }
-            )}
+            })}
 
           </div>
 

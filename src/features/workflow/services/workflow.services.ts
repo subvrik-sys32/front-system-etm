@@ -9,6 +9,10 @@ import type {
   WorkflowStep,
 } from "../types/workflow.types"
 
+import type {
+  ProcessCode,
+} from "@/features/tasks/types/task.types"
+
 export type WorkflowResponse={
 
   taskId:string
@@ -18,6 +22,17 @@ export type WorkflowResponse={
 }
 
 export const workflowService={
+
+  async getRequirements(){
+
+    const res=
+      await api.get<Record<ProcessCode,string[]>>(
+        "/workflow/requirements",
+      )
+
+    return res.data
+
+  },
 
   async update(
     stepId:string,

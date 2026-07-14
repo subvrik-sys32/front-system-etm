@@ -7,8 +7,6 @@ import { Plus } from "lucide-react"
 import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
 import { FormDialog } from "@/shared/ui/dialogs/form-dialog/form-dialog"
 
-import { getCurrentStep } from "@/features/workflow/selectors/get-current-step"
-
 import { TaskFormValue, useTaskForm } from "../../hooks/use-task-form"
 import { useTasks } from "../../hooks/use-tasks"
 
@@ -16,7 +14,6 @@ import { TaskForm } from "../form/task-form"
 
 import type { Task } from "../../types/task.types"
 import type { TaskFormErrors } from "../form/types"
-
 
 type Props={
   open:boolean
@@ -114,6 +111,7 @@ export function TaskDialog({
   const{
     form,
     update,
+    reset,
     buildTask,
     canSave,
   }=useTaskForm(
@@ -129,11 +127,6 @@ export function TaskDialog({
   const router=useRouter()
 
   const[
-    confirmRouteReset,
-    setConfirmRouteReset,
-  ]=useState(false)
-
-  const[
     confirmOpenTask,
     setConfirmOpenTask,
   ]=useState(false)
@@ -142,11 +135,6 @@ export function TaskDialog({
     createdTaskId,
     setCreatedTaskId,
   ]=useState<string|null>(null)
-
-  const[
-    pendingData,
-    setPendingData,
-  ]=useState<ReturnType<typeof buildTask>|null>(null)
 
   const[
     saving,
@@ -159,6 +147,15 @@ export function TaskDialog({
   ]=useState(false)
 
   const projectLocked=!!projectId
+
+  // Si la tarea ya inició producción, la ruta no puede cambiarse.
+  const routeLocked =
+    !!task &&
+    task.workflowSteps.some(
+      step =>
+        step.status !== "PENDING" &&
+        step.status !== "QUEUE",
+    )
 
   const errors=
     validateTask(
@@ -194,33 +191,6 @@ export function TaskDialog({
       if(task){
 
         const data=buildTask()
-
-        const routeChanged=
-
-          JSON.stringify(task.route)!==
-
-          JSON.stringify(data.route)
-
-        const started=
-
-          getCurrentStep(
-            task.workflowSteps,
-          )!==null
-
-        if(
-          routeChanged &&
-          started
-        ){
-
-          setPendingData(data)
-
-          setConfirmRouteReset(true)
-
-          setSaving(false)
-
-          return
-
-        }
 
         await updateTask({
 
@@ -278,6 +248,8 @@ export function TaskDialog({
         error,
       )
 
+      reset()
+
     }finally{
 
       setSaving(false)
@@ -326,6 +298,7 @@ export function TaskDialog({
           }}
           update={update}
           projectLocked={projectLocked}
+          routeLocked={routeLocked}
           errors={
             attempted
               ? errors
@@ -334,63 +307,6 @@ export function TaskDialog({
         />
 
       </FormDialog>
-
-      <ActionDialog
-        open={confirmRouteReset}
-        title="Reiniciar flujo"
-        description="
-          La tarea ya inició producción.
-          Cambiar la ruta reiniciará
-          el workflow actual.
-        "
-        confirmLabel="Continuar"
-        variant="danger"
-        onClose={()=>{
-
-          setPendingData(null)
-
-          setConfirmRouteReset(false)
-
-        }}
-        onConfirm={async()=>{
-
-          if(task&&pendingData){
-
-            setSaving(true)
-
-            try{
-
-              await updateTask({
-
-                id:task.id,
-
-                dto:pendingData,
-
-              })
-
-            }catch(error){
-
-              console.error(
-                "TASK UPDATE ERROR",
-                error,
-              )
-
-            }finally{
-
-              setSaving(false)
-
-            }
-
-          }
-
-          setPendingData(null)
-
-          setConfirmRouteReset(false)
-
-          close()
-
-        }}
-      />
 
       <ActionDialog
         open={confirmOpenTask}

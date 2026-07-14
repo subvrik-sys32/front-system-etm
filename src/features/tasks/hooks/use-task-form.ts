@@ -210,11 +210,29 @@ export function useTaskForm(
 
     isPaintValid
 
-  const buildTask = () => ({
+  const buildTask = () => {
 
-    ...form,
+    const data = { ...form }
 
-  })
+    // Si la ruta no cambió respecto a la tarea original,
+    // no la incluimos en el DTO — el backend interpreta
+    // cualquier `route` en el payload como intento de cambio,
+    // y rechaza con 400 si la producción ya inició.
+    if (
+      task &&
+      JSON.stringify(form.route) ===
+      JSON.stringify(task.route)
+    ) {
+
+      const { route: _route, ...rest } = data
+
+      return rest
+
+    }
+
+    return data
+
+  }
 
   return {
 

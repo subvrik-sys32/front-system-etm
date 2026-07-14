@@ -42,6 +42,8 @@ export function TaskInfoSection({
 
   update,
 
+  routeLocked,
+
   errors,
 
 }:TaskFormSectionProps){
@@ -158,12 +160,21 @@ export function TaskInfoSection({
 
           <ProcessRoutePicker
             value={form.route}
-            onChange={route=>
+            disabled={routeLocked}
+            onChange={route =>
               update({
                 route,
               })
             }
           />
+
+          {routeLocked && (
+
+            <p className="mt-2 text-xs text-neutral-500">
+              La ruta está bloqueada una vez iniciada la producción.
+            </p>
+
+          )}
 
         </FormField>
 

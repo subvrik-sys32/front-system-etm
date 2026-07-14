@@ -29,5 +29,7 @@ export type TaskFormSectionProps = {
 
   projectLocked?: boolean
 
+  routeLocked?: boolean
+
   errors?: TaskFormErrors
 }

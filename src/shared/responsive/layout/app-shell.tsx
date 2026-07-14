@@ -8,6 +8,7 @@ import { useSidebarStore } from "@/shared/stores/sidebar-store"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { SidebarDrawer } from "@/shared/responsive/mobile/sidebar-drawer"
 import { TopBar } from "@/shared/responsive/mobile/top-bar"
+import { BottomNavigation } from "../mobile/bottom-navigation"
 
 type Props = {
   children: ReactNode
@@ -57,11 +58,7 @@ function CompactShell({ children }: Props) {
         {children}
       </main>
 
-      {/*
-        BottomNavigation (Sprint 5): módulos principales únicamente.
-        Placeholder mínimo hasta construirlo.
-      */}
-      <nav className="h-14 shrink-0 border-t border-white/5" />
+      <BottomNavigation />
 
       <SidebarDrawer />
 

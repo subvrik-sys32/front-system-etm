@@ -4,9 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import type { Task } from "@/features/tasks/types/task.types"
+import type { ProcessCode } from "@/features/tasks/types/task.types"
 
 import { useDragScroll } from "@/shared/ui/horizontal-scroll/use-drag-scroll"
 import { useHorizontalFade } from "@/shared/hooks/use-horizontal-fade"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 import { PIPELINE_PROCESS_ORDER } from "../utils/process-columns"
 import { getTaskProcesses } from "../utils/get-task-process"
@@ -14,6 +16,7 @@ import { getTaskProcesses } from "../utils/get-task-process"
 import { TaskProcessColumn } from "../table/task-process-column"
 import { TaskPipelineHeader } from "../table/task-pipeline-header"
 import { TaskPipelineSkeleton } from "../components/task-pipeline-skeleton"
+import { PipelineProcessSelector } from "./pipeline-process-selector"
 
 import { TaskDialog } from "@/features/tasks/components/dialog/task-dialog"
 
@@ -31,18 +34,14 @@ export function TaskPipelineBoard({
   loading = false,
 }: Props) {
 
+  const { isMobile } = useResponsive()
+
   const [expandedKey, setExpandedKey] =
     useState<string | null>(null)
 
-  // Key que un overlay activo en OTRA card tiene abierto.
-  // Mientras no sea null, ningún toggle manual ni auto-expansión
-  // puede cambiar expandedKey.
   const [activeOverlayKey, setActiveOverlayKey] =
     useState<string | null>(null)
 
-  // Cola (de tamaño 1: solo el último importa, porque expandedKey
-  // es singular) de auto-expansiones que llegaron mientras había
-  // un overlay abierto. Se aplica al cerrarse ese overlay.
   const [pendingAutoExpandKey, setPendingAutoExpandKey] =
     useState<string | null>(null)
 
@@ -58,6 +57,11 @@ export function TaskPipelineBoard({
   const [canScrollRight, setCanScrollRight] =
     useState(false)
 
+  // Solo relevante en mobile: qué proceso se está viendo
+  // en la columna única.
+  const [activeProcess, setActiveProcess] =
+    useState<ProcessCode>(PIPELINE_PROCESS_ORDER[0])
+
   const {
     containerRef,
     handleMouseDown,
@@ -69,8 +73,6 @@ export function TaskPipelineBoard({
   const { leftFade, rightFade } =
     useHorizontalFade({ containerRef })
 
-  // Snapshot del estado anterior de tasks para detectar
-  // qué step pasó de no-PENDING a PENDING (señal de Revisar).
   const prevTasksRef = useRef<Task[]>([])
 
   useEffect(() => {
@@ -105,8 +107,6 @@ export function TaskPipelineBoard({
           s => s.id === step.id,
         )
 
-        // Este step pasó de otro estado a PENDING —
-        // es el nuevo proceso activo después de un Revisar.
         if (prevStep && prevStep.status !== "PENDING") {
 
           detectedKey = `${task.id}:${step.processCode}`
@@ -127,8 +127,6 @@ export function TaskPipelineBoard({
 
       if (activeOverlayKey !== null) {
 
-        // Hay un overlay abierto en otra card: no interrumpimos.
-        // Encolamos para aplicar apenas se cierre.
         setPendingAutoExpandKey(detectedKey)
 
       } else {
@@ -143,7 +141,6 @@ export function TaskPipelineBoard({
 
   }, [tasks, activeOverlayKey])
 
-  // Al cerrarse el overlay activo, procesamos lo que haya quedado encolado.
   useEffect(() => {
 
     if (activeOverlayKey === null && pendingAutoExpandKey !== null) {
@@ -180,6 +177,12 @@ export function TaskPipelineBoard({
 
   useEffect(() => {
 
+    // En mobile no existe el contenedor de drag-scroll horizontal,
+    // así que este listener no tiene nada que observar.
+    if (isMobile) {
+      return
+    }
+
     const el = containerRef.current
 
     if (!el) {
@@ -201,7 +204,7 @@ export function TaskPipelineBoard({
 
     }
 
-  }, [updateArrows, containerRef])
+  }, [updateArrows, containerRef, isMobile])
 
   function scrollLeft() {
 
@@ -223,8 +226,6 @@ export function TaskPipelineBoard({
 
   function toggleCard(key: string) {
 
-    // Con un overlay activo, ninguna card puede cambiar de expandida
-    // (incluida la que tiene el overlay: se cierra desde adentro, no desde acá).
     if (activeOverlayKey !== null) {
       return
     }
@@ -259,6 +260,54 @@ export function TaskPipelineBoard({
     return <TaskPipelineSkeleton />
   }
 
+  // ---------- Rama mobile: selector + una sola columna ----------
+  if (isMobile) {
+
+    const activeTasks = columns.get(activeProcess) ?? []
+
+    return (
+
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">
+
+        <TaskPipelineHeader tasks={kpiTasks} />
+
+        <PipelineProcessSelector
+          value={activeProcess}
+          onChange={setActiveProcess}
+          columns={columns}
+        />
+
+        <div className="mt-2 min-h-0 flex-1 overflow-hidden">
+
+          <TaskProcessColumn
+            processCode={activeProcess}
+            tasks={activeTasks}
+            expandedKey={expandedKey}
+            onToggleCard={toggleCard}
+            activeOverlayKey={activeOverlayKey}
+            onOverlayOpenChange={handleOverlayOpenChange}
+            contentOnly
+          />
+
+        </div>
+
+        {openTaskDialog && (
+
+          <TaskDialog
+            open
+            promptOpenAfterCreate
+            onClose={() => setOpenTaskDialog(false)}
+          />
+
+        )}
+
+      </div>
+
+    )
+
+  }
+
+  // ---------- Rama desktop: sin cambios ----------
   const showLeft = hoveringHeader && canScrollLeft
   const showRight = hoveringHeader && canScrollRight
 

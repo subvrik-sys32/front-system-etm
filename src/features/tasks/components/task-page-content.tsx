@@ -1,7 +1,10 @@
-// features/tasks/components/task-page-content.tsx
 "use client"
 
 import { useState } from "react"
+
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+
+import { AdaptiveActionBar } from "@/shared/responsive/adaptative/adaptive-action-bar"
 
 import { EntityExpandProvider } from "@/shared/ui/entity-table/features/expansion"
 
@@ -49,6 +52,8 @@ export function TaskPageContent({
   focusToken,
   initialShowHistory=false,
 }:Props){
+
+  const { isMobile } = useResponsive()
 
   const[
     search,
@@ -136,42 +141,51 @@ export function TaskPageContent({
 
         <EntityToolbar
           left={
-            <div className="flex flex-wrap items-center gap-2 py-1 select-none">
 
-              <BackToProjectButton/>
+            <AdaptiveActionBar
+              pinned={
+                <>
+                  <BackToProjectButton/>
 
-              <EntityToolbarSearch
-                value={search}
-                onChange={setSearch}
-              />
+                  <EntityToolbarSearch
+                    value={search}
+                    onChange={setSearch}
+                  />
+                </>
+              }
+              actions={[
+                <FilterBar key="filter" module="tasks" />,
+                <TaskSortButton key="sort" />,
+                <HistoryToggleButton
+                  key="history"
+                  count={completedCount}
+                  active={showHistory}
+                  onClick={()=>
+                    setShowHistory(
+                      value=>!value,
+                    )
+                  }
+                />,
+                <ExportMenu
+                  key="export"
+                  scopes={REPORT_EXPORT_SCOPES}
+                  onExport={handleExport}
+                />,
+              ]}
+              right={
 
-              <FilterBar
-                module="tasks"
-              />
+                !isMobile && (
 
-              <TaskSortButton/>
+                  <TaskViewToggle
+                    value={view}
+                    onChange={setView}
+                  />
 
-              <HistoryToggleButton
-                count={completedCount}
-                active={showHistory}
-                onClick={()=>
-                  setShowHistory(
-                    value=>!value,
-                  )
-                }
-              />
+                )
 
-              <ExportMenu
-                scopes={REPORT_EXPORT_SCOPES}
-                onExport={handleExport}
-              />
+              }
+            />
 
-              <TaskViewToggle
-                value={view}
-                onChange={setView}
-              />
-
-            </div>
           }
         />
 

@@ -1,20 +1,28 @@
 "use client"
 
-import { taskAccess } from "@/features/tasks/access/task-access"
 import { getBadgeColors } from "@/shared/utils/badge-colors"
 
-import type { Task } from "@/features/tasks/types/task.types"
+import { WORKFLOW_STATUS_DEFINITIONS } from "@/features/workflow/constants/workflow-status-definitions"
+
+import type { ProcessTask } from "@/features/processes/types/process.types"
 
 type Props = {
-  task: Task
+  processTask: ProcessTask
 }
 
 export function TaskPipelineCardCompact({
-  task,
+  processTask,
 }: Props) {
 
+  const task = processTask.task
+
+  // El status ya viene correcto por step (incluyendo "QUEUE"
+  // cuando esta etapa todavía no le llegó el turno a la tarea).
+  const stepStatus =
+    processTask.workflowStep?.status ?? "QUEUE"
+
   const status =
-    taskAccess.statusLabel(task)
+    WORKFLOW_STATUS_DEFINITIONS[stepStatus]
 
   const badge =
     getBadgeColors(status.color, "subtle")

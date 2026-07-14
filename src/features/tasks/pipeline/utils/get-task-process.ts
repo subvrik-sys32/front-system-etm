@@ -1,55 +1,24 @@
-import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
-
-import { getCurrentStep } from "@/features/workflow/selectors/get-current-step"
-import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
+import type { Task } from "@/features/tasks/types/task.types"
+import type { ProcessCode } from "@/features/tasks/types/task.types"
 
 export function getTaskProcesses(
   task: Task,
 ): ProcessCode[] {
 
-  if (
-    isWorkflowCompleted(
-      task.workflowSteps,
-    )
-  ) {
+  // Mostramos la tarea en TODAS las columnas de su ruta desde
+  // el inicio, para que cada operario vea con anticipación qué
+  // trabajo le va a llegar, no solo cuando ya está en curso.
+  if (task.route.length > 0) {
 
-    const processCodes =
-      task.workflowSteps.map(
-        step => step.processCode,
-      )
-
-    return Array.from(
-      new Set(processCodes),
-    )
+    return task.route
 
   }
 
-  const currentStep =
-    getCurrentStep(
-      task.workflowSteps,
+  const processCodes =
+    task.workflowSteps.map(
+      step => step.processCode,
     )
 
-  if (currentStep) {
-
-    return [currentStep.processCode]
-
-  }
-
-  const lastStep =
-    [...task.workflowSteps]
-      .sort(
-        (a, b) => a.order - b.order,
-      )
-      .at(-1)
-
-  if (lastStep) {
-
-    return [lastStep.processCode]
-
-  }
-
-  return task.route[0]
-    ? [task.route[0]]
-    : []
+  return Array.from(new Set(processCodes))
 
 }

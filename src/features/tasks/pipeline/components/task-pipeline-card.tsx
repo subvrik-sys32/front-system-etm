@@ -42,6 +42,13 @@ export function TaskPipelineCard({
   const finalized =
     isWorkflowCompleted(task.workflowSteps)
 
+  // Mientras el step de esta columna esté en "QUEUE" (todavía no
+  // le toca el turno a la tarea), no tiene sentido abrir el
+  // overlay de acciones sobre él.
+  const isReachedStage =
+    processTask.workflowStep != null &&
+    processTask.workflowStep.status !== "QUEUE"
+
   const { bind, pressed } = useLongPress({
     onLongPress: () => {
 
@@ -51,7 +58,7 @@ export function TaskPipelineCard({
   })
 
   const longPressEnabled =
-    expanded && !finalized
+    expanded && !finalized && isReachedStage
 
   return (
 
@@ -73,16 +80,16 @@ export function TaskPipelineCard({
         >
 
           {expanded ? (
-            <KanbanCardFromTask task={task} />
+            <KanbanCardFromTask task={task} processCode={processCode} />
           ) : (
-            <TaskPipelineCardCompact task={task} />
+            <TaskPipelineCardCompact processTask={processTask} />
           )}
 
         </div>
 
       </button>
 
-      {!finalized && (
+      {!finalized && isReachedStage && (
 
         <TaskWorkflowOverlay
           processTask={processTask}

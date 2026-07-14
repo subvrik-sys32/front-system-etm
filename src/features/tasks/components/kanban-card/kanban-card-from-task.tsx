@@ -4,21 +4,36 @@ import { KanbanCardView } from "./kanban-card-view"
 
 import { taskAccess } from "../../access/task-access"
 
-import type { Task } from "../../types/task.types"
+import { WORKFLOW_STATUS_DEFINITIONS } from "@/features/workflow/constants/workflow-status-definitions"
+import { getWorkflowStep } from "@/features/workflow/selectors/get-workflow-step"
+
+import type { ProcessCode, Task } from "../../types/task.types"
 
 type Props={
   task:Task
+  processCode?:ProcessCode
   dragPreview?:boolean
 }
 
 export function KanbanCardFromTask({
   task,
+  processCode,
   dragPreview=false,
 }:Props){
 
   const stage=taskAccess.stageLabel(task)
 
-  const status=taskAccess.statusLabel(task)
+  // Si se pasa processCode (uso en el pipeline, donde la misma
+  // tarea puede verse en varias columnas a la vez), el estado
+  // se calcula por ESE step puntual, ya incluye "QUEUE" cuando
+  // corresponde. Sin processCode (ej. ProjectTaskRow), se
+  // mantiene el estado global de siempre.
+  const status =
+    processCode
+      ? WORKFLOW_STATUS_DEFINITIONS[
+          getWorkflowStep(task, processCode)?.status ?? "QUEUE"
+        ]
+      : taskAccess.statusLabel(task)
 
   return(
     <KanbanCardView

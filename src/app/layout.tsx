@@ -24,6 +24,14 @@ import{
   RealtimeProvider,
 }from"@/shared/realtime/realtime-provider"
 
+import {
+  getInitialBreakpoint,
+} from "@/shared/responsive/get-initial-breakpoint"
+
+import {
+  ResponsiveProvider,
+} from "@/shared/responsive/responsive-context"
+
 const geist =
   Geist({
     subsets: ["latin"],
@@ -35,11 +43,13 @@ export const metadata: Metadata = {
     "ETM SAC Production System",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+
+  const initialBreakpoint = await getInitialBreakpoint()
 
   return (
 
@@ -53,11 +63,15 @@ export default function RootLayout({
 
           <RealtimeProvider>
 
-            <div className="flex h-full min-h-0 flex-col overflow-hidden">
+            <ResponsiveProvider initialBreakpoint={initialBreakpoint}>
 
-              {children}
+              <div className="flex h-full min-h-0 flex-col overflow-hidden">
 
-            </div>
+                {children}
+
+              </div>
+
+            </ResponsiveProvider>
 
           </RealtimeProvider>
 

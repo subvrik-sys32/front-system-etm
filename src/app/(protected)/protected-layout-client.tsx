@@ -31,7 +31,7 @@ import {
 
 import {
   AppShell,
-} from "@/shared/layouts/app-shell"
+} from "@/shared/responsive/layout/app-shell"
 
 import {
   AppLoadingScreen,

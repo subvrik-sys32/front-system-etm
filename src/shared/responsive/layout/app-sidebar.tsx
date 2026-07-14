@@ -15,12 +15,26 @@ import { SidebarNavigation } from "./sidebar-navigation"
 import { SidebarProfile } from "./sidebar-profile"
 import { SidebarShowButton } from "./sidebar-show-button"
 
-export function AppSidebar() {
+type Props = {
+  // "desktop" (default): visibilidad/ancho controlados por useSidebarStore,
+  // como siempre. "drawer": visibilidad controlada por `open`, y nunca
+  // usa el modo "collapsed" (un drawer mobile no tiene rail angosto).
+  variant?: "desktop" | "drawer"
+  open?: boolean
+}
+
+export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
+
   const mode = useSidebarStore((s) => s.mode)
   const lastVisibleMode = useSidebarStore((s) => s.lastVisibleMode)
 
   const visibleMode = mode === "closed" ? lastVisibleMode : mode
-  const collapsed = visibleMode === "collapsed"
+
+  const isDrawer = variant === "drawer"
+
+  const collapsed = isDrawer ? false : visibleMode === "collapsed"
+
+  const isVisible = isDrawer ? open : mode !== "closed"
 
   const [profileEditOpen, setProfileEditOpen] = useState(false)
 
@@ -47,7 +61,7 @@ export function AppSidebar() {
         className={cn(
           "isolate z-40 fixed left-0 top-0 flex h-screen flex-col overflow-hidden border-r border-white/5 bg-[#0A0A0A] ring-1 ring-white/5 select-none transform-gpu transition-all duration-200 ease-out will-change-transform",
           collapsed ? "w-18" : "w-62",
-          mode === "closed" ? "translate-x-[-110%]" : "translate-x-0",
+          isVisible ? "translate-x-0" : "translate-x-[-110%]",
         )}
       >
         <SidebarHeader collapsed={collapsed} />
@@ -81,9 +95,13 @@ export function AppSidebar() {
         </div>
       </aside>
 
-      <SidebarShowButton />
+      {/* El botón de mostrar rail colapsada es un affordance de desktop
+          exclusivamente — en el drawer se abre/cierra por el hamburger
+          del TopBar (Sprint 4), no tiene sentido acá. */}
+      {!isDrawer && <SidebarShowButton />}
 
       <ProfileDialog open={profileEditOpen} onClose={() => setProfileEditOpen(false)} />
     </>
   )
+
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { cn } from "@/shared/utils/utils"
 
@@ -45,22 +45,61 @@ export function TaskPipelineCard({
   const finalized =
     isWorkflowCompleted(task.workflowSteps)
 
-  // Esta etapa todavía no le llegó el turno a la tarea.
   const isFutureStage =
     stepStatus === "QUEUE"
 
-  // Esta etapa puntual ya fue revisada/cerrada (aunque la tarea
-  // completa siga en curso por otras etapas posteriores).
   const isCompletedStage =
     stepStatus === "REVIEWED"
 
-  // Se atenúan visualmente, pero se mantienen clickeables/expandibles.
   const isDimmed =
     !finalized &&
     (isFutureStage || isCompletedStage)
 
   const isReachedStage =
-    !isFutureStage
+    !isFutureStage && !isCompletedStage
+
+  const [displayExpanded, setDisplayExpanded] =
+    useState(expanded)
+
+  const [pendingCollapse, setPendingCollapse] =
+    useState(false)
+
+  useEffect(() => {
+
+    if (expanded) {
+
+      setDisplayExpanded(true)
+      setPendingCollapse(false)
+
+      return
+
+    }
+
+    if (overlayOpen) {
+
+      setPendingCollapse(true)
+      setOverlayOpen(false)
+
+      return
+
+    }
+
+    if (!pendingCollapse) {
+      setDisplayExpanded(false)
+    }
+
+  }, [expanded, overlayOpen, pendingCollapse])
+
+  const handleOverlayClosed = useCallback(() => {
+
+    if (pendingCollapse) {
+
+      setDisplayExpanded(false)
+      setPendingCollapse(false)
+
+    }
+
+  }, [pendingCollapse])
 
   const { bind, pressed } = useLongPress({
     onLongPress: () => {
@@ -93,7 +132,7 @@ export function TaskPipelineCard({
           )}
         >
 
-          {expanded ? (
+          {displayExpanded ? (
             <KanbanCardFromTask task={task} processCode={processCode} />
           ) : (
             <TaskPipelineCardCompact processTask={processTask} />
@@ -110,6 +149,7 @@ export function TaskPipelineCard({
           processCode={processCode}
           visible={overlayOpen}
           onClose={closeOverlay}
+          onClosed={handleOverlayClosed}
         />
 
       )}

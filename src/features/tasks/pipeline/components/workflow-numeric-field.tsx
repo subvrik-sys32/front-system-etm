@@ -20,6 +20,11 @@ type Props = {
   field: WorkflowNumericFieldKey
   label: string
   disabled?: boolean
+  // Fuerza el input a arrancar vacío aunque ya exista un valor
+  // guardado en backend. Se usa cuando el usuario apretó "Volver"
+  // desde esta misma sesión del overlay, para que el campo pida
+  // confirmación de nuevo en vez de mostrar el valor previo.
+  forceEmpty?: boolean
   onSavingChange?: (saving: boolean) => void
   onSaved?: () => void
 }
@@ -29,6 +34,7 @@ export function WorkflowNumericField({
   field,
   label,
   disabled,
+  forceEmpty = false,
   onSavingChange,
   onSaved,
 }: Props) {
@@ -45,7 +51,7 @@ export function WorkflowNumericField({
         : workflowAccess.paintKgReal(processTask)
 
   const [draft, setDraft] = useState(
-    savedValue === null || savedValue === undefined
+    forceEmpty || savedValue === null || savedValue === undefined
       ? ""
       : String(savedValue),
   )
@@ -55,14 +61,15 @@ export function WorkflowNumericField({
   useEffect(() => {
 
     setDraft(
-      savedValue === null || savedValue === undefined
+      forceEmpty || savedValue === null || savedValue === undefined
         ? ""
         : String(savedValue),
     )
 
-  }, [savedValue])
+  }, [savedValue, forceEmpty])
 
   const isSaved =
+    !forceEmpty &&
     savedValue !== null &&
     savedValue !== undefined &&
     draft.trim() !== "" &&

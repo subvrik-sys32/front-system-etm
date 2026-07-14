@@ -28,6 +28,11 @@ type Props = {
   processCode: ProcessCode
   visible: boolean
   onClose: () => void
+  // Se dispara cuando la transición de fade-out del overlay
+  // termina realmente (evento nativo de CSS), no en base a un
+  // tiempo asumido. Lo usa el padre para saber cuándo es seguro
+  // colapsar el contenido de la card a compacto sin generar saltos.
+  onClosed?: () => void
 }
 
 const FIELD_LABELS: Record<WorkflowFieldType, string> = {
@@ -60,6 +65,7 @@ export function TaskWorkflowOverlay({
   processCode,
   visible,
   onClose,
+  onClosed,
 }: Props) {
 
   const [variant, setVariant] =
@@ -79,6 +85,13 @@ export function TaskWorkflowOverlay({
 
   const [savedFields, setSavedFields] =
     useState(new Set<WorkflowNumericFieldKey>())
+
+  // Se incrementa cada vez que el usuario aprieta "Volver" desde
+  // los campos numéricos. Mientras sea > 0, los campos arrancan
+  // vacíos (forceEmpty) aunque ya tengan valor guardado en backend,
+  // para que el usuario tenga que reconfirmar antes de avanzar.
+  const [backCount, setBackCount] =
+    useState(0)
 
   const locked =
     workflowAccess.isCompleted(processTask)
@@ -103,6 +116,12 @@ export function TaskWorkflowOverlay({
   }, [visible, variant])
 
   // Al abrir limpio el estado.
+  // OJO: no resetear displayVariant acá. El efecto de arriba ya lo
+  // sincroniza con variant. Si acá también lo pisamos a null, y
+  // variant termina volviendo al mismo valor que tenía antes
+  // (ej. "start" -> null -> "start"), React no vuelve a disparar
+  // el efecto de displayVariant (su dependencia "variant" no
+  // cambió), y displayVariant queda trabado en null para siempre.
   useEffect(() => {
 
     if (!visible) {
@@ -110,10 +129,10 @@ export function TaskWorkflowOverlay({
     }
 
     setVariant(null)
-    setDisplayVariant(null)
     setSavedFields(new Set())
     setAnyFieldSaving(false)
     savingFields.current.clear()
+    setBackCount(0)
 
     if (skipsSelector) {
       setVariant("start")
@@ -226,6 +245,7 @@ export function TaskWorkflowOverlay({
 
     setVariant(null)
     setSavedFields(new Set())
+    setBackCount(c => c + 1)
 
   }
 
@@ -239,6 +259,20 @@ export function TaskWorkflowOverlay({
       data-drag-scroll-ignore
       onMouseDown={event => event.stopPropagation()}
       onClick={event => event.stopPropagation()}
+      onTransitionEnd={event => {
+
+        // Solo nos interesa la transición de opacity de este
+        // mismo nodo (no de hijos con sus propias transiciones),
+        // y solo cuando terminó de desvanecerse (visible=false).
+        if (
+          event.target === event.currentTarget &&
+          event.propertyName === "opacity" &&
+          !visible
+        ) {
+          onClosed?.()
+        }
+
+      }}
       className={cn(
         "absolute inset-0 flex flex-col overflow-hidden rounded-xl bg-[#0a0a0a] transition-all duration-150",
         visible
@@ -284,6 +318,7 @@ export function TaskWorkflowOverlay({
                   field={numericFields[0]}
                   label={getFieldLabel(processCode, numericFields[0])}
                   disabled={locked}
+                  forceEmpty={backCount > 0}
                   onSavingChange={saving =>
                     handleFieldSavingChange(numericFields[0], saving)
                   }
@@ -308,6 +343,7 @@ export function TaskWorkflowOverlay({
                   field={field}
                   label={getFieldLabel(processCode, field)}
                   disabled={locked}
+                  forceEmpty={backCount > 0}
                   onSavingChange={saving =>
                     handleFieldSavingChange(field, saving)
                   }
@@ -326,11 +362,7 @@ export function TaskWorkflowOverlay({
 
         {displayVariant === "start" && (
 
-          <div className="flex items-center justify-between gap-3 rounded-lg bg-white/4 px-3 py-2">
-
-            <span className="text-xs font-medium text-neutral-400">
-              {getFieldLabel(processCode, "operator")}
-            </span>
+          <div className="flex items-center justify-center rounded-lg bg-white/4 px-3 py-2">
 
             <ProcessOperatorCell
               processTask={processTask}

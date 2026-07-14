@@ -1,80 +1,91 @@
 "use client"
 
-import { Clock, Zap } from "lucide-react"
+import { Clock, Users, Zap } from "lucide-react"
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
 import { getBadgeColors } from "@/shared/utils/badge-colors"
 import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
 
 import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
+import type { WorkflowStep } from "@/features/workflow/types/workflow.types"
 
 type Props = {
   processCode: ProcessCode
   tasks: Task[]
 }
 
-function getActiveOperator(
+type ActiveEntry = {
+  operator: NonNullable<WorkflowStep["operator"]>
+  status: WorkflowStep["status"]
+  taskNumber: number
+}
+
+// Estados en los que el operario sigue "vivo" en esta estación: ya fue
+// asignado pero la tarea todavía no salió de esta columna.
+const ACTIVE_STATUSES: WorkflowStep["status"][] = [
+  "PENDING",
+  "PROGRESS",
+  "PAUSED",
+]
+
+function getActiveOperatorEntries(
   tasks: Task[],
   processCode: ProcessCode,
-) {
+): ActiveEntry[] {
 
-  // Primero buscamos el step en PROGRESS
+  const entries: ActiveEntry[] = []
+
   for (const task of tasks) {
 
     const step = task.workflowSteps.find(
-      s => s.processCode === processCode && s.status === "PROGRESS",
+      s =>
+        s.processCode === processCode &&
+        s.operator &&
+        ACTIVE_STATUSES.includes(s.status),
     )
 
     if (step?.operator) {
-      return { operator: step.operator, status: "PROGRESS" as const }
+
+      entries.push({
+        operator: step.operator,
+        status: step.status,
+        taskNumber: task.taskNumber,
+      })
+
     }
 
   }
 
-  // Si no hay ninguno en PROGRESS, buscamos el último con operario asignado
-  for (const task of tasks) {
+  // Los que están trabajando ahora mismo van primero.
+  return entries.sort((a, b) => {
 
-    const step = task.workflowSteps.find(
-      s => s.processCode === processCode && s.operator,
-    )
-
-    if (step?.operator) {
-      return { operator: step.operator, status: step.status }
+    if (a.status === "PROGRESS" && b.status !== "PROGRESS") {
+      return -1
     }
 
-  }
+    if (b.status === "PROGRESS" && a.status !== "PROGRESS") {
+      return 1
+    }
 
-  return null
+    return 0
+
+  })
 
 }
 
-export function TaskColumnOperator({
-  processCode,
-  tasks,
-}: Props) {
+function OperatorRow({
+  entry,
+}: {
+  entry: ActiveEntry
+}) {
 
-  const definition = PROCESS_DEFINITIONS[processCode]
-  const badge = getBadgeColors(definition.color, "subtle")
-
-  const active = getActiveOperator(tasks, processCode)
-
-  if (!active) {
-
-    return (
-
-      <div className="flex h-10 items-center gap-2 px-1">
-
-        <span className="text-xs font-medium text-neutral-600">
-          Sin operario asignado
-        </span>
-
-      </div>
-
-    )
-
-  }
-
-  const { operator, status } = active
+  const { operator, status, taskNumber } = entry
 
   const isWorking = status === "PROGRESS"
 
@@ -96,7 +107,7 @@ export function TaskColumnOperator({
 
     <div className="flex h-10 items-center justify-between gap-2 px-1">
 
-      {/* Badge del operario */}
+      {/* Badge del operario + tarea */}
       <div
         className="flex min-w-0 flex-1 items-center gap-1.5 rounded-lg px-2 py-1"
         style={{
@@ -133,6 +144,13 @@ export function TaskColumnOperator({
           {operator.name}
         </span>
 
+        <span
+          className="shrink-0 text-xs font-semibold opacity-60"
+          style={{ color: operator.color ?? "#64748B" }}
+        >
+          #{taskNumber}
+        </span>
+
       </div>
 
       {/* Badge de estado */}
@@ -155,5 +173,114 @@ export function TaskColumnOperator({
     </div>
 
   )
+
+}
+
+function ActiveOperatorsPopover({
+  entries,
+}: {
+  entries: ActiveEntry[]
+}) {
+
+  const workingCount = entries.filter(
+    e => e.status === "PROGRESS",
+  ).length
+
+  return (
+
+    <Popover>
+
+      <PopoverTrigger asChild>
+
+        <button
+          type="button"
+          className="flex h-10 w-full items-center justify-between gap-2 rounded-lg bg-neutral-800/50 px-2 py-1.5 text-left transition-colors hover:bg-neutral-800"
+        >
+
+          <div className="flex min-w-0 items-center gap-1.5">
+
+            <Users size={13} className="shrink-0 text-neutral-400" />
+
+            <span className="truncate text-xs font-semibold text-neutral-200">
+              {entries.length} operarios activos
+            </span>
+
+          </div>
+
+          {workingCount > 0 && (
+
+            <span className="flex shrink-0 items-center gap-1 rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase text-emerald-400">
+              <Zap size={10} />
+              {workingCount}
+            </span>
+
+          )}
+
+        </button>
+
+      </PopoverTrigger>
+
+      <PopoverContent
+        align="start"
+        sideOffset={6}
+        className="w-[var(--radix-popover-trigger-width)] border border-white/10 bg-[#101012] p-2"
+      >
+
+        <div className="px-1 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-wide text-neutral-500">
+          Operarios en esta estación
+        </div>
+
+        <div className="flex flex-col gap-1">
+
+          {entries.map(entry => (
+
+            <OperatorRow
+              key={`${entry.operator.id}-${entry.taskNumber}`}
+              entry={entry}
+            />
+
+          ))}
+
+        </div>
+
+      </PopoverContent>
+
+    </Popover>
+
+  )
+
+}
+
+export function TaskColumnOperator({
+  processCode,
+  tasks,
+}: Props) {
+
+  const definition = PROCESS_DEFINITIONS[processCode]
+  const badge = getBadgeColors(definition.color, "subtle")
+
+  const entries = getActiveOperatorEntries(tasks, processCode)
+
+  if (entries.length === 0) {
+
+    return (
+
+      <div className="flex h-10 items-center gap-2 px-1">
+
+        <span className="text-xs font-medium text-neutral-600">
+          Sin operario asignado
+        </span>
+
+      </div>
+
+    )
+
+  }
+
+  if (entries.length === 1) {
+    return <OperatorRow entry={entries[0]} />
+  }
+
+  return <ActiveOperatorsPopover entries={entries} />
 
 }

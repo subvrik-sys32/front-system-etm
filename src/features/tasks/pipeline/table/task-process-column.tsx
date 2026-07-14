@@ -16,6 +16,8 @@ type SharedProps = {
 type ContentProps = SharedProps & {
   expandedKey: string | null
   onToggleCard: (key: string) => void
+  activeOverlayKey: string | null
+  onOverlayOpenChange: (key: string, isOpen: boolean) => void
 }
 
 function ColumnHeader({ processCode, tasks }: SharedProps) {
@@ -74,6 +76,8 @@ function ColumnContent({
   tasks,
   expandedKey,
   onToggleCard,
+  activeOverlayKey,
+  onOverlayOpenChange,
 }: ContentProps) {
 
   const columnScrollRef = useColumnScroll()
@@ -102,6 +106,8 @@ function ColumnContent({
                 processCode={processCode}
                 expanded={expandedKey === key}
                 onToggle={() => onToggleCard(key)}
+                overlayLocked={activeOverlayKey !== null && activeOverlayKey !== key}
+                onOverlayOpenChange={(isOpen) => onOverlayOpenChange(key, isOpen)}
               />
 
             )
@@ -129,6 +135,8 @@ function ColumnContent({
 type Props = SharedProps & {
   expandedKey: string | null
   onToggleCard: (key: string) => void
+  activeOverlayKey: string | null
+  onOverlayOpenChange: (key: string, isOpen: boolean) => void
   onCreateTask?: () => void
   headerOnly?: boolean
   contentOnly?: boolean
@@ -139,6 +147,8 @@ export function TaskProcessColumn({
   tasks,
   expandedKey,
   onToggleCard,
+  activeOverlayKey,
+  onOverlayOpenChange,
   headerOnly = false,
   contentOnly = false,
 }: Props) {
@@ -154,6 +164,8 @@ export function TaskProcessColumn({
         tasks={tasks}
         expandedKey={expandedKey}
         onToggleCard={onToggleCard}
+        activeOverlayKey={activeOverlayKey}
+        onOverlayOpenChange={onOverlayOpenChange}
       />
     )
   }
@@ -169,6 +181,8 @@ export function TaskProcessColumn({
         tasks={tasks}
         expandedKey={expandedKey}
         onToggleCard={onToggleCard}
+        activeOverlayKey={activeOverlayKey}
+        onOverlayOpenChange={onOverlayOpenChange}
       />
 
     </section>

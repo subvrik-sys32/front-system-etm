@@ -34,6 +34,18 @@ export function TaskPipelineBoard({
   const [expandedKey, setExpandedKey] =
     useState<string | null>(null)
 
+  // Key que un overlay activo en OTRA card tiene abierto.
+  // Mientras no sea null, ningún toggle manual ni auto-expansión
+  // puede cambiar expandedKey.
+  const [activeOverlayKey, setActiveOverlayKey] =
+    useState<string | null>(null)
+
+  // Cola (de tamaño 1: solo el último importa, porque expandedKey
+  // es singular) de auto-expansiones que llegaron mientras había
+  // un overlay abierto. Se aplica al cerrarse ese overlay.
+  const [pendingAutoExpandKey, setPendingAutoExpandKey] =
+    useState<string | null>(null)
+
   const [openTaskDialog, setOpenTaskDialog] =
     useState(false)
 
@@ -73,6 +85,8 @@ export function TaskPipelineBoard({
 
     }
 
+    let detectedKey: string | null = null
+
     for (const task of tasks) {
 
       const prevTask = prev.find(t => t.id === task.id)
@@ -95,7 +109,7 @@ export function TaskPipelineBoard({
         // es el nuevo proceso activo después de un Revisar.
         if (prevStep && prevStep.status !== "PENDING") {
 
-          setExpandedKey(`${task.id}:${step.processCode}`)
+          detectedKey = `${task.id}:${step.processCode}`
 
           break
 
@@ -103,11 +117,50 @@ export function TaskPipelineBoard({
 
       }
 
+      if (detectedKey) {
+        break
+      }
+
+    }
+
+    if (detectedKey) {
+
+      if (activeOverlayKey !== null) {
+
+        // Hay un overlay abierto en otra card: no interrumpimos.
+        // Encolamos para aplicar apenas se cierre.
+        setPendingAutoExpandKey(detectedKey)
+
+      } else {
+
+        setExpandedKey(detectedKey)
+
+      }
+
     }
 
     prevTasksRef.current = tasks
 
-  }, [tasks])
+  }, [tasks, activeOverlayKey])
+
+  // Al cerrarse el overlay activo, procesamos lo que haya quedado encolado.
+  useEffect(() => {
+
+    if (activeOverlayKey === null && pendingAutoExpandKey !== null) {
+
+      setExpandedKey(pendingAutoExpandKey)
+      setPendingAutoExpandKey(null)
+
+    }
+
+  }, [activeOverlayKey, pendingAutoExpandKey])
+
+  const handleOverlayOpenChange = useCallback(
+    (key: string, isOpen: boolean) => {
+      setActiveOverlayKey(isOpen ? key : null)
+    },
+    [],
+  )
 
   const updateArrows = useCallback(() => {
 
@@ -169,6 +222,12 @@ export function TaskPipelineBoard({
   }
 
   function toggleCard(key: string) {
+
+    // Con un overlay activo, ninguna card puede cambiar de expandida
+    // (incluida la que tiene el overlay: se cierra desde adentro, no desde acá).
+    if (activeOverlayKey !== null) {
+      return
+    }
 
     setExpandedKey(current =>
       current === key ? null : key,
@@ -285,6 +344,8 @@ export function TaskPipelineBoard({
                     tasks={columns.get(code) ?? []}
                     expandedKey={expandedKey}
                     onToggleCard={toggleCard}
+                    activeOverlayKey={activeOverlayKey}
+                    onOverlayOpenChange={handleOverlayOpenChange}
                     headerOnly
                   />
 
@@ -306,6 +367,8 @@ export function TaskPipelineBoard({
                     tasks={columns.get(code) ?? []}
                     expandedKey={expandedKey}
                     onToggleCard={toggleCard}
+                    activeOverlayKey={activeOverlayKey}
+                    onOverlayOpenChange={handleOverlayOpenChange}
                     contentOnly
                   />
 

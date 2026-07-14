@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { cn } from "@/shared/utils/utils"
 
@@ -21,6 +21,8 @@ type Props = {
   processCode: ProcessCode
   expanded: boolean
   onToggle: () => void
+  overlayLocked: boolean
+  onOverlayOpenChange: (isOpen: boolean) => void
 }
 
 export function TaskPipelineCard({
@@ -28,17 +30,27 @@ export function TaskPipelineCard({
   processCode,
   expanded,
   onToggle,
+  overlayLocked,
+  onOverlayOpenChange,
 }: Props) {
 
-  const [overlayOpen, setOverlayOpen] = useState(false)
+  const [overlayOpen, setOverlayOpenState] = useState(false)
 
-  const closeOverlay = useCallback(() => setOverlayOpen(false), [])
+  const setOverlayOpen = useCallback(
+    (isOpen: boolean) => {
+      setOverlayOpenState(isOpen)
+      onOverlayOpenChange(isOpen)
+    },
+    [onOverlayOpenChange],
+  )
 
   const processTask = useMemo(
     () => getProcessTask(task, processCode),
     [task, processCode],
   )
 
+  // El status ya viene correcto por step (incluyendo "QUEUE"
+  // cuando esta etapa todavía no le llegó el turno a la tarea).
   const stepStatus =
     processTask.workflowStep?.status ?? "QUEUE"
 
@@ -58,51 +70,17 @@ export function TaskPipelineCard({
   const isReachedStage =
     !isFutureStage && !isCompletedStage
 
-  const [displayExpanded, setDisplayExpanded] =
-    useState(expanded)
-
-  const [pendingCollapse, setPendingCollapse] =
-    useState(false)
-
-  useEffect(() => {
-
-    if (expanded) {
-
-      setDisplayExpanded(true)
-      setPendingCollapse(false)
-
-      return
-
-    }
-
-    if (overlayOpen) {
-
-      setPendingCollapse(true)
-      setOverlayOpen(false)
-
-      return
-
-    }
-
-    if (!pendingCollapse) {
-      setDisplayExpanded(false)
-    }
-
-  }, [expanded, overlayOpen, pendingCollapse])
-
-  const handleOverlayClosed = useCallback(() => {
-
-    if (pendingCollapse) {
-
-      setDisplayExpanded(false)
-      setPendingCollapse(false)
-
-    }
-
-  }, [pendingCollapse])
+  const closeOverlay = useCallback(
+    () => setOverlayOpen(false),
+    [setOverlayOpen],
+  )
 
   const { bind, pressed } = useLongPress({
     onLongPress: () => {
+
+      if (overlayLocked) {
+        return
+      }
 
       setOverlayOpen(true)
 
@@ -112,6 +90,11 @@ export function TaskPipelineCard({
   const longPressEnabled =
     expanded && !finalized && isReachedStage
 
+  // expanded nunca puede pasar a false mientras overlayOpen es true EN ESTA
+  // MISMA card: el board bloquea esa transición externamente (activeOverlayKey).
+  // Por eso ya no hace falta displayExpanded/pendingCollapse/onClosed:
+  // el render es puramente derivado de las props, sin estado propio que
+  // pueda desincronizarse.
   return (
 
     <div {...(longPressEnabled ? bind : {})} className="relative">
@@ -119,7 +102,7 @@ export function TaskPipelineCard({
       <button
         type="button"
         onClick={onToggle}
-        disabled={overlayOpen}
+        disabled={overlayOpen || overlayLocked}
         className="block w-full text-left"
       >
 
@@ -129,10 +112,11 @@ export function TaskPipelineCard({
             expanded && "shadow-xl",
             longPressEnabled && pressed && !overlayOpen && "scale-[0.98] shadow-lg",
             isDimmed && "opacity-50",
+            overlayLocked && "opacity-40",
           )}
         >
 
-          {displayExpanded ? (
+          {expanded ? (
             <KanbanCardFromTask task={task} processCode={processCode} />
           ) : (
             <TaskPipelineCardCompact processTask={processTask} />
@@ -149,7 +133,6 @@ export function TaskPipelineCard({
           processCode={processCode}
           visible={overlayOpen}
           onClose={closeOverlay}
-          onClosed={handleOverlayClosed}
         />
 
       )}

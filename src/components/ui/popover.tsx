@@ -72,6 +72,10 @@ export function PopoverContent({
   const content = (
 
     <PopoverPrimitive.Content
+      // Se renderiza vía Portal fuera del árbol del overlay/scroll,
+      // así que necesita su propio marcador para que useDragScroll
+      // no le cancele los clicks después de un scroll horizontal.
+      data-drag-scroll-ignore
       align={align}
       sideOffset={sideOffset}
       onOpenAutoFocus={event => {

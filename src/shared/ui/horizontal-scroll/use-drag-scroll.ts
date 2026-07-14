@@ -10,6 +10,25 @@ const DRAG_THRESHOLD=6
 const DRAG_SPEED=1.2
 const WHEEL_MULTIPLIER=3.5
 
+const DRAG_SCROLL_IGNORE_SELECTOR =
+  "[data-drag-scroll-ignore]"
+
+// Se dispara apenas detectamos un scroll/drag horizontal real
+// (no en cada click). Cualquier overlay abierto debe cerrarse
+// al escuchar esto, para no quedar desconectado de su tarjeta.
+export const PIPELINE_SCROLL_INTERACTION_EVENT =
+  "pipeline-scroll-interaction"
+
+function notifyScrollInteraction(){
+
+  window.dispatchEvent(
+    new Event(
+      PIPELINE_SCROLL_INTERACTION_EVENT
+    )
+  )
+
+}
+
 export function useDragScroll(){
 
   const containerRef=
@@ -34,6 +53,17 @@ export function useDragScroll(){
     useCallback((
       event:React.MouseEvent
     )=>{
+
+      const target=
+        event.target as HTMLElement
+
+      if(
+        target.closest(
+          DRAG_SCROLL_IGNORE_SELECTOR
+        )
+      ){
+        return
+      }
 
       const container=
         containerRef.current
@@ -82,7 +112,16 @@ export function useDragScroll(){
         Math.abs(deltaX)>
         DRAG_THRESHOLD
       ){
+
+        // Recién al cruzar el threshold consideramos que es
+        // un drag real (no un click con micro-temblor) y
+        // avisamos para que cualquier overlay abierto se cierre.
+        if(!dragged.current){
+          notifyScrollInteraction()
+        }
+
         dragged.current=true
+
       }
 
       container.scrollLeft=
@@ -120,6 +159,17 @@ export function useDragScroll(){
     useCallback((
       event:React.MouseEvent
     )=>{
+
+      const target=
+        event.target as HTMLElement
+
+      if(
+        target.closest(
+          DRAG_SCROLL_IGNORE_SELECTOR
+        )
+      ){
+        return
+      }
 
       if(
         suppressClick.current
@@ -166,6 +216,8 @@ export function useDragScroll(){
 
     let frame=0
 
+    let notified=false
+
     const handleWheel=(
       event:WheelEvent
     )=>{
@@ -178,6 +230,18 @@ export function useDragScroll(){
       }
 
       event.preventDefault()
+
+      if(!notified){
+
+        notifyScrollInteraction()
+
+        notified=true
+
+        window.setTimeout(()=>{
+          notified=false
+        },250)
+
+      }
 
       const delta=
         event.deltaY*

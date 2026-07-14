@@ -8,6 +8,8 @@ import { KanbanCardFromTask } from "@/features/tasks/components/kanban-card/kanb
 
 import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
 
+import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
+
 import { useLongPress } from "../hooks/use-long-press"
 import { getProcessTask } from "../utils/get-process-task"
 
@@ -37,6 +39,9 @@ export function TaskPipelineCard({
     [task, processCode],
   )
 
+  const finalized =
+    isWorkflowCompleted(task.workflowSteps)
+
   const { bind, pressed } = useLongPress({
     onLongPress: () => {
 
@@ -45,9 +50,12 @@ export function TaskPipelineCard({
     },
   })
 
+  const longPressEnabled =
+    expanded && !finalized
+
   return (
 
-    <div {...(expanded ? bind : {})} className="relative">
+    <div {...(longPressEnabled ? bind : {})} className="relative">
 
       <button
         type="button"
@@ -60,7 +68,7 @@ export function TaskPipelineCard({
           className={cn(
             "overflow-hidden rounded-xl transition-all duration-200 ease-out",
             expanded && "shadow-xl",
-            expanded && pressed && !overlayOpen && "scale-[0.98] shadow-lg",
+            longPressEnabled && pressed && !overlayOpen && "scale-[0.98] shadow-lg",
           )}
         >
 
@@ -74,12 +82,16 @@ export function TaskPipelineCard({
 
       </button>
 
-      <TaskWorkflowOverlay
-        processTask={processTask}
-        processCode={processCode}
-        visible={overlayOpen}
-        onClose={closeOverlay}
-      />
+      {!finalized && (
+
+        <TaskWorkflowOverlay
+          processTask={processTask}
+          processCode={processCode}
+          visible={overlayOpen}
+          onClose={closeOverlay}
+        />
+
+      )}
 
     </div>
 

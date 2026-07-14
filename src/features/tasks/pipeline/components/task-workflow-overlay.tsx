@@ -8,6 +8,8 @@ import { cn } from "@/shared/utils/utils"
 import { workflowAccess } from "@/features/workflow/access/workflow-access"
 import { ProcessOperatorCell } from "@/features/processes/components/cells/process-operator-cell"
 
+import { PIPELINE_SCROLL_INTERACTION_EVENT } from "@/shared/ui/horizontal-scroll/use-drag-scroll"
+
 import { WorkflowActionButtons } from "./workflow-action-buttons"
 import { WorkflowNumericField, type WorkflowNumericFieldKey } from "./workflow-numeric-field"
 
@@ -114,6 +116,38 @@ export function TaskWorkflowOverlay({
 
   }, [visible, variant, skipsSelector])
 
+  // Si el usuario arrastra/hace scroll horizontal de la columna
+  // mientras el overlay está abierto, lo cerramos: no tiene
+  // sentido dejarlo flotando sobre una tarjeta que ya se movió
+  // de vista.
+  useEffect(() => {
+
+    if (!visible) {
+      return
+    }
+
+    function handleScrollInteraction() {
+
+      handleClose()
+
+    }
+
+    window.addEventListener(
+      PIPELINE_SCROLL_INTERACTION_EVENT,
+      handleScrollInteraction,
+    )
+
+    return () => {
+
+      window.removeEventListener(
+        PIPELINE_SCROLL_INTERACTION_EVENT,
+        handleScrollInteraction,
+      )
+
+    }
+
+  }, [visible])
+
   const fields =
     useMemo(
 
@@ -192,6 +226,7 @@ export function TaskWorkflowOverlay({
   return (
 
     <div
+      data-drag-scroll-ignore
       onMouseDown={event => event.stopPropagation()}
       onClick={event => event.stopPropagation()}
       className={cn(
@@ -201,8 +236,6 @@ export function TaskWorkflowOverlay({
           : "pointer-events-none opacity-0",
       )}
     >
-
-      {/* Header flotante: no participa del flujo/centrado del contenido */}
 
       {showBackButton && (
 
@@ -225,8 +258,6 @@ export function TaskWorkflowOverlay({
       >
         <X size={14} />
       </button>
-
-      {/* Contenido: único elemento en el flujo, centrado puro */}
 
       <div className="flex min-h-0 flex-1 flex-col justify-center gap-3 p-4">
 

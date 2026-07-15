@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
+import { useRouter } from "next/navigation"
+
 import { cn } from "@/shared/utils/utils"
 
 import { KanbanCardFromTask } from "@/features/tasks/components/kanban-card/kanban-card-from-task"
@@ -33,6 +35,8 @@ export function TaskPipelineCard({
   overlayLocked,
   onOverlayOpenChange,
 }: Props) {
+
+  const router = useRouter()
 
   const [overlayOpen, setOverlayOpenState] = useState(false)
 
@@ -74,6 +78,21 @@ export function TaskPipelineCard({
     () => setOverlayOpen(false),
     [setOverlayOpen],
   )
+
+  // Cuando la card ya está expandida (mostrando KanbanCardFromTask,
+  // no la compact), un click ahí navega a la vista de tareas en vez
+  // de volver a colapsarla — el toggle expand/collapse solo aplica
+  // mientras está compacta.
+  const handleClick = useCallback(() => {
+
+    if (expanded) {
+      router.push(`/tasks?taskId=${task.id}`)
+      return
+    }
+
+    onToggle()
+
+  }, [expanded, onToggle, router, task.id])
 
   // Si esta tarjeta se desmonta (ej. el usuario cambia de pestaña
   // de proceso en mobile) mientras su overlay seguía abierto, el
@@ -124,7 +143,7 @@ export function TaskPipelineCard({
 
       <button
         type="button"
-        onClick={onToggle}
+        onClick={handleClick}
         disabled={overlayOpen || overlayLocked}
         className="block w-full text-left"
       >

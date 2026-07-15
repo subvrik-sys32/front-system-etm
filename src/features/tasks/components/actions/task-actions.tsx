@@ -67,25 +67,27 @@ export function TaskActions(){
 
       {isMobile ? (
 
-        // FAB flotante en mobile: saca el botón del flujo normal
-        // (ya no ocupa una fila propia debajo del título "TAREAS")
-        // y flota sobre el contenido, arriba del BottomNavigation
-        // sin superponerse a él (bottom-20 = 80px, deja los 56px
-        // del nav más un margen de respiro).
         <button
           type="button"
           disabled={!canCreate}
           onClick={handleOpen}
           aria-label="Nueva tarea"
           className={cn(
-            "fixed bottom-20 right-4 z-20 flex size-14 items-center justify-center rounded-full shadow-lg transition",
+            "fixed bottom-20 right-4 z-20 flex size-12 items-center justify-center rounded-full transition-all duration-200",
             canCreate
-              ? "bg-white text-black hover:bg-neutral-200"
-              : "cursor-not-allowed bg-white/10 text-white/35",
+              ? [
+                  "bg-white text-black",
+                  "hover:scale-105 hover:bg-neutral-100 active:scale-95",
+                  "shadow-[0_12px_32px_rgba(0,0,0,0.55),0_4px_10px_rgba(255,255,255,0.08)]",
+                ].join(" ")
+              : "cursor-not-allowed bg-white/10 text-white/35 shadow-none",
           )}
         >
 
-          <Plus size={24} strokeWidth={2.5} />
+          <Plus
+            size={20}
+            strokeWidth={2.5}
+          />
 
         </button>
 

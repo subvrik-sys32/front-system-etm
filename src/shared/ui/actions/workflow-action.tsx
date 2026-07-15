@@ -146,7 +146,7 @@ export function WorkflowAction({
 
       className={cn(
 
-        "flex h-9 items-center justify-center rounded-lg text-xs font-semibold transition-all duration-150 select-none",
+        "flex h-9 items-center justify-center rounded-lg text-xs font-semibold transition-colors duration-150 select-none",
 
         iconOnly
 

@@ -1,167 +1,85 @@
 "use client"
 
-import {
-  FolderKanban,
-  Settings2,
-  Users,
-} from "lucide-react"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
-import { Input } from "@/components/ui/input"
+import { WizardProgress } from "@/shared/ui/dialogs/form-dialog/wizard-progress"
 
-import { FormSection } from "@/shared/ui/dialogs/form-dialog/form-section"
-import { FormField } from "@/shared/ui/dialogs/form-dialog/form-field"
+import { ProjectInfoSection } from "./project-info-section"
+import { ProjectRelationsSection } from "./project-relations-section"
+import { ProjectControlSection } from "./project-control-section"
 
-import { EntitySelect } from "@/shared/ui/entity-select/entity-select"
+import type { ProjectFormSectionProps } from "./types"
 
-import { UserSelect } from "@/features/users/components/user-select"
+// Un solo array define el wizard — agregar/quitar/reordenar un paso
+// acá alcanza, no hay que tocar ProjectDialog para eso (solo la
+// validación por paso, que vive en ProjectDialog junto al resto de
+// las reglas de negocio del formulario). Mismo patrón que TaskForm.
+export const PROJECT_FORM_STEPS = [
+  { label: "Información principal" },
+  { label: "Relaciones" },
+  { label: "Control" },
+] as const
 
-import { useUsers } from "@/features/users/hooks/use-users"
-import { useClients } from "@/features/clients/hooks/use-clients"
-import { useStages } from "@/features/stages/hooks/use-stages"
-import { useStatuses } from "@/features/statuses/hooks/use-statuses"
+export const PROJECT_FORM_STEP_COUNT = PROJECT_FORM_STEPS.length
 
-type Form = {
-  projectCode: string
-  name: string
-  clientId: string
-  pmId: string
-  stageId: string
-  statusId: string
-  deliveryDate: string | null
+export function ProjectFormWizardProgress({ step }: { step: number }) {
+  return <WizardProgress steps={PROJECT_FORM_STEPS} step={step} />
 }
 
-type Errors = Partial<Record<keyof Form, string>>
-
-type Props = {
-  form: Form
-  update: (value: Partial<Form>) => void
-  errors?: Errors
+type Props = ProjectFormSectionProps & {
+  // Ignorado en desktop (siempre se muestran las 3 secciones juntas,
+  // comportamiento sin cambios). En mobile, controla qué sección del
+  // wizard está visible — el estado vive en ProjectDialog, junto con
+  // el indicador de progreso y el footer (Atrás/Siguiente vs
+  // Cancelar/Guardar).
+  step?: number
 }
 
-export function ProjectForm({ form, update, errors }: Props) {
+export function ProjectForm({
+  form,
+  update,
+  errors,
+  step = 0,
+}: Props) {
 
-  const { clients, create, update: updateClient, remove: removeClient } = useClients()
-  const { stages, create: createStage, update: updateStage, remove: removeStage } = useStages()
-  const { statuses, create: createStatus, update: updateStatus, remove: removeStatus } = useStatuses()
-  const { users } = useUsers()
+  const { isMobile } = useResponsive()
 
-  const pms = users.filter(
-    (u) => u.role?.code === "PROJECT_MANAGER"
-  )
+  if (!isMobile) {
 
-  const selectedClient = clients.find((i) => i.id === form.clientId)
-  const selectedStage = stages.find((i) => i.id === form.stageId)
-  const selectedStatus = statuses.find((i) => i.id === form.statusId)
-  const selectedPm = pms.find((i) => i.id === form.pmId)
+    return (
+
+      <div className="space-y-3">
+
+        <ProjectInfoSection form={form} update={update} errors={errors} />
+
+        <ProjectRelationsSection form={form} update={update} errors={errors} />
+
+        <ProjectControlSection form={form} update={update} errors={errors} />
+
+      </div>
+
+    )
+
+  }
 
   return (
-    <div className="space-y-3">
 
-      <FormSection title="Información principal" icon={FolderKanban}>
-        <div className="grid grid-cols-2 gap-4">
+    <>
 
-          <FormField label="Código de proyecto *" error={errors?.projectCode}>
-            <Input
-              value={form.projectCode}
-              placeholder="26-001-M"
-              onChange={(e) =>
-                update({ projectCode: e.target.value.toUpperCase() })
-              }
-            />
-          </FormField>
+      {step === 0 && (
+        <ProjectInfoSection form={form} update={update} errors={errors} />
+      )}
 
-          <FormField label="Nombre de proyecto *" error={errors?.name}>
-            <Input
-              value={form.name}
-              placeholder="TABLERO AUTOSOPORTADO - TTA"
-              onChange={(e) =>
-                update({ name: e.target.value.toUpperCase() })
-              }
-            />
-          </FormField>
+      {step === 1 && (
+        <ProjectRelationsSection form={form} update={update} errors={errors} />
+      )}
 
-        </div>
-      </FormSection>
+      {step === 2 && (
+        <ProjectControlSection form={form} update={update} errors={errors} />
+      )}
 
-      <FormSection title="Relaciones" icon={Users}>
-        <div className="grid grid-cols-2 gap-4">
+    </>
 
-          <FormField label="Cliente *" error={errors?.clientId}>
-            <EntitySelect
-              collection="clients"
-              value={selectedClient}
-              items={clients}
-              placeholder="Cliente"
-              onChange={(v) =>
-                update({ clientId: v?.id ?? "" })
-              }
-              onCreate={create}
-              onEdit={updateClient}
-              onDelete={removeClient}
-            />
-          </FormField>
-
-          <FormField label="Project Manager *" error={errors?.pmId}>
-            <UserSelect
-              value={selectedPm}
-              items={pms}
-              placeholder="PM"
-              onChange={(v) =>
-                update({ pmId: v?.id ?? "" })
-              }
-            />
-          </FormField>
-
-        </div>
-      </FormSection>
-
-      <FormSection title="Control" icon={Settings2}>
-        <div className="grid grid-cols-3 gap-4">
-
-          <FormField label="Etapa *" error={errors?.stageId}>
-            <EntitySelect
-              collection="stages"
-              value={selectedStage}
-              items={stages}
-              placeholder="Etapa"
-              onChange={(v) =>
-                update({ stageId: v?.id ?? "" })
-              }
-              onCreate={createStage}
-              onEdit={updateStage}
-              onDelete={removeStage}
-            />
-          </FormField>
-
-          <FormField label="Estado *" error={errors?.statusId}>
-            <EntitySelect
-              collection="statuses"
-              value={selectedStatus}
-              items={statuses}
-              placeholder="Estado"
-              onChange={(v) =>
-                update({ statusId: v?.id ?? "" })
-              }
-              onCreate={createStatus}
-              onEdit={updateStatus}
-              onDelete={removeStatus}
-            />
-          </FormField>
-
-          <FormField label="Entrega *" error={errors?.deliveryDate}>
-            <Input
-              type="date"
-              value={form.deliveryDate ?? ""}
-              onChange={(e) =>
-                update({ deliveryDate: e.target.value })
-              }
-              className="[&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:invert"
-            />
-          </FormField>
-
-        </div>
-      </FormSection>
-
-    </div>
   )
+
 }

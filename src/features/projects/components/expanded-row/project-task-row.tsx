@@ -3,10 +3,14 @@
 import { useMemo } from "react"
 import { useRouter } from "next/navigation"
 
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+
 import { KanbanCardView } from "@/features/tasks/components/kanban-card/kanban-card-view"
+import { TaskPipelineCardCompact } from "@/features/tasks/pipeline/components/task-pipeline-card-compact"
 
 import type { Task } from "@/features/tasks/types/task.types"
 import type { EntityBase } from "@/shared/types/entity-base.types"
+import type { ProcessTask } from "@/features/processes/types/process.types"
 
 import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
 import { WORKFLOW_STATUS_DEFINITIONS } from "@/features/workflow/constants/workflow-status-definitions"
@@ -25,6 +29,8 @@ type StageEntity = EntityBase & {
 export function ProjectTaskRow({ task }: Props) {
 
   const router = useRouter()
+
+  const { isMobile } = useResponsive()
 
   const { stage, status } = useMemo(() => {
 
@@ -69,6 +75,28 @@ export function ProjectTaskRow({ task }: Props) {
 
   }, [task.workflowSteps])
 
+  // Igual que TaskPipelineCardCompact necesita en el pipeline, pero
+  // acá no hay un "proceso activo" único (esta lista mezcla tareas
+  // de cualquier proceso) — se usa el step actual real de la tarea
+  // (o, si ya está finalizada, el último step real del array, que
+  // ya viene con status "REVIEWED" en ese caso) en vez de inventar
+  // un WorkflowStep sintético.
+  const processTask: ProcessTask = useMemo(() => {
+
+    const workflowStep =
+      isWorkflowCompleted(task.workflowSteps)
+        ? task.workflowSteps[task.workflowSteps.length - 1] ?? null
+        : getCurrentStep(task.workflowSteps)
+
+    return {
+      task,
+      workflowStep,
+      paintStep: null,
+      inputQuantity: null,
+    }
+
+  }, [task])
+
   const handleOpenTask = () => {
     sessionStorage.setItem(
       "task-origin-project-id",
@@ -81,37 +109,50 @@ export function ProjectTaskRow({ task }: Props) {
   return (
     <div onClick={handleOpenTask} className="cursor-pointer">
 
-      <KanbanCardView
+      {isMobile ? (
 
-        priorityName={task.priority.name}
-        priorityColor={task.priority.color}
+        // Compacta, sin overlay: TaskPipelineCardCompact es puro
+        // display (el overlay de iniciar/completar vive en el
+        // componente PADRE del pipeline, TaskPipelineCard, que acá
+        // no se usa) — mismo componente que el pipeline, sin
+        // duplicar su lógica ni su JSX.
+        <TaskPipelineCardCompact processTask={processTask} />
 
-        deliveryDate={task.deliveryDate}
-        reference={task.reference}
-        lotNumber={task.lotNumber}
+      ) : (
 
-        materialName={task.material.name}
-        thicknessName={task.thickness.name}
-        pieces={task.pieces}
+        <KanbanCardView
 
-        colorName={task.color?.name}
+          priorityName={task.priority.name}
+          priorityColor={task.priority.color}
 
-        colorHex={
-          task.color?.color
-        }
+          deliveryDate={task.deliveryDate}
+          reference={task.reference}
+          lotNumber={task.lotNumber}
 
-        stageName={stage?.name}
-        stageCode={stage?.code}
-        stageColor={stage?.color}
-        stageIcon={stage?.icon}
+          materialName={task.material.name}
+          thicknessName={task.thickness.name}
+          pieces={task.pieces}
 
-        statusName={status?.name}
-        statusColor={status?.color}
-        statusIcon={status?.icon}
+          colorName={task.color?.name}
 
-        taskNumber={task.taskNumber}
+          colorHex={
+            task.color?.color
+          }
 
-      />
+          stageName={stage?.name}
+          stageCode={stage?.code}
+          stageColor={stage?.color}
+          stageIcon={stage?.icon}
+
+          statusName={status?.name}
+          statusColor={status?.color}
+          statusIcon={status?.icon}
+
+          taskNumber={task.taskNumber}
+
+        />
+
+      )}
 
     </div>
   )

@@ -2,6 +2,8 @@
 
 import { CheckCircle2 } from "lucide-react"
 
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+
 type Props={
   completedCount:number
   expanded:boolean
@@ -13,6 +15,39 @@ export function ProjectCompletedTasksCard({
   expanded,
   onClick,
 }:Props){
+
+  const { isMobile } = useResponsive()
+
+  // Mismo lenguaje visual que el resumen colapsado de KpiCarousel:
+  // una sola fila compacta, sin la caja alta/decorativa que sí
+  // tiene sentido en desktop dentro del scroll horizontal de w-72.
+  if (isMobile) {
+
+    return (
+
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex h-12 w-full items-center gap-2.5 rounded-xl bg-linear-to-br from-emerald-500/4 via-emerald-500/2 to-transparent px-3 text-left transition hover:bg-emerald-500/5"
+      >
+
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
+          <CheckCircle2 size={14} className="text-emerald-400" />
+        </div>
+
+        <span className="text-sm font-bold text-white">
+          {completedCount} finalizadas
+        </span>
+
+        <span className="ml-auto shrink-0 text-xs text-neutral-500">
+          {expanded ? "Ocultar" : "Ver historial"}
+        </span>
+
+      </button>
+
+    )
+
+  }
 
   return(
 

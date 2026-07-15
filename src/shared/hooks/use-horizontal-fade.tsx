@@ -12,12 +12,6 @@ const FADE_MAX = 80
 
 type Props = {
   containerRef: RefObject<HTMLDivElement | null>
-  // Si se pasa, usa este valor fijo en vez del cálculo proporcional
-  // al ancho del contenedor (8%, clamp 24-80px) — para casos donde
-  // ese cálculo da un fade demasiado sutil para notarse (ej. sobre
-  // fondos oscuros con poco contraste) y se prefiere un número
-  // fácil de ajustar a mano.
-  fadeSize?: number
 }
 
 type FadeState = {
@@ -27,7 +21,6 @@ type FadeState = {
 
 export function useHorizontalFade({
   containerRef,
-  fadeSize: fixedFadeSize,
 }: Props) {
 
   const [fade, setFade] = useState<FadeState>({
@@ -63,16 +56,12 @@ export function useHorizontalFade({
 
       }
 
-      // Fade proporcional al ancho del contenedor (8% del ancho
-      // visible, entre FADE_MIN y FADE_MAX) — salvo que se haya
-      // pasado un fadeSize fijo explícito, en cuyo caso se usa ese
-      // valor directo, sin el clamp/cálculo automático.
-      const fadeSize =
-        fixedFadeSize ??
-        Math.min(
-          Math.max(Math.round(clientWidth * 0.08), FADE_MIN),
-          FADE_MAX,
-        )
+      // Fade proporcional al ancho del contenedor:
+      // 8% del ancho visible, entre FADE_MIN y FADE_MAX.
+      const fadeSize = Math.min(
+        Math.max(Math.round(clientWidth * 0.08), FADE_MIN),
+        FADE_MAX,
+      )
 
       const leftFade = Math.min(scrollLeft, fadeSize)
       const rightFade = Math.min(maxScroll - scrollLeft, fadeSize)
@@ -126,7 +115,7 @@ export function useHorizontalFade({
 
     }
 
-  }, [containerRef, fixedFadeSize])
+  }, [containerRef])
 
   return fade
 

@@ -1,7 +1,8 @@
 "use client"
 
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
-import { cn } from "@/shared/utils/utils"
+
+import { WizardProgress } from "@/shared/ui/dialogs/form-dialog/wizard-progress"
 
 import { TaskProjectSection } from "./task-project-section"
 import { TaskInfoSection } from "./task-info-section"
@@ -21,43 +22,11 @@ export const TASK_FORM_STEPS = [
 
 export const TASK_FORM_STEP_COUNT = TASK_FORM_STEPS.length
 
-type WizardProgressProps = {
-  step: number
-}
-
-// Indicador de progreso del wizard — vive FUERA del área con scroll
-// (TaskDialog lo pasa como subHeader de FormDialog), para que no
-// desaparezca al scrollear un paso con contenido largo.
-export function TaskFormWizardProgress({ step }: WizardProgressProps) {
-
-  return (
-
-    <div className="space-y-2">
-
-      <div className="flex items-center gap-2">
-
-        {TASK_FORM_STEPS.map((s, index) => (
-
-          <div
-            key={s.label}
-            className={cn(
-              "h-1.5 flex-1 rounded-full transition-colors",
-              index <= step ? "bg-white/70" : "bg-white/10",
-            )}
-          />
-
-        ))}
-
-      </div>
-
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-500">
-        Paso {step + 1} de {TASK_FORM_STEP_COUNT} · {TASK_FORM_STEPS[step].label}
-      </p>
-
-    </div>
-
-  )
-
+// Reexportado por compatibilidad — TaskDialog usa este componente
+// como subHeader del wizard. Es un simple wrapper de WizardProgress
+// con los steps de tareas ya aplicados.
+export function TaskFormWizardProgress({ step }: { step: number }) {
+  return <WizardProgress steps={TASK_FORM_STEPS} step={step} />
 }
 
 type Props = TaskFormSectionProps & {

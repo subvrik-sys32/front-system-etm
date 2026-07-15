@@ -11,23 +11,22 @@ import {
 
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useDragScroll } from "@/shared/ui/horizontal-scroll/use-drag-scroll"
-import { useHorizontalFade } from "@/shared/hooks/use-horizontal-fade"
 import { getBadgeColors } from "@/shared/utils/badge-colors"
 import { cn } from "@/shared/utils/utils"
 
 // Carrusel de KPIs centralizado — usado tanto por el pipeline de
-// Tareas como por el panel expandido de Proyectos, para que ambos
-// compartan exactamente el mismo comportamiento (colapsado por
-// defecto con resumen + "...", grilla en desktop, carrusel con
-// flechas/fade en mobile) sin duplicar la lógica en dos archivos.
+// Tareas como por el panel expandido de Proyectos.
 const SCROLL_SETTLE_DELAY = 300
 
-// Fade fijo (no proporcional): el cálculo automático de
-// useHorizontalFade (8% del ancho, clamp 24-80px) resultaba poco
-// perceptible acá porque las cards tienen fondo oscuro con bajo
-// contraste contra el fondo de la página. Ajustar este número sube
-// o baja qué tan marcado se ve el desvanecido.
-const KPI_FADE_SIZE = 24
+// Fade propio (no useHorizontalFade compartido): acá el contenedor
+// con scroll recién se monta cuando el usuario expande el carrusel
+// (arranca colapsado) — useHorizontalFade corre su efecto una sola
+// vez al montar KpiCarousel, con el contenedor todavía inexistente,
+// y nunca vuelve a engancharse. Calculando el fade acá mismo, en el
+// efecto que YA tiene `expanded` en sus dependencias (el mismo que
+// maneja las flechas), se re-engancha correctamente en el momento
+// exacto en que el contenedor aparece — sin poll, sin hooks nuevos.
+const KPI_FADE_SIZE = 48
 
 type SummaryValue = {
   label: string
@@ -60,6 +59,9 @@ export function KpiCarousel({ cards, summary }: Props) {
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
+  const [leftFade, setLeftFade] = useState(0)
+  const [rightFade, setRightFade] = useState(0)
+
   // true SOLO mientras hay movimiento activo del carrusel — las
   // flechas se muestran únicamente en esta ventana, para no tapar
   // el contenido mientras el usuario simplemente lo está leyendo.
@@ -74,11 +76,6 @@ export function KpiCarousel({ cards, summary }: Props) {
     stopDragging,
   } = useDragScroll()
 
-  const { leftFade, rightFade } = useHorizontalFade({
-    containerRef,
-    fadeSize: KPI_FADE_SIZE,
-  })
-
   const updateArrows = useCallback(() => {
 
     const el = containerRef.current
@@ -87,18 +84,36 @@ export function KpiCarousel({ cards, summary }: Props) {
       return
     }
 
-    setCanScrollLeft(el.scrollLeft > 4)
+    const { scrollLeft, clientWidth, scrollWidth } = el
+
+    setCanScrollLeft(scrollLeft > 4)
 
     setCanScrollRight(
-      el.scrollLeft + el.clientWidth < el.scrollWidth - 4
+      scrollLeft + clientWidth < scrollWidth - 4
     )
+
+    const maxScroll = Math.max(scrollWidth - clientWidth, 0)
+
+    if (maxScroll <= 0) {
+
+      setLeftFade(0)
+      setRightFade(0)
+
+      return
+
+    }
+
+    setLeftFade(Math.min(scrollLeft, KPI_FADE_SIZE))
+    setRightFade(Math.min(maxScroll - scrollLeft, KPI_FADE_SIZE))
 
   }, [containerRef])
 
   useEffect(() => {
 
     // Sin sentido observar un contenedor que no existe todavía
-    // (desktop, o mobile mientras está colapsado sin carrusel montado).
+    // (desktop, o mobile mientras está colapsado sin carrusel
+    // montado). Al depender de `expanded`, este efecto se vuelve a
+    // ejecutar exactamente cuando el contenedor aparece en el DOM.
     if (!isMobile || !expanded) {
       return
     }

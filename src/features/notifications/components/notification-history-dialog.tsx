@@ -154,7 +154,7 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
                 <div className="flex items-center justify-between gap-3">
 
                   <DialogTitle className="text-lg font-bold text-neutral-100">
-                    Historial de notificaciones
+                    Historial
                   </DialogTitle>
 
                   <div className="flex shrink-0 items-center gap-1">

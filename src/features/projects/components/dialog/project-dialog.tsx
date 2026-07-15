@@ -1,37 +1,31 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Plus } from "lucide-react"
+
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 import { FormDialog } from "@/shared/ui/dialogs/form-dialog/form-dialog"
 import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
 
-import { ProjectForm } from "../form/project-form"
+import {
+  ProjectForm,
+  ProjectFormWizardProgress,
+  PROJECT_FORM_STEP_COUNT,
+} from "../form/project-form"
 
 import { useProjectForm } from "../../hooks/use-project-form"
 import { useProjects } from "../../hooks/use-projects"
 
 import type { Project } from "../../types/project.types"
+import type { ProjectFormErrors } from "../form/types"
 
 type Props = {
   open: boolean
   onClose: () => void
   project?: Project
 }
-
-type ProjectErrors = Partial<
-  Record<
-    | "projectCode"
-    | "name"
-    | "clientId"
-    | "pmId"
-    | "stageId"
-    | "statusId"
-    | "deliveryDate",
-    string
-  >
->
 
 // Mismo formato que exige el backend (CreateProjectDto): 26-001-M
 const PROJECT_CODE_REGEX = /^\d{2}-\d{3}-(?:M|E|EM)$/
@@ -46,8 +40,8 @@ function validateProject(
     statusId: string
     deliveryDate: string | null
   },
-): ProjectErrors {
-  const errors: ProjectErrors = {}
+): ProjectFormErrors {
+  const errors: ProjectFormErrors = {}
 
   if (!form.projectCode.trim()) {
     errors.projectCode = "Falta completar"
@@ -82,6 +76,15 @@ function validateProject(
   return errors
 }
 
+// Qué claves de error pertenecen a cada paso del wizard mobile —
+// solo se usa cuando isMobile es true; en desktop todo el formulario
+// se muestra junto y esta agrupación no aplica.
+const STEP_ERROR_KEYS: Record<number, (keyof ProjectFormErrors)[]> = {
+  0: ["projectCode", "name"],
+  1: ["clientId", "pmId"],
+  2: ["stageId", "statusId", "deliveryDate"],
+}
+
 export function ProjectDialog({
   open,
   onClose,
@@ -101,6 +104,13 @@ export function ProjectDialog({
   } = useProjects()
 
   const router = useRouter()
+
+  const { isMobile } = useResponsive()
+
+  // Estado del wizard — solo relevante en mobile. En desktop el
+  // formulario completo se muestra siempre junto, como siempre.
+  const [step, setStep] = useState(0)
+  const [stepAttempted, setStepAttempted] = useState<Set<number>>(new Set())
 
   const [
     confirmOpenProject,
@@ -126,6 +136,18 @@ export function ProjectDialog({
 
   const isValid =
     Object.keys(errors).length === 0
+
+  // Cada vez que el diálogo se abre, arranca el wizard desde el
+  // primer paso — evita que quede "a mitad de camino" de una
+  // apertura anterior.
+  useEffect(() => {
+
+    if (open) {
+      setStep(0)
+      setStepAttempted(new Set())
+    }
+
+  }, [open])
 
   const close = () => {
     reset()
@@ -181,6 +203,77 @@ export function ProjectDialog({
     }
   }
 
+  function stepHasErrors(stepIndex: number) {
+    return STEP_ERROR_KEYS[stepIndex].some(key => errors[key])
+  }
+
+  function handleWizardNext() {
+
+    if (stepHasErrors(step)) {
+
+      setStepAttempted(prev => new Set(prev).add(step))
+
+      return
+
+    }
+
+    setStep(current => current + 1)
+
+  }
+
+  function handleWizardBack() {
+    setStep(current => Math.max(0, current - 1))
+  }
+
+  const isLastStep = step === PROJECT_FORM_STEP_COUNT - 1
+
+  // En mobile, mientras no sea el último paso, el footer de
+  // FormDialog se reutiliza como navegación del wizard (Atrás /
+  // Siguiente) en vez de Cancelar / Guardar. En desktop, o en el
+  // último paso mobile, el comportamiento es el de siempre.
+  const showWizardFooter = isMobile && !isLastStep
+
+  const footerCancelLabel =
+    isMobile && step > 0
+      ? "Atrás"
+      : "Cancelar"
+
+  const footerOnCancelClick =
+    isMobile && step > 0
+      ? handleWizardBack
+      : close
+
+  const footerSaveLabel =
+    showWizardFooter
+      ? "Siguiente"
+      : project
+        ? "Guardar"
+        : "Crear proyecto"
+
+  const footerSavingLabel =
+    project
+      ? "Guardando..."
+      : "Creando proyecto..."
+
+  const footerCanSave =
+    showWizardFooter
+      ? !stepHasErrors(step)
+      : canSave && isValid
+
+  const footerOnSave =
+    showWizardFooter
+      ? handleWizardNext
+      : save
+
+  // Errores visibles: en desktop, solo tras el primer intento de
+  // guardar (comportamiento sin cambios). En mobile, solo para el
+  // paso actual, y solo si ya se intentó avanzar desde ese paso
+  // estando inválido.
+  const visibleErrors =
+    isMobile
+      ? (stepAttempted.has(step) ? errors : undefined)
+      : (attempted ? errors : undefined)
+
   return (
     <>
       <FormDialog
@@ -191,32 +284,21 @@ export function ProjectDialog({
             : "Nuevo proyecto"
         }
         icon={Plus}
-        canSave={
-          canSave &&
-          isValid
-        }
+        canSave={footerCanSave}
         saving={saving}
-        saveLabel={
-          project
-            ? "Guardar"
-            : "Crear proyecto"
-        }
-        savingLabel={
-          project
-            ? "Guardando..."
-            : "Creando proyecto..."
-        }
+        saveLabel={footerSaveLabel}
+        savingLabel={footerSavingLabel}
+        cancelLabel={footerCancelLabel}
+        onCancelClick={footerOnCancelClick}
+        subHeader={isMobile ? <ProjectFormWizardProgress step={step} /> : undefined}
         onClose={close}
-        onSave={save}
+        onSave={footerOnSave}
       >
         <ProjectForm
           form={form}
           update={updateForm}
-          errors={
-            attempted
-              ? errors
-              : undefined
-          }
+          step={step}
+          errors={visibleErrors}
         />
       </FormDialog>
 

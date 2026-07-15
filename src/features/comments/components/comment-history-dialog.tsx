@@ -94,7 +94,7 @@ export function CommentHistoryDialog({
 
           <DialogHeader className="border-b border-white/5 px-4 py-3.5">
             <DialogTitle className="text-sm font-semibold text-neutral-200">
-              Historial de comentarios
+              Historial
             </DialogTitle>
             <DialogDescription className="sr-only">
               Historial completo de comentarios

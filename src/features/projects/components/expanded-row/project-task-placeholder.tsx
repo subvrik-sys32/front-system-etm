@@ -12,6 +12,10 @@ import {
   usePermissions,
 } from "@/features/permissions/hooks/use-permissions"
 
+import {
+  useResponsive,
+} from "@/shared/responsive/hooks/use-responsive"
+
 type Props={
 
   onClick:()=>void
@@ -29,10 +33,64 @@ export function ProjectTaskPlaceholder({
   }=
     usePermissions()
 
+  const { isMobile } = useResponsive()
+
   const canCreate=
     has(
       PermissionCode.TASK_CREATE,
     )
+
+  // Mismo lenguaje visual que el resumen colapsado de KpiCarousel:
+  // una sola fila compacta, sin la caja alta/decorativa que sí
+  // tiene sentido en desktop dentro del scroll horizontal de w-72.
+  if (isMobile) {
+
+    return (
+
+      <button
+        type="button"
+        disabled={!canCreate}
+        onClick={()=>{
+
+          if(!canCreate){
+            return
+          }
+
+          onClick()
+
+        }}
+        title={
+          canCreate
+            ?"Nueva tarea"
+            :"No tienes permisos"
+        }
+        className={
+          `flex h-12 w-full items-center gap-2.5 rounded-xl bg-linear-to-br from-white/4 via-white/2 to-transparent px-3 text-left transition
+          ${
+            canCreate
+              ?"hover:bg-white/5"
+              :"cursor-not-allowed opacity-50"
+          }`
+        }
+      >
+
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-cyan-500/10">
+          <Plus size={14} className="text-cyan-400" />
+        </div>
+
+        <span className="text-sm font-bold text-white">
+          Nueva tarea
+        </span>
+
+        <span className="ml-auto shrink-0 text-xs text-neutral-500">
+          Agregar
+        </span>
+
+      </button>
+
+    )
+
+  }
 
   return(
 

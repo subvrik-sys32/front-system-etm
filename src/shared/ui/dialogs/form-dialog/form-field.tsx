@@ -12,7 +12,7 @@ export function FormField({
 
   return (
 
-    <div className="space-y-1.5">
+    <div className="min-w-0 space-y-1.5">
 
       <p className="text-sm font-medium text-neutral-300">
 

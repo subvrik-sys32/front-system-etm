@@ -30,6 +30,10 @@ type Props={
 
   loading?:boolean
 
+  // Label mostrado mientras loading es true. Si no se pasa, usa el
+  // genérico "Procesando..." (comportamiento anterior).
+  loadingLabel?:string
+
   fullWidth?:boolean
 
 }
@@ -47,6 +51,8 @@ export function WorkflowAction({
   disabled=false,
 
   loading=false,
+
+  loadingLabel,
 
   fullWidth=false,
 
@@ -190,7 +196,7 @@ export function WorkflowAction({
 
         <span className="min-w-0 truncate select-none">
 
-          {loading?"Procesando...":label}
+          {loading?(loadingLabel??"Procesando..."):label}
 
         </span>
 

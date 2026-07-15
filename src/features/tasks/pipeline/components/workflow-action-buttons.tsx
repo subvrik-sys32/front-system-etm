@@ -117,6 +117,7 @@ export function WorkflowActionButtons(props: Props) {
           fullWidth
           disabled={!canUpdate || isSubmitting || blocked}
           loading={pendingAction === "start"}
+          loadingLabel="Iniciando..."
           onClick={() => runAndClose("start", handleStart)}
         />
 
@@ -132,6 +133,7 @@ export function WorkflowActionButtons(props: Props) {
         fullWidth
         disabled={!canUpdate || isSubmitting || blocked}
         loading={pendingAction === "complete"}
+        loadingLabel="Completando..."
         onClick={() => runAndClose("complete", handleComplete)}
       />
 
@@ -170,6 +172,7 @@ export function WorkflowActionButtons(props: Props) {
           fullWidth
           disabled={!canUpdate || isSubmitting}
           loading={pendingAction === "pause"}
+          loadingLabel="Pausando..."
           onClick={() => runAndClose("pause", handlePause)}
         />
 
@@ -197,6 +200,7 @@ export function WorkflowActionButtons(props: Props) {
         fullWidth
         disabled={!canUpdate || isSubmitting}
         loading={pendingAction === "resume"}
+        loadingLabel="Reanudando..."
         onClick={() => runAndClose("resume", handleResume)}
       />
 
@@ -214,6 +218,7 @@ export function WorkflowActionButtons(props: Props) {
         fullWidth
         disabled={!canReview || isSubmitting}
         loading={pendingAction === "review"}
+        loadingLabel="Revisando..."
         onClick={() => runAndClose("review", handleReview)}
       />
 

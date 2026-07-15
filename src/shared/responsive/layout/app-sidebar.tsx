@@ -59,12 +59,12 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
     <>
       <aside
         className={cn(
-          "isolate z-40 fixed left-0 top-0 flex h-screen flex-col overflow-hidden border-r border-white/5 bg-[#0A0A0A] ring-1 ring-white/5 select-none transform-gpu transition-all duration-200 ease-out will-change-transform",
+          "isolate z-40 fixed left-0 top-0 flex h-dvh flex-col overflow-hidden border-r border-white/5 bg-[#0A0A0A] ring-1 ring-white/5 select-none transform-gpu transition-all duration-200 ease-out will-change-transform",
           collapsed ? "w-18" : "w-62",
           isVisible ? "translate-x-0" : "translate-x-[-110%]",
         )}
       >
-        <SidebarHeader collapsed={collapsed} />
+        <SidebarHeader collapsed={collapsed} isDrawer={isDrawer} />
 
         <div className="flex min-h-0 flex-1 flex-col">
           <SidebarNavigation

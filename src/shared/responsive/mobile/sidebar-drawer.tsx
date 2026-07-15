@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
 import { cn } from "@/shared/utils/utils"
@@ -14,11 +14,12 @@ export function SidebarDrawer() {
   const closeDrawer = useMobileNavStore(s => s.closeDrawer)
 
   const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     closeDrawer()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname])
+  }, [pathname, searchParams.toString()])
 
   useEffect(() => {
 

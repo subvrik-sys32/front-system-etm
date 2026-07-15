@@ -8,17 +8,24 @@ import {
 } from "lucide-react"
 
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
+import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
 
 type Props = {
   collapsed: boolean
+  isDrawer?: boolean
 }
 
 const HEADER_BOX_HEIGHT = 150
 
-export function SidebarHeader({ collapsed }: Props) {
+export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
 
   const toggleCollapsed = useSidebarStore(state => state.toggleCollapsed)
   const toggleClosed = useSidebarStore(state => state.toggleClosed)
+  const closeDrawer = useMobileNavStore(state => state.closeDrawer)
+
+  // En drawer, "ocultar" siempre debe cerrar el drawer mobile,
+  // no tocar el store de desktop (que el drawer ignora).
+  const handleClose = isDrawer ? closeDrawer : toggleClosed
 
   return (
 
@@ -46,19 +53,21 @@ export function SidebarHeader({ collapsed }: Props) {
 
             <div className="mt-4 flex flex-col items-center gap-2">
 
-              <button
-                onClick={toggleCollapsed}
-                title="Expandir"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
-              >
-                <PanelLeftClose
-                  size={15}
-                  className="rotate-180"
-                />
-              </button>
+              {!isDrawer && (
+                <button
+                  onClick={toggleCollapsed}
+                  title="Expandir"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
+                >
+                  <PanelLeftClose
+                    size={15}
+                    className="rotate-180"
+                  />
+                </button>
+              )}
 
               <button
-                onClick={toggleClosed}
+                onClick={handleClose}
                 title="Ocultar barra lateral"
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
               >
@@ -98,16 +107,18 @@ export function SidebarHeader({ collapsed }: Props) {
 
             <div className="absolute right-3 top-3 flex items-center gap-1">
 
-              <button
-                onClick={toggleCollapsed}
-                title="Comprimir"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
-              >
-                <PanelLeftClose size={15} />
-              </button>
+              {!isDrawer && (
+                <button
+                  onClick={toggleCollapsed}
+                  title="Comprimir"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
+                >
+                  <PanelLeftClose size={15} />
+                </button>
+              )}
 
               <button
-                onClick={toggleClosed}
+                onClick={handleClose}
                 title="Ocultar barra lateral"
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
               >

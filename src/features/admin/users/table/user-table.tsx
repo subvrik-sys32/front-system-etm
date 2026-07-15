@@ -39,6 +39,7 @@ export function UserTable({
 
   const{
     users,
+    loading,
   }=
     useUsers()
 
@@ -83,7 +84,7 @@ export function UserTable({
       search,
     ])
 
-  if(!hydrated){
+  if(!hydrated || loading){
 
     return(
 

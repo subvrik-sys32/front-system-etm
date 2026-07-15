@@ -27,9 +27,14 @@ import { VerticalScroll } from "@/shared/ui/vertical-scroll/vertical-scroll"
 
 type Props = {
   collapsed?: boolean
+  // "sidebar" (default): trigger tipo item de lista, popover cayendo
+  // hacia la derecha — pensado para la rail de desktop.
+  // "topbar": trigger circular igual al resto de botones del TopBar
+  // mobile, popover cayendo hacia abajo.
+  variant?: "sidebar" | "topbar"
 }
 
-export function NotificationBell({ collapsed }: Props) {
+export function NotificationBell({ collapsed, variant = "sidebar" }: Props) {
 
   const [open, setOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -57,7 +62,18 @@ export function NotificationBell({ collapsed }: Props) {
   const visibleNotifications =
     notifications.filter(n => !n.read)
 
+  const isTopbar = variant === "topbar"
+
   useEffect(() => {
+
+    // El cierre automático por sidebarMode sólo aplica a la variante
+    // de rail — el TopBar mobile no depende de ese store, así que
+    // acá se ignora para no cerrar el popover sin motivo.
+    if (isTopbar) {
+
+      return
+
+    }
 
     if (sidebarMode === "closed") {
 
@@ -67,6 +83,7 @@ export function NotificationBell({ collapsed }: Props) {
 
   }, [
     sidebarMode,
+    isTopbar,
   ])
 
   const handleSelect = async (
@@ -136,27 +153,22 @@ export function NotificationBell({ collapsed }: Props) {
 
         <PopoverTrigger asChild>
 
-          <button
-            type="button"
-            title={collapsed ? "Notificaciones" : undefined}
-            className={cn(
-              "flex h-8 items-center rounded-md text-sm font-medium transition-colors",
-              collapsed
-                ? "w-8 justify-center px-0"
-                : "mx-1 w-[calc(100%-8px)] gap-2 px-3",
-              open
-                ? "bg-white/6 text-white"
-                : "text-neutral-400 hover:bg-white/4 hover:text-white",
-            )}
-          >
+          {isTopbar ? (
 
-            <span className="relative flex items-center justify-center">
+            <button
+              type="button"
+              aria-label="Notificaciones"
+              className={cn(
+                "relative flex size-9 shrink-0 items-center justify-center rounded-lg text-neutral-300 transition hover:bg-white/5 active:bg-white/10",
+                open && "bg-white/5 text-white",
+              )}
+            >
 
-              <Bell size={14} />
+              <Bell size={17} strokeWidth={2.2} />
 
-              {collapsed && count > 0 && (
+              {count > 0 && (
 
-                <span className="absolute -right-3 -top-3 flex h-4 w-4 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-semibold text-white">
+                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-semibold text-white">
 
                   {count > 9
                     ? "9+"
@@ -166,36 +178,72 @@ export function NotificationBell({ collapsed }: Props) {
 
               )}
 
-            </span>
+            </button>
 
-            {!collapsed && (
+          ) : (
 
-              <span>
-                Notificaciones
+            <button
+              type="button"
+              title={collapsed ? "Notificaciones" : undefined}
+              className={cn(
+                "flex h-8 items-center rounded-md text-sm font-medium transition-colors",
+                collapsed
+                  ? "w-8 justify-center px-0"
+                  : "mx-1 w-[calc(100%-8px)] gap-2 px-3",
+                open
+                  ? "bg-white/6 text-white"
+                  : "text-neutral-400 hover:bg-white/4 hover:text-white",
+              )}
+            >
+
+              <span className="relative flex items-center justify-center">
+
+                <Bell size={14} />
+
+                {collapsed && count > 0 && (
+
+                  <span className="absolute -right-3 -top-3 flex h-4 w-4 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-semibold text-white">
+
+                    {count > 9
+                      ? "9+"
+                      : count}
+
+                  </span>
+
+                )}
+
               </span>
 
-            )}
+              {!collapsed && (
 
-            {!collapsed && count > 0 && (
+                <span>
+                  Notificaciones
+                </span>
 
-              <span className="ml-auto flex h-6 w-8 items-center justify-center rounded-lg bg-cyan-500 text-xs font-semibold text-white animate-pulse">
+              )}
 
-                {count > 9
-                  ? "9+"
-                  : count}
+              {!collapsed && count > 0 && (
 
-              </span>
+                <span className="ml-auto flex h-6 w-8 items-center justify-center rounded-lg bg-cyan-500 text-xs font-semibold text-white animate-pulse">
 
-            )}
+                  {count > 9
+                    ? "9+"
+                    : count}
 
-          </button>
+                </span>
+
+              )}
+
+            </button>
+
+          )}
 
         </PopoverTrigger>
 
         <PopoverContent
           data-sidebar-popover
-          side="right"
-          align="start"
+          side={isTopbar ? "bottom" : "right"}
+          align={isTopbar ? "end" : "start"}
           sideOffset={8}
           className="z-90 w-80 border border-white/10 bg-[#101012] p-0"
         >

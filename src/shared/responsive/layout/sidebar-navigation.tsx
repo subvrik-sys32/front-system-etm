@@ -17,6 +17,10 @@ import type { ProcessCounts } from "./hooks/use-sidebar-counts"
 
 type SidebarNavigationProps = {
   collapsed?: boolean
+  // Cuando es true (drawer mobile), no se renderiza la campana de
+  // notificaciones acá — esa variante vive en el TopBar (Sprint 14)
+  // para no duplicarla en dos lugares a la vez.
+  isDrawer?: boolean
   projectsCount: number
   activeTasksCount: number
   processCounts: ProcessCounts
@@ -27,6 +31,7 @@ type SidebarNavigationProps = {
 
 export function SidebarNavigation({
   collapsed,
+  isDrawer = false,
   projectsCount,
   activeTasksCount,
   processCounts,
@@ -54,9 +59,13 @@ export function SidebarNavigation({
       }}
     >
 
-      <div className={collapsed ? "mb-3 flex justify-center" : "mb-3"}>
-        <NotificationBell collapsed={collapsed} />
-      </div>
+      {!isDrawer && (
+
+        <div className={collapsed ? "mb-3 flex justify-center" : "mb-3"}>
+          <NotificationBell collapsed={collapsed} />
+        </div>
+
+      )}
 
       {NAVIGATION.map((section, index) => {
 

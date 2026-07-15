@@ -28,13 +28,24 @@ export default function TasksPage() {
 
       <header className="flex flex-wrap items-start justify-between gap-4">
 
-        <div className="min-w-0">
+        {/*
+          Título y descripción en la misma línea (items-baseline),
+          separados por un punto — en vez de título arriba +
+          descripción en su propia línea debajo. Eso liberaba una
+          línea entera de alto que en mobile competía con el
+          espacio del pipeline. min-w-0 + truncate en la descripción
+          para que en pantallas angostas se corte en vez de forzar
+          un wrap que vuelva a sumar altura.
+        */}
+        <div className="flex min-w-0 flex-1 items-baseline gap-2">
 
-          <h1 className="text-2xl font-bold tracking-widest">
+          <h1 className="shrink-0 text-2xl font-bold tracking-widest">
             TAREAS
           </h1>
 
-          <p className="mt-2 text-sm text-neutral-500">
+          <span className="hidden h-1 w-1 shrink-0 rounded-full bg-neutral-700 tablet:block" />
+
+          <p className="min-w-0 truncate text-sm text-neutral-500">
             Gestión de tareas y procesos
           </p>
 
@@ -48,7 +59,7 @@ export default function TasksPage() {
 
       </header>
 
-      <section className="mt-4 flex-1 min-h-0 tablet:mt-6">
+      <section className="mt-3 flex-1 min-h-0">
 
         <TaskPageContent
           focusedTaskId={taskId}

@@ -1,10 +1,11 @@
 "use client"
 
-import { Bell, Menu } from "lucide-react"
+import { Menu } from "lucide-react"
 import { useState } from "react"
 
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { ProfileDialog } from "@/features/profile"
+import { NotificationBell } from "@/features/notifications/components/notification-bell"
 import { usePageTitleStore } from "@/shared/responsive/navigation/page-title-store"
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
 
@@ -50,20 +51,7 @@ export function TopBar() {
           {title}
         </span>
 
-        {/*
-          Notificaciones: trigger sin panel todavía — el panel
-          "pantalla completa" en mobile es Sprint 14 de la spec.
-          No conecto ProfileMentionBadge acá porque es un dato de
-          menciones de perfil, no un contador general de notificaciones;
-          mezclarlos sería incorrecto semánticamente.
-        */}
-        <button
-          type="button"
-          aria-label="Notificaciones"
-          className="relative flex size-9 shrink-0 items-center justify-center rounded-lg text-neutral-300 transition hover:bg-white/5 active:bg-white/10"
-        >
-          <Bell size={17} strokeWidth={2.2} />
-        </button>
+        <NotificationBell variant="topbar" />
 
         <button
           type="button"

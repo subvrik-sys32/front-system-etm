@@ -69,6 +69,7 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
         <div className="flex min-h-0 flex-1 flex-col">
           <SidebarNavigation
             collapsed={collapsed}
+            isDrawer={isDrawer}
             projectsCount={projectsCount}
             activeTasksCount={activeTasksCount}
             processCounts={processCounts}

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Eraser, Loader2, Search, Trash2 } from "lucide-react"
+import { Eraser, History, Loader2, Search, Trash2 } from "lucide-react"
 
 import {
   Dialog,
@@ -60,13 +60,13 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
 
   const handleSelect = (notification: Notification) => {
 
-  if (notification.route.history) {
+    if (notification.route.history) {
 
-    setConfirmingId(notification.id)
+      setConfirmingId(notification.id)
 
-    return
+      return
 
-  }
+    }
 
     proceedToNotification(notification)
 
@@ -121,51 +121,85 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
 
       <Dialog open={open} onOpenChange={onOpenChange}>
 
+        {/*
+          Mismo armazón que FormDialog (size="large" + estas clases)
+          para heredar el comportamiento full-screen en mobile que
+          ya tienen TaskDialog y ProfileDialog. El contenido interno
+          es propio (header con acciones + búsqueda + lista), porque
+          FormDialogHeader/Footer están pensados para un flujo con
+          un único "Guardar", que acá no existe.
+        */}
         <DialogContent
-          className="flex h-[70vh] max-w-lg flex-col gap-0 overflow-hidden p-0"
+          size="large"
+          className="flex max-h-screen w-180 max-w-180 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#101012] p-0 text-white shadow-2xl"
           onPointerDownOutside={preventNestedDialogClose}
           onInteractOutside={preventNestedDialogClose}
         >
 
-          <DialogHeader className="flex-row items-center justify-between border-b border-white/5 px-4 py-3.5 space-y-0">
+          <DialogHeader className="border-b border-white/10 px-5 py-4">
 
-          <DialogTitle className="text-sm font-semibold text-neutral-200">
-              Historial de notificaciones
-          </DialogTitle>
+            <div className="flex items-start gap-4">
 
-          <DialogDescription className="sr-only">
-              Historial completo de notificaciones
-          </DialogDescription>
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
 
-          <div className="mr-8 flex items-center gap-1">
+                <History
+                  size={18}
+                  strokeWidth={2.4}
+                />
 
-            {hasUnread && (
-                <button
-                type="button"
-                onClick={() => markAllAsRead()}
-                title="Marcar todas como leídas"
-                className="flex h-6 w-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-white/8 hover:text-cyan-300"
-                >
-                <Eraser size={14} />
-                </button>
-            )}
+              </div>
 
-            {hasAny && (
-                <button
-                type="button"
-                onClick={() => setConfirmDeleteAll(true)}
-                title="Eliminar todas las notificaciones"
-                className="flex h-6 w-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
-                >
-                <Trash2 size={14} />
-                </button>
-            )}
+              <div className="min-w-0 flex-1">
 
-          </div>
+                <div className="flex items-center justify-between gap-3">
+
+                  <DialogTitle className="text-lg font-bold text-neutral-100">
+                    Historial de notificaciones
+                  </DialogTitle>
+
+                  <div className="flex shrink-0 items-center gap-1">
+
+                    {hasUnread && (
+
+                      <button
+                        type="button"
+                        onClick={() => markAllAsRead()}
+                        title="Marcar todas como leídas"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-white/8 hover:text-cyan-300"
+                      >
+                        <Eraser size={15} />
+                      </button>
+
+                    )}
+
+                    {hasAny && (
+
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDeleteAll(true)}
+                        title="Eliminar todas las notificaciones"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+
+                    )}
+
+                  </div>
+
+                </div>
+
+                <DialogDescription className="sr-only">
+                  Historial completo de notificaciones
+                </DialogDescription>
+
+              </div>
+
+            </div>
 
           </DialogHeader>
 
-          <div className="border-b border-white/5 px-4 py-2.5">
+          <div className="shrink-0 border-b border-white/10 px-5 py-3">
 
             <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2">
               <Search size={15} className="shrink-0 text-neutral-500" />
@@ -181,7 +215,7 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
 
           <VerticalScroll
             containerClassName="flex min-h-0 flex-1 flex-col"
-            className="min-h-0 flex-1 px-2 py-2"
+            className="px-5 py-4"
           >
 
             {loading ? (
@@ -226,6 +260,22 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
             )}
 
           </VerticalScroll>
+
+          <div className="border-t border-white/10 px-5 py-4">
+
+            <div className="flex justify-end">
+
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="rounded-xl bg-white/5 px-4 py-2.5 text-sm font-medium text-neutral-300 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+              >
+                Cerrar
+              </button>
+
+            </div>
+
+          </div>
 
         </DialogContent>
 

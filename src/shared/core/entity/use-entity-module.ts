@@ -12,7 +12,7 @@ export type CacheHandlers<T extends EntityWithId>={
 }
 
 type EntityService<T,CreateDto,UpdateDto=CreateDto>={
-  findAll:()=>Promise<T[]>
+  findAll:(signal?:AbortSignal)=>Promise<T[]>
   create:(dto:CreateDto)=>Promise<T>
   update:(id:string,dto:UpdateDto)=>Promise<T>
   remove:(id:string)=>Promise<void>
@@ -65,7 +65,7 @@ export function useEntityModule<
 
   const query=useQuery<T[]>({
     queryKey:listKey,
-    queryFn:service.findAll,
+    queryFn:({signal})=>service.findAll(signal),
     enabled:options?.enabled??true,
   })
 

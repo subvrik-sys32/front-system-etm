@@ -12,11 +12,12 @@ import {
 
 export const colorsService={
 
-  async findAll():Promise<Color[]>{
+  async findAll(signal?:AbortSignal):Promise<Color[]>{
 
     const response=
       await api.get<Color[]>(
         "/colors",
+        { signal },
       )
 
     return response.data

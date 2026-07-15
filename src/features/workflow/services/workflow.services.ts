@@ -23,11 +23,12 @@ export type WorkflowResponse={
 
 export const workflowService={
 
-  async getRequirements(){
+  async getRequirements(signal?:AbortSignal){
 
     const res=
       await api.get<Record<ProcessCode,string[]>>(
         "/workflow/requirements",
+        { signal },
       )
 
     return res.data

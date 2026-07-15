@@ -31,7 +31,7 @@ export function useUsers() {
     ],
 
     queryFn:
-      usersService.findAll,
+      ({signal}) => usersService.findAll(signal),
 
   })
 

@@ -12,22 +12,24 @@ import {
 
 export const usersService = {
 
-  async directory(): Promise<User[]> {
+  async directory(signal?:AbortSignal): Promise<User[]> {
 
     const response =
       await api.get<User[]>(
         "/users/directory",
+        { signal },
       )
 
     return response.data
 
   },
 
-  async findAll(): Promise<User[]> {
+  async findAll(signal?:AbortSignal): Promise<User[]> {
 
     const response =
       await api.get<User[]>(
         "/users",
+        { signal },
       )
 
     return response.data

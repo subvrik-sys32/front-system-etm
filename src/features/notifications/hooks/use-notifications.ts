@@ -10,8 +10,8 @@ export function useNotifications(){
 
   const query = useInfiniteQuery({
     queryKey: QUERY_KEY,
-    queryFn: ({ pageParam }) =>
-      notificationsService.getAll({ cursor: pageParam, take: PAGE_SIZE }),
+    queryFn: ({ pageParam, signal }) =>
+      notificationsService.getAll({ cursor: pageParam, take: PAGE_SIZE }, signal),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   })

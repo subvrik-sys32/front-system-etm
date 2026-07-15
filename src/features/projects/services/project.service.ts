@@ -9,11 +9,12 @@ import type {
 
 export const projectService={
 
-  async findAll(){
+  async findAll(signal?:AbortSignal){
 
     const response=
       await api.get(
         "/projects",
+        { signal },
       )
 
     return response.data

@@ -7,12 +7,12 @@ import type {
 } from "../types/comment.types"
 
 export const commentsApi={
-  async getTaskComments(taskId:string){
-    const response=await api.get<Comment[]>(`/tasks/${taskId}/comments`)
+  async getTaskComments(taskId:string,signal?:AbortSignal){
+    const response=await api.get<Comment[]>(`/tasks/${taskId}/comments`,{ signal })
     return response.data
   },
-  async getWorkflowStepComments(workflowStepId:string){
-    const response=await api.get<Comment[]>(`/workflow-steps/${workflowStepId}/comments`)
+  async getWorkflowStepComments(workflowStepId:string,signal?:AbortSignal){
+    const response=await api.get<Comment[]>(`/workflow-steps/${workflowStepId}/comments`,{ signal })
     return response.data
   },
   async createTaskComment(taskId:string,dto:CreateCommentDto){

@@ -13,11 +13,12 @@ import type {
 
 export const taskService={
 
-  async findAll(){
+  async findAll(signal?:AbortSignal){
 
     const response=
       await api.get<Task[]>(
         "/tasks",
+        { signal },
       )
 
     return response.data

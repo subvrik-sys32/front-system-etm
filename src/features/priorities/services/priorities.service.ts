@@ -12,11 +12,12 @@ import {
 
 export const prioritiesService={
 
-  async findAll():Promise<Priority[]>{
+  async findAll(signal?:AbortSignal):Promise<Priority[]>{
 
     const response=
       await api.get<Priority[]>(
         "/priorities",
+        { signal },
       )
 
     return response.data

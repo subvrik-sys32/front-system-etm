@@ -7,7 +7,7 @@ export function useUnreadCount(){
 
   const query=useQuery({
     queryKey:["notifications","unread-count"],
-    queryFn:notificationsService.getUnreadCount,
+    queryFn:({signal})=>notificationsService.getUnreadCount(signal),
   })
 
   return{

@@ -12,11 +12,12 @@ import {
 
 export const materialsService={
 
-  async findAll():Promise<Material[]>{
+  async findAll(signal?:AbortSignal):Promise<Material[]>{
 
     const response=
       await api.get<Material[]>(
         "/materials",
+        { signal },
       )
 
     return response.data

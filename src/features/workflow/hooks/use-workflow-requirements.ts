@@ -8,7 +8,7 @@ export function useWorkflowRequirements(){
 
   return useQuery({
     queryKey:["workflow-requirements"],
-    queryFn:workflowService.getRequirements,
+    queryFn:({signal})=>workflowService.getRequirements(signal),
     staleTime:Infinity,
     gcTime:Infinity,
   })

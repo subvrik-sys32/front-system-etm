@@ -7,7 +7,7 @@ const LIST_KEY = ['engineering-files'];
 export const useEngineeringFiles = () => {
   return useQuery({
     queryKey: LIST_KEY,
-    queryFn: engineeringApi.list,
+    queryFn: ({ signal }) => engineeringApi.list(signal),
     staleTime: 1000 * 60 * 5,
     refetchInterval: (query) => {
       const data = query.state.data as EngineeringFile[] | undefined;

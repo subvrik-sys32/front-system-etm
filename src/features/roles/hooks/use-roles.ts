@@ -32,7 +32,7 @@ export function useRoles(){
       ],
 
       queryFn:
-        rolesService.findAll,
+        ({signal})=>rolesService.findAll(signal),
 
     })
 

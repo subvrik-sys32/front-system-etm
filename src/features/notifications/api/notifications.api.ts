@@ -3,13 +3,13 @@ import type { Notification, NotificationsPage } from "../types/notification.type
 
 export const notificationsApi={
 
-  async getAll(params?:{ cursor?:string; take?:number }){
-    const response=await api.get<NotificationsPage>("/notifications",{ params })
+  async getAll(params?:{ cursor?:string; take?:number },signal?:AbortSignal){
+    const response=await api.get<NotificationsPage>("/notifications",{ params, signal })
     return response.data
   },
 
-  async getUnreadCount(){
-    const response=await api.get<{ count:number }>("/notifications/unread-count")
+  async getUnreadCount(signal?:AbortSignal){
+    const response=await api.get<{ count:number }>("/notifications/unread-count",{ signal })
     return response.data.count
   },
 

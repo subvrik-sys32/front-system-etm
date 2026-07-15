@@ -9,7 +9,7 @@ export const engineeringApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then((r) => r.data);
   },
-  list: () => api.get<EngineeringFile[]>('/engineering/files').then((r) => r.data),
+  list: (signal?: AbortSignal) => api.get<EngineeringFile[]>('/engineering/files', { signal }).then((r) => r.data),
   findOne: (id: string) => api.get<EngineeringFile>(`/engineering/files/${id}`).then((r) => r.data),
   getRawUrl: (id: string) => `${process.env.NEXT_PUBLIC_API_URL}/engineering/files/${id}/raw`,
   

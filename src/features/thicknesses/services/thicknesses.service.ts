@@ -12,11 +12,12 @@ import {
 
 export const thicknessesService={
 
-  async findAll():Promise<Thickness[]>{
+  async findAll(signal?:AbortSignal):Promise<Thickness[]>{
 
     const response=
       await api.get<Thickness[]>(
         "/thicknesses",
+        { signal },
       )
 
     return response.data

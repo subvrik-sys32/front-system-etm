@@ -32,7 +32,7 @@ export function useUsersDirectory() {
     ],
 
     queryFn:
-      usersService.directory,
+      ({ signal }) => usersService.directory(signal),
 
   })
 

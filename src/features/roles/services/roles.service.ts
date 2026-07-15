@@ -12,11 +12,12 @@ import {
 
 export const rolesService={
 
-  async findAll():Promise<Role[]>{
+  async findAll(signal?:AbortSignal):Promise<Role[]>{
 
     const response=
       await api.get<Role[]>(
         "/roles",
+        { signal },
       )
 
     return response.data

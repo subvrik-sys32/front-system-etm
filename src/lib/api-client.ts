@@ -1,3 +1,4 @@
+import axios from "axios"
 import { toast } from "sonner"
 
 import { api } from "./api"
@@ -20,6 +21,14 @@ export function initApiClient() {
   api.interceptors.response.use(
     (res) => res,
     (err) => {
+
+      // Petición cancelada a propósito (ej. React Query aborta un
+      // fetch que ya no importa porque el componente se desmontó o
+      // cambió el query key). No es un error real — no hay nada que
+      // mostrarle al usuario, y menos "Ocurrió un error inesperado".
+      if (axios.isCancel(err)) {
+        return Promise.reject(err)
+      }
 
       if (err?.response?.status === 401) {
 

@@ -37,7 +37,7 @@ export default function TasksPage() {
           para que en pantallas angostas se corte en vez de forzar
           un wrap que vuelva a sumar altura.
         */}
-        <div className="flex min-w-0 flex-1 items-baseline gap-2">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
 
           <h1 className="shrink-0 text-2xl font-bold tracking-widest">
             TAREAS

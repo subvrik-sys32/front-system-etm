@@ -7,53 +7,50 @@ import { PIPELINE_PROCESS_ORDER, PIPELINE_KPI_COLORS } from "../utils/process-co
 
 const KPI_SKELETON_COLORS = Object.values(PIPELINE_KPI_COLORS)
 
-function SkeletonMiniCard({
-  color,
-  large = false,
-}: {
-  color: string
-  large?: boolean
-}) {
+// Color del KPI de "Avance" — es el único visible en el estado
+// compacto (default), así que es el único que el skeleton necesita
+// simular. El resto de colores queda sin uso acá; se mantiene el
+// export por si en algún momento se vuelve a necesitar un skeleton
+// expandido (ver nota abajo).
+const PROGRESS_COLOR = KPI_SKELETON_COLORS[KPI_SKELETON_COLORS.length - 1]
+
+// Refleja el estado compacto (default) de TaskPipelineHeader: una
+// sola fila full-width con ícono + label + dos valores + botón de
+// expandir — en vez del grid de 4 cards o el carrusel grande que
+// mostraba antes. Debe coincidir en estructura con el render real
+// para que no haya salto de layout al terminar de cargar.
+function SkeletonKpiCompact() {
 
   return (
 
     <div
-      className={cn(
-        "flex flex-col rounded-xl",
-        large ? "h-44 justify-center gap-5 p-6" : "h-28 p-4",
-      )}
+      className="flex w-full items-center gap-3 rounded-2xl p-3 tablet:gap-4 tablet:p-4"
       style={{
-        background: `linear-gradient(135deg, ${color}20, #101012)`,
+        background: `linear-gradient(135deg, ${PROGRESS_COLOR}20, #101012)`,
       }}
     >
 
-      <div className={cn("flex items-center justify-between", !large && "mb-3")}>
+      <span className="h-11 w-11 shrink-0 rounded-xl bg-white/5" />
 
-        <span className={cn("rounded bg-white/10", large ? "h-3.5 w-20" : "h-3 w-16")} />
-        <span className={cn("rounded bg-white/10", large ? "size-6" : "size-5")} />
+      <span className="hidden h-3 w-16 shrink-0 rounded bg-white/10 tablet:block" />
 
-      </div>
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-4 tablet:gap-8">
 
-      <div className={cn("flex gap-4", large ? "flex-col gap-4" : "flex-1")}>
+        <div className="text-right">
+          <span className="ml-auto block h-2.5 w-16 rounded bg-white/8" />
+          <span className="ml-auto mt-2 block h-4 w-8 rounded bg-white/12" />
+        </div>
 
-        {Array.from({ length: 2 }).map((_, i) => (
+        <span className="h-8 w-px shrink-0 bg-white/10" />
 
-          <div
-            key={i}
-            className={cn(
-              !large && "min-w-0 flex-1 border-l border-white/10 pl-3 first:border-l-0 first:pl-0",
-              large && "flex items-baseline justify-between",
-            )}
-          >
-
-            <span className={cn("block rounded bg-white/8", large ? "h-2.5 w-16" : "h-2.5 w-10")} />
-            <span className={cn("block rounded bg-white/12", large ? "mt-0 h-6 w-12" : "mt-2 h-4 w-8")} />
-
-          </div>
-
-        ))}
+        <div className="text-right">
+          <span className="ml-auto block h-2.5 w-16 rounded bg-white/8" />
+          <span className="ml-auto mt-2 block h-4 w-8 rounded bg-white/12" />
+        </div>
 
       </div>
+
+      <span className="h-9 w-9 shrink-0 rounded-full bg-white/5" />
 
     </div>
 
@@ -182,22 +179,7 @@ export function TaskPipelineSkeleton() {
 
       <div className="flex h-full min-h-0 w-full animate-pulse flex-col overflow-hidden">
 
-        {/*
-          Mobile: una sola card grande (igual a la vista real del
-          carrusel de KPIs), sin flechas — durante la carga no hay
-          nada para navegar todavía. Sin gutter lateral: el carrusel
-          real (TaskPipelineHeader) usa px-1, no px-9 — deben
-          coincidir para que no haya salto de layout al terminar
-          de cargar.
-        */}
-        <div className="px-1">
-
-          <SkeletonMiniCard
-            color={KPI_SKELETON_COLORS[0]}
-            large
-          />
-
-        </div>
+        <SkeletonKpiCompact />
 
         <div className="mt-2 flex shrink-0 gap-2 px-1 py-2">
 
@@ -228,16 +210,9 @@ export function TaskPipelineSkeleton() {
 
     <div className="flex h-full min-h-0 w-full animate-pulse flex-col overflow-hidden">
 
-      <div className="grid shrink-0 grid-cols-2 gap-4 laptop:grid-cols-4">
+      <div className="shrink-0">
 
-        {KPI_SKELETON_COLORS.map((color, i) => (
-
-          <SkeletonMiniCard
-            key={i}
-            color={color}
-          />
-
-        ))}
+        <SkeletonKpiCompact />
 
       </div>
 

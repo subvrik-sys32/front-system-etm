@@ -39,15 +39,6 @@ export function TaskPipelineBoard({
   const [expandedKey, setExpandedKey] =
     useState<string | null>(null)
 
-  // A diferencia de expandedKey (que también se setea automáticamente
-  // cuando una tarea llega a su etapa, ver efecto de abajo),
-  // userExpandedKey solo se setea cuando el usuario mismo hace click.
-  // TaskPipelineCard lo usa para decidir si un click debe navegar a
-  // la tarea (expandida por el usuario) o expandir por primera vez
-  // (auto-expandida por el sistema, el usuario todavía no la "abrió").
-  const [userExpandedKey, setUserExpandedKey] =
-    useState<string | null>(null)
-
   const [activeOverlayKey, setActiveOverlayKey] =
     useState<string | null>(null)
 
@@ -134,10 +125,6 @@ export function TaskPipelineBoard({
 
     if (detectedKey) {
 
-      // Auto-expand del sistema: NO se marca como userExpandedKey,
-      // así el primer click del usuario sobre esta card todavía
-      // cuenta como "abrirla" (no navega) aunque visualmente ya
-      // esté expandida.
       if (activeOverlayKey !== null) {
 
         setPendingAutoExpandKey(detectedKey)
@@ -247,10 +234,6 @@ export function TaskPipelineBoard({
       current === key ? null : key,
     )
 
-    setUserExpandedKey(current =>
-      current === key ? null : key,
-    )
-
   }
 
   const columns = useMemo(() => {
@@ -312,7 +295,6 @@ export function TaskPipelineBoard({
             processCode={activeProcess}
             tasks={activeTasks}
             expandedKey={expandedKey}
-            userExpandedKey={userExpandedKey}
             onToggleCard={toggleCard}
             activeOverlayKey={activeOverlayKey}
             onOverlayOpenChange={handleOverlayOpenChange}
@@ -422,7 +404,6 @@ export function TaskPipelineBoard({
                     processCode={code}
                     tasks={columns.get(code) ?? []}
                     expandedKey={expandedKey}
-                    userExpandedKey={userExpandedKey}
                     onToggleCard={toggleCard}
                     activeOverlayKey={activeOverlayKey}
                     onOverlayOpenChange={handleOverlayOpenChange}
@@ -446,7 +427,6 @@ export function TaskPipelineBoard({
                     processCode={code}
                     tasks={columns.get(code) ?? []}
                     expandedKey={expandedKey}
-                    userExpandedKey={userExpandedKey}
                     onToggleCard={toggleCard}
                     activeOverlayKey={activeOverlayKey}
                     onOverlayOpenChange={handleOverlayOpenChange}

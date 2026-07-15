@@ -22,11 +22,6 @@ type Props = {
   task: Task
   processCode: ProcessCode
   expanded: boolean
-  // A diferencia de `expanded` (que también se activa por auto-expand
-  // del sistema cuando la tarea llega a esta etapa), `userExpanded`
-  // solo es true si el usuario mismo hizo click para abrir esta card.
-  // Se usa exclusivamente para decidir si un click navega a la tarea.
-  userExpanded: boolean
   onToggle: () => void
   overlayLocked: boolean
   onOverlayOpenChange: (isOpen: boolean) => void
@@ -36,7 +31,6 @@ export function TaskPipelineCard({
   task,
   processCode,
   expanded,
-  userExpanded,
   onToggle,
   overlayLocked,
   onOverlayOpenChange,
@@ -85,22 +79,20 @@ export function TaskPipelineCard({
     [setOverlayOpen],
   )
 
-  // Solo navega si el propio usuario ya había abierto esta card
-  // (userExpanded). Si está expandida por auto-expand del sistema
-  // pero el usuario todavía no la tocó, el primer click cuenta como
-  // "abrirla" (onToggle), igual que si estuviera compacta — evita
-  // que un tap navegue de sorpresa sobre una card que el usuario
-  // nunca vio expandirse él mismo.
+  // Cuando la card ya está expandida (mostrando KanbanCardFromTask,
+  // no la compact), un click ahí navega a la vista de tareas en vez
+  // de volver a colapsarla — el toggle expand/collapse solo aplica
+  // mientras está compacta.
   const handleClick = useCallback(() => {
 
-    if (userExpanded) {
+    if (expanded) {
       router.push(`/tasks?taskId=${task.id}`)
       return
     }
 
     onToggle()
 
-  }, [userExpanded, onToggle, router, task.id])
+  }, [expanded, onToggle, router, task.id])
 
   // Si esta tarjeta se desmonta (ej. el usuario cambia de pestaña
   // de proceso en mobile) mientras su overlay seguía abierto, el

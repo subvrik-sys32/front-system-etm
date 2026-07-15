@@ -17,7 +17,6 @@ type SharedProps = {
 
 type ContentProps = SharedProps & {
   expandedKey: string | null
-  userExpandedKey: string | null
   onToggleCard: (key: string) => void
   activeOverlayKey: string | null
   onOverlayOpenChange: (key: string, isOpen: boolean) => void
@@ -78,7 +77,6 @@ function ColumnContent({
   processCode,
   tasks,
   expandedKey,
-  userExpandedKey,
   onToggleCard,
   activeOverlayKey,
   onOverlayOpenChange,
@@ -119,7 +117,6 @@ function ColumnContent({
                 task={task}
                 processCode={processCode}
                 expanded={expandedKey === key}
-                userExpanded={userExpandedKey === key}
                 onToggle={() => onToggleCard(key)}
                 overlayLocked={activeOverlayKey !== null && activeOverlayKey !== key}
                 onOverlayOpenChange={(isOpen) => onOverlayOpenChange(key, isOpen)}
@@ -149,7 +146,6 @@ function ColumnContent({
 
 type Props = SharedProps & {
   expandedKey: string | null
-  userExpandedKey: string | null
   onToggleCard: (key: string) => void
   activeOverlayKey: string | null
   onOverlayOpenChange: (key: string, isOpen: boolean) => void
@@ -162,7 +158,6 @@ export function TaskProcessColumn({
   processCode,
   tasks,
   expandedKey,
-  userExpandedKey,
   onToggleCard,
   activeOverlayKey,
   onOverlayOpenChange,
@@ -180,7 +175,6 @@ export function TaskProcessColumn({
         processCode={processCode}
         tasks={tasks}
         expandedKey={expandedKey}
-        userExpandedKey={userExpandedKey}
         onToggleCard={onToggleCard}
         activeOverlayKey={activeOverlayKey}
         onOverlayOpenChange={onOverlayOpenChange}
@@ -198,7 +192,6 @@ export function TaskProcessColumn({
         processCode={processCode}
         tasks={tasks}
         expandedKey={expandedKey}
-        userExpandedKey={userExpandedKey}
         onToggleCard={onToggleCard}
         activeOverlayKey={activeOverlayKey}
         onOverlayOpenChange={onOverlayOpenChange}

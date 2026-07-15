@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query"
 
 type EntityWithId={id:string}
@@ -33,6 +33,16 @@ function toSingular(key: string): string {
   return SINGULARS[key] ?? key.slice(0, -1)
 }
 
+// Un solo Set global por queryKey: garantiza que el loop de
+// "poblar cache individual por ítem" corra UNA vez por dato nuevo
+// real, sin importar cuántos componentes (sidebar + página activa,
+// etc.) estén usando useEntityModule con la misma key al mismo
+// tiempo. Antes, cada consumidor repetía el loop completo sobre
+// la lista entera cada vez que `query.data` cambiaba de referencia
+// (lo cual pasa en cada refetch, aunque los datos sean idénticos),
+// multiplicando el trabajo síncrono por cantidad de consumidores.
+const processedDataRefs = new WeakSet<object>()
+
 export function useEntityModule<
   T extends EntityWithId,
   CreateDto,
@@ -62,6 +72,14 @@ export function useEntityModule<
   useEffect(()=>{
 
     if(!query.data)return
+
+    // Si esta referencia exacta de array ya fue procesada por
+    // CUALQUIER consumidor (sidebar, página, etc.), no repetir
+    // el loop — WeakSet se limpia solo cuando el array deja de
+    // ser referenciado (garbage collection), sin fugas de memoria.
+    if(processedDataRefs.has(query.data)) return
+
+    processedDataRefs.add(query.data)
 
     for(const item of query.data){
 

@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Plus } from "lucide-react"
+
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
 import { FormDialog } from "@/shared/ui/dialogs/form-dialog/form-dialog"
@@ -10,7 +12,7 @@ import { FormDialog } from "@/shared/ui/dialogs/form-dialog/form-dialog"
 import { TaskFormValue, useTaskForm } from "../../hooks/use-task-form"
 import { useTasks } from "../../hooks/use-tasks"
 
-import { TaskForm } from "../form/task-form"
+import { TaskForm, TASK_FORM_STEP_COUNT, TaskFormWizardProgress } from "../form/task-form"
 
 import type { Task } from "../../types/task.types"
 import type { TaskFormErrors } from "../form/types"
@@ -100,6 +102,15 @@ function validateTask(
 
 }
 
+// Qué claves de error pertenecen a cada paso del wizard mobile —
+// solo se usa cuando isMobile es true; en desktop todo el formulario
+// se muestra junto y esta agrupación no aplica.
+const STEP_ERROR_KEYS: Record<number, (keyof TaskFormErrors)[]> = {
+  0: ["projectId"],
+  1: ["reference", "lotNumber", "route", "deliveryDate", "priorityId", "colorId", "paintKg", "assemblyCount"],
+  2: ["materialId", "thicknessId", "pieces"],
+}
+
 export function TaskDialog({
   open,
   onClose,
@@ -125,6 +136,25 @@ export function TaskDialog({
   }=useTasks()
 
   const router=useRouter()
+
+  const { isMobile } = useResponsive()
+
+  // Estado del wizard — solo relevante en mobile. En desktop el
+  // formulario completo se muestra siempre junto, como siempre.
+  const [step, setStep] = useState(0)
+  const [stepAttempted, setStepAttempted] = useState<Set<number>>(new Set())
+
+  // Cada vez que el diálogo se abre, arranca el wizard desde el
+  // primer paso — evita que quede "a mitad de camino" de una
+  // apertura anterior.
+  useEffect(() => {
+
+    if (open) {
+      setStep(0)
+      setStepAttempted(new Set())
+    }
+
+  }, [open])
 
   const[
     confirmOpenTask,
@@ -258,6 +288,78 @@ export function TaskDialog({
 
   }
 
+  function stepHasErrors(stepIndex: number) {
+    return STEP_ERROR_KEYS[stepIndex].some(key => errors[key])
+  }
+
+  function handleWizardNext() {
+
+    if (stepHasErrors(step)) {
+
+      setStepAttempted(prev => new Set(prev).add(step))
+
+      return
+
+    }
+
+    setStep(current => current + 1)
+
+  }
+
+  function handleWizardBack() {
+    setStep(current => Math.max(0, current - 1))
+  }
+
+  const isLastStep = step === TASK_FORM_STEP_COUNT - 1
+
+  // En mobile, mientras no sea el último paso, el footer de
+  // FormDialog se reutiliza como navegación del wizard (Atrás /
+  // Siguiente) en vez de Cancelar / Guardar. En desktop, o en el
+  // último paso mobile, el comportamiento es el de siempre.
+  const showWizardFooter = isMobile && !isLastStep
+
+  const footerCancelLabel =
+    isMobile && step > 0
+      ? "Atrás"
+      : "Cancelar"
+
+  const footerOnCancelClick =
+    isMobile && step > 0
+      ? handleWizardBack
+      : close
+
+  const footerSaveLabel =
+    showWizardFooter
+      ? "Siguiente"
+      : task
+        ? "Guardar"
+        : "Crear tarea"
+
+  const footerSavingLabel =
+    task
+      ? "Guardando..."
+      : "Creando tarea..."
+
+  const footerCanSave =
+    showWizardFooter
+      ? !stepHasErrors(step)
+      : canSave && isValid
+
+  const footerOnSave =
+    showWizardFooter
+      ? handleWizardNext
+      : save
+
+  // Errores visibles: en desktop, solo tras el primer intento de
+  // guardar (comportamiento sin cambios). En mobile, solo para el
+  // paso actual, y solo si ya se intentó avanzar desde ese paso
+  // estando inválido — así no se muestran errores de pasos que
+  // el usuario ni siquiera intentó completar todavía.
+  const visibleErrors =
+    isMobile
+      ? (stepAttempted.has(step) ? errors : undefined)
+      : (attempted ? errors : undefined)
+
   return(
 
     <>
@@ -270,23 +372,15 @@ export function TaskDialog({
             : "Nueva tarea"
         }
         icon={Plus}
-        canSave={
-          canSave &&
-          isValid
-        }
+        canSave={footerCanSave}
         saving={saving}
-        saveLabel={
-          task
-            ? "Guardar"
-            : "Crear tarea"
-        }
-        savingLabel={
-          task
-            ? "Guardando..."
-            : "Creando tarea..."
-        }
+        saveLabel={footerSaveLabel}
+        savingLabel={footerSavingLabel}
+        cancelLabel={footerCancelLabel}
+        onCancelClick={footerOnCancelClick}
+        subHeader={isMobile ? <TaskFormWizardProgress step={step} /> : undefined}
         onClose={close}
-        onSave={save}
+        onSave={footerOnSave}
       >
 
         <TaskForm
@@ -299,11 +393,8 @@ export function TaskDialog({
           update={update}
           projectLocked={projectLocked}
           routeLocked={routeLocked}
-          errors={
-            attempted
-              ? errors
-              : undefined
-          }
+          step={step}
+          errors={visibleErrors}
         />
 
       </FormDialog>

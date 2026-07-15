@@ -11,6 +11,7 @@ type Props = {
   saving?: boolean
   saveLabel?: string
   savingLabel?: string
+  cancelLabel?: string
   onCancel: () => void
   onSave: () => void
 }
@@ -20,6 +21,7 @@ export function FormDialogFooter({
   saving = false,
   saveLabel = "Guardar",
   savingLabel = "Guardando...",
+  cancelLabel = "Cancelar",
   onCancel,
   onSave,
 }: Props) {
@@ -35,7 +37,7 @@ export function FormDialogFooter({
         className="rounded-xl bg-white/5 px-4 py-2.5 text-sm font-medium text-neutral-300 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
 
-        Cancelar
+        {cancelLabel}
 
       </button>
 

@@ -2,13 +2,9 @@
 
 import { useEffect, useState } from "react"
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { UserRound } from "lucide-react"
+
+import { FormDialog } from "@/shared/ui/dialogs/form-dialog/form-dialog"
 
 import { Input } from "@/components/ui/input"
 
@@ -59,123 +55,96 @@ export function ProfileDialog({ open, onClose }: Props) {
 
   return (
 
-    <Dialog open={open} onOpenChange={v => !v && onClose()}>
+    // FormDialog trae gratis: pantalla completa en mobile (size
+    // "large", igual que TaskDialog), footer con Cancelar/Guardar
+    // SIEMPRE anclado abajo (flex-1 min-h-0 en el contenido), y el
+    // mismo header con ícono+título — en vez de reimplementar ese
+    // armazón acá por segunda vez.
+    <FormDialog
+      open={open}
+      title="Editar perfil"
+      icon={UserRound}
+      canSave
+      saving={loading}
+      saveLabel="Guardar"
+      savingLabel="Guardando..."
+      onClose={onClose}
+      onSave={handleSave}
+    >
 
-      <DialogContent>
+      <div className="space-y-5">
 
-        <DialogHeader>
+        <AvatarPicker
+          name={profile?.name ?? ""}
+          avatarUrl={profile?.avatarUrl}
+          uploading={uploading}
+          onSelect={upload}
+          onRemove={removePhoto}
+        />
 
-          <DialogTitle>
-            Editar perfil
-          </DialogTitle>
+        <div className="space-y-3">
 
-          <DialogDescription className="sr-only">
-            Formulario de perfil de usuario
-          </DialogDescription>
+          <div className="space-y-1.5">
 
-        </DialogHeader>
+            <label className="text-xs font-medium text-neutral-500">
+              Nombre
+            </label>
 
-        <div className="space-y-5 pt-3">
-
-          <AvatarPicker
-            name={profile?.name ?? ""}
-            avatarUrl={profile?.avatarUrl}
-            uploading={uploading}
-            onSelect={upload}
-            onRemove={removePhoto}
-          />
-
-          <div className="space-y-3">
-
-            <div className="space-y-1.5">
-
-              <label className="text-xs font-medium text-neutral-500">
-                Nombre
-              </label>
-
-              <Input
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="Tu nombre"
-              />
-
-            </div>
-
-            <div className="space-y-1.5">
-
-              <label className="text-xs font-medium text-neutral-500">
-                Correo
-              </label>
-
-              <Input
-                value={profile?.email ?? ""}
-                disabled
-                readOnly
-              />
-
-            </div>
-
-            <div className="space-y-1.5">
-
-              <label className="text-xs font-medium text-neutral-500">
-                Cargo
-              </label>
-
-              <Input
-                value={position}
-                onChange={e => setPosition(e.target.value)}
-                placeholder="Ej. Jefe de producción"
-              />
-
-            </div>
-
-            <div className="space-y-1.5">
-
-              <label className="text-xs font-medium text-neutral-500">
-                Teléfono
-              </label>
-
-              <Input
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                placeholder="Ej. 987654321"
-              />
-
-            </div>
+            <Input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Tu nombre"
+            />
 
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="space-y-1.5">
 
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="h-10 rounded-xl px-5 text-sm font-medium text-neutral-400 transition hover:bg-white/5 hover:text-white disabled:opacity-50"
-            >
+            <label className="text-xs font-medium text-neutral-500">
+              Correo
+            </label>
 
-              Cancelar
+            <Input
+              value={profile?.email ?? ""}
+              disabled
+              readOnly
+            />
 
-            </button>
+          </div>
 
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={loading}
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-white px-5 text-sm font-semibold text-black transition hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-neutral-300"
-            >
+          <div className="space-y-1.5">
 
-              {loading ? "Guardando..." : "Guardar"}
+            <label className="text-xs font-medium text-neutral-500">
+              Cargo
+            </label>
 
-            </button>
+            <Input
+              value={position}
+              onChange={e => setPosition(e.target.value)}
+              placeholder="Ej. Jefe de producción"
+            />
+
+          </div>
+
+          <div className="space-y-1.5">
+
+            <label className="text-xs font-medium text-neutral-500">
+              Teléfono
+            </label>
+
+            <Input
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              placeholder="Ej. 987654321"
+            />
 
           </div>
 
         </div>
 
-      </DialogContent>
+      </div>
 
-    </Dialog>
+    </FormDialog>
 
   )
 

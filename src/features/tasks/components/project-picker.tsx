@@ -20,6 +20,10 @@ import {
 } from "@/shared/utils/utils"
 
 import {
+  useResponsive,
+} from "@/shared/responsive/hooks/use-responsive"
+
+import {
   Input,
 } from "@/components/ui/input"
 
@@ -37,6 +41,10 @@ import {
   useProjects,
 } from "@/features/projects/hooks/use-projects"
 
+import {
+  isProjectCompleted,
+} from "@/features/projects/selectors/is-project-completed"
+
 type Props={
   value:string
   onChange:(value:string)=>void
@@ -49,6 +57,8 @@ export function ProjectPicker({
 
   const[open,setOpen]=useState(false)
   const[query,setQuery]=useState("")
+
+  const { isMobile } = useResponsive()
 
   const inputRef=
     useRef<HTMLInputElement>(null)
@@ -77,11 +87,26 @@ export function ProjectPicker({
           .trim()
           .toLowerCase()
 
+      // Los proyectos completados no deben ofrecerse para asignar
+      // tareas nuevas — salvo que sea el proyecto YA seleccionado
+      // (ej. editando una tarea cuyo proyecto se completó después),
+      // en cuyo caso se mantiene visible para no "perder" la
+      // selección actual de la vista.
+      const availableProjects=
+        projects.filter(
+          project=>
+
+            project.id===value ||
+
+            !isProjectCompleted(project),
+
+        )
+
       if(!search){
-        return projects
+        return availableProjects
       }
 
-      return projects.filter(
+      return availableProjects.filter(
         project=>
 
           [
@@ -106,6 +131,7 @@ export function ProjectPicker({
     },[
       projects,
       query,
+      value,
     ])
 
   const sortedProjects=
@@ -204,8 +230,12 @@ export function ProjectPicker({
       </PopoverTrigger>
 
       <PopoverContent
-        align="start"
-        className="w-140 rounded-2xl border border-white/10 bg-[#101012] p-4 shadow-2xl"
+        className={cn(
+          "rounded-2xl border border-white/10 bg-[#101012] p-4 shadow-2xl",
+          isMobile
+            ? "w-[calc(100vw-2rem)] max-w-none"
+            : "w-140",
+        )}
       >
 
         <div className="mb-3 flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2">

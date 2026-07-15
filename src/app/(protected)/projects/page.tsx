@@ -39,7 +39,7 @@ export default function ProjectsPage(){
 
           <p className="mt-2 text-sm text-neutral-500">
 
-            Centro de gestión de proyectos
+            Gestión de proyectos
 
           </p>
 

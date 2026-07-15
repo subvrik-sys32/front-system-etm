@@ -6,6 +6,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 type DialogProps =
   React.ComponentProps<
@@ -37,6 +38,14 @@ type DialogContentProps =
     typeof DialogPrimitive.Content
   > & {
     showCloseButton?: boolean
+    // "default": diálogo centrado, sin cambios entre breakpoints
+    // (usado por confirmaciones chicas como ActionDialog).
+    // "large": formularios grandes (Nueva tarea, Editar perfil,
+    // Nuevo usuario) — en mobile se vuelve pantalla completa
+    // (edge-to-edge, sin esquinas redondeadas); en desktop se
+    // comporta exactamente igual que "default" más el ancho que
+    // el propio consumidor defina vía className.
+    size?: "default" | "large"
   }
 
 export function Dialog(
@@ -112,8 +121,14 @@ export function DialogContent({
   className,
   children,
   showCloseButton = true,
+  size = "default",
   ...props
 }: DialogContentProps) {
+
+  const { isMobile } = useResponsive()
+
+  const isFullscreenMobile =
+    size === "large" && isMobile
 
   return (
 
@@ -145,7 +160,26 @@ export function DialogContent({
           "shadow-2xl",
           "outline-none",
           "select-none",
-          className
+          className,
+          // Override de pantalla completa: se coloca AL FINAL a
+          // propósito — tailwind-merge resuelve conflictos de
+          // utilidades quedándose con la última, así que esto
+          // siempre gana sobre el className que pase FormDialog
+          // (ej. w-180 max-w-180) o cualquier otro consumidor,
+          // sin que cada uno tenga que saber de responsive.
+          isFullscreenMobile && [
+            "inset-0",
+            "left-0",
+            "top-0",
+            "w-screen",
+            "h-dvh",
+            "max-w-none",
+            "max-h-none",
+            "translate-x-0",
+            "translate-y-0",
+            "rounded-none",
+            "border-0",
+          ],
         )}
       >
 
@@ -158,6 +192,7 @@ export function DialogContent({
               "absolute",
               "right-3",
               "top-3",
+              "z-10",
               "flex",
               "h-7",
               "w-7",
@@ -167,11 +202,12 @@ export function DialogContent({
               "text-neutral-400",
               "transition-colors",
               "hover:bg-white/5",
-              "hover:text-white"
+              "hover:text-white",
+              isFullscreenMobile && "h-9 w-9 bg-white/5",
             )}
           >
 
-            <X size={16} />
+            <X size={isFullscreenMobile ? 18 : 16} />
 
           </DialogClose>
 

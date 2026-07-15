@@ -103,7 +103,7 @@ export function TaskInfoSection({
       icon={Info}
     >
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-4 tablet:grid-cols-2 tablet:gap-6">
 
         <FormField label="Nombre de tarea *" error={errors?.reference}>
 
@@ -180,9 +180,9 @@ export function TaskInfoSection({
 
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-4">
+      <div className="mt-3 grid grid-cols-1 gap-4 tablet:grid-cols-3">
 
-        <FormField label="Fecha de entrega *" error={errors?.deliveryDate}>
+        <FormField label="Entrega *" error={errors?.deliveryDate}>
 
           <Input
             type="date"
@@ -250,7 +250,7 @@ export function TaskInfoSection({
 
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-4">
+      <div className="mt-3 grid grid-cols-1 gap-4 tablet:grid-cols-2">
 
         <FormField
           label="Ensamblados"

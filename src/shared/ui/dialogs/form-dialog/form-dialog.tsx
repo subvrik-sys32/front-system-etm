@@ -25,6 +25,13 @@ type Props = {
   saving?: boolean
   saveLabel?: string
   savingLabel?: string
+  cancelLabel?: string
+  onCancelClick?: () => void
+  // Contenido fijo entre el header y el área scrolleable — no se
+  // va con el scroll. Pensado para cosas como un indicador de
+  // progreso de wizard (ver TaskDialog en mobile); opcional, no
+  // afecta a ningún consumidor que no lo use.
+  subHeader?: React.ReactNode
   children: React.ReactNode
   onClose: () => void
   onSave: () => void
@@ -38,6 +45,9 @@ export function FormDialog({
   saving = false,
   saveLabel,
   savingLabel,
+  cancelLabel,
+  onCancelClick,
+  subHeader,
   children,
   onClose,
   onSave,
@@ -64,14 +74,27 @@ export function FormDialog({
       onOpenChange={handleOpenChange}
     >
 
-      <DialogContent className="flex max-h-screen w-180 max-w-180 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#101012] p-0 text-white shadow-2xl">
+      <DialogContent
+        size="large"
+        className="flex max-h-screen w-180 max-w-180 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#101012] p-0 text-white shadow-2xl"
+      >
 
         <FormDialogHeader
           title={title}
           icon={icon}
         />
 
-        <div className="erp-scrollbar overflow-y-auto px-5 py-4">
+        {subHeader && (
+
+          <div className="shrink-0 border-b border-white/10 px-5 py-3">
+
+            {subHeader}
+
+          </div>
+
+        )}
+
+        <div className="erp-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-4">
 
           {children}
 
@@ -84,7 +107,8 @@ export function FormDialog({
             saving={saving}
             saveLabel={saveLabel}
             savingLabel={savingLabel}
-            onCancel={onClose}
+            cancelLabel={cancelLabel}
+            onCancel={onCancelClick ?? onClose}
             onSave={onSave}
           />
 

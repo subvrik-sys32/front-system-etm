@@ -12,6 +12,10 @@ import {
 } from "@/shared/utils/utils"
 
 import {
+  useResponsive,
+} from "@/shared/responsive/hooks/use-responsive"
+
+import {
   getBadgeColors,
   type BadgeVariant,
 } from "@/shared/utils/badge-colors"
@@ -109,6 +113,18 @@ export function DynamicBadge({
 
 }:DynamicBadgeProps){
 
+  const { isMobile } = useResponsive()
+
+  // "project" es la única variante con ancho fijo grande (560px),
+  // pensada para desktop. En mobile eso se desborda del viewport —
+  // acá se vuelve w-full, igual que "field", sin tocar las demás
+  // variantes ("content", "process") que ya son de ancho chico o
+  // automático y no tienen este problema.
+  const resolvedWidthClass=
+    width==="project" && isMobile
+      ? "w-full px-3"
+      : widthClasses[width]
+
   const safeHex=
     color ?? "#64748B"
 
@@ -186,7 +202,7 @@ export function DynamicBadge({
 
         pulse && "animate-pulse",
 
-        widthClasses[width],
+        resolvedWidthClass,
 
       )}
       style={{

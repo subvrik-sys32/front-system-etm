@@ -148,7 +148,7 @@ export function ProjectForm({ form, update, errors }: Props) {
             />
           </FormField>
 
-          <FormField label="Fecha de entrega *" error={errors?.deliveryDate}>
+          <FormField label="Entrega *" error={errors?.deliveryDate}>
             <Input
               type="date"
               value={form.deliveryDate ?? ""}

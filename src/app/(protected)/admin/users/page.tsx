@@ -26,7 +26,7 @@ export default function UsersPage(){
 
             <p className="mt-2 text-sm text-neutral-500">
 
-              Centro de gestión de usuarios
+              Gestión de usuarios
 
             </p>
 

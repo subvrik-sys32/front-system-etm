@@ -50,7 +50,7 @@ function CompactShell({ children }: Props) {
 
   return (
 
-    <div className="flex h-screen flex-col overflow-hidden bg-[#050505] text-white">
+    <div className="flex h-dvh flex-col overflow-hidden bg-[#050505] text-white">
 
       <TopBar />
 

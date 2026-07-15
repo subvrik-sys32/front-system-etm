@@ -270,7 +270,10 @@ export function TaskPipelineBoard({
       // Sin h-full/overflow-hidden: el contenido (KPI + selector +
       // lista completa de cards) fluye con su alto real, y el
       // <main> del AppShell lo scrollea como página normal.
-      <div className="flex flex-col">
+      // pb-28: reserva espacio abajo para que la última tarjeta no
+      // quede tapada por el FAB de "Nueva tarea" (fixed, bottom-20 +
+      // tamaño del botón) cuando se scrollea hasta el final.
+      <div className="flex flex-col pb-28">
 
         <TaskPipelineHeader tasks={kpiTasks} />
 

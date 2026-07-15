@@ -86,6 +86,13 @@ export function TaskWorkflowOverlay({
   const [savedFields, setSavedFields] =
     useState(new Set<WorkflowNumericFieldKey>())
 
+  // true mientras se está guardando el operario asignado — bloquea
+  // "Iniciar" hasta que el backend confirme, evitando la carrera
+  // donde tocar Iniciar muy rápido tras elegir operario fallaba
+  // porque el step arrancaba sin el operario todavía confirmado.
+  const [operatorSaving, setOperatorSaving] =
+    useState(false)
+
   // Se incrementa cada vez que el usuario aprieta "Volver" desde
   // los campos numéricos. Mientras sea > 0, los campos arrancan
   // vacíos (forceEmpty) aunque ya tengan valor guardado en backend,
@@ -133,6 +140,7 @@ export function TaskWorkflowOverlay({
     setAnyFieldSaving(false)
     savingFields.current.clear()
     setBackCount(0)
+    setOperatorSaving(false)
 
     if (skipsSelector) {
       setVariant("start")
@@ -366,6 +374,7 @@ export function TaskWorkflowOverlay({
 
             <ProcessOperatorCell
               processTask={processTask}
+              onSavingChange={setOperatorSaving}
             />
 
           </div>
@@ -393,6 +402,7 @@ export function TaskWorkflowOverlay({
                   variant="start"
                   onBack={handleBack}
                   onClose={handleClose}
+                  blocked={operatorSaving}
                 />
 
               </div>

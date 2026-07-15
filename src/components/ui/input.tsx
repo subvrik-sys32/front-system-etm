@@ -23,7 +23,7 @@ export const Input = React.forwardRef<
         onFocus?.(event)
       }}
       className={cn(
-        "h-10 w-full rounded-xl px-4",
+        "h-10 w-full min-w-0 rounded-xl px-4",
 
         "border border-transparent",
         

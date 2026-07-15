@@ -26,6 +26,12 @@ import type {
 
 type Props={
   processTask:ProcessTask
+  // Avisa al padre cuando el guardado del operario está en curso —
+  // mismo patrón que WorkflowNumericField.onSavingChange. Sin esto,
+  // nada le decía a "Iniciar" que esperara a que este guardado
+  // terminara, permitiendo iniciar el step con el operario todavía
+  // sin confirmarse en el backend.
+  onSavingChange?:(saving:boolean)=>void
 }
 
 // Mismo criterio que WorkflowService.update() en el backend
@@ -38,6 +44,7 @@ const NON_EDITABLE_STATUSES=[
 
 export function ProcessOperatorCell({
   processTask,
+  onSavingChange,
 }:Props){
 
   const queryClient = useQueryClient()
@@ -117,20 +124,30 @@ export function ProcessOperatorCell({
           return
         }
 
-        await updateField(
+        onSavingChange?.(true)
 
-          currentStepId,
+        try{
 
-          {
-            operatorId:user?.id??null,
-          },
+          await updateField(
 
-          {
-            operator:user??null,
-            operatorId:user?.id??null,
-          },
+            currentStepId,
 
-        )
+            {
+              operatorId:user?.id??null,
+            },
+
+            {
+              operator:user??null,
+              operatorId:user?.id??null,
+            },
+
+          )
+
+        }finally{
+
+          onSavingChange?.(false)
+
+        }
 
       }}
     />

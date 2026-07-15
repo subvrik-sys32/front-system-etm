@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { cn } from "@/shared/utils/utils"
 
@@ -74,6 +74,29 @@ export function TaskPipelineCard({
     () => setOverlayOpen(false),
     [setOverlayOpen],
   )
+
+  // Si esta tarjeta se desmonta (ej. el usuario cambia de pestaña
+  // de proceso en mobile) mientras su overlay seguía abierto, el
+  // board nunca se enteraba — activeOverlayKey quedaba apuntando a
+  // una clave que ya no existe, bloqueando (overlayLocked) TODAS
+  // las demás tarjetas de cualquier proceso hasta recargar la
+  // página. Este cleanup libera el lock al desmontar en ese caso.
+  const overlayOpenRef = useRef(overlayOpen)
+
+  overlayOpenRef.current = overlayOpen
+
+  useEffect(() => {
+
+    return () => {
+
+      if (overlayOpenRef.current) {
+        onOverlayOpenChange(false)
+      }
+
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const { bind, pressed } = useLongPress({
     onLongPress: () => {

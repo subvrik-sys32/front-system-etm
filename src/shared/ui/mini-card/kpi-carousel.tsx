@@ -26,7 +26,7 @@ const SCROLL_SETTLE_DELAY = 300
 // efecto que YA tiene `expanded` en sus dependencias (el mismo que
 // maneja las flechas), se re-engancha correctamente en el momento
 // exacto en que el contenedor aparece — sin poll, sin hooks nuevos.
-const KPI_FADE_SIZE = 48
+const KPI_FADE_SIZE = 24
 
 type SummaryValue = {
   label: string

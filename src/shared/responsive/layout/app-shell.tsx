@@ -26,7 +26,7 @@ function DesktopShell({ children }: Props) {
         : CLOSED_RAIL_WIDTH
 
   return (
-    <div className="h-screen overflow-hidden bg-[#050505] text-white">
+    <div className="relative h-screen overflow-hidden bg-[#050505] text-white">
 
       <AppSidebar />
 
@@ -50,7 +50,7 @@ function CompactShell({ children }: Props) {
 
   return (
 
-    <div className="flex h-dvh flex-col overflow-hidden bg-[#050505] text-white">
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-[#050505] text-white">
 
       <TopBar />
 

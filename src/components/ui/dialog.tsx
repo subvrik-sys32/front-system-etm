@@ -140,6 +140,9 @@ export function DialogContent({
         onWheel={event=>
           event.stopPropagation()
         }
+        onOpenAutoFocus={event => {
+          event.preventDefault()
+        }}
         className={cn(
           "fixed",
           "left-1/2",

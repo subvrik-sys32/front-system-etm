@@ -7,6 +7,8 @@ import { getBadgeColors } from "@/shared/utils/badge-colors"
 import { TaskPipelineCard } from "../components/task-pipeline-card"
 import { TaskColumnOperator } from "../components/task-column-operator"
 import { useColumnScroll } from "../hooks/use-column-scroll"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { cn } from "@/lib/utils"
 
 type SharedProps = {
   processCode: ProcessCode
@@ -80,16 +82,26 @@ function ColumnContent({
   onOverlayOpenChange,
 }: ContentProps) {
 
+  const { isMobile } = useResponsive()
+
   const columnScrollRef = useColumnScroll()
 
   return (
 
-    <div className="flex h-full w-72 shrink-0 flex-col overflow-hidden">
+    <div className={cn(
+      "flex shrink-0 flex-col",
+      isMobile ? "w-full" : "h-full w-72 overflow-hidden",
+    )}>
 
       <div
         ref={columnScrollRef}
         style={{ touchAction: "pan-y" }}
-        className="hide-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-2 py-2 cursor-grab active:cursor-grabbing"
+        className={cn(
+          "hide-scrollbar overflow-x-hidden px-2 py-2",
+          isMobile
+            ? ""
+            : "min-h-0 flex-1 overflow-y-auto overscroll-contain cursor-grab active:cursor-grabbing",
+        )}
       >
 
         <div className="flex flex-col gap-2 pb-2">

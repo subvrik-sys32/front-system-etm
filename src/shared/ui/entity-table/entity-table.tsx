@@ -36,7 +36,14 @@ export function EntityTable<T>({
 
   return(
 
-    <div className="relative flex h-[calc(100vh-240px)] flex-col overflow-hidden rounded-2xl bg-[#101012] ring-1 ring-white/6">
+    // Antes: h-[calc(100vh-240px)] — número mágico calculado a mano
+    // para el chrome de UNA página en desktop. Se rompía en cualquier
+    // otro layout (mobile con TopBar/BottomNav, u otra página con
+    // distinto header). Ahora: h-full, y quien realmente sabe cuánto
+    // espacio sobra es el padre vía flexbox (min-h-0 flex-1) — la
+    // altura queda correcta automáticamente sin importar el chrome
+    // que la rodee, en cualquier breakpoint.
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl bg-[#101012] ring-1 ring-white/6">
 
       <TableScrollContainer>
 

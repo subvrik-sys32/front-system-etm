@@ -267,17 +267,26 @@ export function TaskPipelineBoard({
 
     return (
 
-      <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      // Sin h-full/overflow-hidden: el contenido (KPI + selector +
+      // lista completa de cards) fluye con su alto real, y el
+      // <main> del AppShell lo scrollea como página normal.
+      <div className="flex flex-col">
 
         <TaskPipelineHeader tasks={kpiTasks} />
 
-        <PipelineProcessSelector
-          value={activeProcess}
-          onChange={setActiveProcess}
-          columns={columns}
-        />
+        {/* sticky: queda visible mientras se scrollea la lista de
+            abajo, sin necesitar su propio contenedor de scroll. */}
+        <div className="sticky top-0 z-10 bg-[#050505]">
 
-        <div className="mt-2 min-h-0 flex-1 overflow-hidden">
+          <PipelineProcessSelector
+            value={activeProcess}
+            onChange={setActiveProcess}
+            columns={columns}
+          />
+
+        </div>
+
+        <div className="mt-2">
 
           <TaskProcessColumn
             processCode={activeProcess}

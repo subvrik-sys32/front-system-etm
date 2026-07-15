@@ -54,7 +54,7 @@ function CompactShell({ children }: Props) {
 
       <TopBar />
 
-      <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+      <main className="erp-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
         {children}
       </main>
 

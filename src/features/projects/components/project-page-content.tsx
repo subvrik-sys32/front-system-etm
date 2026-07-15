@@ -59,46 +59,60 @@ export function ProjectPageContent({
 
   return(
 
-    <div className="mx-auto w-full max-w-400">
+    // Antes: sin flex, sin overflow — la altura que "sobraba" del
+    // EntityTable (por el h-[calc(...)] hardcodeado) se escapaba
+    // hacia el documento entero. Ahora: flex-col con min-h-0 +
+    // overflow-hidden en la raíz, toolbar shrink-0, y el wrapper
+    // de la tabla como flex-1 min-h-0 — así EntityTable con h-full
+    // recibe exactamente el espacio real disponible, ni más ni menos.
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-400 flex-col overflow-hidden">
 
-      <EntityToolbar
-        left={
-          <div className="flex flex-wrap items-center gap-2 py-1">
+      <div className="shrink-0">
 
-            <EntityToolbarSearch
-              value={search}
-              onChange={setSearch}
-            />
+        <EntityToolbar
+          left={
+            <div className="flex flex-wrap items-center gap-2 py-1">
 
-            <FilterBar
-              module="projects"
-            />
+              <EntityToolbarSearch
+                value={search}
+                onChange={setSearch}
+              />
 
-            <ProjectSortButton/>
+              <FilterBar
+                module="projects"
+              />
 
-            <HistoryToggleButton
-              count={completedCount}
-              active={showHistory}
-              onClick={()=>setShowHistory(v=>!v)}
-            />
+              <ProjectSortButton/>
 
-          </div>
-        }
-      />
+              <HistoryToggleButton
+                count={completedCount}
+                active={showHistory}
+                onClick={()=>setShowHistory(v=>!v)}
+              />
 
-      <EntityExpandProvider>
-
-        <ProjectTable
-          projects={projects}
-          tasks={tasks}
-          loading={loading}
-          focusedProjectId={focusedProjectId}
-          search={search}
-          showHistory={showHistory}
-          reorderProjects={reorderProjects}
+            </div>
+          }
         />
 
-      </EntityExpandProvider>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-hidden">
+
+        <EntityExpandProvider>
+
+          <ProjectTable
+            projects={projects}
+            tasks={tasks}
+            loading={loading}
+            focusedProjectId={focusedProjectId}
+            search={search}
+            showHistory={showHistory}
+            reorderProjects={reorderProjects}
+          />
+
+        </EntityExpandProvider>
+
+      </div>
 
     </div>
 

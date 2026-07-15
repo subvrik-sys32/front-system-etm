@@ -3,6 +3,7 @@
 import { useState } from "react"
 
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { cn } from "@/shared/utils/utils"
 
 import { AdaptiveActionBar } from "@/shared/responsive/adaptative/adaptive-action-bar"
 
@@ -135,7 +136,17 @@ export function TaskPageContent({
 
   return(
 
-    <div className="relative mx-auto flex h-full min-h-0 w-full max-w-400 flex-col overflow-hidden">
+    // Desktop: h-full/min-h-0/overflow-hidden — una sola pantalla,
+    // solo la tabla/pipeline internos scrollean (patrón app fija).
+    // Mobile: SIN esas restricciones — el contenido fluye con su
+    // alto real y el <main overflow-y-auto> del AppShell lo scrollea
+    // como una página normal. Forzar overflow-hidden acá bloqueaba
+    // ese scroll del padre, cortando el contenido sin dar forma
+    // de alcanzarlo (el bug que viste en la captura).
+    <div className={cn(
+      "relative mx-auto flex w-full max-w-400 flex-col",
+      isMobile ? "" : "h-full min-h-0 overflow-hidden",
+    )}>
 
       <div className="shrink-0">
 
@@ -193,7 +204,9 @@ export function TaskPageContent({
 
       {view==="table"?(
 
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <div className={cn(
+          isMobile ? "" : "min-h-0 flex-1 overflow-hidden",
+        )}>
 
           <EntityExpandProvider>
 
@@ -214,7 +227,9 @@ export function TaskPageContent({
 
       ):(
 
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <div className={cn(
+          isMobile ? "" : "min-h-0 flex-1 overflow-hidden",
+        )}>
 
           <TaskPipelineBoard
             tasks={pipelineTasks}

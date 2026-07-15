@@ -41,31 +41,31 @@ export default function ProcessPage() {
 
   return (
 
-    <main className="h-full bg-[#050505] px-8 py-10 text-white select-none">
+    <main className="flex h-full flex-col overflow-hidden bg-[#050505] px-8 py-10 text-white select-none">
 
-      <section className="space-y-6">
+      <header className="flex shrink-0 flex-wrap items-start justify-between gap-4">
 
-        <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
 
-          <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-widest">
 
-            <h1 className="text-2xl font-bold tracking-widest">
+            {process?.label.toUpperCase()}
 
-              {process?.label.toUpperCase()}
+          </h1>
 
-            </h1>
+          <p className="mt-2 text-sm text-neutral-500">
 
-            <p className="mt-2 text-sm text-neutral-500">
+            Centro de gestión del proceso
 
-              Centro de gestión del proceso
+          </p>
 
-            </p>
+        </div>
 
-          </div>
+        <div className="shrink-0" />
 
-          <div className="shrink-0" />
+      </header>
 
-        </header>
+      <section className="mt-6 min-h-0 flex-1 overflow-hidden">
 
         <ProcessPageContent
           processCode={processCode}

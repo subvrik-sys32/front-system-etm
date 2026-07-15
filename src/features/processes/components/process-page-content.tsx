@@ -99,57 +99,69 @@ export function ProcessPageContent({
 
   return (
 
-    <div className="relative mx-auto w-full max-w-400">
+    // Mismo fix que Proyectos/Tareas: cadena flex-col + min-h-0 +
+    // overflow-hidden en la raíz, para que EntityTable (ahora con
+    // h-full) reciba la altura real disponible en vez de escaparse
+    // hacia el documento.
+    <div className="relative mx-auto flex h-full min-h-0 w-full max-w-400 flex-col overflow-hidden">
 
-      <EntityToolbar
-        left={
-          <div className="flex flex-wrap items-center gap-2 py-1 select-none">
+      <div className="shrink-0">
 
-            <BackToTaskButton />
+        <EntityToolbar
+          left={
+            <div className="flex flex-wrap items-center gap-2 py-1 select-none">
 
-            <EntityToolbarSearch
-              value={search}
-              onChange={setSearch}
-            />
+              <BackToTaskButton />
 
-            <FilterBar module="processes" />
+              <EntityToolbarSearch
+                value={search}
+                onChange={setSearch}
+              />
 
-            <HistoryToggleButton
-              count={completedCount}
-              active={showHistory}
-              onClick={() =>
-                setShowHistory(v => !v)
-              }
-            />
+              <FilterBar module="processes" />
 
-            <ExportMenu
-              scopes={PRODUCTION_EXPORT_SCOPES}
-              onExport={handleExport}
-            />
+              <HistoryToggleButton
+                count={completedCount}
+                active={showHistory}
+                onClick={() =>
+                  setShowHistory(v => !v)
+                }
+              />
 
-          </div>
-        }
-      />
+              <ExportMenu
+                scopes={PRODUCTION_EXPORT_SCOPES}
+                onExport={handleExport}
+              />
 
-      <EntityExpandProvider>
-
-        <ProcessTable
-          processDefinition={processDefinition}
-          processTasks={processTasks}
-          search={search}
-          loading={loading}
-          focusedTaskId={focusedTaskId}
-          focusToken={focusToken}
-          showHistory={showHistory}
-          onHistoryRequired={() =>
-            setShowHistory(true)
-          }
-          onResolvingChange={
-            setResolvingFocus
+            </div>
           }
         />
 
-      </EntityExpandProvider>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-hidden">
+
+        <EntityExpandProvider>
+
+          <ProcessTable
+            processDefinition={processDefinition}
+            processTasks={processTasks}
+            search={search}
+            loading={loading}
+            focusedTaskId={focusedTaskId}
+            focusToken={focusToken}
+            showHistory={showHistory}
+            onHistoryRequired={() =>
+              setShowHistory(true)
+            }
+            onResolvingChange={
+              setResolvingFocus
+            }
+          />
+
+        </EntityExpandProvider>
+
+      </div>
 
       {showResolvingOverlay && (
 

@@ -20,6 +20,7 @@ import { EntityTableLoading } from "@/shared/ui/entity-table/entity-table-loadin
 import { buildProjectColumns } from "./build-project-columns"
 import { ProjectExpandedRow } from "../components/expanded-row/project-expanded-row"
 import { ProjectMobileCard } from "./project-mobile-card"
+import { ProjectMobileSkeleton } from "./project-mobile-skeleton"
 
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
@@ -151,6 +152,11 @@ export function ProjectTable({
   )
 
   if (!hydrated || loading) {
+
+    if (isMobile) {
+      return <ProjectMobileSkeleton />
+    }
+
     return (
       <EntityTableLoading
         label="Cargando proyectos..."

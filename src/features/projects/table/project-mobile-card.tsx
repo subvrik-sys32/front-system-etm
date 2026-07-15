@@ -87,13 +87,13 @@ export function ProjectMobileCard({
           */}
           <div className="flex flex-col gap-2">
 
-            <ProjectClientCell project={project} />
+            <ProjectClientCell project={project} triggerVariant="row" rowLabel="Cliente" />
 
-            <ProjectStageCell project={project} />
+            <ProjectStageCell project={project} triggerVariant="row" rowLabel="Etapa" />
 
-            <ProjectStatusCell project={project} />
+            <ProjectStatusCell project={project} triggerVariant="row" rowLabel="Estado" />
 
-            <ProjectPmCell project={project} />
+            <ProjectPmCell project={project} triggerVariant="row" rowLabel="PM" />
 
           </div>
 

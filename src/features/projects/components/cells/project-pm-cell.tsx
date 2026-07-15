@@ -26,10 +26,14 @@ import type {
 
 type Props={
   project:Project
+  triggerVariant?:"badge"|"row"
+  rowLabel?:string
 }
 
 export function ProjectPmCell({
   project,
+  triggerVariant,
+  rowLabel,
 }:Props){
 
   const{
@@ -64,6 +68,10 @@ export function ProjectPmCell({
       placeholder="PM"
 
       disabled={!canUpdate}
+
+      triggerVariant={triggerVariant}
+
+      rowLabel={rowLabel}
 
       onChange={user=>{
 

@@ -8,6 +8,7 @@ import {
 
 import {
   Search,
+  ChevronDown,
 } from "lucide-react"
 
 import {
@@ -35,6 +36,14 @@ import {
   SelectOption,
 } from "@/shared/ui/select-option/select-option"
 
+import {
+  ENTITY_ICONS,
+} from "@/shared/constants/entity-icons"
+
+import {
+  cn,
+} from "@/shared/utils/utils"
+
 import type {
   User,
 } from "../types/user.types"
@@ -53,6 +62,13 @@ type Props = {
 
   disabled?:boolean
 
+  // "badge" (default): sin cambios. "row": fila compacta — mismo
+  // patrón que EntitySelect, para listas apiladas (ej. PM en la
+  // tarjeta mobile de Proyectos) en vez de un badge coloreado a
+  // todo el ancho.
+  triggerVariant?:"badge"|"row"
+  rowLabel?:string
+
 }
 
 export function UserSelect({
@@ -67,6 +83,9 @@ export function UserSelect({
 
   disabled=false,
 
+  triggerVariant="badge",
+  rowLabel,
+
 }:Props){
 
   const [open,setOpen]=
@@ -77,6 +96,10 @@ export function UserSelect({
 
   const inputRef=
     useRef<HTMLInputElement>(null)
+
+  const RowIcon = value?.icon
+    ? ENTITY_ICONS[value.icon]
+    : undefined
 
   const filteredItems=
     useMemo(()=>{
@@ -165,30 +188,79 @@ export function UserSelect({
 
       <PopoverTrigger asChild>
 
-        <button
-          type="button"
-          disabled={disabled}
-          className="flex w-full min-w-0 items-center disabled:cursor-not-allowed"
-        >
+        {triggerVariant === "row" ? (
 
-          <DynamicBadge
-            label={
-              value?.name ??
-              placeholder
-            }
-            color={
-              value
-                ? value.color
-                : "#64748B"
-            }
-            icon={value?.icon}
-            placeholder={!value}
-            width="field"
-            showChevron={!disabled}
-            chevronOpen={open}
-          />
+          <button
+            type="button"
+            disabled={disabled}
+            className="flex w-full min-w-0 items-center justify-between gap-2 rounded-lg bg-white/3 px-3 py-2.5 text-left transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+          >
 
-        </button>
+            <span className="shrink-0 text-xs font-medium text-neutral-500">
+              {rowLabel}
+            </span>
+
+            <span className="flex min-w-0 items-center gap-1.5">
+
+              {RowIcon && (
+                <RowIcon
+                  size={14}
+                  className="shrink-0"
+                  style={{ color: value?.color ?? "#737373" }}
+                />
+              )}
+
+              <span
+                className="truncate text-sm font-semibold"
+                style={{ color: value?.color ?? "#737373" }}
+              >
+                {value?.name ?? placeholder}
+              </span>
+
+              {!disabled && (
+
+                <ChevronDown
+                  size={14}
+                  className={cn(
+                    "shrink-0 text-neutral-500 transition-transform duration-200",
+                    open && "rotate-180",
+                  )}
+                />
+
+              )}
+
+            </span>
+
+          </button>
+
+        ) : (
+
+          <button
+            type="button"
+            disabled={disabled}
+            className="flex w-full min-w-0 items-center disabled:cursor-not-allowed"
+          >
+
+            <DynamicBadge
+              label={
+                value?.name ??
+                placeholder
+              }
+              color={
+                value
+                  ? value.color
+                  : "#64748B"
+              }
+              icon={value?.icon}
+              placeholder={!value}
+              width="field"
+              showChevron={!disabled}
+              chevronOpen={open}
+            />
+
+          </button>
+
+        )}
 
       </PopoverTrigger>
 
@@ -226,7 +298,7 @@ export function UserSelect({
           </div>
 
           <CommandList
-            className="max-h-64 overflow-y-auto"
+            className="max-h-64 overflow-y-auto erp-scrollbar"
           >
 
             <CommandEmpty>

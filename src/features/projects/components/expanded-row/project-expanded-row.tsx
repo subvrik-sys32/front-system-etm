@@ -172,7 +172,23 @@ export function ProjectExpandedRow({
         metricLabel="tareas asociadas"
       />
 
-      <KpiCarousel cards={cards} />
+      <KpiCarousel
+        cards={cards}
+        summary={{
+          icon: CheckCircle2,
+          color: "#22C55E",
+          label: "Avance",
+          values: [
+            { label: "Finalizadas", value: completedTasks },
+            {
+              label: "Progreso",
+              value: totalTasks>0
+                ?`${Math.round((completedTasks/totalTasks)*100)}%`
+                :"0%",
+            },
+          ],
+        }}
+      />
 
       <EntityExpandedContent>
 

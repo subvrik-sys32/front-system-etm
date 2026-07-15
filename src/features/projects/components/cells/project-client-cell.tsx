@@ -26,10 +26,14 @@ import type {
 
 type Props={
   project:Project
+  triggerVariant?:"badge"|"row"
+  rowLabel?:string
 }
 
 export function ProjectClientCell({
   project,
+  triggerVariant,
+  rowLabel,
 }:Props){
 
   const{
@@ -69,6 +73,10 @@ export function ProjectClientCell({
       placeholder="Cliente"
 
       disabled={!canUpdate}
+
+      triggerVariant={triggerVariant}
+
+      rowLabel={rowLabel}
 
       onChange={client=>{
 

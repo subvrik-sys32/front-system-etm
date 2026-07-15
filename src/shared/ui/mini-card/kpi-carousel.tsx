@@ -1,31 +1,69 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  MoreHorizontal,
+  type LucideIcon,
+} from "lucide-react"
 
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useDragScroll } from "@/shared/ui/horizontal-scroll/use-drag-scroll"
 import { useHorizontalFade } from "@/shared/hooks/use-horizontal-fade"
+import { getBadgeColors } from "@/shared/utils/badge-colors"
 import { cn } from "@/shared/utils/utils"
 
-// Extraído de TaskPipelineHeader — misma lógica de carrusel de KPIs
-// (grilla en desktop, tarjeta única deslizable con flechas en mobile),
-// reutilizable por cualquier sección que muestre un set de KPIs
-// (pipeline de tareas, panel expandido de proyecto, etc.).
+// Carrusel de KPIs centralizado — usado tanto por el pipeline de
+// Tareas como por el panel expandido de Proyectos, para que ambos
+// compartan exactamente el mismo comportamiento (colapsado por
+// defecto con resumen + "...", grilla en desktop, carrusel con
+// flechas/fade en mobile) sin duplicar la lógica en dos archivos.
 const SCROLL_SETTLE_DELAY = 300
+
+// Fade fijo (no proporcional): el cálculo automático de
+// useHorizontalFade (8% del ancho, clamp 24-80px) resultaba poco
+// perceptible acá porque las cards tienen fondo oscuro con bajo
+// contraste contra el fondo de la página. Ajustar este número sube
+// o baja qué tan marcado se ve el desvanecido.
+const KPI_FADE_SIZE = 24
+
+type SummaryValue = {
+  label: string
+  value: string | number
+}
+
+type Summary = {
+  icon: LucideIcon
+  color: string
+  label: string
+  values: [SummaryValue, SummaryValue]
+}
 
 type Props = {
   cards: React.ReactNode[]
+  summary: Summary
 }
 
-export function KpiCarousel({ cards }: Props) {
+export function KpiCarousel({ cards, summary }: Props) {
 
   const { isMobile } = useResponsive()
 
+  // Colapsado por defecto en ambos layouts: una sola fila
+  // full-width con el KPI de resumen + botón "..." para expandir
+  // a las cards completas. Colapsar/expandir no toca ni desmonta
+  // la lógica de scroll de abajo — esa sigue existiendo tal cual,
+  // solo se oculta.
+  const [expanded, setExpanded] = useState(false)
+
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
-  const [isScrolling, setIsScrolling] = useState(false)
 
+  // true SOLO mientras hay movimiento activo del carrusel — las
+  // flechas se muestran únicamente en esta ventana, para no tapar
+  // el contenido mientras el usuario simplemente lo está leyendo.
+  const [isScrolling, setIsScrolling] = useState(false)
   const settleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const {
@@ -36,7 +74,10 @@ export function KpiCarousel({ cards }: Props) {
     stopDragging,
   } = useDragScroll()
 
-  const { leftFade, rightFade } = useHorizontalFade({ containerRef })
+  const { leftFade, rightFade } = useHorizontalFade({
+    containerRef,
+    fadeSize: KPI_FADE_SIZE,
+  })
 
   const updateArrows = useCallback(() => {
 
@@ -56,7 +97,9 @@ export function KpiCarousel({ cards }: Props) {
 
   useEffect(() => {
 
-    if (!isMobile) {
+    // Sin sentido observar un contenedor que no existe todavía
+    // (desktop, o mobile mientras está colapsado sin carrusel montado).
+    if (!isMobile || !expanded) {
       return
     }
 
@@ -101,7 +144,7 @@ export function KpiCarousel({ cards }: Props) {
 
     }
 
-  }, [updateArrows, containerRef, isMobile])
+  }, [updateArrows, containerRef, isMobile, expanded])
 
   function scrollLeft() {
 
@@ -125,13 +168,106 @@ export function KpiCarousel({ cards }: Props) {
 
   }
 
+  // ---------- Estado colapsado (default): fila única full-width ----------
+  if (!expanded) {
+
+    const textColor = getBadgeColors(summary.color, "subtle").text
+
+    const Icon = summary.icon
+
+    return (
+
+      <button
+        type="button"
+        onClick={() => setExpanded(true)}
+        className="flex w-full items-center gap-3 rounded-2xl p-3 text-left transition hover:brightness-110 tablet:gap-4 tablet:p-4"
+        style={{
+          background: `linear-gradient(135deg, ${summary.color}20, #101012)`,
+        }}
+      >
+
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/5">
+
+          <Icon size={20} style={{ color: textColor }} />
+
+        </div>
+
+        <span
+          className="hidden shrink-0 text-xs font-bold uppercase tracking-[0.18em] tablet:block"
+          style={{ color: textColor }}
+        >
+          {summary.label}
+        </span>
+
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-4 tablet:gap-8">
+
+          {summary.values.map((v) => (
+
+            <div key={v.label} className="min-w-0 text-right">
+
+              <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">
+                {v.label}
+              </p>
+
+              <p
+                className="text-lg font-bold leading-tight"
+                style={{ color: textColor }}
+              >
+                {v.value}
+              </p>
+
+            </div>
+
+          ))}
+
+        </div>
+
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/5 text-neutral-400">
+
+          <MoreHorizontal size={18} />
+
+        </div>
+
+      </button>
+
+    )
+
+  }
+
+  // ---------- Estado expandido ----------
+  const collapseButton = (
+
+    <div className="mb-2 flex justify-end">
+
+      <button
+        type="button"
+        onClick={() => setExpanded(false)}
+        className="flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs font-medium text-neutral-400 transition hover:bg-white/10 hover:text-neutral-200"
+      >
+
+        <ChevronUp size={14} strokeWidth={2.4} />
+
+        Ocultar indicadores
+
+      </button>
+
+    </div>
+
+  )
+
   if (!isMobile) {
 
     return (
 
-      <div className="grid grid-cols-2 gap-4 laptop:grid-cols-4">
+      <div>
 
-        {cards}
+        {collapseButton}
+
+        <div className="grid grid-cols-2 gap-4 laptop:grid-cols-4">
+
+          {cards}
+
+        </div>
 
       </div>
 
@@ -144,72 +280,75 @@ export function KpiCarousel({ cards }: Props) {
 
   return (
 
-    <div className="relative h-44 w-full">
+    <div>
 
-      <button
-        type="button"
-        onClick={scrollLeft}
-        aria-label="Anterior"
-        tabIndex={-1}
-        className={cn(
-          "absolute left-1 top-1/2 z-20 -translate-y-1/2",
-          "flex h-8 w-8 items-center justify-center rounded-full",
-          "bg-[#18181b]/80 backdrop-blur-xl text-neutral-200 transition-opacity duration-200",
-          showLeftArrow ? "opacity-100" : "pointer-events-none opacity-0",
-        )}
-      >
-        <ChevronLeft size={15} strokeWidth={2.5} />
-      </button>
+      {collapseButton}
 
-      <button
-        type="button"
-        onClick={scrollRight}
-        aria-label="Siguiente"
-        tabIndex={-1}
-        className={cn(
-          "absolute right-1 top-1/2 z-20 -translate-y-1/2",
-          "flex h-8 w-8 items-center justify-center rounded-full",
-          "bg-[#18181b]/80 backdrop-blur-xl text-neutral-200 transition-opacity duration-200",
-          showRightArrow ? "opacity-100" : "pointer-events-none opacity-0",
-        )}
-      >
-        <ChevronRight size={15} strokeWidth={2.5} />
-      </button>
+      <div className="relative h-44 w-full">
 
-      <div
-        style={{
-          WebkitMaskImage: `linear-gradient(to right, transparent 0, black ${leftFade}px, black calc(100% - ${rightFade}px), transparent 100%)`,
-          maskImage: `linear-gradient(to right, transparent 0, black ${leftFade}px, black calc(100% - ${rightFade}px), transparent 100%)`,
-          WebkitMaskRepeat: "no-repeat",
-          maskRepeat: "no-repeat",
-          WebkitMaskSize: "100% 100%",
-          maskSize: "100% 100%",
-        }}
-        className="h-full overflow-hidden"
-      >
+        <button
+          type="button"
+          onClick={scrollLeft}
+          aria-label="Anterior"
+          tabIndex={-1}
+          className={cn(
+            "absolute left-1 top-1/2 z-20 -translate-y-1/2",
+            "flex h-8 w-8 items-center justify-center rounded-full",
+            "bg-[#18181b]/80 backdrop-blur-xl text-neutral-200 transition-opacity duration-200",
+            showLeftArrow ? "opacity-100" : "pointer-events-none opacity-0",
+          )}
+        >
+          <ChevronLeft size={15} strokeWidth={2.5} />
+        </button>
+
+        <button
+          type="button"
+          onClick={scrollRight}
+          aria-label="Siguiente"
+          tabIndex={-1}
+          className={cn(
+            "absolute right-1 top-1/2 z-20 -translate-y-1/2",
+            "flex h-8 w-8 items-center justify-center rounded-full",
+            "bg-[#18181b]/80 backdrop-blur-xl text-neutral-200 transition-opacity duration-200",
+            showRightArrow ? "opacity-100" : "pointer-events-none opacity-0",
+          )}
+        >
+          <ChevronRight size={15} strokeWidth={2.5} />
+        </button>
 
         <div
-          ref={containerRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={stopDragging}
-          onMouseLeave={stopDragging}
-          onClickCapture={handleClickCapture}
-          className="hide-scrollbar flex h-full snap-x snap-mandatory items-stretch gap-3 overflow-x-auto overscroll-contain scroll-smooth px-1 cursor-grab select-none active:cursor-grabbing"
+          style={{
+            WebkitMaskImage: `linear-gradient(to right, transparent 0, black ${leftFade}px, black calc(100% - ${rightFade}px), transparent 100%)`,
+            maskImage: `linear-gradient(to right, transparent 0, black ${leftFade}px, black calc(100% - ${rightFade}px), transparent 100%)`,
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskSize: "100% 100%",
+            maskSize: "100% 100%",
+          }}
+          className="h-full overflow-hidden"
         >
 
-          {cards.map((card, index) => (
+          <div
+            ref={containerRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={stopDragging}
+            onMouseLeave={stopDragging}
+            onClickCapture={handleClickCapture}
+            className="hide-scrollbar flex h-full snap-x snap-mandatory items-stretch gap-3 overflow-x-auto overscroll-contain scroll-smooth px-1 cursor-grab select-none active:cursor-grabbing"
+          >
 
-            <div
-              key={index}
-              className="w-full shrink-0 snap-center"
-            >
+            {cards.map((card, index) => (
 
-              {card}
+              <div key={index} className="w-full shrink-0 snap-center">
 
-            </div>
+                {card}
 
-          ))}
+              </div>
+
+            ))}
+
+          </div>
 
         </div>
 

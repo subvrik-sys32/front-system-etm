@@ -1,7 +1,10 @@
 "use client"
 
-import { Search } from "lucide-react"
+import { Search, ChevronDown } from "lucide-react"
 import { useRef } from "react"
+
+import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
+import { cn } from "@/shared/utils/utils"
 
 import { Input } from "@/components/ui/input"
 import {
@@ -47,6 +50,15 @@ type Props<T extends EntityBase> = {
   disabled?: boolean
 
   variant?: "default" | "color"
+
+  // "badge" (default): el trigger actual, badge coloreado a todo
+  // el ancho — pensado para celdas de tabla. "row": fila compacta
+  // (label chico a la izquierda, valor+ícono a la derecha, fondo
+  // neutro) — pensada para listas apiladas (ej. tarjeta mobile de
+  // Proyectos), donde 4 badges coloreados de ancho completo uno
+  // debajo del otro se sienten pesados.
+  triggerVariant?: "badge" | "row"
+  rowLabel?: string
 }
 
 export function EntitySelect<T extends EntityBase>({
@@ -60,6 +72,8 @@ export function EntitySelect<T extends EntityBase>({
   onDelete,
   disabled = false,
   variant = "default",
+  triggerVariant = "badge",
+  rowLabel,
 }: Props<T>) {
 
   const {
@@ -94,6 +108,10 @@ export function EntitySelect<T extends EntityBase>({
   const inputRef = useRef<HTMLInputElement>(null)
 
   const definition = collectionRegistry[collection]
+
+  const RowIcon = value?.icon
+    ? ENTITY_ICONS[value.icon]
+    : undefined
 
   const dialogTitle = editing
     ? `Editar ${placeholder}`
@@ -138,24 +156,73 @@ export function EntitySelect<T extends EntityBase>({
       >
         <PopoverTrigger asChild>
 
-          <button
-            type="button"
-            disabled={disabled}
-            className="flex w-full min-w-0 items-center disabled:cursor-not-allowed"
-          >
+          {triggerVariant === "row" ? (
 
-            <DynamicBadge
-              label={value?.name ?? placeholder}
-              color={value?.color ?? "#64748B"}
-              icon={value?.icon}
-              variant={collection === "colors" ? "solid" : "subtle"}
-              placeholder={!value}
-              width="field"
-              showChevron={!disabled}
-              chevronOpen={open}
-            />
+            <button
+              type="button"
+              disabled={disabled}
+              className="flex w-full min-w-0 items-center justify-between gap-2 rounded-lg bg-white/3 px-3 py-2.5 text-left transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+            >
 
-          </button>
+              <span className="shrink-0 text-xs font-medium text-neutral-500">
+                {rowLabel}
+              </span>
+
+              <span className="flex min-w-0 items-center gap-1.5">
+
+                {RowIcon && (
+                  <RowIcon
+                    size={14}
+                    className="shrink-0"
+                    style={{ color: value?.color ?? "#737373" }}
+                  />
+                )}
+
+                <span
+                  className="truncate text-sm font-semibold"
+                  style={{ color: value?.color ?? "#737373" }}
+                >
+                  {value?.name ?? placeholder}
+                </span>
+
+                {!disabled && (
+
+                  <ChevronDown
+                    size={14}
+                    className={cn(
+                      "shrink-0 text-neutral-500 transition-transform duration-200",
+                      open && "rotate-180",
+                    )}
+                  />
+
+                )}
+
+              </span>
+
+            </button>
+
+          ) : (
+
+            <button
+              type="button"
+              disabled={disabled}
+              className="flex w-full min-w-0 items-center disabled:cursor-not-allowed"
+            >
+
+              <DynamicBadge
+                label={value?.name ?? placeholder}
+                color={value?.color ?? "#64748B"}
+                icon={value?.icon}
+                variant={collection === "colors" ? "solid" : "subtle"}
+                placeholder={!value}
+                width="field"
+                showChevron={!disabled}
+                chevronOpen={open}
+              />
+
+            </button>
+
+          )}
 
         </PopoverTrigger>
 
@@ -173,7 +240,7 @@ export function EntitySelect<T extends EntityBase>({
               />
             </div>
 
-            <CommandList className="max-h-64 overflow-y-auto">
+            <CommandList className="erp-scrollbar max-h-64 overflow-y-auto">
               <CommandEmpty>Sin resultados</CommandEmpty>
 
               <CommandGroup>

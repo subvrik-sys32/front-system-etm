@@ -23,6 +23,7 @@ import { NotificationHistoryDialog } from "./notification-history-dialog"
 import { resolveNotificationHref } from "../utils/resolve-notification-href"
 
 import type { Notification } from "../types/notification.types"
+import { VerticalScroll } from "@/shared/ui/vertical-scroll/vertical-scroll"
 
 type Props = {
   collapsed?: boolean
@@ -221,7 +222,7 @@ export function NotificationBell({ collapsed }: Props) {
 
           </div>
 
-          <div className="max-h-96 overflow-y-auto erp-scrollbar px-2 pb-2">
+          <VerticalScroll className="px-2 pb-2" style={{ maxHeight: 384 }}>
 
             {loading ? (
 
@@ -293,7 +294,7 @@ export function NotificationBell({ collapsed }: Props) {
 
             )}
 
-          </div>
+          </VerticalScroll>
 
           <div className="border-t border-white/5 p-2">
 

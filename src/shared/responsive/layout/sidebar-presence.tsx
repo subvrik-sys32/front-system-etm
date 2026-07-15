@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/popover"
 
 import { SidebarSection } from "./sidebar-section"
+import { VerticalScroll } from "@/shared/ui/vertical-scroll/vertical-scroll"
 
 const MAX_LIST_HEIGHT = 168
 
@@ -220,8 +221,8 @@ export function SidebarPresence({
 
             </div>
 
-            <div
-              className="erp-scrollbar space-y-1 overflow-y-auto px-2 pb-2"
+            <VerticalScroll
+              className="space-y-1 px-2 pb-2"
               style={{ maxHeight: 320 }}
             >
 
@@ -229,7 +230,7 @@ export function SidebarPresence({
                 <UserRow key={user.id} user={user} />
               ))}
 
-            </div>
+            </VerticalScroll>
 
           </PopoverContent>
 
@@ -247,8 +248,8 @@ export function SidebarPresence({
 
       <SidebarSection title="En línea">
 
-        <div
-          className="erp-scrollbar space-y-1 overflow-y-auto pr-1"
+        <VerticalScroll
+          className="space-y-1 pr-1"
           style={{ maxHeight: MAX_LIST_HEIGHT }}
         >
 
@@ -256,7 +257,7 @@ export function SidebarPresence({
             <UserRow key={user.id} user={user} />
           ))}
 
-        </div>
+        </VerticalScroll>
 
       </SidebarSection>
 

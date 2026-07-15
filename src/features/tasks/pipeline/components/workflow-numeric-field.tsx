@@ -129,7 +129,7 @@ export function WorkflowNumericField({
 
       <div
         className={cn(
-          "flex h-11 items-center rounded-xl bg-white/3 px-3 transition-all",
+          "flex h-11 items-center rounded-xl bg-white/3 px-3 transition-opacity",
           saving && "opacity-70",
         )}
       >
@@ -155,7 +155,7 @@ export function WorkflowNumericField({
           onClick={handleSave}
           disabled={!canSave}
           className={cn(
-            "ml-auto flex size-8 shrink-0 items-center justify-center rounded-lg transition-all",
+            "ml-auto flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
             isSaved
               ? "bg-emerald-500 text-white"
               : canSave

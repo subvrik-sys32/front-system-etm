@@ -118,7 +118,7 @@ export function ProjectSortButton(){
         >
 
           <CommandList
-            className="erp-scrollbar max-h-80 overflow-y-auto"
+            className="max-h-80 overflow-y-auto"
           >
 
             <CommandGroup>

@@ -114,7 +114,7 @@ export function FilterChipPopover({
 
         <Command className="bg-transparent">
 
-          <CommandList className="max-h-80 overflow-y-auto erp-scrollbar">
+          <CommandList className="max-h-80 overflow-y-auto">
 
             <CommandEmpty>
               Sin resultados

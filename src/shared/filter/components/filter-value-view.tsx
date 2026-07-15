@@ -89,7 +89,7 @@ export function FilterValueView({
       />
 
       <CommandList
-        className="max-h-80 overflow-y-auto erp-scrollbar"
+        className="max-h-80 overflow-y-auto"
       >
 
         <CommandEmpty>

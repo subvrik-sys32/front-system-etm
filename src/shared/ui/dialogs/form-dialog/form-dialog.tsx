@@ -17,6 +17,8 @@ import {
   FormDialogFooter,
 } from "./form-dialog-footer"
 
+import { VerticalScroll } from "@/shared/ui/vertical-scroll/vertical-scroll"
+
 type Props = {
   open: boolean
   title: string
@@ -94,11 +96,14 @@ export function FormDialog({
 
         )}
 
-        <div className="erp-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-4">
+        <VerticalScroll
+          containerClassName="flex min-h-0 flex-1 flex-col"
+          className="px-5 py-4"
+        >
 
           {children}
 
-        </div>
+        </VerticalScroll>
 
         <div className="border-t border-white/10 px-5 py-4">
 

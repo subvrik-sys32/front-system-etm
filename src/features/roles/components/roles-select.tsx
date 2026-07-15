@@ -209,7 +209,7 @@ export function RoleSelect({
           </div>
 
           <CommandList
-            className="max-h-64 overflow-y-auto erp-scrollbar"
+            className="max-h-64 overflow-y-auto"
           >
 
             <CommandEmpty>

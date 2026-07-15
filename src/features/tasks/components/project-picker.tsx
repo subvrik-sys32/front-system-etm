@@ -44,6 +44,7 @@ import {
 import {
   isProjectCompleted,
 } from "@/features/projects/selectors/is-project-completed"
+import { VerticalScroll } from "@/shared/ui/vertical-scroll/vertical-scroll"
 
 type Props={
   value:string
@@ -259,7 +260,7 @@ export function ProjectPicker({
 
         </div>
 
-        <div className="erp-scrollbar h-90 overflow-y-auto pr-2">
+        <VerticalScroll className="h-90 pr-2">
 
           <div className="space-y-3">
 
@@ -378,7 +379,7 @@ export function ProjectPicker({
 
           </div>
 
-        </div>
+        </VerticalScroll>
 
       </PopoverContent>
 

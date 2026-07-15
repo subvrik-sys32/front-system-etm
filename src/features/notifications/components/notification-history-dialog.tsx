@@ -24,6 +24,7 @@ import { NotificationItem } from "./notification-item"
 import { resolveNotificationHref } from "../utils/resolve-notification-href"
 
 import type { Notification } from "../types/notification.types"
+import { VerticalScroll } from "@/shared/ui/vertical-scroll/vertical-scroll"
 
 type Props = {
   open: boolean
@@ -178,7 +179,10 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
 
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto erp-scrollbar px-2 py-2">
+          <VerticalScroll
+            containerClassName="flex min-h-0 flex-1 flex-col"
+            className="min-h-0 flex-1 px-2 py-2"
+          >
 
             {loading ? (
               <div className="flex h-full items-center justify-center">
@@ -221,7 +225,7 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
               </div>
             )}
 
-          </div>
+          </VerticalScroll>
 
         </DialogContent>
 

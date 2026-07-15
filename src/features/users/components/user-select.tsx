@@ -226,7 +226,7 @@ export function UserSelect({
           </div>
 
           <CommandList
-            className="max-h-64 overflow-y-auto erp-scrollbar"
+            className="max-h-64 overflow-y-auto"
           >
 
             <CommandEmpty>

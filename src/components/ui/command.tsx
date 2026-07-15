@@ -7,9 +7,8 @@ import { Search } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
 
-import {
-  useRef,
-} from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { ChevronUp, ChevronDown } from "lucide-react"
 
 import {
   Dialog,
@@ -149,6 +148,42 @@ export function CommandInput({
 
 }
 
+const COMMAND_LIST_FADE_SIZE = 9
+
+function mergeRefs<T>(...refs: Array<React.Ref<T> | undefined>) {
+  return (node: T) => {
+    refs.forEach(ref => {
+      if (!ref) return
+      if (typeof ref === "function") {
+        ref(node)
+      } else {
+        (ref as React.MutableRefObject<T | null>).current = node
+      }
+    })
+  }
+}
+
+// Igual que en VerticalScroll: el fade sólo aparece del lado en el
+// que todavía hay contenido para scrollear. Si un lado ya llegó al
+// final, ese borde queda sólido (sin recorte).
+function getCommandListMaskImage(canScrollUp: boolean, canScrollDown: boolean) {
+
+  if (canScrollUp && canScrollDown) {
+    return `linear-gradient(to bottom, transparent 0, black ${COMMAND_LIST_FADE_SIZE}px, black calc(100% - ${COMMAND_LIST_FADE_SIZE}px), transparent 100%)`
+  }
+
+  if (canScrollUp) {
+    return `linear-gradient(to bottom, transparent 0, black ${COMMAND_LIST_FADE_SIZE}px, black 100%)`
+  }
+
+  if (canScrollDown) {
+    return `linear-gradient(to bottom, black 0, black calc(100% - ${COMMAND_LIST_FADE_SIZE}px), transparent 100%)`
+  }
+
+  return "none"
+
+}
+
 export const CommandList =
   React.forwardRef<
     React.ElementRef<typeof CommandPrimitive.List>,
@@ -157,19 +192,92 @@ export const CommandList =
     (
       {
         className,
+        style,
         ...props
       },
       ref
     ) => {
 
+      const innerRef = useRef<HTMLDivElement>(null)
+
+      const [canScrollUp, setCanScrollUp] = useState(false)
+      const [canScrollDown, setCanScrollDown] = useState(false)
+
+      const updateArrows = useCallback(() => {
+        const el = innerRef.current
+        if (!el) return
+        setCanScrollUp(el.scrollTop > 4)
+        setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 4)
+      }, [])
+
+      useEffect(() => {
+        const el = innerRef.current
+        if (!el) return
+
+        updateArrows()
+
+        el.addEventListener("scroll", updateArrows, { passive: true })
+        const observer = new ResizeObserver(updateArrows)
+        observer.observe(el)
+
+        return () => {
+          el.removeEventListener("scroll", updateArrows)
+          observer.disconnect()
+        }
+      }, [updateArrows])
+
+      const maskImage = useMemo(
+        () => getCommandListMaskImage(canScrollUp, canScrollDown),
+        [canScrollUp, canScrollDown]
+      )
+
       return (
 
         <div className="relative overflow-hidden rounded-xl">
 
-          <CommandPrimitive.List
-            ref={ref}
+          <button
+            type="button"
+            onClick={() => innerRef.current?.scrollBy({ top: -120, behavior: "smooth" })}
+            aria-label="Desplazar arriba"
+            tabIndex={-1}
             className={cn(
-              "erp-scrollbar outline-none",
+              "absolute left-1/2 top-1 z-20 -translate-x-1/2",
+              "flex h-6 w-8 items-center justify-center rounded-full",
+              "bg-[#18181b]/80 backdrop-blur-xl text-neutral-200 transition-opacity duration-200",
+              canScrollUp ? "opacity-100" : "pointer-events-none opacity-0",
+            )}
+          >
+            <ChevronUp size={14} strokeWidth={2.5} />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => innerRef.current?.scrollBy({ top: 120, behavior: "smooth" })}
+            aria-label="Desplazar abajo"
+            tabIndex={-1}
+            className={cn(
+              "absolute bottom-1 left-1/2 z-20 -translate-x-1/2",
+              "flex h-6 w-8 items-center justify-center rounded-full",
+              "bg-[#18181b]/80 backdrop-blur-xl text-neutral-200 transition-opacity duration-200",
+              canScrollDown ? "opacity-100" : "pointer-events-none opacity-0",
+            )}
+          >
+            <ChevronDown size={14} strokeWidth={2.5} />
+          </button>
+
+          <CommandPrimitive.List
+            ref={mergeRefs(ref, innerRef)}
+            style={{
+              ...style,
+              WebkitMaskImage: maskImage,
+              maskImage: maskImage,
+              WebkitMaskRepeat: "no-repeat",
+              maskRepeat: "no-repeat",
+              WebkitMaskSize: "100% 100%",
+              maskSize: "100% 100%",
+            }}
+            className={cn(
+              "hide-scrollbar outline-none",
               className
             )}
             {...props}

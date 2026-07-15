@@ -19,6 +19,9 @@ import { EntityTableLoading } from "@/shared/ui/entity-table/entity-table-loadin
 
 import { buildProjectColumns } from "./build-project-columns"
 import { ProjectExpandedRow } from "../components/expanded-row/project-expanded-row"
+import { ProjectMobileCard } from "./project-mobile-card"
+
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 import { useProjectSearch } from "../hooks/use-project-search"
 
@@ -52,6 +55,8 @@ export function ProjectTable({
 
   const hydrated = useHydrated()
   const expand = useEntityExpand()
+
+  const { isMobile } = useResponsive()
 
   const projectSortMode = useSortStore(
     s => s.projectSortMode,
@@ -151,6 +156,44 @@ export function ProjectTable({
         label="Cargando proyectos..."
       />
     )
+  }
+
+  if (isMobile) {
+
+    return (
+
+      <div className="flex flex-col gap-2 pb-2">
+
+        {displayedProjects.map(project => (
+
+          <ProjectMobileCard
+            key={project.id}
+            project={project}
+            tasks={tasks}
+            expanded={expand.expandedRowId === project.id}
+            onToggle={() =>
+              expand.setExpandedRowId(
+                expand.expandedRowId === project.id
+                  ? null
+                  : project.id,
+              )
+            }
+          />
+
+        ))}
+
+        {displayedProjects.length === 0 && (
+
+          <div className="flex h-24 items-center justify-center rounded-xl bg-white/2 text-sm text-neutral-500">
+            Sin proyectos
+          </div>
+
+        )}
+
+      </div>
+
+    )
+
   }
 
   return (

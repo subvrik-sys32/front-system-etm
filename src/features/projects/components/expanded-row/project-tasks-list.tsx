@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react"
 
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+
 import type { Task } from "@/features/tasks/types/task.types"
 
 import { HorizontalScroll } from "@/shared/ui/horizontal-scroll/horizontal-scroll"
@@ -40,6 +42,8 @@ export function ProjectTasksList({
   projectId,
   tasks,
 }: Props) {
+
+  const { isMobile } = useResponsive()
 
   const [
     openTaskDialog,
@@ -106,6 +110,68 @@ export function ProjectTasksList({
         ...activeTasks,
       ]
     : activeTasks
+
+  if (isMobile) {
+
+    return (
+
+      <div className="flex flex-col gap-2">
+
+        <ProjectTaskPlaceholder
+          onClick={() =>
+            setOpenTaskDialog(true)
+          }
+        />
+
+        {completedTasks.length > 0 && (
+
+          <ProjectCompletedTasksCard
+            completedCount={completedTasks.length}
+            expanded={showCompleted}
+            onClick={() =>
+              setShowCompleted(v => !v)
+            }
+          />
+
+        )}
+
+        {visibleTasks.map(task => (
+
+          <div
+            key={task.id}
+            className={
+              isWorkflowCompleted(task.workflowSteps)
+                ? "opacity-75"
+                : undefined
+            }
+          >
+
+            <ProjectTaskRow
+              task={task}
+            />
+
+          </div>
+
+        ))}
+
+        {openTaskDialog && (
+
+          <TaskDialog
+            open
+            projectId={projectId}
+            promptOpenAfterCreate
+            onClose={() =>
+              setOpenTaskDialog(false)
+            }
+          />
+
+        )}
+
+      </div>
+
+    )
+
+  }
 
   return (
 

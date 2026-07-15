@@ -17,6 +17,14 @@ import {
 } from "@/features/permissions/hooks/use-permissions"
 
 import {
+  useResponsive,
+} from "@/shared/responsive/hooks/use-responsive"
+
+import {
+  cn,
+} from "@/shared/utils/utils"
+
+import {
   PrimaryAction,
 } from "@/shared/ui/actions/primary-action"
 
@@ -31,6 +39,8 @@ export function ProjectActions(){
     setOpen,
   ]=useState(false)
 
+  const { isMobile } = useResponsive()
+
   const{
     has,
   }=
@@ -41,39 +51,64 @@ export function ProjectActions(){
       PermissionCode.PROJECT_CREATE,
     )
 
+  function handleOpen(){
+
+    if(!canCreate){
+      return
+    }
+
+    setOpen(true)
+
+  }
+
   return(
 
     <>
 
-      <PrimaryAction
+      {isMobile ? (
 
-        label="Nuevo proyecto"
+        // FAB flotante en mobile: saca el botón del flujo normal
+        // (ya no ocupa una fila propia debajo del título "PROYECTOS")
+        // y flota sobre el contenido, arriba del BottomNavigation
+        // sin superponerse a él (bottom-20 = 80px, deja los 56px
+        // del nav más un margen de respiro). Mismo patrón que
+        // TaskActions.
+        <button
+          type="button"
+          disabled={!canCreate}
+          onClick={handleOpen}
+          aria-label="Nuevo proyecto"
+          className={cn(
+            "fixed bottom-20 right-4 z-20 flex size-14 items-center justify-center rounded-full shadow-lg transition",
+            canCreate
+              ? "bg-white text-black hover:bg-neutral-200"
+              : "cursor-not-allowed bg-white/10 text-white/35",
+          )}
+        >
+          <Plus size={24} strokeWidth={2.5} />
+        </button>
 
-        icon={Plus}
+      ) : (
 
-        disabled={!canCreate}
+        <PrimaryAction
+          label="Nuevo proyecto"
+          icon={Plus}
+          disabled={!canCreate}
+          onClick={handleOpen}
+        />
 
-        onClick={()=>{
+      )}
 
-          if(!canCreate){
-            return
+      {open && (
+
+        <ProjectDialog
+          open={open}
+          onClose={()=>
+            setOpen(false)
           }
+        />
 
-          setOpen(true)
-
-        }}
-
-      />
-
-      <ProjectDialog
-
-        open={open}
-
-        onClose={()=>
-          setOpen(false)
-        }
-
-      />
+      )}
 
     </>
 

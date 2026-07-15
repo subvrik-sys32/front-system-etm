@@ -9,6 +9,8 @@ import type { Task } from "@/features/tasks/types/task.types"
 import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 
 import { ProcessMiniCard } from "@/shared/ui/mini-card/process-mini-card"
+import { KpiCarousel } from "@/shared/ui/mini-card/kpi-carousel"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 import {
   EntityExpandedContent,
@@ -75,6 +77,90 @@ export function ProjectExpandedRow({
     project.id,
   ])
 
+  const { isMobile } = useResponsive()
+
+  const cards = [
+
+    <ProcessMiniCard
+      key="tasks"
+      size={isMobile ? "large" : "default"}
+      label="Tareas"
+      icon={ClipboardList}
+      color={"#afafaf"}
+      rows={[
+        {
+          label:"Total",
+          value:totalTasks,
+        },
+        {
+          label:"Con ruta",
+          value:totalTasks,
+        },
+      ]}
+    />,
+
+    <ProcessMiniCard
+      key="pieces"
+      size={isMobile ? "large" : "default"}
+      label="Piezas"
+      icon={Puzzle}
+      color={"#a6c7d4"}
+      rows={[
+        {
+          label:"Total",
+          value:totalPieces,
+        },
+        {
+          label:"Promedio",
+          value:totalTasks>0
+            ?Math.round(totalPieces/totalTasks)
+            :0,
+        },
+      ]}
+    />,
+
+    <ProcessMiniCard
+      key="urgent"
+      size={isMobile ? "large" : "default"}
+      label="Urgentes"
+      icon={AlertTriangle}
+      color={"#EF4444"}
+      rows={[
+        {
+          label:"Total",
+          value:criticalPriorityTasks,
+        },
+        {
+          label:"Porcentaje",
+          value:totalTasks>0
+            ?`${Math.round((criticalPriorityTasks/totalTasks)*100)}%`
+            :"0%",
+        },
+      ]}
+    />,
+
+    <ProcessMiniCard
+      key="progress"
+      size={isMobile ? "large" : "default"}
+      label="Avance"
+      icon={CheckCircle2}
+      color={"#22C55E"}
+      rows={[
+        {
+          label:"Finalizadas",
+          value:completedTasks,
+        },
+        {
+          label:"Progreso",
+          value:totalTasks>0
+            ?`${Math.round((completedTasks/totalTasks)*100)}%`
+            :"0%",
+        },
+      ]}
+    />,
+
+  ]
+
   return(
 
     <EntityExpandedRow rowId={project.id}>
@@ -86,79 +172,7 @@ export function ProjectExpandedRow({
         metricLabel="tareas asociadas"
       />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-
-        <ProcessMiniCard
-          label="Tareas"
-          icon={ClipboardList}
-          color={"#afafaf"}
-          rows={[
-            {
-              label:"Total",
-              value:totalTasks,
-            },
-            {
-              label:"Con ruta",
-              value:totalTasks,
-            },
-          ]}
-        />
-
-        <ProcessMiniCard
-          label="Piezas"
-          icon={Puzzle}
-          color={"#a6c7d4"}
-          rows={[
-            {
-              label:"Total",
-              value:totalPieces,
-            },
-            {
-              label:"Promedio",
-              value:totalTasks>0
-                ?Math.round(totalPieces/totalTasks)
-                :0,
-            },
-          ]}
-        />
-
-        <ProcessMiniCard
-          label="Urgentes"
-          icon={AlertTriangle}
-          color={"#EF4444"}
-          rows={[
-            {
-              label:"Total",
-              value:criticalPriorityTasks,
-            },
-            {
-              label:"Porcentaje",
-              value:totalTasks>0
-                ?`${Math.round((criticalPriorityTasks/totalTasks)*100)}%`
-                :"0%",
-            },
-          ]}
-        />
-
-        <ProcessMiniCard
-          label="Avance"
-          icon={CheckCircle2}
-          color={"#22C55E"}
-          rows={[
-            {
-              label:"Finalizadas",
-              value:completedTasks,
-            },
-            {
-              label:"Progreso",
-              value:totalTasks>0
-                ?`${Math.round((completedTasks/totalTasks)*100)}%`
-                :"0%",
-            },
-          ]}
-        />
-
-      </div>
+      <KpiCarousel cards={cards} />
 
       <EntityExpandedContent>
 

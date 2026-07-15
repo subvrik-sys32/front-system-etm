@@ -2,6 +2,11 @@
 
 import { useMemo, useState } from "react"
 
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { cn } from "@/shared/utils/utils"
+
+import { AdaptiveActionBar } from "@/shared/responsive/adaptative/adaptive-action-bar"
+
 import { EntityExpandProvider } from "@/shared/ui/entity-table/features/expansion"
 
 import { EntityToolbar } from "@/shared/ui/entity-toolbar/entity-toolbar"
@@ -26,6 +31,8 @@ type Props={
 export function ProjectPageContent({
   focusedProjectId,
 }:Props){
+
+  const { isMobile } = useResponsive()
 
   const[
     search,
@@ -59,44 +66,48 @@ export function ProjectPageContent({
 
   return(
 
-    // Antes: sin flex, sin overflow — la altura que "sobraba" del
-    // EntityTable (por el h-[calc(...)] hardcodeado) se escapaba
-    // hacia el documento entero. Ahora: flex-col con min-h-0 +
-    // overflow-hidden en la raíz, toolbar shrink-0, y el wrapper
-    // de la tabla como flex-1 min-h-0 — así EntityTable con h-full
-    // recibe exactamente el espacio real disponible, ni más ni menos.
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-400 flex-col overflow-hidden">
+    // Mismo patrón que TaskPageContent: en desktop, contenedor fijo
+    // con scroll interno acotado (h-full/min-h-0/overflow-hidden).
+    // En mobile, sin esas restricciones — el contenido fluye con su
+    // alto real y el <main overflow-y-auto> del AppShell lo scrollea
+    // como página normal, igual que ya hicimos para Tareas.
+    <div className={cn(
+      "mx-auto flex w-full max-w-400 flex-col",
+      isMobile ? "" : "h-full min-h-0 overflow-hidden",
+    )}>
 
       <div className="shrink-0">
 
         <EntityToolbar
           left={
-            <div className="flex flex-wrap items-center gap-2 py-1">
 
-              <EntityToolbarSearch
-                value={search}
-                onChange={setSearch}
-              />
+            <AdaptiveActionBar
+              pinned={
+                <EntityToolbarSearch
+                  value={search}
+                  onChange={setSearch}
+                />
+              }
+              actions={[
+                <FilterBar key="filter" module="projects" />,
+                <ProjectSortButton key="sort" />,
+                <HistoryToggleButton
+                  key="history"
+                  count={completedCount}
+                  active={showHistory}
+                  onClick={()=>setShowHistory(v=>!v)}
+                />,
+              ]}
+            />
 
-              <FilterBar
-                module="projects"
-              />
-
-              <ProjectSortButton/>
-
-              <HistoryToggleButton
-                count={completedCount}
-                active={showHistory}
-                onClick={()=>setShowHistory(v=>!v)}
-              />
-
-            </div>
           }
         />
 
       </div>
 
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className={cn(
+        isMobile ? "" : "min-h-0 flex-1 overflow-hidden",
+      )}>
 
         <EntityExpandProvider>
 

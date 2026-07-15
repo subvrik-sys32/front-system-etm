@@ -10,6 +10,9 @@ import {
   ProjectPageContent,
 } from "@/features/projects/components/project-page-content"
 
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { cn } from "@/shared/utils/utils"
+
 export default function ProjectsPage(){
 
   const searchParams =
@@ -18,29 +21,36 @@ export default function ProjectsPage(){
   const projectId =
     searchParams.get("projectId") ?? undefined
 
+  const { isMobile } = useResponsive()
+
   return(
 
-    // Antes: h-full sin overflow, y <section> con space-y-6 (no es
-    // un contenedor flex, no acota altura). El exceso de altura de
-    // la tabla no tenía dónde ser contenido. Ahora: mismo esqueleto
-    // que TasksPage — flex-col, header shrink-0, contenido flex-1
-    // min-h-0 overflow-hidden.
-    <main className="flex h-full flex-col overflow-hidden bg-[#050505] px-8 py-10 text-white select-none">
+    // Mismo esqueleto que TasksPage: padding progresivo (px-4/py-5
+    // en mobile, px-8/py-10 desde tablet) y overflow-hidden SOLO en
+    // desktop — en mobile el <main overflow-y-auto> del AppShell
+    // es el que scrollea, forzar overflow-hidden acá lo bloqueaba.
+    <main className={cn(
+      "flex h-full flex-col bg-[#050505] px-4 py-5 text-white select-none tablet:px-8 tablet:py-10",
+      isMobile ? "" : "overflow-hidden",
+    )}>
 
       <header className="flex shrink-0 flex-wrap items-start justify-between gap-4">
 
-        <div className="min-w-0">
+        {/*
+          Título y descripción en la misma línea (items-center),
+          separados por un punto — mismo tratamiento que TasksPage
+          para no perder una línea entera de alto en mobile.
+        */}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
 
-          <h1 className="text-2xl font-bold tracking-widest">
-
+          <h1 className="shrink-0 text-2xl font-bold tracking-widest">
             PROYECTOS
-
           </h1>
 
-          <p className="mt-2 text-sm text-neutral-500">
+          <span className="hidden h-1 w-1 shrink-0 rounded-full bg-neutral-700 tablet:block" />
 
+          <p className="min-w-0 truncate text-sm text-neutral-500">
             Gestión de proyectos
-
           </p>
 
         </div>
@@ -53,7 +63,10 @@ export default function ProjectsPage(){
 
       </header>
 
-      <section className="mt-6 min-h-0 flex-1 overflow-hidden">
+      <section className={cn(
+        "mt-3 flex-1 min-h-0",
+        isMobile ? "" : "overflow-hidden",
+      )}>
 
         <ProjectPageContent
           focusedProjectId={projectId}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import {
   AlertTriangle,
@@ -19,6 +19,7 @@ import { ProcessMiniCard } from "@/shared/ui/mini-card/process-mini-card"
 import { getBadgeColors } from "@/shared/utils/badge-colors"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useDragScroll } from "@/shared/ui/horizontal-scroll/use-drag-scroll"
+import { useHorizontalFade } from "@/shared/hooks/use-horizontal-fade"
 import { cn } from "@/shared/utils/utils"
 
 import { getPipelineKpis } from "../utils/get-pipeline-kpis"
@@ -27,29 +28,6 @@ import { PIPELINE_KPI_COLORS } from "../utils/process-columns"
 // Tiempo sin eventos de scroll antes de considerar el carrusel
 // "detenido" y ocultar las flechas otra vez.
 const SCROLL_SETTLE_DELAY = 300
-
-// Igual que en VerticalScroll/CommandList: el fade solo aparece del
-// lado donde efectivamente hay más contenido para scrollear, en vez
-// de un fade fijo en ambos bordes.
-const KPI_FADE_SIZE = 24
-
-function getKpiMaskImage(canScrollLeft: boolean, canScrollRight: boolean) {
-
-  if (canScrollLeft && canScrollRight) {
-    return `linear-gradient(to right, transparent 0, black ${KPI_FADE_SIZE}px, black calc(100% - ${KPI_FADE_SIZE}px), transparent 100%)`
-  }
-
-  if (canScrollLeft) {
-    return `linear-gradient(to right, transparent 0, black ${KPI_FADE_SIZE}px, black 100%)`
-  }
-
-  if (canScrollRight) {
-    return `linear-gradient(to right, black 0, black calc(100% - ${KPI_FADE_SIZE}px), transparent 100%)`
-  }
-
-  return "none"
-
-}
 
 type Props = {
   tasks: Task[]
@@ -87,6 +65,11 @@ export function TaskPipelineHeader({
     handleClickCapture,
     stopDragging,
   } = useDragScroll()
+
+  // Mismo hook que usa PipelineScroll/TaskProcessColumn — fade
+  // continuo y proporcional a la posición real de scroll, en vez
+  // de un on/off discreto que se sentía como un salto brusco.
+  const { leftFade, rightFade } = useHorizontalFade({ containerRef })
 
   const updateArrows = useCallback(() => {
 
@@ -181,11 +164,6 @@ export function TaskPipelineHeader({
     })
 
   }
-
-  const maskImage = useMemo(
-    () => getKpiMaskImage(canScrollLeft, canScrollRight),
-    [canScrollLeft, canScrollRight]
-  )
 
   const cards = [
     <ProcessMiniCard
@@ -415,8 +393,8 @@ export function TaskPipelineHeader({
 
         <div
           style={{
-            WebkitMaskImage: maskImage,
-            maskImage: maskImage,
+            WebkitMaskImage: `linear-gradient(to right, transparent 0, black ${leftFade}px, black calc(100% - ${rightFade}px), transparent 100%)`,
+            maskImage: `linear-gradient(to right, transparent 0, black ${leftFade}px, black calc(100% - ${rightFade}px), transparent 100%)`,
             WebkitMaskRepeat: "no-repeat",
             maskRepeat: "no-repeat",
             WebkitMaskSize: "100% 100%",

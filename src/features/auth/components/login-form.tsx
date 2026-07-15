@@ -150,7 +150,7 @@ export function LoginForm(){
         placeholder="admin@etmsac.com"
         type="email"
         autoComplete="email"
-        className="w-full rounded-xl bg-[#0A0A0A] px-3 py-2.5 text-sm outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-xl bg-[#0A0A0A] px-4 py-3.5 text-[13px] outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60"
       />
 
       <div className="relative">
@@ -166,7 +166,7 @@ export function LoginForm(){
           placeholder="Contraseña"
           type={showPassword ? "text" : "password"}
           autoComplete="current-password"
-          className="w-full rounded-xl bg-[#0A0A0A] px-3 py-2.5 pr-10 text-sm outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-xl bg-[#0A0A0A] px-4 py-3.5 pr-12 text-[13px] outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60"
         />
 
         <button
@@ -178,7 +178,8 @@ export function LoginForm(){
             )
           }
           tabIndex={-1}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-neutral-300 disabled:cursor-not-allowed disabled:opacity-60"
+          aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+          className="absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-neutral-400 transition-colors hover:bg-white/10 hover:text-neutral-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
 
           {showPassword ? (
@@ -195,7 +196,7 @@ export function LoginForm(){
 
         {error&&(
 
-          <p className="text-xs font-medium text-red-400">
+          <p className="text-sm font-medium text-red-400">
 
             {error}
 
@@ -207,7 +208,7 @@ export function LoginForm(){
 
       <button
         disabled={loading}
-        className={`flex h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+        className={`flex h-12 w-full items-center justify-center gap-2 rounded-xl text-base font-semibold transition-all duration-200 ${
           success
             ? "bg-emerald-500 text-white"
             : "bg-white text-black hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-neutral-300"

@@ -12,6 +12,9 @@ import {
   getBadgeColors,
 } from "@/shared/utils/badge-colors"
 
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { cn } from "@/shared/utils/utils"
+
 type Row={
 
   label:string
@@ -45,6 +48,8 @@ export function ProcessMiniCard({
 
 }:Props){
 
+  const { isMobile } = useResponsive()
+
   const textColor=
     getBadgeColors(
       color,
@@ -54,7 +59,14 @@ export function ProcessMiniCard({
   return(
 
     <div
-      className="flex h-28 select-none flex-col rounded-xl p-4"
+      className={cn(
+        // overflow-hidden: si algo interno igual llegara a desbordar
+        // (zoom extremo, fuente del sistema más grande), se recorta
+        // limpio dentro del borde redondeado en vez de romper el
+        // layout general de la grilla.
+        "flex select-none flex-col overflow-hidden rounded-xl p-4",
+        isMobile ? "gap-3" : "h-28",
+      )}
       style={{
         background:
           `linear-gradient(
@@ -65,10 +77,10 @@ export function ProcessMiniCard({
       }}
     >
 
-      <div className="mb-3 flex items-center justify-between">
+      <div className={cn("flex min-w-0 items-center justify-between gap-2", !isMobile && "mb-3")}>
 
         <span
-          className="text-xs font-bold uppercase truncate tracking-[0.18em]"
+          className="min-w-0 truncate text-xs font-bold uppercase tracking-[0.18em]"
           style={{
             color:textColor,
           }}
@@ -80,6 +92,7 @@ export function ProcessMiniCard({
 
         <Icon
           size={20}
+          className="shrink-0"
           style={{
             color:textColor,
           }}
@@ -87,55 +100,115 @@ export function ProcessMiniCard({
 
       </div>
 
-      <div className="flex flex-1 gap-4">
+      {isMobile ? (
 
-        {rows.map(
-          row=>(
+        <div className="flex min-w-0 flex-col gap-1.5">
 
-            <div
-              key={row.label}
-              className="min-w-0 flex-1 border-l border-white/10 pl-3 first:border-l-0 first:pl-0"
-            >
-
-              <p className="text-xs font-bold uppercase truncate tracking-[0.16em] text-neutral-500">
-
-                {row.label}
-
-              </p>
+          {rows.map(
+            row=>(
 
               <div
-                className={
-                  row.editable===false
-                    ?"mt-1 text-sm font-semibold leading-tight truncate text-neutral-400"
-                    :"mt-1 text-sm font-bold leading-tight truncate"
-                }
-                style={
-                  row.editable===false
-                    ?undefined
-                    :{ color:textColor }
-                }
+                key={row.label}
+                className="flex min-w-0 items-baseline justify-between gap-2"
               >
 
-                {row.value}
+                <p className="min-w-0 shrink truncate text-[11px] font-bold uppercase tracking-[0.14em] text-neutral-500">
 
-              </div>
-
-              {row.secondary && (
-
-                <p className="mt-0.5 text-xs leading-tight truncate text-neutral-400">
-
-                  {row.secondary}
+                  {row.label}
 
                 </p>
 
-              )}
+                <div className="flex min-w-0 shrink-0 items-baseline gap-1.5">
 
-            </div>
+                  <span
+                    className={
+                      row.editable===false
+                        ?"whitespace-nowrap text-sm font-semibold leading-tight text-neutral-400"
+                        :"whitespace-nowrap text-sm font-bold leading-tight"
+                    }
+                    style={
+                      row.editable===false
+                        ?undefined
+                        :{ color:textColor }
+                    }
+                  >
 
-          )
-        )}
+                    {row.value}
 
-      </div>
+                  </span>
+
+                  {row.secondary && (
+
+                    <span className="max-w-20 truncate text-[11px] leading-tight text-neutral-400">
+
+                      {row.secondary}
+
+                    </span>
+
+                  )}
+
+                </div>
+
+              </div>
+
+            )
+          )}
+
+        </div>
+
+      ) : (
+
+        <div className="flex min-w-0 flex-1 gap-4">
+
+          {rows.map(
+            row=>(
+
+              <div
+                key={row.label}
+                className="min-w-0 flex-1 border-l border-white/10 pl-3 first:border-l-0 first:pl-0"
+              >
+
+                <p className="text-xs font-bold uppercase truncate tracking-[0.16em] text-neutral-500">
+
+                  {row.label}
+
+                </p>
+
+                <div
+                  className={
+                    row.editable===false
+                      ?"mt-1 text-sm font-semibold leading-tight truncate text-neutral-400"
+                      :"mt-1 text-sm font-bold leading-tight truncate"
+                  }
+                  style={
+                    row.editable===false
+                      ?undefined
+                      :{ color:textColor }
+                  }
+                >
+
+                  {row.value}
+
+                </div>
+
+                {row.secondary && (
+
+                  <p className="mt-0.5 text-xs leading-tight truncate text-neutral-400">
+
+                    {row.secondary}
+
+                  </p>
+
+                )}
+
+              </div>
+
+            )
+          )}
+
+        </div>
+
+      )}
 
     </div>
 

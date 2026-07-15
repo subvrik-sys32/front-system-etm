@@ -84,6 +84,10 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+html, body {
+  background-color: #050505;
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -238,4 +242,13 @@ input:focus-visible {
 
 .animate-comment-in {
   animation: comment-in 0.2s ease-out;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #0A0A0A inset;
+  -webkit-text-fill-color: white;
+  font-family: inherit;
+  transition: background-color 5000s ease-in-out 0s;
 }

@@ -8,21 +8,27 @@ export default function LoginPage() {
 
   return (
 
-    <div className="flex min-h-screen w-full items-center justify-center bg-[#050505] text-white select-none">
+    <div className="flex min-h-dvh w-full items-center justify-center bg-[#050505] text-white select-none">
 
-      <div className="relative w-full max-w-5xl px-6">
+      {/*
+        max-w-4xl en vez de max-w-5xl: la card completa (panel
+        izquierdo + formulario) se ve más compacta en desktop,
+        menos "estirada" horizontalmente.
+      */}
+      <div className="relative w-full max-w-4xl px-6">
 
-        <div className="overflow-hidden rounded-2xl bg-white/2 shadow-2xl backdrop-blur-xl lg:grid lg:grid-cols-2">
+        <div className="overflow-hidden rounded-2xl bg-white/2 shadow-2xl backdrop-blur-xl laptop:grid laptop:grid-cols-2">
 
-          {/* LEFT SIDE */}
+          {/* LEFT SIDE — sin cambios de estructura, solo el
+              padding ya ajustado antes. */}
 
-          <div className="hidden border-r border-white/10 bg-linear-to-br from-[#0A0A0A] to-[#050505] p-10 lg:flex lg:flex-col lg:justify-between">
+          <div className="hidden border-r border-white/10 bg-linear-to-br from-[#0A0A0A] to-[#050505] p-8 laptop:flex laptop:flex-col laptop:justify-between">
 
             <div>
 
-              <div className="flex h-28 w-full items-center">
+              <div className="flex h-20 w-full items-center">
 
-                <div className="relative h-28 w-28 shrink-0">
+                <div className="relative h-20 w-20 shrink-0">
 
                   <Image
                     src="/icon.svg"
@@ -63,15 +69,39 @@ export default function LoginPage() {
 
           </div>
 
-          {/* RIGHT SIDE */}
+          {/* RIGHT SIDE — card más chica: menos padding vertical
+              y el form con max-w-xs en vez de max-w-sm. */}
 
-          <div className="flex items-center justify-center p-10">
+          <div className="flex items-center justify-center p-6 laptop:p-8">
 
-            <div className="w-full max-w-sm">
+            <div className="w-full max-w-xs">
 
-              <div className="mb-8 text-center lg:text-left">
+              {/*
+                Logo visible SOLO en mobile/tablet (laptop:hidden) —
+                arriba del título. En desktop el logo ya está en el
+                panel izquierdo, así que acá se oculta para no
+                duplicarlo.
+              */}
+              <div className="mb-6 flex justify-center laptop:hidden">
 
-                <h2 className="text-xl font-semibold">
+                <div className="relative h-14 w-14 shrink-0">
+
+                  <Image
+                    src="/icon.svg"
+                    alt="ETM SAC"
+                    fill
+                    priority
+                    draggable={false}
+                    className="select-none object-contain"
+                  />
+
+                </div>
+
+              </div>
+
+              <div className="mb-6 text-center laptop:text-left">
+
+                <h2 className="text-lg font-semibold">
                   Iniciar sesión
                 </h2>
 

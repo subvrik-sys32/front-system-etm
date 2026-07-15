@@ -26,7 +26,10 @@ export function TaskPipelineHeader({
 
   return (
 
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    // laptop:grid-cols-4 en vez de lg:grid-cols-4 — usa el breakpoint
+    // custom registrado en Sprint 1 (mismo valor, 1024px, pero es la
+    // fuente de verdad correcta si ese valor cambia en el futuro).
+    <div className="grid grid-cols-2 gap-4 laptop:grid-cols-4">
 
       <ProcessMiniCard
         label="Tareas"

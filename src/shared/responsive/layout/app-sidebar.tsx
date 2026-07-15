@@ -82,10 +82,10 @@ export function AppSidebar({
         className={cn(
 
           isDrawer
-            ? "fixed inset-y-0 left-0"
+            ? "fixed left-0 -top-6 h-[calc(100dvh+48px)]"
             : "absolute left-0 top-0 h-full",
 
-          "isolate z-40 flex flex-col border-r border-white/5 bg-[#0A0A0A] ring-1 ring-white/5 select-none transform-gpu transition-transform duration-200 ease-out will-change-transform",
+          "pt-6 pb-6 isolate z-40 flex flex-col border-r border-white/5 bg-[#0A0A0A] ring-1 ring-white/5 select-none transform-gpu transition-transform duration-200 ease-out will-change-transform",
 
           // importante: evitar que Safari/iOS recorte el contenido
           "overflow-x-hidden overflow-y-hidden",

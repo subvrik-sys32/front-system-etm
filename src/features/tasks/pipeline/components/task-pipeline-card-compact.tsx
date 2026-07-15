@@ -29,7 +29,7 @@ export function TaskPipelineCardCompact({
 
   return (
 
-    <div className="flex h-12 items-center gap-2.5 rounded-xl bg-white/2 px-3 transition hover:bg-white/4">
+    <div className="flex h-12 items-center gap-2.5 rounded-xl bg-white/2 pl-3 pr-12 transition hover:bg-white/4">
 
       <span className="shrink-0 text-sm font-semibold text-neutral-100">
         #{String(task.taskNumber).padStart(3, "0")}

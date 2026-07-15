@@ -182,16 +182,20 @@ export function TaskInfoSection({
 
       <div className="mt-3 grid grid-cols-1 gap-4 tablet:grid-cols-3">
 
-        <FormField label="Entrega *" error={errors?.deliveryDate}>
+        <FormField label="Fecha de entrega *" error={errors?.deliveryDate}>
 
-          <Input
-            type="date"
-            value={form.deliveryDate ?? ""}
-            onChange={(e) =>
-              update({ deliveryDate: e.target.value })
-            }
-            className="[&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:invert"
-          />
+          <div className="flex justify-center">
+
+            <Input
+              type="date"
+              value={form.deliveryDate ?? ""}
+              onChange={(e) =>
+                update({ deliveryDate: e.target.value })
+              }
+              className="w-44 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:invert"
+            />
+
+          </div>
 
         </FormField>
 

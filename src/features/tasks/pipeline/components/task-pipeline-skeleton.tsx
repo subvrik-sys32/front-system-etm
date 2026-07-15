@@ -1,44 +1,53 @@
 "use client"
 
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { cn } from "@/shared/utils/utils"
+
 import { PIPELINE_PROCESS_ORDER, PIPELINE_KPI_COLORS } from "../utils/process-columns"
 
 const KPI_SKELETON_COLORS = Object.values(PIPELINE_KPI_COLORS)
 
 function SkeletonMiniCard({
   color,
+  large = false,
 }: {
   color: string
+  large?: boolean
 }) {
 
   return (
 
     <div
-      className="flex h-28 flex-col rounded-xl p-4"
+      className={cn(
+        "flex flex-col rounded-xl",
+        large ? "h-44 justify-center gap-5 p-6" : "h-28 p-4",
+      )}
       style={{
         background: `linear-gradient(135deg, ${color}20, #101012)`,
       }}
     >
 
-      <div className="mb-3 flex items-center justify-between">
+      <div className={cn("flex items-center justify-between", !large && "mb-3")}>
 
-        <span className="h-3 w-16 rounded bg-white/10" />
-
-        <span className="size-5 rounded bg-white/10" />
+        <span className={cn("rounded bg-white/10", large ? "h-3.5 w-20" : "h-3 w-16")} />
+        <span className={cn("rounded bg-white/10", large ? "size-6" : "size-5")} />
 
       </div>
 
-      <div className="flex flex-1 gap-4">
+      <div className={cn("flex gap-4", large ? "flex-col gap-4" : "flex-1")}>
 
         {Array.from({ length: 2 }).map((_, i) => (
 
           <div
             key={i}
-            className="min-w-0 flex-1 border-l border-white/10 pl-3 first:border-l-0 first:pl-0"
+            className={cn(
+              !large && "min-w-0 flex-1 border-l border-white/10 pl-3 first:border-l-0 first:pl-0",
+              large && "flex items-baseline justify-between",
+            )}
           >
 
-            <span className="block h-2.5 w-10 rounded bg-white/8" />
-
-            <span className="mt-2 block h-4 w-8 rounded bg-white/12" />
+            <span className={cn("block rounded bg-white/8", large ? "h-2.5 w-16" : "h-2.5 w-10")} />
+            <span className={cn("block rounded bg-white/12", large ? "mt-0 h-6 w-12" : "mt-2 h-4 w-8")} />
 
           </div>
 
@@ -112,25 +121,22 @@ function SkeletonCardCompact({
 }
 
 function SkeletonColumn({
-  code,
+  isMobile,
 }: {
-  code: string
+  isMobile: boolean
 }) {
 
   return (
 
-    <div className="flex h-full w-72 shrink-0 flex-col overflow-hidden">
+    <div className={cn("flex h-full shrink-0 flex-col overflow-hidden", isMobile ? "w-full" : "w-72")}>
 
       <div className="flex shrink-0 flex-col">
 
         <div className="flex items-center gap-2 border-b border-white/5 px-3 py-3">
 
           <span className="size-6 rounded-md bg-white/8" />
-
           <span className="size-4 rounded bg-white/8" />
-
           <span className="h-3.5 w-24 rounded bg-white/8" />
-
           <span className="ml-auto h-3.5 w-4 rounded bg-white/5" />
 
         </div>
@@ -168,11 +174,61 @@ function SkeletonColumn({
 
 export function TaskPipelineSkeleton() {
 
+  const { isMobile } = useResponsive()
+
+  if (isMobile) {
+
+    return (
+
+      <div className="flex h-full min-h-0 w-full animate-pulse flex-col overflow-hidden">
+
+        {/*
+          Mobile: una sola card grande (igual a la vista real del
+          carrusel de KPIs), sin flechas — durante la carga no hay
+          nada para navegar todavía. Sin gutter lateral: el carrusel
+          real (TaskPipelineHeader) usa px-1, no px-9 — deben
+          coincidir para que no haya salto de layout al terminar
+          de cargar.
+        */}
+        <div className="px-1">
+
+          <SkeletonMiniCard
+            color={KPI_SKELETON_COLORS[0]}
+            large
+          />
+
+        </div>
+
+        <div className="mt-2 flex shrink-0 gap-2 px-1 py-2">
+
+          {Array.from({ length: 3 }).map((_, i) => (
+
+            <span
+              key={i}
+              className="h-9 w-24 shrink-0 rounded-lg bg-white/5"
+            />
+
+          ))}
+
+        </div>
+
+        <div className="mt-1 min-h-0 flex-1 overflow-hidden">
+
+          <SkeletonColumn isMobile />
+
+        </div>
+
+      </div>
+
+    )
+
+  }
+
   return (
 
     <div className="flex h-full min-h-0 w-full animate-pulse flex-col overflow-hidden">
 
-      <div className="grid shrink-0 grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid shrink-0 grid-cols-2 gap-4 laptop:grid-cols-4">
 
         {KPI_SKELETON_COLORS.map((color, i) => (
 
@@ -193,7 +249,7 @@ export function TaskPipelineSkeleton() {
 
             <SkeletonColumn
               key={code}
-              code={code}
+              isMobile={false}
             />
 
           ))}

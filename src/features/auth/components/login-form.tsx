@@ -150,7 +150,7 @@ export function LoginForm(){
         placeholder="admin@etmsac.com"
         type="email"
         autoComplete="email"
-        className="w-full rounded-xl bg-[#0A0A0A] px-4 py-3.5 text-base outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-xl bg-[#0A0A0A] px-4 py-3.5 text-base text-white outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60 autofill:bg-[#0A0A0A] autofill:[-webkit-text-fill-color:#ffffff] autofill:[box-shadow:0_0_0_1000px_#0A0A0A_inset] autofill:[transition:background-color_9999s_ease-in-out_0s]"
       />
 
       <div className="relative">
@@ -166,7 +166,7 @@ export function LoginForm(){
           placeholder="Contraseña"
           type={showPassword ? "text" : "password"}
           autoComplete="current-password"
-          className="w-full rounded-xl bg-[#0A0A0A] px-4 py-3.5 pr-12 text-base outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-xl bg-[#0A0A0A] px-4 py-3.5 pr-12 text-base text-white outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60 autofill:bg-[#0A0A0A] autofill:[-webkit-text-fill-color:#ffffff] autofill:[box-shadow:0_0_0_1000px_#0A0A0A_inset] autofill:[transition:background-color_9999s_ease-in-out_0s]"
         />
 
         <button

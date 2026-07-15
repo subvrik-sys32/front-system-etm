@@ -5,6 +5,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Estos valores DEBEN coincidir exactamente con
+ * shared/responsive/breakpoints.ts (BREAKPOINTS).
+ * Si cambias uno, cambia el otro.
+ */
+@theme {
+  --breakpoint-tablet: 640px;
+  --breakpoint-laptop: 1024px;
+  --breakpoint-desktop: 1280px;
+  --breakpoint-wide: 1536px;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -246,10 +258,17 @@ input:focus-visible {
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
-input:-webkit-autofill:focus {
+input:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 1000px #0A0A0A inset;
   -webkit-text-fill-color: white;
-  font-family: inherit;
+  font-size: 16px !important;
+  font-family: inherit !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 

@@ -37,6 +37,8 @@ type Props={
 
   rows:Row[]
 
+  size?:"default"|"large"
+
 }
 
 export function ProcessMiniCard({
@@ -45,6 +47,7 @@ export function ProcessMiniCard({
   icon:Icon,
   color,
   rows,
+  size="default",
 
 }:Props){
 
@@ -56,16 +59,16 @@ export function ProcessMiniCard({
       "subtle"
     ).text
 
+  const isLarge=size==="large"
+
   return(
 
     <div
       className={cn(
-        // overflow-hidden: si algo interno igual llegara a desbordar
-        // (zoom extremo, fuente del sistema más grande), se recorta
-        // limpio dentro del borde redondeado en vez de romper el
-        // layout general de la grilla.
-        "flex select-none flex-col overflow-hidden rounded-xl p-4",
-        isMobile ? "gap-3" : "h-28",
+        "flex h-full select-none flex-col overflow-hidden rounded-xl p-4",
+        isLarge
+          ? "justify-center gap-5 p-6"
+          : isMobile ? "gap-3" : "h-28",
       )}
       style={{
         background:
@@ -77,10 +80,13 @@ export function ProcessMiniCard({
       }}
     >
 
-      <div className={cn("flex min-w-0 items-center justify-between gap-2", !isMobile && "mb-3")}>
+      <div className={cn("flex min-w-0 items-center justify-between gap-2", !isLarge && !isMobile && "mb-3")}>
 
         <span
-          className="min-w-0 truncate text-xs font-bold uppercase tracking-[0.18em]"
+          className={cn(
+            "min-w-0 truncate font-bold uppercase tracking-[0.18em]",
+            isLarge ? "text-sm" : "text-xs",
+          )}
           style={{
             color:textColor,
           }}
@@ -91,7 +97,7 @@ export function ProcessMiniCard({
         </span>
 
         <Icon
-          size={20}
+          size={isLarge ? 26 : 20}
           className="shrink-0"
           style={{
             color:textColor,
@@ -100,7 +106,63 @@ export function ProcessMiniCard({
 
       </div>
 
-      {isMobile ? (
+      {isLarge ? (
+
+        <div className="flex min-w-0 flex-col gap-4">
+
+          {rows.map(
+            row=>(
+
+              <div
+                key={row.label}
+                className="flex min-w-0 items-baseline justify-between gap-2"
+              >
+
+                <p className="min-w-0 shrink truncate text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">
+
+                  {row.label}
+
+                </p>
+
+                <div className="flex min-w-0 shrink-0 items-baseline gap-1.5">
+
+                  <span
+                    className={
+                      row.editable===false
+                        ?"whitespace-nowrap text-2xl font-semibold leading-tight text-neutral-400"
+                        :"whitespace-nowrap text-2xl font-bold leading-tight"
+                    }
+                    style={
+                      row.editable===false
+                        ?undefined
+                        :{ color:textColor }
+                    }
+                  >
+
+                    {row.value}
+
+                  </span>
+
+                  {row.secondary && (
+
+                    <span className="max-w-24 truncate text-xs leading-tight text-neutral-400">
+
+                      {row.secondary}
+
+                    </span>
+
+                  )}
+
+                </div>
+
+              </div>
+
+            )
+          )}
+
+        </div>
+
+      ) : isMobile ? (
 
         <div className="flex min-w-0 flex-col gap-1.5">
 

@@ -29,23 +29,12 @@ export function useSidebarPrefetch(){
 
   useEffect(()=>{
 
-    // Prefetch eager solo para rutas SIN query params: son pocas
-    // (proyectos, tareas, engineering, admin) y baratas. Las
-    // variantes de /processes?code=... quedan afuera a propósito
-    // — si el servidor hace un fetch distinto por cada code,
-    // prefetchear las 6 al montar significa pagar ese costo para
-    // páginas que el usuario puede no visitar nunca en la sesión.
-    // Esas se prefetchean recién on-hover, con prefetchOnHover.
     const hrefs=
       new Set<string>()
 
     for(const section of NAVIGATION){
 
       for(const item of section.items){
-
-        if(item.href.includes("?")){
-          continue
-        }
 
         hrefs.add(
           item.href,

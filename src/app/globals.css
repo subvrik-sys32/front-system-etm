@@ -189,28 +189,23 @@ input[type="number"] {
   color: inherit;
 }
 
-@keyframes history-bounce{
-
-  0%{
-    transform:scale(1);
+@keyframes history-bounce {
+  0% {
+    transform: scale(1);
   }
-
-  35%{
-    transform:scale(1.18);
+  35% {
+    transform: scale(1.18);
   }
-
-  60%{
-    transform:scale(0.94);
+  60% {
+    transform: scale(0.94);
   }
-
-  100%{
-    transform:scale(1);
+  100% {
+    transform: scale(1);
   }
-
 }
 
-.animate-history-bounce{
-  animation:history-bounce .35s ease-out;
+.animate-history-bounce {
+  animation: history-bounce .35s ease-out;
 }
 
 input:focus {
@@ -224,21 +219,16 @@ input:focus-visible {
 }
 
 @keyframes etm-loading {
-
   0% {
     transform: translateX(-120%);
   }
-
   100% {
     transform: translateX(420%);
   }
-
 }
 
 .animate-etm-loading {
-
   animation: etm-loading 1.2s linear infinite;
-
 }
 
 @keyframes comment-in {
@@ -256,20 +246,22 @@ input:focus-visible {
   animation: comment-in 0.2s ease-out;
 }
 
+/*
+ * Autofill: mismo color de fondo que el input normal (#111113).
+ * Necesita !important: Chrome aplica su propio fondo de autofill
+ * con más prioridad que una regla normal, sin importar el orden
+ * en la cascada.
+ */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
-select:-webkit-autofill,
-select:-webkit-autofill:hover,
-select:-webkit-autofill:focus,
-textarea:-webkit-autofill,
-textarea:-webkit-autofill:hover,
-textarea:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px #0A0A0A inset;
-  -webkit-text-fill-color: white;
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0 1000px #111113 inset !important;
+  box-shadow: 0 0 0 1000px #111113 inset !important;
+  caret-color: white !important;
   font-size: 16px !important;
-  font-family: inherit !important;
-  transition: background-color 5000s ease-in-out 0s;
+  transition: background-color 0s 600000s, color 0s 600000s !important;
 }
 
 @media (max-width: 767px) {

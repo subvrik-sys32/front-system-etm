@@ -175,7 +175,6 @@ export function RoleSelect({
       </PopoverTrigger>
 
       <PopoverContent
-        align="start"
         sideOffset={8}
         className="w-72 border border-white/10 bg-[#101012] p-2"
       >

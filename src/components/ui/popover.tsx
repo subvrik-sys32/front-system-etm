@@ -98,6 +98,29 @@ export function PopoverContent({
         }
 
       }}
+      onTouchMove={event => {
+
+        // El popover sale por Portal directo a document.body, como
+        // hermano del Dialog (no descendiente). El scroll-lock que
+        // Radix Dialog instala globalmente sobre "touchmove" no lo
+        // reconoce como parte del árbol permitido y le hace
+        // preventDefault, dejando el contenido sin poder scrollear
+        // con el dedo en mobile. Cortamos la propagación acá —igual
+        // que ya se hace arriba con "wheel"— antes de que el evento
+        // llegue al listener global, así el scroll táctil interno
+        // funciona con normalidad cuando hay contenido de sobra.
+        const element =
+          event.currentTarget
+
+        const isScrollable =
+          element.scrollHeight >
+          element.clientHeight
+
+        if (isScrollable) {
+          event.stopPropagation()
+        }
+
+      }}
       className={cn(
         "z-40",
         "pointer-events-auto",

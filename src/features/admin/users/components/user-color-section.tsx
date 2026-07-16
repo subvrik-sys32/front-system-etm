@@ -59,7 +59,7 @@ export function UserColorSection({
 
       <FormField label="Color">
 
-        <div className="grid grid-cols-[1fr_1.2fr] gap-6">
+        <div className="grid grid-cols-1 tablet:grid-cols-[1fr_1.2fr] gap-6">
 
           <EntityColorPicker
 

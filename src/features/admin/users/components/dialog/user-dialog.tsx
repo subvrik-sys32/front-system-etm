@@ -9,6 +9,18 @@ import {
   UserPlus,
 } from "lucide-react"
 
+import {
+  useResponsive,
+} from "@/shared/responsive/hooks/use-responsive"
+
+import {
+  FormDialog,
+} from "@/shared/ui/dialogs/form-dialog/form-dialog"
+
+import type {
+  EntityIcon,
+} from "@/shared/constants/entity-icons"
+
 import type {
   User,
 } from "@/features/users/types/user.types"
@@ -22,492 +34,366 @@ import {
 } from "@/features/roles/hooks/use-roles"
 
 import {
-  FormDialog,
-} from "@/shared/ui/dialogs/form-dialog/form-dialog"
-
-import type {
-  EntityIcon,
-} from "@/shared/constants/entity-icons"
-
-import {
-  UserDialogHeader,
-} from "../user-dialog-header"
-
-import {
-  UserFormSection,
-} from "../user-form-section"
-
-import {
-  UserColorSection,
-} from "../user-color-section"
-
-import {
   validateUser,
+  type UserErrors,
 } from "../../hooks/validate-user"
 
-type Props={
+import {
+  UserForm,
+  UserFormWizardProgress,
+  USER_FORM_STEP_COUNT,
+} from "../user-form"
 
-  open:boolean
-
-  onClose:()=>void
-
-  user?:User
-
+type Props = {
+  open: boolean
+  onClose: () => void
+  user?: User
 }
 
-type UserForm={
+type UserFormValue = {
+  username: string
+  name: string
+  email: string
+  password: string
+  confirmPassword: string
+  isChangingPassword: boolean
+  roleId: string
+  icon: EntityIcon
+  color: string
+  active: boolean
+}
 
-  username:string
-
-  name:string
-
-  email:string
-
-  password:string
-
-  confirmPassword:string
-
-  isChangingPassword:boolean
-
-  roleId:string
-
-  icon:EntityIcon
-
-  color:string
-
-  active:boolean
-
+const STEP_ERROR_KEYS: Record<
+  number,
+  (keyof UserErrors)[]
+> = {
+  0: ["roleId"],
+  1: [
+    "name",
+    "username",
+    "email",
+    "password",
+    "confirmPassword",
+  ],
+  2: [],
 }
 
 function createInitialForm(
-  user?:User,
-):UserForm{
-
-  return{
-
-    username:
-      user?.username ?? "",
-
-    name:
-      user?.name ?? "",
-
-    email:
-      user?.email ?? "",
-
-    password:"",
-
-    confirmPassword:"",
-
-    isChangingPassword:false,
-
-    roleId:
-      user?.role.id ?? "",
-
-    icon:
-      user?.icon ?? "user",
-
-    color:
-      user?.color ?? "#7C3AED",
-
-    active:
-      user?.active ?? true,
-
+  user?: User,
+): UserFormValue {
+  return {
+    username: user?.username ?? "",
+    name: user?.name ?? "",
+    email: user?.email ?? "",
+    password: "",
+    confirmPassword: "",
+    isChangingPassword: false,
+    roleId: user?.role.id ?? "",
+    icon: user?.icon ?? "user",
+    color: user?.color ?? "#7C3AED",
+    active: user?.active ?? true,
   }
-
 }
 
 export function UserDialog({
-
   open,
-
   onClose,
-
   user,
+}: Props) {
+  const { isMobile } = useResponsive()
 
-}:Props){
-
-  const{
-
+  const {
     roles,
-
     loading,
+  } = useRoles()
 
-  }=
-    useRoles()
-
-  const{
-
+  const {
     createUser,
-
     updateUser,
+  } = useUserMutations()
 
-  }=
-    useUserMutations()
-
-  const[
+  const [
     form,
     setForm,
-  ]=
-    useState<UserForm>(
-      createInitialForm(
-        user,
-      ),
-    )
+  ] = useState<UserFormValue>(
+    createInitialForm(user),
+  )
 
-  const[
+  const [
     attempted,
     setAttempted,
-  ]=
-    useState(false)
+  ] = useState(false)
 
-  useEffect(()=>{
+  const [
+    step,
+    setStep,
+  ] = useState(0)
 
-    setForm(
-      createInitialForm(
-        user,
-      ),
-    )
+  const [
+    stepAttempted,
+    setStepAttempted,
+  ] = useState<Set<number>>(
+    new Set(),
+  )
 
+  useEffect(() => {
+    setForm(createInitialForm(user))
     setAttempted(false)
 
-  },[
+    if (open) {
+      setStep(0)
+      setStepAttempted(new Set())
+    }
+  }, [
     user,
     open,
   ])
 
   function update(
-    value:Partial<UserForm>,
-  ){
-
-    setForm(
-      current=>({
-
-        ...current,
-
-        ...value,
-
-      }),
-    )
-
+    value: Partial<UserFormValue>,
+  ) {
+    setForm(current => ({
+      ...current,
+      ...value,
+    }))
   }
 
-  const selectedRole=
+  const selectedRole =
     roles.find(
-      role=>
-        role.id===form.roleId,
+      role => role.id === form.roleId,
     )
 
-  const isEditing=
-    !!user
+  const isEditing =
+    Boolean(user)
 
-  const errors=
+  const errors =
     validateUser({
-
-      name:form.name,
-
-      username:form.username,
-
-      email:form.email,
-
-      password:form.password,
-
-      confirmPassword:form.confirmPassword,
-
-      roleId:form.roleId,
-
+      name: form.name,
+      username: form.username,
+      email: form.email,
+      password: form.password,
+      confirmPassword: form.confirmPassword,
+      roleId: form.roleId,
       isEditing,
-
-      isChangingPassword:form.isChangingPassword,
-
+      isChangingPassword:
+        form.isChangingPassword,
     })
 
-  const isValid=
-    Object.keys(errors).length===0
+  const isValid =
+    Object.keys(errors).length === 0
 
-  const canSave=
+  const saving =
+    createUser.isPending ||
+    updateUser.isPending
 
-    !loading &&
-
-    isValid
-
-  function buildPayload(){
-
-    const{
-
-      confirmPassword,
-
-      isChangingPassword,
-
+  function buildPayload() {
+    const {
+      confirmPassword: _confirmPassword,
+      isChangingPassword: _isChangingPassword,
       password,
-
       ...rest
+    } = form
 
-    }=form
-
-    return{
-
+    return {
       ...rest,
-
-      ...(password.trim()&&{
-
+      ...(password.trim() && {
         password,
-
       }),
-
     }
-
   }
 
-  function handleClose(){
-
-    setForm(
-      createInitialForm(
-        user,
-      ),
-    )
-
+  function close() {
+    setForm(createInitialForm(user))
     setAttempted(false)
-
     onClose()
-
   }
 
-  async function save(){
-
-    if(!isValid){
-
+  async function save() {
+    if (!isValid) {
       setAttempted(true)
-
       return
-
     }
 
-    try{
+    try {
+      const payload = buildPayload()
 
-      const payload=
-        buildPayload()
-
-      if(user){
-
+      if (user) {
         await updateUser.mutateAsync({
-
-          id:user.id,
-
-          dto:payload,
-
+          id: user.id,
+          dto: payload,
         })
-
-      }else{
-
-        if(!payload.password){
-
-          console.error(
-            "PASSWORD REQUIRED",
-          )
-
+      } else {
+        if (!payload.password) {
           return
-
         }
 
-        await createUser.mutateAsync(
-          payload,
-        )
-
+        await createUser.mutateAsync(payload)
       }
 
-      handleClose()
-
-    }catch(error:any){
-
+      close()
+    } catch (error) {
       console.error(
         "USER SAVE ERROR",
         error,
       )
-
-      console.error(
-        "RESPONSE DATA:",
-        error?.response?.data,
-      )
-
     }
-
   }
 
-  return(
+  function stepHasErrors(
+    stepIndex: number,
+  ) {
+    return STEP_ERROR_KEYS[stepIndex].some(
+      key => errors[key],
+    )
+  }
 
+  function handleWizardNext() {
+    if (stepHasErrors(step)) {
+      setStepAttempted(
+        current =>
+          new Set(current).add(step),
+      )
+
+      return
+    }
+
+    setStep(current => current + 1)
+  }
+
+  function handleWizardBack() {
+    setStep(current =>
+      Math.max(0, current - 1),
+    )
+  }
+
+  const isLastStep =
+    step === USER_FORM_STEP_COUNT - 1
+
+  const showWizardFooter =
+    isMobile && !isLastStep
+
+  const cancelLabel =
+    isMobile && step > 0
+      ? "Atrás"
+      : "Cancelar"
+
+  const onCancelClick =
+    isMobile && step > 0
+      ? handleWizardBack
+      : close
+
+  const saveLabel =
+    showWizardFooter
+      ? "Siguiente"
+      : user
+        ? "Guardar"
+        : "Crear usuario"
+
+  const savingLabel =
+    user
+      ? "Guardando..."
+      : "Creando usuario..."
+
+  const canSave =
+    !loading &&
+    (
+      showWizardFooter
+        ? !stepHasErrors(step)
+        : isValid
+    )
+
+  const onSave =
+    showWizardFooter
+      ? handleWizardNext
+      : save
+
+  const visibleErrors =
+    isMobile
+      ? (
+          stepAttempted.has(step)
+            ? errors
+            : undefined
+        )
+      : (
+          attempted
+            ? errors
+            : undefined
+        )
+
+  return (
     <FormDialog
-
       open={open}
-
       title={
         user
           ? "Editar usuario"
           : "Nuevo usuario"
       }
-
       icon={UserPlus}
-
       canSave={canSave}
-      saving={
-        createUser.isPending ||
-        updateUser.isPending
+      saving={saving}
+      saveLabel={saveLabel}
+      savingLabel={savingLabel}
+      cancelLabel={cancelLabel}
+      onCancelClick={onCancelClick}
+      subHeader={
+        isMobile
+          ? (
+              <UserFormWizardProgress
+                step={step}
+              />
+            )
+          : undefined
       }
-      savingLabel={
-        user
-          ? "Guardando..."
-          : "Creando usuario..."
-      }
-
-      saveLabel={
-        user
-          ? "Guardar"
-          : "Crear usuario"
-      }
-
-      onClose={handleClose}
-
-      onSave={save}
-
+      onClose={close}
+      onSave={onSave}
     >
-
-      <div className="space-y-6">
-
-        <UserDialogHeader
-
-          name={form.name}
-
-          username={form.username}
-
-          email={form.email}
-
-          icon={form.icon}
-
-          color={form.color}
-
-          roles={roles}
-
-          selectedRole={selectedRole}
-
-          onRoleChange={roleId=>
-
+      <UserForm
+        name={form.name}
+        username={form.username}
+        email={form.email}
+        password={form.password}
+        confirmPassword={form.confirmPassword}
+        isEditing={isEditing}
+        isChangingPassword={
+          form.isChangingPassword
+        }
+        icon={form.icon}
+        color={form.color}
+        roles={roles}
+        selectedRole={selectedRole}
+        errors={visibleErrors}
+        step={step}
+        onRoleChange={roleId =>
+          update({ roleId })
+        }
+        onChangingPasswordChange={
+          isChangingPassword =>
             update({
-
-              roleId,
-
-            })
-
-          }
-
-        />
-
-        <UserFormSection
-
-          name={form.name}
-
-          username={form.username}
-
-          email={form.email}
-
-          password={form.password}
-
-          confirmPassword={form.confirmPassword}
-
-          isEditing={isEditing}
-
-          isChangingPassword={form.isChangingPassword}
-
-          errors={
-            attempted
-              ? errors
-              : undefined
-          }
-
-          onChangingPasswordChange={isChangingPassword=>
-
-            update({
-
               isChangingPassword,
-
             })
-
-          }
-
-          onNameChange={name=>
-
+        }
+        onNameChange={name =>
+          update({ name })
+        }
+        onUsernameChange={username =>
+          update({ username })
+        }
+        onEmailChange={email =>
+          update({ email })
+        }
+        onPasswordChange={password =>
+          update({ password })
+        }
+        onConfirmPasswordChange={
+          confirmPassword =>
             update({
-
-              name,
-
-            })
-
-          }
-
-          onUsernameChange={username=>
-
-            update({
-
-              username,
-
-            })
-
-          }
-
-          onEmailChange={email=>
-
-            update({
-
-              email,
-
-            })
-
-          }
-
-          onPasswordChange={password=>
-
-            update({
-
-              password,
-
-            })
-
-          }
-
-          onConfirmPasswordChange={confirmPassword=>
-
-            update({
-
               confirmPassword,
-
             })
-
-          }
-
-        />
-
-        <UserColorSection
-
-          name={form.name}
-
-          icon={form.icon}
-
-          color={form.color}
-
-          onColorChange={color=>
-
-            update({
-
-              color,
-
-            })
-
-          }
-
-        />
-
-      </div>
-
+        }
+        onColorChange={color =>
+          update({ color })
+        }
+      />
     </FormDialog>
-
   )
-
 }

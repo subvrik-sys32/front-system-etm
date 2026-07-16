@@ -121,7 +121,7 @@ export function UserFormSection({
       icon={Users}
     >
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 tablet:grid-cols-2 gap-4">
 
         <FormField label="Nombre" error={errors?.name}>
 

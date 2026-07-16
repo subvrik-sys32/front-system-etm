@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { authService } from "../services/auth.service"
@@ -16,6 +16,20 @@ export function LoginForm() {
   const [showPassword,setShowPassword]=useState(false)
   const [success,setSuccess]=useState(false)
   const [error,setError]=useState<string|null>(null)
+
+  const passwordTextRef = useRef<HTMLInputElement>(null)
+  const passwordMaskRef = useRef<HTMLInputElement>(null)
+
+  const toggleShowPassword = () => {
+    setShowPassword(v => {
+      const next = !v
+      // Al alternar, movemos el foco al input que va a quedar visible.
+      requestAnimationFrame(() => {
+        (next ? passwordTextRef.current : passwordMaskRef.current)?.focus()
+      })
+      return next
+    })
+  }
 
   const onSubmit=async(e:React.FormEvent<HTMLFormElement>)=>{
     e.preventDefault()
@@ -64,22 +78,37 @@ export function LoginForm() {
           Contraseña
         </label>
         <div className="relative">
+          {/* Input real: enmascarado. Nunca cambia de type. */}
           <input
+            ref={passwordMaskRef}
             value={password}
             disabled={loading}
             onChange={e=>setPassword(e.target.value)}
             placeholder="Contraseña"
-            type={showPassword?"text":"password"}
+            type="password"
             autoComplete="current-password"
+            hidden={showPassword}
+            className={`${inputClass} pr-12`}
+          />
+          {/* Input real: visible en texto plano. Nunca cambia de type. */}
+          <input
+            ref={passwordTextRef}
+            value={password}
+            disabled={loading}
+            onChange={e=>setPassword(e.target.value)}
+            placeholder="Contraseña"
+            type="text"
+            autoComplete="current-password"
+            hidden={!showPassword}
             className={`${inputClass} pr-12`}
           />
           <button
             type="button"
             disabled={loading}
-            onClick={()=>setShowPassword(v=>!v)}
+            onClick={toggleShowPassword}
             tabIndex={-1}
             aria-label={showPassword?"Ocultar contraseña":"Mostrar contraseña"}
-            className="absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-lg text-neutral-400 outline-none transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
           >
             {showPassword?<EyeOff size={17}/>:<Eye size={17}/>}
           </button>

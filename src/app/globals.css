@@ -246,6 +246,10 @@ input:focus-visible {
   animation: comment-in 0.2s ease-out;
 }
 
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
 @media (max-width: 767px) {
   input,
   select,

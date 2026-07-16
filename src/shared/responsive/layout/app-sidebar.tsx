@@ -1,3 +1,4 @@
+// app-sidebar.tsx
 "use client"
 
 import { useState } from "react"
@@ -26,6 +27,7 @@ export function AppSidebar({
 
   const mode = useSidebarStore(s => s.mode)
   const lastVisibleMode = useSidebarStore(s => s.lastVisibleMode)
+  const visualState = useSidebarStore(s => s.visualState)
 
   const visibleMode =
     mode === "closed"
@@ -42,10 +44,16 @@ export function AppSidebar({
     visibleMode === "collapsed"
 
 
+  // El shell desktop nunca se lee desde `mode` directamente: solo
+  // `visualState` decide si el sidebar está mostrándose/moviéndose.
   const isVisible =
     isDrawer
       ? open
-      : mode !== "closed"
+      : visualState === "visible" || visualState === "moving-in"
+
+  const isFullyHidden =
+    !isDrawer &&
+    visualState === "hidden"
 
 
   const [profileEditOpen, setProfileEditOpen] = useState(false)
@@ -82,6 +90,7 @@ export function AppSidebar({
     <>
 
       <aside
+        aria-hidden={isFullyHidden}
         className={cn(
           "absolute left-0 top-0 h-full",
 
@@ -96,6 +105,8 @@ export function AppSidebar({
           isVisible
             ? "translate-x-0"
             : "-translate-x-full",
+
+          isFullyHidden && "pointer-events-none",
         )}
       >
 

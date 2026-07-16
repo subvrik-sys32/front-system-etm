@@ -1,3 +1,4 @@
+// app-shell.tsx
 "use client"
 
 import { useEffect, useState, type ReactNode } from "react"
@@ -10,14 +11,10 @@ import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-sto
 import { SidebarDrawer } from "@/shared/responsive/mobile/sidebar-drawer"
 import { TopBar } from "@/shared/responsive/mobile/top-bar"
 import { BottomNavigation } from "../mobile/bottom-navigation"
-import { cn } from "@/shared/utils/utils"
 
 type Props = {
   children: ReactNode
 }
-
-const CONTENT_CARD_CLASSES =
-  "rounded-l-[28px] overflow-hidden"
 
 function DesktopTopBar() {
 
@@ -33,42 +30,78 @@ function DesktopTopBar() {
 
 }
 
+const CURVE_RADIUS = 28
+
+const CLIP_ROUNDED = `inset(0 round ${CURVE_RADIUS}px 0px 0px ${CURVE_RADIUS}px)`
+const CLIP_SQUARE = "inset(0 round 0px 0px 0px 0px)"
+
+const TRANSITION_TIMING = "300ms cubic-bezier(.22,1,.36,1)"
+
+type ContentTransitionProperty = "margin-left" | "transform"
+
+function buildContentTransitionBase(
+  property: ContentTransitionProperty,
+) {
+  return `${property} ${TRANSITION_TIMING}`
+}
+
+function buildContentTransitionWithClip(
+  property: ContentTransitionProperty,
+) {
+  return `${buildContentTransitionBase(property)}, clip-path ${TRANSITION_TIMING}`
+}
+
+const SIDEBAR_OPEN_WIDTH = 248
+const SIDEBAR_COLLAPSED_WIDTH = 72
+
 function DesktopShell({ children }: Props) {
 
-  const mode = useSidebarStore(state => state.mode)
-
-  const offset =
-    mode === "open"
-      ? 248
-      : mode === "collapsed"
-        ? 72
-        : 0
-
-  const [curveVisible,setCurveVisible] = useState(
-    mode !== "closed",
+  const lastVisibleMode = useSidebarStore(state => state.lastVisibleMode)
+  const visualState = useSidebarStore(state => state.visualState)
+  const notifyContentTransitionEnd = useSidebarStore(
+    state => state.notifyContentTransitionEnd,
+  )
+  const notifyClipTransitionEnd = useSidebarStore(
+    state => state.notifyClipTransitionEnd,
   )
 
-  useEffect(() => {
+  const CONTENT_TRANSITION_BASE = buildContentTransitionBase("margin-left")
+  const CONTENT_TRANSITION_WITH_CLIP = buildContentTransitionWithClip("margin-left")
 
-    // Al salir de "closed" la curva debe existir
-    // ANTES de comenzar el movimiento.
-    if (mode !== "closed") {
-      setCurveVisible(true)
-    }
+  const clipPath =
+    visualState === "hidden" || visualState === "curve-closing"
+      ? CLIP_SQUARE
+      : CLIP_ROUNDED
 
-  }, [mode])
+  const contentTransition =
+    visualState === "curve-closing"
+      ? CONTENT_TRANSITION_WITH_CLIP
+      : CONTENT_TRANSITION_BASE
+
+  const targetOffset =
+    lastVisibleMode === "open"
+      ? SIDEBAR_OPEN_WIDTH
+      : SIDEBAR_COLLAPSED_WIDTH
+
+  const offset =
+    visualState === "visible" || visualState === "moving-in"
+      ? targetOffset
+      : 0
 
   const handleTransitionEnd = (
     event: React.TransitionEvent<HTMLElement>,
   ) => {
 
     if (event.target !== event.currentTarget) return
-    if (event.propertyName !== "margin-left") return
 
-    // Solo cuando el contenido ya terminó de volver
-    // quitamos la curva.
-    if (mode === "closed") {
-      setCurveVisible(false)
+    if (event.propertyName === "margin-left") {
+      notifyContentTransitionEnd()
+      return
+    }
+
+    // Fin de FASE 2: la curva terminó de cerrarse.
+    if (event.propertyName === "clip-path") {
+      notifyClipTransitionEnd()
     }
 
   }
@@ -81,13 +114,11 @@ function DesktopShell({ children }: Props) {
 
       <main
         onTransitionEnd={handleTransitionEnd}
-        className={cn(
-          "relative z-10 flex h-screen min-w-0 flex-col overflow-hidden bg-[#050505]",
-          curveVisible && "rounded-l-[28px]",
-        )}
+        className="relative z-10 flex h-screen min-w-0 flex-col overflow-hidden bg-[#050505]"
         style={{
           marginLeft: offset,
-          transition: "margin-left 300ms cubic-bezier(.22,1,.36,1)",
+          clipPath,
+          transition: contentTransition,
         }}
       >
 
@@ -107,67 +138,43 @@ function DesktopShell({ children }: Props) {
 
 }
 
-// Ancho del sidebar del drawer
 const DRAWER_REVEAL_OFFSET = 248
 
-
 function CompactShell({ children }: Props) {
-
-  const drawerOpen = useMobileNavStore(s => s.drawerOpen)
+  const visualState = useMobileNavStore(s => s.visualState)
   const closeDrawer = useMobileNavStore(s => s.closeDrawer)
+  const notifyContentTransitionEnd = useMobileNavStore(s => s.notifyContentTransitionEnd)
+  const notifyClipTransitionEnd = useMobileNavStore(s => s.notifyClipTransitionEnd)
 
-  const [showClip, setShowClip] = useState(false)
+  const targetOffset = DRAWER_REVEAL_OFFSET
+  const offset = visualState === "visible" || visualState === "moving-in" ? targetOffset : 0
 
-  useEffect(() => {
-
-    if (drawerOpen) {
-      setShowClip(true)
-      return
+  // Mantenemos la lógica de transición, pero forzamos un orden de ejecución CSS
+  const handleTransitionEnd = (event: React.TransitionEvent<HTMLElement>) => {
+    if (event.target !== event.currentTarget) return
+    
+    // IMPORTANTE: Solo escuchamos la propiedad específica para no disparar dos veces
+    if (event.propertyName === "transform") {
+      notifyContentTransitionEnd()
+    } else if (event.propertyName === "clip-path") {
+      notifyClipTransitionEnd()
     }
-
-    const timeout = setTimeout(() => {
-      setShowClip(false)
-    }, 300)
-
-    return () => clearTimeout(timeout)
-
-  }, [drawerOpen])
-
+  }
 
   return (
-
     <div className="relative h-dvh overflow-hidden bg-[#1d1c1c] text-white">
-
-
       <SidebarDrawer />
-
-
       <div
-        className={cn(
-          "relative z-10 flex h-full min-h-0 flex-col bg-[#050505]",
-          "transition-transform duration-300 ease-out",
-
-          drawerOpen &&
-          "translate-x-(--drawer-offset) rounded-l-[28px] overflow-hidden",
-        )}
-
+        onTransitionEnd={handleTransitionEnd}
+        className="relative z-10 flex h-full min-h-0 flex-col bg-[#050505]"
         style={{
-          ["--drawer-offset" as string]:
-            `${DRAWER_REVEAL_OFFSET}px`,
-
-          clipPath:
-            showClip
-              ? drawerOpen
-                ? "inset(0 round 28px 0 0 28px)"
-                : "inset(0 round 0px 0 0 0px)"
-              : "none",
-
-          transition:
-            "transform 300ms ease-out, clip-path 300ms ease-out",
+          transform: `translateX(${offset}px)`,
+          clipPath: visualState === "hidden" || visualState === "curve-closing" ? CLIP_SQUARE : CLIP_ROUNDED,
+          // La clave: transición explícita combinada para que el browser orqueste el sellado
+          transition: "transform 300ms cubic-bezier(.22,1,.36,1), clip-path 300ms cubic-bezier(.22,1,.36,1)",
         }}
-
         onClickCapture={
-          drawerOpen
+          visualState !== "hidden"
             ? (event) => {
                 event.preventDefault()
                 event.stopPropagation()
@@ -176,35 +183,14 @@ function CompactShell({ children }: Props) {
             : undefined
         }
       >
-
         <TopBar />
-
-
-        <main
-          className="
-            hide-scrollbar
-            min-h-0
-            flex-1
-            overflow-x-hidden
-            overflow-y-auto
-          "
-        >
-
+        <main className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
           {children}
-
         </main>
-
-
         <BottomNavigation />
-
-
       </div>
-
-
     </div>
-
   )
-
 }
 
 

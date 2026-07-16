@@ -1,10 +1,13 @@
 "use client"
 
 import { PIPELINE_PROCESS_ORDER } from "@/features/tasks/pipeline/utils/process-columns"
+import { PROCESS_DEFINITIONS } from "../../constants/process-definitions"
 
 function SkeletonProcessRow({
+  color,
   opacity,
 }: {
+  color: string
   opacity: number
 }) {
 
@@ -15,16 +18,27 @@ function SkeletonProcessRow({
       style={{ opacity }}
     >
 
-      <div className="flex w-full items-center gap-3 p-3 tablet:gap-4">
+      <div
+        className="flex w-full items-center gap-3 p-3 tablet:gap-4"
+        style={{
+          background: `linear-gradient(135deg, ${color}20, #101012)`,
+        }}
+      >
 
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/5">
 
-          <span className="h-5 w-5 rounded bg-white/10" />
+          <span
+            className="h-5 w-5 rounded"
+            style={{ backgroundColor: `${color}40` }}
+          />
 
         </div>
 
         {/* CORTE */}
-        <span className="h-3 w-15 shrink-0 rounded bg-white/10" />
+        <span
+          className="h-3 w-15 shrink-0 rounded"
+          style={{ backgroundColor: `${color}30` }}
+        />
 
         <div className="flex min-w-0 flex-1 items-center justify-end gap-4 tablet:gap-8">
 
@@ -34,7 +48,10 @@ function SkeletonProcessRow({
             <span className="ml-auto block h-3 w-8.5 rounded bg-white/8" />
 
             {/* 0 */}
-            <span className="mt-1 ml-auto block h-7 w-4 rounded bg-white/12" />
+            <span
+              className="mt-1 ml-auto block h-7 w-4 rounded"
+              style={{ backgroundColor: `${color}35` }}
+            />
 
           </div>
 
@@ -81,6 +98,7 @@ export function ProductionHubSkeleton() {
 
         <SkeletonProcessRow
           key={code}
+          color={PROCESS_DEFINITIONS[code].color}
           opacity={SKELETON_OPACITIES[index] ?? 0.3}
         />
 

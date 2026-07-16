@@ -64,7 +64,21 @@ export function ResponsiveProvider({
     )
 
     const recompute = () => {
-      setBreakpoint(resolveBreakpoint(window.innerWidth))
+
+      // Usamos el lado MÁS CORTO del viewport, no innerWidth a secas.
+      // Un teléfono en horizontal fácilmente supera los 640px (el
+      // corte de "tablet") o incluso 1024px en pantallas grandes,
+      // lo que lo hacía saltar a un layout de escritorio solo por
+      // rotar. El lado corto de un teléfono es el mismo en ambas
+      // orientaciones (portrait y landscape solo intercambian
+      // ancho/alto), así que nunca cruza el breakpoint por esto.
+      const shortSide = Math.min(
+        window.innerWidth,
+        window.innerHeight,
+      )
+
+      setBreakpoint(resolveBreakpoint(shortSide))
+
     }
 
     // Corrige de inmediato si el UA del server se equivocó

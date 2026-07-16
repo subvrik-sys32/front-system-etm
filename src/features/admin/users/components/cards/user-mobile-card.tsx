@@ -133,7 +133,7 @@ export function UserMobileCard({
             width="field"
           />
 
-          <div className="flex justify-end">
+          <div className="flex justify-start">
 
             <UserRowActions
               userId={user.id}

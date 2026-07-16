@@ -179,22 +179,11 @@ export function UserSelect({
 
           setQuery("")
 
+          inputRef.current?.blur()
+
           return
 
         }
-
-        if(isCompact){
-          return
-        }
-
-        // Autofoco solo en desktop/laptop — en mobile y tablet
-        // abriría el teclado automáticamente apenas se muestra
-        // el popover, sin que el usuario haya tocado el campo.
-        requestAnimationFrame(()=>{
-
-          inputRef.current?.focus()
-
-        })
 
       }}
     >

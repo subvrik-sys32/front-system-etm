@@ -81,7 +81,7 @@ export function AppLoadingScreen({
           />
         </div>
 
-        <div className="mt-8 flex h-5 items-center justify-center gap-2">
+        <div className="mt-3 flex h-5 items-center justify-center gap-2">
           <span className="text-[12px] font-medium uppercase tracking-[0.2em] text-[#FCD34D]">
             Cargando
           </span>

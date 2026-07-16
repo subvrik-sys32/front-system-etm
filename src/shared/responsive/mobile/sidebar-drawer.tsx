@@ -35,14 +35,11 @@ export function SidebarDrawer() {
     }
 
     const previousOverflow = document.body.style.overflow
-    const previousOverscroll = document.documentElement.style.overscrollBehaviorY
 
     document.body.style.overflow = "hidden"
-    document.documentElement.style.overscrollBehaviorY = "none"
 
     return () => {
       document.body.style.overflow = previousOverflow
-      document.documentElement.style.overscrollBehaviorY = previousOverscroll
     }
 
   }, [drawerOpen])
@@ -77,7 +74,7 @@ export function SidebarDrawer() {
         role="presentation"
         onClick={closeDrawer}
         className={cn(
-          "fixed left-0 -top-6 h-[calc(100dvh+48px)] w-full",
+          "fixed inset-0 h-dvh",
           "z-30 bg-black/60 backdrop-blur-[2px] transition-opacity duration-200 ease-out",
           drawerOpen
             ? "pointer-events-auto opacity-100"

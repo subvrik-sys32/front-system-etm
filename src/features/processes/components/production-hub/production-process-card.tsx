@@ -40,6 +40,13 @@ export function ProductionProcessCard({
 
   const total = processTasks.length
 
+  const urgentColor =
+    urgentCount === 0
+      ? "text-neutral-500"
+      : urgentCount <= 2
+        ? "text-amber-400"
+        : "text-red-400"
+
   function handleOpenTask(taskId: string) {
     router.push(`/processes?code=${definition.code.toLowerCase()}&taskId=${taskId}`)
   }
@@ -95,7 +102,12 @@ export function ProductionProcessCard({
               Urgentes
             </p>
 
-            <p className="text-lg font-bold leading-tight text-red-400">
+            <p
+              className={cn(
+                "text-lg font-bold leading-tight transition-colors duration-300",
+                urgentColor,
+              )}
+            >
               {urgentCount}
             </p>
 

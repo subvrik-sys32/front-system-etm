@@ -20,35 +20,35 @@ type Props = {
 }
 
 export function AppSidebar({
-  variant="desktop",
-  open=false,
-}:Props={}) {
+  variant = "desktop",
+  open = false,
+}: Props = {}) {
 
-  const mode = useSidebarStore(s=>s.mode)
-  const lastVisibleMode = useSidebarStore(s=>s.lastVisibleMode)
+  const mode = useSidebarStore(s => s.mode)
+  const lastVisibleMode = useSidebarStore(s => s.lastVisibleMode)
 
   const visibleMode =
-    mode==="closed"
+    mode === "closed"
       ? lastVisibleMode
       : mode
 
 
   const isDrawer =
-    variant==="drawer"
+    variant === "drawer"
 
 
   const collapsed =
     !isDrawer &&
-    visibleMode==="collapsed"
+    visibleMode === "collapsed"
 
 
   const isVisible =
     isDrawer
       ? open
-      : mode!=="closed"
+      : mode !== "closed"
 
 
-  const [profileEditOpen,setProfileEditOpen]=useState(false)
+  const [profileEditOpen, setProfileEditOpen] = useState(false)
 
 
   const {
@@ -84,7 +84,8 @@ export function AppSidebar({
       <aside
         className={cn(
           "absolute left-0 top-0 h-full",
-          "isolate z-40 flex flex-col bg-[#1d1c1c] select-none",
+
+          "isolate z-0 flex flex-col bg-[#1d1c1c] select-none",
           "overflow-hidden",
           "transition-[width,transform] duration-300 ease-out",
 
@@ -92,13 +93,9 @@ export function AppSidebar({
             ? "w-18"
             : "w-62",
 
-          isDrawer
-            ? open
-              ? "translate-x-0"
-              : "-translate-x-full"
-            : isVisible
-              ? "translate-x-0"
-              : "-translate-x-full"
+          isVisible
+            ? "translate-x-0"
+            : "-translate-x-full",
         )}
       >
 
@@ -129,7 +126,7 @@ export function AppSidebar({
 
             <SidebarProfile
               collapsed={collapsed}
-              onEditProfile={()=>setProfileEditOpen(true)}
+              onEditProfile={() => setProfileEditOpen(true)}
               profileOpen={profileOpen}
               setProfileOpen={setProfileOpen}
               toggleProfile={toggleProfile}
@@ -150,7 +147,7 @@ export function AppSidebar({
 
       <ProfileDialog
         open={profileEditOpen}
-        onClose={()=>setProfileEditOpen(false)}
+        onClose={() => setProfileEditOpen(false)}
       />
 
     </>

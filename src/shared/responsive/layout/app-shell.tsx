@@ -45,68 +45,33 @@ function DesktopShell({ children }: Props) {
         ? 72
         : 0
 
-
-  const [clipActive,setClipActive] = useState(
-    mode !== "closed"
-  )
-
-
-  useEffect(()=>{
-
-    if(mode === "closed") {
-
-      setClipActive(false)
-
-      return
-
-    }
-
-    setClipActive(true)
-
-  },[mode])
-
+  const visible = mode !== "closed"
 
   return (
-
     <div className="relative h-screen overflow-hidden bg-[#1d1c1c] text-white">
 
       <AppSidebar />
 
-
       <main
         className={cn(
-          "relative z-10 flex h-screen min-w-0 flex-col bg-[#050505]",
-          "overflow-hidden",
-          mode !== "closed" && "rounded-l-[28px]",
+          "relative z-10 flex h-screen min-w-0 flex-col bg-[#050505] overflow-hidden",
+
+          visible ? "rounded-l-[28px]" : "rounded-l-none",
         )}
-
         style={{
-
-          transform:`translateX(${offset}px)`,
-
-          clipPath:
-            clipActive
-              ? "inset(0 round 28px 0 0 28px)"
-              : "inset(0 round 0 0 0 0)",
-
-          transition:
-            "transform 300ms ease-out, clip-path 300ms ease-out",
-
+          marginLeft: offset,
+          transition: "margin-left 300ms ease-out",
         }}
       >
-
         <DesktopTopBar />
-
         <div className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
           {children}
         </div>
-
       </main>
 
     </div>
   )
 }
-
 // Ancho del sidebar del drawer
 const DRAWER_REVEAL_OFFSET = 248
 

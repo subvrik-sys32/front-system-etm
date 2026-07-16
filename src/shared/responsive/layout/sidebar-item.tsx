@@ -10,6 +10,11 @@ type Props = {
   icon: React.ElementType
   count?: number
   collapsed?: boolean
+  // Rediseño específico del drawer mobile: filas más grandes (mejor
+  // objetivo táctil), texto más grande, resaltado del activo más
+  // sólido, contador simple sin píldora — inspirado en el sidebar
+  // de la app de Claude. Desktop queda igual, sin cambios.
+  isDrawer?: boolean
   onMouseEnter?: () => void
 }
 
@@ -20,8 +25,45 @@ export function SidebarItem({
   icon: Icon,
   count,
   collapsed,
+  isDrawer = false,
   onMouseEnter,
 }: Props) {
+
+  if (isDrawer) {
+
+    return (
+
+      <Link
+        href={href}
+        onMouseEnter={onMouseEnter}
+        className={cn(
+          "flex h-12 items-center gap-3 rounded-xl px-4 text-base font-medium transition-colors",
+          active
+            ? "bg-white/10 text-white"
+            : "text-neutral-300 hover:bg-white/5 hover:text-white"
+        )}
+      >
+
+        <Icon size={19} className="shrink-0" />
+
+        <span className="min-w-0 flex-1 truncate">{label}</span>
+
+        {count !== undefined && count > 0 && (
+          <span
+            className={cn(
+              "shrink-0 text-sm font-semibold tabular-nums",
+              active ? "text-white" : "text-neutral-500",
+            )}
+          >
+            {count}
+          </span>
+        )}
+
+      </Link>
+
+    )
+
+  }
 
   return (
 

@@ -10,6 +10,12 @@
   width:12px;
 }
 
+.erp-scrollbar::-webkit-scrollbar-button{
+  display:none;
+  width:0;
+  height:0;
+}
+
 .erp-scrollbar::-webkit-scrollbar-track{
   background:transparent;
 }

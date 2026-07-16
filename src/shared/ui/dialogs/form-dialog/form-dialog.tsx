@@ -78,7 +78,7 @@ export function FormDialog({
 
       <DialogContent
         size="large"
-        className="flex max-h-dvh w-180 max-w-180 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#101012] p-0 text-white shadow-2xl"
+        className="flex max-h-dvh w-180 max-w-180 flex-col overflow-hidden rounded-2xl bg-[#101012] p-0 text-white shadow-2xl"
       >
 
         <FormDialogHeader
@@ -88,7 +88,7 @@ export function FormDialog({
 
         {subHeader && (
 
-          <div className="shrink-0 border-b border-white/10 px-5 py-3">
+          <div className="shrink-0 px-5 py-3">
 
             {subHeader}
 
@@ -105,7 +105,7 @@ export function FormDialog({
 
         </VerticalScroll>
 
-        <div className="border-t border-white/10 px-5 py-4">
+        <div className="px-5 py-4">
 
           <FormDialogFooter
             canSave={canSave}

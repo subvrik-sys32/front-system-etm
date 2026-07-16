@@ -344,7 +344,7 @@ export function NotificationBell({ collapsed, variant = "sidebar" }: Props) {
 
           </VerticalScroll>
 
-          <div className="border-t border-white/5 p-2">
+          <div className="p-2">
 
             <button
               type="button"

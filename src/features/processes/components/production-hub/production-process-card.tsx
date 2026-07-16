@@ -1,0 +1,150 @@
+"use client"
+
+import { useRouter } from "next/navigation"
+import { ChevronDown } from "lucide-react"
+
+import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
+import { getBadgeColors } from "@/shared/utils/badge-colors"
+import { cn } from "@/shared/utils/utils"
+
+import { TaskPipelineCardCompact } from "@/features/tasks/pipeline/components/task-pipeline-card-compact"
+
+import type { ProcessDefinition } from "../../constants/process-definitions"
+import type { ProcessTask } from "../../types/process.types"
+
+type Props = {
+  definition: ProcessDefinition
+  processTasks: ProcessTask[]
+  urgentCount: number
+  expanded: boolean
+  onToggle: () => void
+}
+
+// Colapsada: mismo lenguaje visual que el resumen de KpiCarousel
+// (fondo degradado con el color del proceso, ícono en caja, label,
+// métricas). Expandida: lista compacta de sus tareas, reutilizando
+// TaskPipelineCardCompact (sin overlay — es un vistazo rápido, el
+// trabajo real se hace en la página individual del proceso).
+export function ProductionProcessCard({
+  definition,
+  processTasks,
+  urgentCount,
+  expanded,
+  onToggle,
+}: Props) {
+
+  const router = useRouter()
+
+  const Icon = ENTITY_ICONS[definition.icon]
+  const textColor = getBadgeColors(definition.color, "subtle").text
+
+  const total = processTasks.length
+
+  function handleOpenTask(taskId: string) {
+    router.push(`/processes?code=${definition.code.toLowerCase()}&taskId=${taskId}`)
+  }
+
+  return (
+
+    <div className="overflow-hidden rounded-2xl">
+
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center gap-3 p-3 text-left transition hover:brightness-110 tablet:gap-4"
+        style={{
+          background: `linear-gradient(135deg, ${definition.color}20, #101012)`,
+        }}
+      >
+
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/5">
+
+          {Icon && <Icon size={20} style={{ color: textColor }} />}
+
+        </div>
+
+        <span
+          className="shrink-0 text-xs font-bold uppercase tracking-[0.18em]"
+          style={{ color: textColor }}
+        >
+          {definition.label}
+        </span>
+
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-4 tablet:gap-8">
+
+          <div className="min-w-0 text-right">
+
+            <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">
+              Total
+            </p>
+
+            <p
+              className="text-lg font-bold leading-tight"
+              style={{ color: textColor }}
+            >
+              {total}
+            </p>
+
+          </div>
+
+          <div className="h-8 w-px shrink-0 bg-white/10" />
+
+          <div className="min-w-0 text-right">
+
+            <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-neutral-500">
+              Urgentes
+            </p>
+
+            <p className="text-lg font-bold leading-tight text-red-400">
+              {urgentCount}
+            </p>
+
+          </div>
+
+        </div>
+
+        <ChevronDown
+          size={18}
+          className={cn(
+            "shrink-0 text-neutral-500 transition-transform duration-200",
+            expanded && "rotate-180",
+          )}
+        />
+
+      </button>
+
+      {expanded && (
+
+        <div className="flex flex-col gap-2 bg-white/2 p-2 pt-3">
+
+          {processTasks.length === 0 && (
+
+            <div className="flex h-12 items-center justify-center rounded-xl bg-white/2 text-sm text-neutral-500">
+              Sin tareas en {definition.label}
+            </div>
+
+          )}
+
+          {processTasks.map((processTask) => (
+
+            <div
+              key={processTask.task.id}
+              onClick={() => handleOpenTask(processTask.task.id)}
+              className="cursor-pointer"
+            >
+
+              <TaskPipelineCardCompact processTask={processTask} />
+
+            </div>
+
+          ))}
+
+        </div>
+
+      )}
+
+    </div>
+
+  )
+
+}

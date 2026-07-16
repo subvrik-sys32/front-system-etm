@@ -9,6 +9,8 @@ import { SidebarItem } from "./sidebar-item"
 import { SidebarPresence } from "./sidebar-presence"
 import { SidebarSection } from "./sidebar-section"
 
+import { cn } from "@/shared/utils/utils"
+
 import { NotificationBell } from "@/features/notifications/components/notification-bell"
 
 import { useAuthStore } from "@/features/auth/store/auth-store"
@@ -50,7 +52,10 @@ export function SidebarNavigation({
   return (
 
     <div
-      className="erp-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-3 py-3 scrollbar-gutter-stable"
+      className={cn(
+        "min-h-0 flex-1 overflow-x-hidden overflow-y-auto scrollbar-gutter-stable",
+        isDrawer ? "hide-scrollbar px-2 py-4" : "erp-scrollbar px-3 py-3",
+      )}
       style={{
         maskImage:
           "linear-gradient(to bottom,transparent,black 4px,black calc(100% - 4px),transparent)",
@@ -90,6 +95,7 @@ export function SidebarNavigation({
             <SidebarSection
               title={section.title}
               collapsed={collapsed}
+              isDrawer={isDrawer}
             >
 
               {items.map(item => {
@@ -117,6 +123,7 @@ export function SidebarNavigation({
                   <SidebarItem
                     key={item.href}
                     collapsed={collapsed}
+                    isDrawer={isDrawer}
                     href={item.href}
                     label={item.label}
                     icon={item.icon}

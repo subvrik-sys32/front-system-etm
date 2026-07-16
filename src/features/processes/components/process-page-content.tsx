@@ -2,6 +2,11 @@
 
 import { useState } from "react"
 
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { cn } from "@/shared/utils/utils"
+
+import { AdaptiveActionBar } from "@/shared/responsive/adaptative/adaptive-action-bar"
+
 import { EntityToolbar } from "@/shared/ui/entity-toolbar/entity-toolbar"
 import { EntityToolbarSearch } from "@/shared/ui/entity-toolbar/entity-toolbar-search"
 import { FilterBar } from "@/shared/filter/components/filter-bar"
@@ -37,6 +42,8 @@ export function ProcessPageContent({
   focusToken,
   initialShowHistory = false,
 }: Props) {
+
+  const { isMobile } = useResponsive()
 
   const [search, setSearch] = useState("")
   const [showHistory, setShowHistory] =
@@ -99,47 +106,56 @@ export function ProcessPageContent({
 
   return (
 
-    // Mismo fix que Proyectos/Tareas: cadena flex-col + min-h-0 +
-    // overflow-hidden en la raíz, para que EntityTable (ahora con
-    // h-full) reciba la altura real disponible en vez de escaparse
-    // hacia el documento.
-    <div className="relative mx-auto flex h-full min-h-0 w-full max-w-400 flex-col overflow-hidden">
+    // Mismo patrón que Tareas/Proyectos: en desktop, contenedor fijo
+    // con scroll interno acotado. En mobile, sin esas restricciones
+    // — la página entera scrollea de forma natural.
+    <div className={cn(
+      "relative mx-auto flex w-full max-w-400 flex-col",
+      isMobile ? "" : "h-full min-h-0 overflow-hidden",
+    )}>
 
       <div className="shrink-0">
 
         <EntityToolbar
           left={
-            <div className="flex flex-wrap items-center gap-2 py-1 select-none">
 
-              <BackToTaskButton />
+            <AdaptiveActionBar
+              pinned={
+                <>
+                  <BackToTaskButton />
 
-              <EntityToolbarSearch
-                value={search}
-                onChange={setSearch}
-              />
+                  <EntityToolbarSearch
+                    value={search}
+                    onChange={setSearch}
+                  />
+                </>
+              }
+              actions={[
+                <FilterBar key="filter" module="processes" />,
+                <HistoryToggleButton
+                  key="history"
+                  count={completedCount}
+                  active={showHistory}
+                  onClick={() =>
+                    setShowHistory(v => !v)
+                  }
+                />,
+                <ExportMenu
+                  key="export"
+                  scopes={PRODUCTION_EXPORT_SCOPES}
+                  onExport={handleExport}
+                />,
+              ]}
+            />
 
-              <FilterBar module="processes" />
-
-              <HistoryToggleButton
-                count={completedCount}
-                active={showHistory}
-                onClick={() =>
-                  setShowHistory(v => !v)
-                }
-              />
-
-              <ExportMenu
-                scopes={PRODUCTION_EXPORT_SCOPES}
-                onExport={handleExport}
-              />
-
-            </div>
           }
         />
 
       </div>
 
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className={cn(
+        isMobile ? "" : "min-h-0 flex-1 overflow-hidden",
+      )}>
 
         <EntityExpandProvider>
 

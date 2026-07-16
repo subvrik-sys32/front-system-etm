@@ -27,6 +27,51 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
   // no tocar el store de desktop (que el drawer ignora).
   const handleClose = isDrawer ? closeDrawer : toggleClosed
 
+  if (isDrawer) {
+
+    return (
+
+      <div className="px-4 pb-4 pt-5">
+
+        <div className="grid grid-cols-[32px_1fr_32px] items-center">
+
+          <div />
+
+          <div className="flex flex-col items-center">
+
+            <div className="relative h-12 w-12">
+              <Image
+                src="/icon.svg"
+                alt="ETM SAC"
+                fill
+                priority
+                draggable={false}
+                className="select-none object-contain"
+              />
+            </div>
+
+            <h1 className="mt-2 text-sm font-semibold text-white">
+              COMPANY S.A.C.
+            </h1>
+
+          </div>
+
+          <button
+            onClick={handleClose}
+            title="Cerrar"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
+          >
+            <EyeOff size={16} />
+          </button>
+
+        </div>
+
+      </div>
+
+    )
+
+  }
+
   return (
 
     <div className="px-3 pb-3 pt-4">
@@ -53,18 +98,16 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
 
             <div className="mt-4 flex flex-col items-center gap-2">
 
-              {!isDrawer && (
-                <button
-                  onClick={toggleCollapsed}
-                  title="Expandir"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
-                >
-                  <PanelLeftClose
-                    size={15}
-                    className="rotate-180"
-                  />
-                </button>
-              )}
+              <button
+                onClick={toggleCollapsed}
+                title="Expandir"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
+              >
+                <PanelLeftClose
+                  size={15}
+                  className="rotate-180"
+                />
+              </button>
 
               <button
                 onClick={handleClose}
@@ -107,15 +150,13 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
 
             <div className="absolute right-3 top-3 flex items-center gap-1">
 
-              {!isDrawer && (
-                <button
-                  onClick={toggleCollapsed}
-                  title="Comprimir"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
-                >
-                  <PanelLeftClose size={15} />
-                </button>
-              )}
+              <button
+                onClick={toggleCollapsed}
+                title="Comprimir"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 transition-colors duration-200 hover:bg-white/5 hover:text-white"
+              >
+                <PanelLeftClose size={15} />
+              </button>
 
               <button
                 onClick={handleClose}

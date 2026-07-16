@@ -3,7 +3,10 @@
 import {
   useEffect,
   useMemo,
+  useState,
 } from "react"
+
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 import { useHydrated } from "@/shared/hooks/use-hydrated"
 import { useFocusedRow } from "@/shared/hooks/use-focused-row"
@@ -13,6 +16,8 @@ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 
 import { EntityTable } from "@/shared/ui/entity-table"
 import { EntityTableLoading } from "@/shared/ui/entity-table/entity-table-loading"
+
+import { TaskProcessColumn } from "@/features/tasks/pipeline/table/task-process-column"
 
 import { useFilterStore } from "@/shared/filter/store/filter-store"
 import { filterProcess } from "@/shared/filter/selectors/filter-process"
@@ -56,6 +61,8 @@ export function ProcessTable({
   onResolvingChange,
 }: Props) {
 
+  const { isMobile } = useResponsive()
+
   const hydrated = useHydrated()
   const expand = useEntityExpand()
 
@@ -66,9 +73,6 @@ export function ProcessTable({
   useFocusedRow({
     focusedId: focusedTaskId,
     setExpandedRowId: expand.setExpandedRowId,
-    // Se reinicia el polling de scroll/expand cuando:
-    // - llega una nueva solicitud de foco (focusToken cambia), o
-    // - el historial pasa a visible (showHistory cambia)
     retryKey: `${focusToken ?? ""}:${showHistory}`,
   })
 
@@ -153,12 +157,73 @@ export function ProcessTable({
     [],
   )
 
+  // Estado del pipeline mobile — esta página es standalone (no
+  // vive dentro de TaskPipelineBoard), así que necesita su propio
+  // lock de overlay Y su propia clave de expansión, con el formato
+  // "taskId:processCode" que espera TaskProcessColumn — NO se puede
+  // reusar expand.expandedRowId acá porque ese es solo el taskId
+  // (formato de EntityTable, pensado para desktop), nunca matchea.
+  const [mobileExpandedKey, setMobileExpandedKey] =
+    useState<string | null>(null)
+
+  const [activeOverlayKey, setActiveOverlayKey] =
+    useState<string | null>(null)
+
+  const handleOverlayOpenChange = (key: string, isOpen: boolean) => {
+    setActiveOverlayKey(isOpen ? key : null)
+  }
+
+  // Si llega un foco a una tarea específica (ej. desde una
+  // notificación) mientras estamos en mobile, expandirla
+  // automáticamente con la clave en el formato correcto.
+  useEffect(() => {
+
+    if (!isMobile || !focusedTaskId) {
+      return
+    }
+
+    const exists = displayedTasks.some(
+      pt => pt.task.id === focusedTaskId,
+    )
+
+    if (exists) {
+      setMobileExpandedKey(`${focusedTaskId}:${processDefinition.code}`)
+    }
+
+  }, [isMobile, focusedTaskId, displayedTasks, processDefinition.code])
+
   if (!hydrated || loading) {
     return (
       <EntityTableLoading
         label="Cargando procesos..."
       />
     )
+  }
+
+  if (isMobile) {
+
+    const tasks = displayedTasks.map(
+      processTask => processTask.task,
+    )
+
+    return (
+
+      <TaskProcessColumn
+        processCode={processDefinition.code}
+        tasks={tasks}
+        expandedKey={mobileExpandedKey}
+        onToggleCard={(key) =>
+          setMobileExpandedKey(current =>
+            current === key ? null : key,
+          )
+        }
+        activeOverlayKey={activeOverlayKey}
+        onOverlayOpenChange={handleOverlayOpenChange}
+        contentOnly
+      />
+
+    )
+
   }
 
   return (

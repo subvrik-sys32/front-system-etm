@@ -41,9 +41,13 @@ export default function ProcessPage() {
 
   return (
 
-    <main className="flex h-full flex-col overflow-hidden bg-[#050505] px-8 py-10 text-white select-none">
+    // Mismo patrón que TasksPage/ProjectsPage: padding responsive
+    // y sin overflow-hidden forzado — la contención real vive en
+    // ProcessPageContent (isMobile deja que la página scrollee
+    // normal, como el resto del ERP en mobile).
+    <main className="flex h-full flex-col bg-[#050505] px-4 py-5 text-white select-none tablet:px-8 tablet:py-10">
 
-      <header className="flex shrink-0 flex-wrap items-start justify-between gap-4">
+      <header className="flex flex-wrap items-start justify-between gap-4">
 
         <div className="min-w-0">
 
@@ -65,7 +69,7 @@ export default function ProcessPage() {
 
       </header>
 
-      <section className="mt-6 min-h-0 flex-1 overflow-hidden">
+      <section className="mt-4 flex-1 min-h-0 tablet:mt-6">
 
         <ProcessPageContent
           processCode={processCode}

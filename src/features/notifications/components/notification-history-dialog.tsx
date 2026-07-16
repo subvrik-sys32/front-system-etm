@@ -131,12 +131,12 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
         */}
         <DialogContent
           size="large"
-          className="flex max-h-screen w-180 max-w-180 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#101012] p-0 text-white shadow-2xl"
+          className="flex max-h-screen w-180 max-w-180 flex-col overflow-hidden rounded-2xl bg-[#101012] p-0 text-white shadow-2xl"
           onPointerDownOutside={preventNestedDialogClose}
           onInteractOutside={preventNestedDialogClose}
         >
 
-          <DialogHeader className="border-b border-white/10 px-5 py-4">
+          <DialogHeader className="px-5 py-4">
 
             <div className="flex items-start gap-4">
 
@@ -199,7 +199,7 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
 
           </DialogHeader>
 
-          <div className="shrink-0 border-b border-white/10 px-5 py-3">
+          <div className="shrink-0 px-5 py-3">
 
             <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2">
               <Search size={15} className="shrink-0 text-neutral-500" />
@@ -261,7 +261,7 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
 
           </VerticalScroll>
 
-          <div className="border-t border-white/10 px-5 py-4">
+          <div className="px-5 py-4">
 
             <div className="flex justify-end">
 

@@ -22,7 +22,7 @@ export function FormDialogHeader({
 
   return (
 
-    <DialogHeader className="border-b border-white/10 px-5 py-4">
+    <DialogHeader className="px-5 py-4">
 
       <div className="flex items-start gap-4">
 

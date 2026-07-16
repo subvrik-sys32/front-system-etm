@@ -3,6 +3,7 @@
 import { Search, ChevronDown } from "lucide-react"
 import { useRef } from "react"
 
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
 import { cn } from "@/shared/utils/utils"
 
@@ -107,6 +108,8 @@ export function EntitySelect<T extends EntityBase>({
 
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const { isCompact } = useResponsive()
+
   const definition = collectionRegistry[collection]
 
   const RowIcon = value?.icon
@@ -146,7 +149,11 @@ export function EntitySelect<T extends EntityBase>({
 
           if (!v) {
             setQuery("")
-          } else {
+          } else if (!isCompact) {
+
+            // Autofoco solo en desktop/laptop — en mobile y tablet
+            // abriría el teclado automáticamente apenas se muestra
+            // el popover, sin que el usuario haya tocado el campo.
             requestAnimationFrame(
               () => inputRef.current?.focus(),
             )

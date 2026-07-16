@@ -44,6 +44,10 @@ import {
   cn,
 } from "@/shared/utils/utils"
 
+import {
+  useResponsive,
+} from "@/shared/responsive/hooks/use-responsive"
+
 import type {
   User,
 } from "../types/user.types"
@@ -96,6 +100,8 @@ export function UserSelect({
 
   const inputRef=
     useRef<HTMLInputElement>(null)
+
+  const { isCompact } = useResponsive()
 
   const RowIcon = value?.icon
     ? ENTITY_ICONS[value.icon]
@@ -177,6 +183,13 @@ export function UserSelect({
 
         }
 
+        if(isCompact){
+          return
+        }
+
+        // Autofoco solo en desktop/laptop — en mobile y tablet
+        // abriría el teclado automáticamente apenas se muestra
+        // el popover, sin que el usuario haya tocado el campo.
         requestAnimationFrame(()=>{
 
           inputRef.current?.focus()

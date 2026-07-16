@@ -81,11 +81,9 @@ export function AppSidebar({
       <aside
         className={cn(
 
-          isDrawer
-            ? "fixed inset-y-0 left-0 h-dvh"
-            : "absolute left-0 top-0 h-full",
+          "absolute left-0 top-0 h-full",
 
-          "pt-6 pb-6 isolate z-40 flex flex-col bg-[#0A0A0A] select-none transform-gpu transition-transform duration-200 ease-out will-change-transform",
+          "pt-6 pb-6 isolate z-40 flex flex-col bg-[#0A0A0A] select-none transition-[width,transform] duration-200 ease-out",
 
           // importante: evitar que Safari/iOS recorte el contenido
           "overflow-x-hidden overflow-y-hidden",

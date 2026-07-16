@@ -59,7 +59,7 @@ export function ProjectPicker({
   const[open,setOpen]=useState(false)
   const[query,setQuery]=useState("")
 
-  const { isMobile } = useResponsive()
+  const { isMobile, isCompact } = useResponsive()
 
   const inputRef=
     useRef<HTMLInputElement>(null)
@@ -197,6 +197,13 @@ export function ProjectPicker({
 
         setQuery("")
 
+        if(isCompact){
+          return
+        }
+
+        // Autofoco solo en desktop/laptop — en mobile y tablet
+        // abriría el teclado automáticamente apenas se muestra
+        // el popover, sin que el usuario haya tocado el campo.
         requestAnimationFrame(
           ()=>inputRef.current?.focus(),
         )
@@ -260,7 +267,7 @@ export function ProjectPicker({
 
         </div>
 
-        <VerticalScroll className="h-90 pr-2">
+        <VerticalScroll className="pr-2">
 
           <div className="space-y-3">
 

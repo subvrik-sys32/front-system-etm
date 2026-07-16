@@ -33,7 +33,6 @@ function DesktopTopBar() {
 
 }
 
-
 function DesktopShell({ children }: Props) {
 
   const mode = useSidebarStore(state => state.mode)
@@ -45,33 +44,69 @@ function DesktopShell({ children }: Props) {
         ? 72
         : 0
 
-  const visible = mode !== "closed"
+  const [curveVisible,setCurveVisible] = useState(
+    mode !== "closed",
+  )
+
+  useEffect(() => {
+
+    // Al salir de "closed" la curva debe existir
+    // ANTES de comenzar el movimiento.
+    if (mode !== "closed") {
+      setCurveVisible(true)
+    }
+
+  }, [mode])
+
+  const handleTransitionEnd = (
+    event: React.TransitionEvent<HTMLElement>,
+  ) => {
+
+    if (event.target !== event.currentTarget) return
+    if (event.propertyName !== "margin-left") return
+
+    // Solo cuando el contenido ya terminó de volver
+    // quitamos la curva.
+    if (mode === "closed") {
+      setCurveVisible(false)
+    }
+
+  }
 
   return (
+
     <div className="relative h-screen overflow-hidden bg-[#1d1c1c] text-white">
 
       <AppSidebar />
 
       <main
+        onTransitionEnd={handleTransitionEnd}
         className={cn(
-          "relative z-10 flex h-screen min-w-0 flex-col bg-[#050505] overflow-hidden",
-
-          visible ? "rounded-l-[28px]" : "rounded-l-none",
+          "relative z-10 flex h-screen min-w-0 flex-col overflow-hidden bg-[#050505]",
+          curveVisible && "rounded-l-[28px]",
         )}
         style={{
           marginLeft: offset,
-          transition: "margin-left 300ms ease-out",
+          transition: "margin-left 300ms cubic-bezier(.22,1,.36,1)",
         }}
       >
+
         <DesktopTopBar />
+
         <div className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+
           {children}
+
         </div>
+
       </main>
 
     </div>
+
   )
+
 }
+
 // Ancho del sidebar del drawer
 const DRAWER_REVEAL_OFFSET = 248
 

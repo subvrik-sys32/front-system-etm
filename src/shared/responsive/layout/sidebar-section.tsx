@@ -26,7 +26,7 @@ export function SidebarSection({
 
         <div className="mb-2 px-4">
 
-          <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-neutral-500">
+          <span className="text-[11px] font-medium uppercase tracking-widest text-neutral-500">
             {title}
           </span>
 

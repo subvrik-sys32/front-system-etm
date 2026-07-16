@@ -64,7 +64,9 @@ export function PopoverTrigger({
 export function PopoverContent({
   className,
   align = "center",
+  side = "bottom",
   sideOffset = 4,
+  avoidCollisions = false,
   portal = true,
   ...props
 }: PopoverContentProps) {
@@ -77,7 +79,17 @@ export function PopoverContent({
       // no le cancele los clicks después de un scroll horizontal.
       data-drag-scroll-ignore
       align={align}
+      side={side}
       sideOffset={sideOffset}
+      // Sin esto, al achicarse el viewport por el teclado virtual
+      // en mobile, Radix flippea el popover hacia arriba (side=top)
+      // por falta de espacio debajo. Al cerrar el teclado, el
+      // viewport vuelve a su tamaño pero la posición no siempre se
+      // recalcula a tiempo (iOS no dispara resize estándar, solo
+      // visualViewport), y el popover queda pegado arriba — se ve
+      // como un salto brusco. Fijamos el lado siempre abajo; el
+      // contenido ya tiene scroll interno propio si no entra entero.
+      avoidCollisions={avoidCollisions}
       onOpenAutoFocus={event => {
         event.preventDefault()
       }}

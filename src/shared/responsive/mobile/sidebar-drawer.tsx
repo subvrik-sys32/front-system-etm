@@ -28,11 +28,16 @@ export function SidebarDrawer() {
     }
 
     const previousOverflow = document.body.style.overflow
+    const previousOverscroll = document.documentElement.style.overscrollBehaviorY
 
     document.body.style.overflow = "hidden"
+    // evita el rebote (bounce) de iOS que descubre el hueco superior
+    // y desincroniza el backdrop del aside
+    document.documentElement.style.overscrollBehaviorY = "none"
 
     return () => {
       document.body.style.overflow = previousOverflow
+      document.documentElement.style.overscrollBehaviorY = previousOverscroll
     }
 
   }, [drawerOpen])
@@ -63,7 +68,10 @@ export function SidebarDrawer() {
         role="presentation"
         onClick={closeDrawer}
         className={cn(
-          "fixed inset-0 z-30 bg-black/60 backdrop-blur-[2px] transition-opacity duration-200 ease-out",
+          // mismo overscan que el aside (-top-6 + h-[calc(100dvh+48px)])
+          // para que ambos cubran exactamente la misma área en el rebote de iOS
+          "fixed left-0 -top-6 h-[calc(100dvh+48px)] w-full",
+          "z-30 bg-black/60 backdrop-blur-[2px] transition-opacity duration-200 ease-out",
           drawerOpen
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0",

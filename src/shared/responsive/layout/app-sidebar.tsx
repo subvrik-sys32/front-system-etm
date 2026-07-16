@@ -90,6 +90,10 @@ export function AppSidebar({
           // importante: evitar que Safari/iOS recorte el contenido
           "overflow-x-hidden overflow-y-hidden",
 
+          // asegura que el aside cubra toda su franja incluso si
+          // algún ancestro reintroduce un containing block
+          isDrawer && "max-h-none",
+
           collapsed
             ? "w-18"
             : "w-62",

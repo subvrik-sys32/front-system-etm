@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 import { usePathname, useSearchParams } from "next/navigation"
 
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
@@ -15,6 +16,12 @@ export function SidebarDrawer() {
 
   const pathname = usePathname()
   const searchParams = useSearchParams()
+
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     closeDrawer()
@@ -31,8 +38,6 @@ export function SidebarDrawer() {
     const previousOverscroll = document.documentElement.style.overscrollBehaviorY
 
     document.body.style.overflow = "hidden"
-    // evita el rebote (bounce) de iOS que descubre el hueco superior
-    // y desincroniza el backdrop del aside
     document.documentElement.style.overscrollBehaviorY = "none"
 
     return () => {
@@ -60,7 +65,11 @@ export function SidebarDrawer() {
 
   }, [drawerOpen, closeDrawer])
 
-  return (
+  if (!mounted) {
+    return null
+  }
+
+  return createPortal(
 
     <>
 
@@ -68,8 +77,6 @@ export function SidebarDrawer() {
         role="presentation"
         onClick={closeDrawer}
         className={cn(
-          // mismo overscan que el aside (-top-6 + h-[calc(100dvh+48px)])
-          // para que ambos cubran exactamente la misma área en el rebote de iOS
           "fixed left-0 -top-6 h-[calc(100dvh+48px)] w-full",
           "z-30 bg-black/60 backdrop-blur-[2px] transition-opacity duration-200 ease-out",
           drawerOpen
@@ -82,7 +89,9 @@ export function SidebarDrawer() {
         <AppSidebar variant="drawer" open={drawerOpen} />
       </div>
 
-    </>
+    </>,
+
+    document.body,
 
   )
 

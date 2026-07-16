@@ -36,7 +36,7 @@ function SkeletonProcessRow({ opacity }: { opacity: number }) {
         <span className="h-8 w-px shrink-0 bg-white/10" />
 
         <div className="text-right">
-          <span className="ml-auto block h-4 w-14 rounded bg-white/8" />
+          <span className="ml-auto block h-4 w-24 rounded bg-white/8" />
           <span className="ml-auto block h-6 w-6 rounded bg-white/12" />
         </div>
 

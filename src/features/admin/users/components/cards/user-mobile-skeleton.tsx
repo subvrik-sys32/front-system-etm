@@ -18,13 +18,13 @@ function SkeletonUserRow({ opacity }: { opacity: number }) {
 
       <div className="flex items-center justify-between gap-2.5 px-3 py-3">
 
-        <span className="h-3 w-24 rounded bg-white/10" />
+        <span className="h-4 w-24 rounded bg-white/10" />
 
         <span className="flex items-center gap-1.5">
 
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-white/10" />
 
-          <span className="h-3 w-16 rounded bg-white/8" />
+          <span className="h-4 w-16 rounded bg-white/8" />
 
         </span>
 

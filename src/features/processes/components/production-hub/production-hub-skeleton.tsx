@@ -24,20 +24,20 @@ function SkeletonProcessRow({ opacity }: { opacity: number }) {
 
       <span className="h-11 w-11 shrink-0 rounded-xl bg-white/5" />
 
-      <span className="hidden h-3 w-20 shrink-0 rounded bg-white/10 tablet:block" />
+      <span className="hidden h-4 w-20 shrink-0 rounded bg-white/10 tablet:block" />
 
       <div className="flex min-w-0 flex-1 items-center justify-end gap-4 tablet:gap-8">
 
         <div className="text-right">
-          <span className="ml-auto block h-2.5 w-12 rounded bg-white/8" />
-          <span className="ml-auto mt-2 block h-4.5 w-6 rounded bg-white/12" />
+          <span className="ml-auto block h-4 w-12 rounded bg-white/8" />
+          <span className="ml-auto block h-6 w-6 rounded bg-white/12" />
         </div>
 
         <span className="h-8 w-px shrink-0 bg-white/10" />
 
         <div className="text-right">
-          <span className="ml-auto block h-2.5 w-14 rounded bg-white/8" />
-          <span className="ml-auto mt-2 block h-4.5 w-6 rounded bg-white/12" />
+          <span className="ml-auto block h-4 w-14 rounded bg-white/8" />
+          <span className="ml-auto block h-6 w-6 rounded bg-white/12" />
         </div>
 
       </div>

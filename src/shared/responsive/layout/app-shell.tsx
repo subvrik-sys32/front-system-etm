@@ -50,6 +50,10 @@ function CompactShell({ children }: Props) {
 
   return (
 
+    // Este contenedor es la única fuente de verdad del alto de
+    // pantalla en mobile (h-dvh). El drawer vive DENTRO de él como
+    // overlay absolute, en vez de portal+fixed, para heredar esta
+    // misma caja sin volver a calcular nada por su cuenta.
     <div className="relative flex h-dvh flex-col overflow-hidden bg-[#050505] text-white">
 
       <TopBar />

@@ -54,10 +54,7 @@ export function SidebarProfile({
 
   const confirmLogout = () => {
     logout()
-    requestAnimationFrame(() => {
-      router.replace("/login")
-    })
-    setLogoutOpen(false)
+    router.replace("/login")
   }
 
   const avatar = (

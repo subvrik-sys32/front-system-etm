@@ -38,6 +38,21 @@ export const taskService={
 
   },
 
+  async getNextLot(
+    projectId: string,
+  ) {
+
+    const response =
+      await api.get<{
+        nextLot: number
+      }>(
+        `/tasks/project/${projectId}/next-lot`,
+      )
+
+    return response.data
+
+  },
+
   async create(
     dto:CreateTaskDto,
   ){

@@ -76,7 +76,7 @@ export function ProjectMobileCard({
 
       {expanded && (
 
-        <div className="space-y-3 border-t border-white/5 px-3 pb-3 pt-3">
+        <div className="space-y-3 px-3 pb-3 pt-3">
 
           {/*
             Columna única a propósito: los triggers de EntitySelect/

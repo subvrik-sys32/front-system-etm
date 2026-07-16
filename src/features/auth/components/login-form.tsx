@@ -1,104 +1,50 @@
 "use client"
 
-import {
-  useState,
-} from "react"
+import { useState } from "react"
+import { Loader2, Eye, EyeOff } from "lucide-react"
+import { useRouter } from "next/navigation"
 
-import {
-  Loader2,
-  Eye,
-  EyeOff,
-} from "lucide-react"
+import { authService } from "../services/auth.service"
+import { useAuthStore } from "../store/auth-store"
+import { usePermissionStore } from "@/features/permissions/store/permission-store"
 
-import {
-  useRouter,
-} from "next/navigation"
+export function LoginForm() {
 
-import {
-  authService,
-} from "../services/auth.service"
+  const router = useRouter()
 
-import {
-  useAuthStore,
-} from "../store/auth-store"
+  const setUser = useAuthStore(
+    s => s.setUser,
+  )
 
-import {
-  usePermissionStore,
-} from "@/features/permissions/store/permission-store"
+  const setPermissions = usePermissionStore(
+    s => s.setPermissions,
+  )
 
-export function LoginForm(){
+  const [loading,setLoading] = useState(false)
+  const [email,setEmail] = useState("")
+  const [password,setPassword] = useState("")
+  const [showPassword,setShowPassword] = useState(false)
+  const [success,setSuccess] = useState(false)
+  const [error,setError] = useState<string | null>(null)
 
-  const router=
-    useRouter()
 
-  const setUser=
-    useAuthStore(
-      s=>s.setUser,
-    )
-
-  const setPermissions=
-    usePermissionStore(
-      s=>s.setPermissions,
-    )
-
-  const[
-    loading,
-    setLoading,
-  ]=
-    useState(false)
-
-  const[
-    email,
-    setEmail,
-  ]=
-    useState("")
-
-  const[
-    password,
-    setPassword,
-  ]=
-    useState("")
-
-  const[
-    showPassword,
-    setShowPassword,
-  ]=
-    useState(false)
-
-  const[
-    success,
-    setSuccess,
-  ]=useState(false)
-
-  const[
-    error,
-    setError,
-  ]=
-    useState<string|null>(
-      null,
-    )
-
-  const onSubmit=async(
+  const onSubmit = async(
     e:React.FormEvent<HTMLFormElement>,
-  )=>{
+  ) => {
 
     e.preventDefault()
 
-    if(loading){
-      return
-    }
+    if(loading) return
 
     setError(null)
-
     setLoading(true)
 
-    try{
+    try {
 
-      const result=
-        await authService.login(
-          email,
-          password,
-        )
+      const result = await authService.login(
+        email,
+        password,
+      )
 
       setUser(
         result.user,
@@ -114,25 +60,23 @@ export function LoginForm(){
         "/projects",
       )
 
-    }catch(err:any){
+    } catch(err:any) {
 
       setError(
-
-        err?.response?.data?.message??
-
-        "Credenciales incorrectas.",
-
+        err?.response?.data?.message ??
+        "Credenciales incorrectas."
       )
 
-    }finally{
+    } finally {
 
       setLoading(false)
 
     }
-    
+
   }
 
-  return(
+
+  return (
 
     <form
       onSubmit={onSubmit}
@@ -140,84 +84,79 @@ export function LoginForm(){
     >
 
       <input
+        name="email"
         value={email}
         disabled={loading}
-        onChange={e=>
-          setEmail(
-            e.target.value,
-          )
-        }
+        onChange={e=>setEmail(e.target.value)}
         placeholder="admin@etmsac.com"
         type="email"
-        autoComplete="email"
-        className="w-full rounded-xl bg-[#0A0A0A] px-4 py-3.5 text-base text-white outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60 autofill:bg-[#0A0A0A] autofill:[-webkit-text-fill-color:#ffffff] autofill:[box-shadow:0_0_0_1000px_#0A0A0A_inset] autofill:[transition:background-color_9999s_ease-in-out_0s]"
+        autoComplete="username"
+        className="w-full rounded-xl bg-[#0A0A0A] px-4 py-3.5 text-base text-white outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60 autofill:bg-[#0A0A0A] autofill:[-webkit-text-fill-color:#ffffff] autofill:[box-shadow:0_0_0_1000px_#0A0A0A_inset]"
       />
+
 
       <div className="relative">
 
         <input
+          name="password"
           value={password}
           disabled={loading}
-          onChange={e=>
-            setPassword(
-              e.target.value,
-            )
-          }
+          onChange={e=>setPassword(e.target.value)}
           placeholder="Contraseña"
           type={showPassword ? "text" : "password"}
           autoComplete="current-password"
-          className="w-full rounded-xl bg-[#0A0A0A] px-4 py-3.5 pr-12 text-base text-white outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60 autofill:bg-[#0A0A0A] autofill:[-webkit-text-fill-color:#ffffff] autofill:[box-shadow:0_0_0_1000px_#0A0A0A_inset] autofill:[transition:background-color_9999s_ease-in-out_0s]"
+          className="w-full rounded-xl bg-[#0A0A0A] px-4 py-3.5 pr-12 text-base text-white outline-none transition-all duration-200 placeholder:text-neutral-600 focus:border-white/15 focus:ring-2 focus:ring-white/5 disabled:cursor-not-allowed disabled:opacity-60 autofill:bg-[#0A0A0A] autofill:[-webkit-text-fill-color:#ffffff] autofill:[box-shadow:0_0_0_1000px_#0A0A0A_inset]"
         />
+
 
         <button
           type="button"
           disabled={loading}
-          onClick={()=>
+          onClick={()=>{
             setShowPassword(
               value=>!value,
             )
-          }
+          }}
           tabIndex={-1}
           aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
           className="absolute right-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-neutral-400 transition-colors hover:bg-white/10 hover:text-neutral-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
 
           {showPassword ? (
-            <EyeOff size={16} />
+            <EyeOff size={16}/>
           ) : (
-            <Eye size={16} />
+            <Eye size={16}/>
           )}
 
         </button>
 
       </div>
 
+
       <div className="h-5">
 
-        {error&&(
-
+        {error && (
           <p className="text-sm font-medium text-red-400">
-
             {error}
-
           </p>
-
         )}
 
       </div>
 
+
       <button
+        type="submit"
         disabled={loading}
         className={`flex h-12 w-full items-center justify-center gap-2 rounded-xl text-base font-semibold transition-all duration-200 ${
           success
-            ? "bg-emerald-500 text-white"
-            : "bg-white text-black hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-neutral-300"
+          ? "bg-emerald-500 text-white"
+          : "bg-white text-black hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-neutral-300"
         }`}
       >
 
-        {success?(
-          <>
+        {success ? (
 
+          <>
             <svg
               className="h-4 w-4"
               viewBox="0 0 24 24"
@@ -225,19 +164,17 @@ export function LoginForm(){
               stroke="currentColor"
               strokeWidth="2.5"
             >
-
               <path d="M5 13l4 4L19 7"/>
-
             </svg>
 
             <span>
               Acceso concedido
             </span>
-
           </>
-        ):loading?(
-          <>
 
+        ) : loading ? (
+
+          <>
             <Loader2
               size={16}
               className="animate-spin"
@@ -246,10 +183,12 @@ export function LoginForm(){
             <span>
               Verificando credenciales...
             </span>
-
           </>
-        ):(
+
+        ) : (
+
           "Entrar"
+
         )}
 
       </button>
@@ -257,5 +196,4 @@ export function LoginForm(){
     </form>
 
   )
-
 }

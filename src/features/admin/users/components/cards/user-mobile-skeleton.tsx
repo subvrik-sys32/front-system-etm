@@ -78,7 +78,5 @@ export function UserMobileSkeleton() {
       ))}
 
     </div>
-
   )
-
 }

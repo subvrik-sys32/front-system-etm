@@ -30,6 +30,10 @@ import {
 } from "../components/cards/user-mobile-card"
 
 import {
+  UserMobileSkeleton,
+} from "../components/cards/user-mobile-skeleton"
+
+import {
   useUserColumns,
 } from "./user-columns"
 
@@ -91,6 +95,11 @@ export function UserTable({
     ])
 
   if (!hydrated || loading) {
+
+    if (isMobile) {
+      return <UserMobileSkeleton />
+    }
+
     return (
       <EntityTableLoading
         label="Cargando usuarios..."

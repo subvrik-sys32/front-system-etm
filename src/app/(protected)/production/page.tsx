@@ -9,6 +9,7 @@ import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-defi
 import { PIPELINE_PROCESS_ORDER } from "@/features/tasks/pipeline/utils/process-columns"
 
 import { ProductionProcessCard } from "@/features/processes/components/production-hub/production-process-card"
+import { ProductionHubSkeleton } from "@/features/processes/components/production-hub/production-hub-skeleton"
 
 import type { ProcessTask } from "@/features/processes/types/process.types"
 
@@ -75,18 +76,7 @@ export default function ProductionPage() {
 
         {loading ? (
 
-          <div className="flex flex-col gap-2">
-
-            {PIPELINE_PROCESS_ORDER.map((code) => (
-
-              <div
-                key={code}
-                className="h-17 w-full animate-pulse rounded-2xl bg-white/2"
-              />
-
-            ))}
-
-          </div>
+          <ProductionHubSkeleton />
 
         ) : (
 

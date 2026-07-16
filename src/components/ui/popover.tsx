@@ -105,20 +105,17 @@ export function PopoverContent({
         // Radix Dialog instala globalmente sobre "touchmove" no lo
         // reconoce como parte del árbol permitido y le hace
         // preventDefault, dejando el contenido sin poder scrollear
-        // con el dedo en mobile. Cortamos la propagación acá —igual
-        // que ya se hace arriba con "wheel"— antes de que el evento
-        // llegue al listener global, así el scroll táctil interno
-        // funciona con normalidad cuando hay contenido de sobra.
-        const element =
-          event.currentTarget
-
-        const isScrollable =
-          element.scrollHeight >
-          element.clientHeight
-
-        if (isScrollable) {
-          event.stopPropagation()
-        }
+        // con el dedo en mobile.
+        //
+        // A diferencia del "onWheel" de arriba, acá no podemos
+        // chequear "isScrollable" sobre currentTarget: el scroll
+        // real ocurre en un hijo interno (ej. CommandList con
+        // overflow-y-auto), no en este wrapper — currentTarget es
+        // siempre este nodo exterior, que no tiene overflow propio,
+        // así que ese chequeo nunca daría true. Cortamos la
+        // propagación siempre; no hay downside si no hay nada para
+        // scrollear, simplemente no pasa nada.
+        event.stopPropagation()
 
       }}
       className={cn(

@@ -72,7 +72,7 @@ export default function ProductionPage() {
 
       </header>
 
-      <section className="mt-4 flex-1 min-h-0 overflow-y-auto tablet:mt-6">
+      <section className="mt-4 min-h-0 flex-1 overflow-y-auto scrollbar-none tablet:mt-6">
 
         {loading ? (
 

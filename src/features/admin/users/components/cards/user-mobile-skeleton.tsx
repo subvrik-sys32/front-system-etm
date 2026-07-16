@@ -27,7 +27,7 @@ function SkeletonUserRow({
 
             <span className="h-1.5 w-1.5 rounded-full bg-white/10" />
 
-            <span className="h-4 w-[72px] rounded bg-white/8" />
+            <span className="h-4 w-18 rounded bg-white/8" />
 
           </span>
 

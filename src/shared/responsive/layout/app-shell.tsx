@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react"
 
 import { AppSidebar } from "./app-sidebar"
-import { SidebarShowButton, CLOSED_RAIL_WIDTH } from "./sidebar-show-button"
+import { SidebarShowButton } from "./sidebar-show-button"
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
@@ -19,41 +19,13 @@ type Props = {
 const CONTENT_CARD_CLASSES =
   "rounded-l-[28px] overflow-hidden"
 
-
-function DesktopShell({ children }: Props) {
-
-  const mode = useSidebarStore(state => state.mode)
-
-  const marginLeft =
-    mode === "open"
-      ? 248
-      : mode === "collapsed"
-        ? 72
-        : CLOSED_RAIL_WIDTH
+function DesktopTopBar() {
 
   return (
 
-    <div className="relative h-screen overflow-hidden bg-[#1d1c1c] text-white">
-
-      <AppSidebar />
+    <div className="flex h-12 shrink-0 items-center px-3">
 
       <SidebarShowButton />
-
-
-      <main
-        className={cn(
-          "relative h-screen min-w-0 overflow-hidden bg-[#050505] transition-[margin] duration-300 ease-out",
-          CONTENT_CARD_CLASSES,
-        )}
-        style={{
-          marginLeft,
-        }}
-      >
-
-        {children}
-
-      </main>
-
 
     </div>
 
@@ -61,6 +33,79 @@ function DesktopShell({ children }: Props) {
 
 }
 
+
+function DesktopShell({ children }: Props) {
+
+  const mode = useSidebarStore(state => state.mode)
+
+  const offset =
+    mode === "open"
+      ? 248
+      : mode === "collapsed"
+        ? 72
+        : 0
+
+
+  const [clipActive,setClipActive] = useState(
+    mode !== "closed"
+  )
+
+
+  useEffect(()=>{
+
+    if(mode === "closed") {
+
+      setClipActive(false)
+
+      return
+
+    }
+
+    setClipActive(true)
+
+  },[mode])
+
+
+  return (
+
+    <div className="relative h-screen overflow-hidden bg-[#1d1c1c] text-white">
+
+      <AppSidebar />
+
+
+      <main
+        className={cn(
+          "relative z-10 flex h-screen min-w-0 flex-col bg-[#050505]",
+          "overflow-hidden",
+          mode !== "closed" && "rounded-l-[28px]",
+        )}
+
+        style={{
+
+          transform:`translateX(${offset}px)`,
+
+          clipPath:
+            clipActive
+              ? "inset(0 round 28px 0 0 28px)"
+              : "inset(0 round 0 0 0 0)",
+
+          transition:
+            "transform 300ms ease-out, clip-path 300ms ease-out",
+
+        }}
+      >
+
+        <DesktopTopBar />
+
+        <div className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+          {children}
+        </div>
+
+      </main>
+
+    </div>
+  )
+}
 
 // Ancho del sidebar del drawer
 const DRAWER_REVEAL_OFFSET = 248

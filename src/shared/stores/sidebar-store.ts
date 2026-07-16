@@ -15,7 +15,7 @@ type SidebarStore = {
 }
 
 export const useSidebarStore = create<SidebarStore>()(set => ({
-  mode: "open",
+  mode: "closed",
   lastVisibleMode: "open",
 
   toggleCollapsed: () =>

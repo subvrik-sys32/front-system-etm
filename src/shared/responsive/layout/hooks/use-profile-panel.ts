@@ -251,10 +251,22 @@ export function useProfilePanel() {
 
     function handlePointerDown(e: PointerEvent) {
 
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
+      const target = e.target as Node
+
+      // panelRef cubre tanto el panel expandido (que vive dentro de
+      // containerRef) como el contenido del Popover colapsado, que
+      // Radix monta en un portal fuera de containerRef. Sin este
+      // chequeo, un pointerdown dentro del popover (ej. el botón
+      // "Editar perfil") se interpreta como click "afuera", cierra
+      // el popover en pointerdown, y el click posterior nunca llega
+      // a dispararse porque el nodo ya fue desmontado.
+      const insideContainer =
+        containerRef.current?.contains(target) ?? false
+
+      const insidePanel =
+        panelRef.current?.contains(target) ?? false
+
+      if (!insideContainer && !insidePanel) {
         closeProfile()
       }
 

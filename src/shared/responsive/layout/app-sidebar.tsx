@@ -5,7 +5,6 @@ import { useState } from "react"
 import { ProfileDialog } from "@/features/profile"
 
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
-import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
 import { cn } from "@/shared/utils/utils"
 
 import { useSidebarCounts } from "./hooks/use-sidebar-counts"
@@ -14,7 +13,6 @@ import { useProfilePanel } from "./hooks/use-profile-panel"
 import { SidebarHeader } from "./sidebar-header"
 import { SidebarNavigation } from "./sidebar-navigation"
 import { SidebarProfile } from "./sidebar-profile"
-import { SidebarShowButton } from "./sidebar-show-button"
 
 type Props = {
   variant?: "desktop" | "drawer"
@@ -22,33 +20,36 @@ type Props = {
 }
 
 export function AppSidebar({
-  variant = "desktop",
-  open = false,
-}: Props = {}) {
+  variant="desktop",
+  open=false,
+}:Props={}) {
 
-  const mode = useSidebarStore((s) => s.mode)
-  const lastVisibleMode = useSidebarStore((s) => s.lastVisibleMode)
+  const mode = useSidebarStore(s=>s.mode)
+  const lastVisibleMode = useSidebarStore(s=>s.lastVisibleMode)
 
   const visibleMode =
-    mode === "closed"
+    mode==="closed"
       ? lastVisibleMode
       : mode
 
+
   const isDrawer =
-    variant === "drawer"
+    variant==="drawer"
+
 
   const collapsed =
-    isDrawer
-      ? false
-      : visibleMode === "collapsed"
+    !isDrawer &&
+    visibleMode==="collapsed"
+
 
   const isVisible =
     isDrawer
       ? open
-      : mode !== "closed"
+      : mode!=="closed"
 
-  const [profileEditOpen, setProfileEditOpen] =
-    useState(false)
+
+  const [profileEditOpen,setProfileEditOpen]=useState(false)
+
 
   const {
     projectsCount,
@@ -56,9 +57,11 @@ export function AppSidebar({
     processCounts,
   } = useSidebarCounts()
 
+
   const {
     prefetchOnHover,
   } = useSidebarPrefetch()
+
 
   const {
     profileOpen,
@@ -74,92 +77,82 @@ export function AppSidebar({
     cardRef,
   } = useProfilePanel()
 
-  return (
 
+  return (
     <>
 
       <aside
         className={cn(
-
           "absolute left-0 top-0 h-full",
-
-          "pt-6 pb-6 isolate z-40 flex flex-col bg-[#1d1c1c] select-none transition-[width,transform] duration-200 ease-out",
-
-          // importante: evitar que Safari/iOS recorte el contenido
-          "overflow-x-hidden overflow-y-hidden",
+          "isolate z-40 flex flex-col bg-[#1d1c1c] select-none",
+          "overflow-hidden",
+          "transition-[width,transform] duration-300 ease-out",
 
           collapsed
             ? "w-18"
             : "w-62",
 
-          // Patrón "push/reveal" en el drawer: el sidebar NO se
-          // desliza — vive fijo detrás y es el contenido el que se
-          // corre para revelarlo (la curva y la sombra viven en la
-          // tarjeta de contenido, en CompactShell). El translate
-          // queda solo para desktop (modo closed).
           isDrawer
-            ? "translate-x-0"
+            ? open
+              ? "translate-x-0"
+              : "-translate-x-full"
             : isVisible
               ? "translate-x-0"
-              : "-translate-x-full",
+              : "-translate-x-full"
         )}
       >
 
-        <SidebarHeader
-          collapsed={collapsed}
-          isDrawer={isDrawer}
-        />
+        <div className="pt-6 pb-6 flex h-full flex-col">
 
-        <div className="flex min-h-0 flex-1 flex-col">
-
-          <SidebarNavigation
+          <SidebarHeader
             collapsed={collapsed}
             isDrawer={isDrawer}
-            projectsCount={projectsCount}
-            activeTasksCount={activeTasksCount}
-            processCounts={processCounts}
-            presenceCollapsed={
-              presenceCollapsed || collapsed
-            }
-            presenceRef={presenceRef}
-            prefetchOnHover={prefetchOnHover}
           />
 
-        </div>
+          <div className="flex min-h-0 flex-1 flex-col">
 
-        <div className="shrink-0 select-none p-3 pt-0">
+            <SidebarNavigation
+              collapsed={collapsed}
+              isDrawer={isDrawer}
+              projectsCount={projectsCount}
+              activeTasksCount={activeTasksCount}
+              processCounts={processCounts}
+              presenceCollapsed={presenceCollapsed || collapsed}
+              presenceRef={presenceRef}
+              prefetchOnHover={prefetchOnHover}
+            />
 
-          <SidebarProfile
-            collapsed={collapsed}
-            onEditProfile={() =>
-              setProfileEditOpen(true)
-            }
-            profileOpen={profileOpen}
-            setProfileOpen={setProfileOpen}
-            toggleProfile={toggleProfile}
-            canOpenProfile={canOpenProfile}
-            panelHeight={panelHeight}
-            containerRef={containerRef}
-            panelRef={panelRef}
-            contentRef={contentRef}
-            cardRef={cardRef}
-          />
+          </div>
+
+
+          <div className="shrink-0 select-none p-3 pt-0">
+
+            <SidebarProfile
+              collapsed={collapsed}
+              onEditProfile={()=>setProfileEditOpen(true)}
+              profileOpen={profileOpen}
+              setProfileOpen={setProfileOpen}
+              toggleProfile={toggleProfile}
+              canOpenProfile={canOpenProfile}
+              panelHeight={panelHeight}
+              containerRef={containerRef}
+              panelRef={panelRef}
+              contentRef={contentRef}
+              cardRef={cardRef}
+            />
+
+          </div>
 
         </div>
 
       </aside>
 
-      {!isDrawer && <SidebarShowButton />}
 
       <ProfileDialog
         open={profileEditOpen}
-        onClose={() =>
-          setProfileEditOpen(false)
-        }
+        onClose={()=>setProfileEditOpen(false)}
       />
 
     </>
-
   )
-
 }

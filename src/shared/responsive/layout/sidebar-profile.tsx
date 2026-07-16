@@ -81,8 +81,68 @@ export function SidebarProfile({
   )
 
   if (collapsed) {
-    // ... (Mantener la lógica de collapsed igual)
-    return null 
+    return (
+      <>
+        <div ref={containerRef} className="flex flex-col items-center gap-2">
+          {/*
+            modal={false}: este popover es solo una vista previa, no
+            debe capturar foco ni pointer-events globales. Si fuera
+            modal (default de Radix), su unmount deja el body con
+            pointer-events bloqueados durante su animación de salida,
+            lo que impide abrir el ProfileDialog inmediatamente
+            después desde onEdit.
+          */}
+          <Popover open={profileOpen} onOpenChange={setProfileOpen} modal={false}>
+            <PopoverTrigger asChild>
+              <button
+                onClick={toggleProfile}
+                disabled={!canOpenProfile}
+                className={cn(
+                  "relative h-9 w-9 shrink-0 rounded-full transition",
+                  canOpenProfile
+                    ? "hover:ring-2 hover:ring-white/10"
+                    : "cursor-not-allowed opacity-60",
+                )}
+                aria-label="Mi perfil"
+              >
+                {avatar}
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-[#0A0A0A]" />
+                <ProfileMentionBadge className="absolute -top-1 -right-1" />
+              </button>
+            </PopoverTrigger>
+
+            <PopoverContent
+              side="right"
+              align="end"
+              sideOffset={12}
+              className="w-72 border-none bg-[#171717] p-0"
+            >
+              <div ref={panelRef} className="overflow-hidden rounded-xl">
+                <div ref={contentRef}>
+                  <ProfilePreviewPanel
+                    contentRef={contentRef}
+                    onEdit={() => {
+                      setProfileOpen(false)
+                      onEditProfile()
+                    }}
+                  />
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <button
+            onClick={() => setLogoutOpen(true)}
+            className="flex h-8 w-8 items-center justify-center rounded-md text-neutral-400 transition hover:bg-white/5 hover:text-white"
+            aria-label="Cerrar sesión"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+
+        {logoutDialog}
+      </>
+    )
   }
 
   return (

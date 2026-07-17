@@ -1,5 +1,7 @@
 "use client"
 
+import type { RefObject } from "react"
+
 import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
 
 import { useSnapCarouselSync } from "@/shared/hooks/use-snap-carousel-sync"
@@ -16,6 +18,11 @@ type Props = {
   onToggleCard: (key: string) => void
   activeOverlayKey: string | null
   onOverlayOpenChange: (key: string, isOpen: boolean) => void
+  // Opcional: si el padre (TaskPipelineBoard) necesita acceso directo
+  // al nodo scrolleable (ej. para espejar scroll en tiempo real con
+  // el selector de arriba), le pasa su propio ref acá en vez de que
+  // este componente cree uno interno sin que nadie más lo vea.
+  containerRef?: RefObject<HTMLDivElement | null>
 }
 
 // Carrusel real para el CONTENIDO, no solo para el selector de
@@ -27,10 +34,12 @@ type Props = {
 // ningún movimiento — el selector se sentía como un carrusel pero
 // las cards de abajo pegaban un salto, no un solo gesto fluido.
 //
-// La sincronización (swipe -> avisa afuera, cambio externo -> se
-// desliza solo) vive en useSnapCarouselSync, compartido con
-// PipelineProcessSelector — antes esta misma lógica estaba copiada
-// dos veces.
+// La sincronización de ESTADO (swipe -> avisa afuera, cambio
+// externo -> se desliza solo) vive en useSnapCarouselSync,
+// compartida con PipelineProcessSelector. El espejado en TIEMPO
+// REAL entre los dos carruseles (para que se muevan juntos al
+// instante, no con el delay del debounce) vive en TaskPipelineBoard,
+// que es quien tiene acceso a los refs de ambos.
 export function TaskPipelineCarousel({
   value,
   onChange,
@@ -40,12 +49,14 @@ export function TaskPipelineCarousel({
   onToggleCard,
   activeOverlayKey,
   onOverlayOpenChange,
+  containerRef: externalContainerRef,
 }: Props) {
 
   const { containerRef } = useSnapCarouselSync({
     value,
     onChange,
     order: PIPELINE_PROCESS_ORDER,
+    containerRef: externalContainerRef,
   })
 
   return (

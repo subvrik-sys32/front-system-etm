@@ -17,6 +17,7 @@ import { TaskProcessColumn } from "../table/task-process-column"
 import { TaskPipelineHeader } from "../table/task-pipeline-header"
 import { TaskPipelineSkeleton } from "../components/task-pipeline-skeleton"
 import { PipelineProcessSelector } from "./pipeline-process-selector"
+import { TaskPipelineCarousel } from "./task-pipeline-carousel"
 
 import { TaskDialog } from "@/features/tasks/components/dialog/task-dialog"
 
@@ -61,6 +62,76 @@ export function TaskPipelineBoard({
   // en la columna única.
   const [activeProcess, setActiveProcess] =
     useState<ProcessCode>(PIPELINE_PROCESS_ORDER[0])
+
+  // Refs a los nodos scrolleables del selector de arriba y del
+  // carrusel de tareas de abajo — necesarios para espejar su
+  // posición de scroll en TIEMPO REAL (ver efecto más abajo).
+  const selectorScrollRef = useRef<HTMLDivElement>(null)
+  const contentScrollRef = useRef<HTMLDivElement>(null)
+
+  // useSnapCarouselSync ya sincroniza el ESTADO (activeProcess) entre
+  // ambos, pero eso pasa por un debounce (~120ms) + el ida-y-vuelta
+  // de React — visualmente se sentía como "muevo el selector, y
+  // recién después de un momento las cards reaccionan". Acá los
+  // espejamos en tiempo real, en CADA evento de scroll de cualquiera
+  // de los dos, así se mueven exactamente juntos, frame a frame,
+  // sin esperar a que nada se asiente ni pasar por React. El estado
+  // (activeProcess) sigue actualizándose por su cuenta al final,
+  // vía el debounce existente — esto solo resuelve el MOVIMIENTO.
+  useEffect(() => {
+
+    if (!isMobile) {
+      return
+    }
+
+    const selectorEl = selectorScrollRef.current
+    const contentEl = contentScrollRef.current
+
+    if (!selectorEl || !contentEl) {
+      return
+    }
+
+    let syncing = false
+
+    const mirror = (from: HTMLDivElement, to: HTMLDivElement) => {
+
+      if (syncing) {
+        return
+      }
+
+      syncing = true
+
+      const fromMax = Math.max(from.scrollWidth - from.clientWidth, 1)
+      const ratio = from.scrollLeft / fromMax
+
+      const toMax = Math.max(to.scrollWidth - to.clientWidth, 1)
+
+      to.scrollLeft = ratio * toMax
+
+      // Deja pasar un frame antes de volver a permitir espejar —
+      // evita que el scroll que acabamos de asignar (que también
+      // dispara su propio evento "scroll") rebote de vuelta al
+      // origen en un ping-pong infinito.
+      requestAnimationFrame(() => {
+        syncing = false
+      })
+
+    }
+
+    const handleSelectorScroll = () => mirror(selectorEl, contentEl)
+    const handleContentScroll = () => mirror(contentEl, selectorEl)
+
+    selectorEl.addEventListener("scroll", handleSelectorScroll, { passive: true })
+    contentEl.addEventListener("scroll", handleContentScroll, { passive: true })
+
+    return () => {
+
+      selectorEl.removeEventListener("scroll", handleSelectorScroll)
+      contentEl.removeEventListener("scroll", handleContentScroll)
+
+    }
+
+  }, [isMobile])
 
   const {
     containerRef,
@@ -260,10 +331,8 @@ export function TaskPipelineBoard({
     return <TaskPipelineSkeleton />
   }
 
-  // ---------- Rama mobile: selector + una sola columna ----------
+  // ---------- Rama mobile: selector + carrusel de columnas ----------
   if (isMobile) {
-
-    const activeTasks = columns.get(activeProcess) ?? []
 
     return (
 
@@ -285,21 +354,23 @@ export function TaskPipelineBoard({
             value={activeProcess}
             onChange={setActiveProcess}
             columns={columns}
+            containerRef={selectorScrollRef}
           />
 
         </div>
 
         <div className="mt-2">
 
-          <TaskProcessColumn
-            processCode={activeProcess}
-            tasks={activeTasks}
-            allTasks={tasks}
+          <TaskPipelineCarousel
+            value={activeProcess}
+            onChange={setActiveProcess}
+            tasks={tasks}
+            columns={columns}
             expandedKey={expandedKey}
             onToggleCard={toggleCard}
             activeOverlayKey={activeOverlayKey}
             onOverlayOpenChange={handleOverlayOpenChange}
-            contentOnly
+            containerRef={contentScrollRef}
           />
 
         </div>

@@ -63,6 +63,12 @@ export default function ProcessPage() {
 
         </div>
 
+        {/* Reserva exactamente el espacio del botón sin renderizarlo */}
+        <div
+          aria-hidden
+          className="h-10 w-10 shrink-0"
+        />
+
       </header>
 
       <section className="mt-3 min-h-0 flex-1">

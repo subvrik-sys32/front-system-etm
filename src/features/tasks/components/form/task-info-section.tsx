@@ -21,6 +21,15 @@ import {
 } from "@/shared/ui/entity-select/entity-select"
 
 import {
+  DatePicker,
+} from "@/shared/ui/date-picker/components/date-picker"
+
+import {
+  parseISODate,
+  toISODateString,
+} from "@/shared/ui/date-picker/utils/date-format"
+
+import {
   ProcessRoutePicker,
 } from "@/features/tasks/components/process-route-picker"
 
@@ -186,13 +195,13 @@ export function TaskInfoSection({
 
           <div className="flex justify-center">
 
-            <Input
-              type="date"
-              value={form.deliveryDate ?? ""}
-              onChange={(e) =>
-                update({ deliveryDate: e.target.value })
+            <DatePicker
+              value={parseISODate(form.deliveryDate)}
+              onChange={(date) =>
+                update({ deliveryDate: toISODateString(date) })
               }
-              className="w-44 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:invert"
+              placeholder="Seleccionar fecha"
+              className="w-44"
             />
 
           </div>

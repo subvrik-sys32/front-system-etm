@@ -1,12 +1,14 @@
 import {
-  useEffect,
   useMemo,
-  useRef,
 } from "react"
 
 import {
   Input,
 } from "@/components/ui/input"
+
+import {
+  HexColorPicker,
+} from "@/shared/ui/color-picker/components/hex-color-picker"
 
 import type {
   EntityEditorProps,
@@ -16,10 +18,6 @@ import {
   hexToRgb,
   rgbToHex,
 } from "@/shared/utils/color-utils"
-
-import {
-  useNativeEvent,
-} from "@/shared/hooks/use-native-event"
 
 const channels=[
   ["r","R"],
@@ -42,64 +40,6 @@ export function EntityCustomColor({
         ),
       [value.color],
     )
-
-  const colorInputRef=
-    useRef<HTMLInputElement>(null)
-
-  // El "onChange" de React para type="color" mapea al evento
-  // nativo "input", que dispara en cada frame mientras se
-  // arrastra dentro del picker. Usamos el evento nativo "change"
-  // en su lugar: el navegador lo dispara UNA sola vez, al soltar
-  // o cerrar el picker, así el usuario se mueve libre dentro del
-  // selector y recién ahí se propaga el color hacia afuera.
-  useNativeEvent(
-    colorInputRef,
-    "change",
-    event=>{
-
-      const nextColor=
-        (event.target as HTMLInputElement)
-          .value
-
-      onChange({
-
-        ...value,
-
-        color:
-          nextColor,
-
-      })
-
-    },
-  )
-
-  // Sincroniza el swatch del input nativo cuando el color cambia
-  // desde OTRA fuente (hex, RGB, presets), sin interferir con una
-  // interacción de arrastre en curso (esa se maneja arriba).
-  useEffect(()=>{
-
-    const input=
-      colorInputRef.current
-
-    if(
-      !input
-    ){
-
-      return
-
-    }
-
-    if(
-      input.value!==
-      value.color
-    ){
-
-      input.value=
-        value.color
-
-    }
-
-  },[value.color])
 
   function updateRgb(
 
@@ -201,16 +141,22 @@ export function EntityCustomColor({
 
       <div className="flex overflow-hidden rounded-xl bg-white/4">
 
-        <div className="relative h-9 w-20 shrink-0 overflow-hidden">
+        <HexColorPicker
+          value={value.color}
+          onChange={hex=>
 
-          <input
-            ref={colorInputRef}
-            type="color"
-            defaultValue={value.color}
-            className="absolute inset-0 h-full w-full scale-150 cursor-pointer"
-          />
+            onChange({
 
-        </div>
+              ...value,
+
+              color:
+                hex ?? value.color,
+
+            })
+
+          }
+          className="h-9 w-20 shrink-0 rounded-none"
+        />
 
         <Input
           value={

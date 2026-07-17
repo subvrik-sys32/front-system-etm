@@ -66,7 +66,7 @@ export default async function RootLayout({
 
   return (
 
-    <html lang="es" className="h-full overflow-hidden">
+    <html lang="es" className="dark h-full overflow-hidden">
 
       <body className={`${geist.className} h-full overflow-hidden`}>
 

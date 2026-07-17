@@ -2,15 +2,16 @@
 
 import { Settings2 } from "lucide-react"
 
-import { Input } from "@/components/ui/input"
-
 import { FormSection } from "@/shared/ui/dialogs/form-dialog/form-section"
 import { FormField } from "@/shared/ui/dialogs/form-dialog/form-field"
 
 import { EntitySelect } from "@/shared/ui/entity-select/entity-select"
+import { DatePicker } from "@/shared/ui/date-picker/components/date-picker"
 
 import { useStages } from "@/features/stages/hooks/use-stages"
 import { useStatuses } from "@/features/statuses/hooks/use-statuses"
+
+import { parseISODate, toISODateString } from "@/shared/ui/date-picker/utils/date-format"
 
 import type { ProjectFormSectionProps } from "./types"
 
@@ -66,13 +67,13 @@ export function ProjectControlSection({
 
           <div className="flex justify-center">
 
-            <Input
-              type="date"
-              value={form.deliveryDate ?? ""}
-              onChange={(e) =>
-                update({ deliveryDate: e.target.value })
+            <DatePicker
+              value={parseISODate(form.deliveryDate)}
+              onChange={(date) =>
+                update({ deliveryDate: toISODateString(date) })
               }
-              className="w-44 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:invert"
+              placeholder="Seleccionar fecha"
+              className="w-44"
             />
 
           </div>

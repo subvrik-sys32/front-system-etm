@@ -7,6 +7,10 @@ import {
   cn,
 } from "@/shared/utils/utils"
 
+import {
+  useResponsive,
+} from "@/shared/responsive/hooks/use-responsive"
+
 type PopoverProps =
   React.ComponentProps<
     typeof PopoverPrimitive.Root
@@ -44,14 +48,88 @@ export function Popover(
 
 }
 
+// Qué tan cerca del borde de la pantalla tiene que estar el
+// trigger para considerarlo "no visible cómodamente" y disparar el
+// autoscroll — 18% del alto de la ventana arriba y abajo.
+const EDGE_MARGIN_RATIO = 0.18
+
 export function PopoverTrigger({
   className,
   ...props
 }: PopoverTriggerProps) {
 
+  const { isMobile } = useResponsive()
+
+  const ref = React.useRef<HTMLButtonElement>(null)
+
+  React.useEffect(() => {
+
+    // Solo en mobile: en desktop el popover ya resuelve bien su
+    // propia colisión con el viewport (avoidCollisions/flip) sin
+    // necesitar mover la página del usuario.
+    if (!isMobile) {
+      return
+    }
+
+    const el = ref.current
+
+    if (!el) {
+      return
+    }
+
+    // Radix marca el trigger con data-state="open"|"closed" — lo
+    // observamos en vez de necesitar que cada Select individual nos
+    // avise, así esto queda centralizado acá y aplica a cualquier
+    // popover/select que use este componente (UserSelect, RoleSelect,
+    // EntitySelect, etc.) sin tocarlos uno por uno.
+    const observer = new MutationObserver(() => {
+
+      if (el.getAttribute("data-state") !== "open") {
+        return
+      }
+
+      const rect = el.getBoundingClientRect()
+      const margin = window.innerHeight * EDGE_MARGIN_RATIO
+
+      const comfortablyVisible =
+        rect.top > margin &&
+        rect.bottom < window.innerHeight - margin
+
+      // Si ya está cómodo en pantalla, no lo movemos — el
+      // autoscroll es solo para cuando el trigger quedó pegado a
+      // un borde (o directamente afuera) y el popover que se abre
+      // corre riesgo de quedar cortado.
+      if (comfortablyVisible) {
+        return
+      }
+
+      // requestAnimationFrame: dejamos que el popover ya haya
+      // empezado a posicionarse antes de scrollear, para que el
+      // navegador calcule bien cuánto hace falta mover.
+      requestAnimationFrame(() => {
+
+        el.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        })
+
+      })
+
+    })
+
+    observer.observe(el, {
+      attributes: true,
+      attributeFilter: ["data-state"],
+    })
+
+    return () => observer.disconnect()
+
+  }, [isMobile])
+
   return (
 
     <PopoverPrimitive.Trigger
+      ref={ref}
       data-slot="popover-trigger"
       className={className}
       {...props}
@@ -64,9 +142,7 @@ export function PopoverTrigger({
 export function PopoverContent({
   className,
   align = "center",
-  side = "bottom",
   sideOffset = 4,
-  avoidCollisions = false,
   portal = true,
   ...props
 }: PopoverContentProps) {
@@ -79,17 +155,7 @@ export function PopoverContent({
       // no le cancele los clicks después de un scroll horizontal.
       data-drag-scroll-ignore
       align={align}
-      side={side}
       sideOffset={sideOffset}
-      // Sin esto, al achicarse el viewport por el teclado virtual
-      // en mobile, Radix flippea el popover hacia arriba (side=top)
-      // por falta de espacio debajo. Al cerrar el teclado, el
-      // viewport vuelve a su tamaño pero la posición no siempre se
-      // recalcula a tiempo (iOS no dispara resize estándar, solo
-      // visualViewport), y el popover queda pegado arriba — se ve
-      // como un salto brusco. Fijamos el lado siempre abajo; el
-      // contenido ya tiene scroll interno propio si no entra entero.
-      avoidCollisions={avoidCollisions}
       onOpenAutoFocus={event => {
         event.preventDefault()
       }}
@@ -108,26 +174,6 @@ export function PopoverContent({
         if (isScrollable) {
           event.stopPropagation()
         }
-
-      }}
-      onTouchMove={event => {
-
-        // El popover sale por Portal directo a document.body, como
-        // hermano del Dialog (no descendiente). El scroll-lock que
-        // Radix Dialog instala globalmente sobre "touchmove" no lo
-        // reconoce como parte del árbol permitido y le hace
-        // preventDefault, dejando el contenido sin poder scrollear
-        // con el dedo en mobile.
-        //
-        // A diferencia del "onWheel" de arriba, acá no podemos
-        // chequear "isScrollable" sobre currentTarget: el scroll
-        // real ocurre en un hijo interno (ej. CommandList con
-        // overflow-y-auto), no en este wrapper — currentTarget es
-        // siempre este nodo exterior, que no tiene overflow propio,
-        // así que ese chequeo nunca daría true. Cortamos la
-        // propagación siempre; no hay downside si no hay nada para
-        // scrollear, simplemente no pasa nada.
-        event.stopPropagation()
 
       }}
       className={cn(

@@ -12,6 +12,7 @@ import type { ProcessTask } from "../../../types/process.types"
 
 type Props = {
   processTask: ProcessTask
+  size?: "default" | "large"
 }
 
 const toNumber = (value: unknown): number | null => {
@@ -34,7 +35,7 @@ const toNumber = (value: unknown): number | null => {
 
 }
 
-export function ProcessAssemblyCard({ processTask }: Props) {
+export function ProcessAssemblyCard({ processTask, size }: Props) {
 
   const updateField = useWorkflowStepField()
 
@@ -48,6 +49,7 @@ export function ProcessAssemblyCard({ processTask }: Props) {
 
   return (
     <ProcessMiniCard
+      size={size}
       label="Ensamble"
       icon={Puzzle}
       color="#8B5CF6"

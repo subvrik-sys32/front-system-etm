@@ -10,6 +10,7 @@ import { workflowAccess } from "@/features/workflow/access/workflow-access"
 
 type Props = {
   processTask: ProcessTask
+  size?: "default" | "large"
 }
 
 function formatDate(value: string | null) {
@@ -33,10 +34,12 @@ function formatTime(value: string | null) {
 
 export function ProcessTimeCard({
   processTask,
+  size,
 }: Props) {
 
   return (
     <ProcessMiniCard
+      size={size}
       label="Jornada"
       icon={Clock3}
       color={"#0EA5E9"}

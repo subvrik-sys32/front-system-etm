@@ -16,11 +16,14 @@ type Props={
 
   processTask:ProcessTask
 
+  size?:"default"|"large"
+
 }
 
 export function ProcessMaterialCard({
 
   processTask,
+  size,
 
 }:Props){
 
@@ -33,6 +36,8 @@ export function ProcessMaterialCard({
   return(
 
     <ProcessMiniCard
+
+      size={size}
 
       label="Material"
 

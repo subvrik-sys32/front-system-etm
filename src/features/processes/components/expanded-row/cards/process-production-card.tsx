@@ -32,10 +32,12 @@ const toNumber = (value: unknown): number | null => {
 
 type Props = {
   processTask: ProcessTask
+  size?: "default" | "large"
 }
 
 export function ProcessProductionCard({
   processTask,
+  size,
 }: Props) {
 
   const updateField =
@@ -62,6 +64,7 @@ export function ProcessProductionCard({
 
   return (
     <ProcessMiniCard
+      size={size}
       label="Producción"
       icon={Puzzle}
       color="#f99d9d"

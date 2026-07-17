@@ -1,5 +1,7 @@
 "use client"
 
+import { Activity } from "lucide-react"
+
 import type { ProcessTask } from "../../types/process.types"
 
 import {
@@ -8,6 +10,11 @@ import {
   EntityExpandedRow,
   EntityExpandedSection,
 } from "@/shared/ui/entity-expanded-row"
+
+import { KpiCarousel } from "@/shared/ui/mini-card/kpi-carousel"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+
+import { getProcessProgress } from "../../selectors/get-process-progress"
 
 import { ProcessProductionCard } from "./cards/process-production-card"
 import { ProcessMaterialCard } from "./cards/process-material-card"
@@ -22,9 +29,13 @@ type Props={
   processTask:ProcessTask
 }
 
+const PROGRESS_COLOR = "#22C55E"
+
 export function ProcessExpandedRow({
   processTask,
 }:Props){
+
+  const { isMobile } = useResponsive()
 
   const processCode=
     processTask.workflowStep?.processCode
@@ -46,6 +57,89 @@ export function ProcessExpandedRow({
   const isDispatchProcess=
     processCode==="DS"
 
+  const cardSize = isMobile ? "large" : "default"
+
+  const { percent, statusLabel } =
+    getProcessProgress(processTask)
+
+  const cards: React.ReactNode[] = [
+
+    ...(isMaterialProcess
+      ? [
+          <ProcessProductionCard
+            key="production"
+            size={cardSize}
+            processTask={processTask}
+          />,
+          <ProcessMaterialCard
+            key="material"
+            size={cardSize}
+            processTask={processTask}
+          />,
+        ]
+      : []),
+
+    ...(isPaintProcess
+      ? [
+          <ProcessProductionCard
+            key="production"
+            size={cardSize}
+            processTask={processTask}
+          />,
+          <ProcessPaintCard
+            key="paint"
+            size={cardSize}
+            processTask={processTask}
+          />,
+        ]
+      : []),
+
+    ...(isAssemblyProcess
+      ? [
+          <ProcessAssemblyCard
+            key="assembly"
+            size={cardSize}
+            processTask={processTask}
+          />,
+          <ProcessPaintCard
+            key="paint"
+            size={cardSize}
+            processTask={processTask}
+            readOnly
+          />,
+        ]
+      : []),
+
+    ...(isDispatchProcess
+      ? [
+          <ProcessDispatchCard
+            key="dispatch"
+            size={cardSize}
+            processTask={processTask}
+          />,
+          <ProcessPaintCard
+            key="paint"
+            size={cardSize}
+            processTask={processTask}
+            readOnly
+          />,
+        ]
+      : []),
+
+    <ProcessTimeCard
+      key="time"
+      size={cardSize}
+      processTask={processTask}
+    />,
+
+    <ProcessProgressCard
+      key="progress"
+      size={cardSize}
+      processTask={processTask}
+    />,
+
+  ]
+
   return(
 
     <EntityExpandedRow rowId={processTask.task.id}>
@@ -57,85 +151,32 @@ export function ProcessExpandedRow({
         metricLabel="orden"
       />
 
+      <KpiCarousel
+        cards={cards}
+        summary={{
+          icon: Activity,
+          color: PROGRESS_COLOR,
+          label: "Progreso",
+          values: [
+            { label: "Avance", value: `${percent}%` },
+            { label: "Estado", value: statusLabel },
+          ],
+        }}
+      />
+
       <EntityExpandedContent>
-
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-
-          {isMaterialProcess&&(
-            <>
-              <ProcessProductionCard
-                processTask={processTask}
-              />
-
-              <ProcessMaterialCard
-                processTask={processTask}
-              />
-            </>
-          )}
-
-          {isPaintProcess&&(
-            <>
-              <ProcessProductionCard
-                processTask={processTask}
-              />
-
-              <ProcessPaintCard
-                processTask={processTask}
-              />
-            </>
-          )}
-
-          {isAssemblyProcess&&(
-            <>
-              <ProcessAssemblyCard
-                processTask={processTask}
-              />
-
-              <ProcessPaintCard
-                processTask={processTask}
-                readOnly
-              />
-            </>
-          )}
-
-          {isDispatchProcess&&(
-            <>
-              <ProcessDispatchCard
-                processTask={processTask}
-              />
-
-              <ProcessPaintCard
-                processTask={processTask}
-                readOnly
-              />
-            </>
-          )}
-
-          <ProcessTimeCard
-            processTask={processTask}
-          />
-
-          <ProcessProgressCard
-            processTask={processTask}
-          />
-
-        </div>
 
         {workflowStepId&&(
 
-          <div className="mt-3">
+          <EntityExpandedSection
+            title="MENSAJES"
+          >
 
-            <EntityExpandedSection
-              title="MENSAJES"
-            >
+            <ProcessCommentsPanel
+              workflowStepId={workflowStepId}
+            />
 
-              <ProcessCommentsPanel
-                workflowStepId={workflowStepId}
-              />
-
-            </EntityExpandedSection>
-
-          </div>
+          </EntityExpandedSection>
 
         )}
 

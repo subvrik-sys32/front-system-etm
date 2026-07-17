@@ -13,6 +13,7 @@ import type { ProcessTask } from "../../../types/process.types"
 type Props = {
   processTask: ProcessTask
   readOnly?: boolean
+  size?: "default" | "large"
 }
 
 const toNumber = (value: unknown): number | null => {
@@ -35,7 +36,7 @@ const toNumber = (value: unknown): number | null => {
 
 }
 
-export function ProcessPaintCard({ processTask, readOnly = false }: Props) {
+export function ProcessPaintCard({ processTask, readOnly = false, size }: Props) {
 
   const updateField = useWorkflowStepField()
 
@@ -66,6 +67,7 @@ export function ProcessPaintCard({ processTask, readOnly = false }: Props) {
 
   return (
     <ProcessMiniCard
+      size={size}
       label={hasPaintProcess ? "Pintura" : "Acabado"}
       icon={PaintBucket}
       color={

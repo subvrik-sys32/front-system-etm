@@ -124,8 +124,8 @@ function ColumnContent({
     )}>
 
       <div
-        ref={columnScrollRef}
-        style={{ touchAction: "pan-y" }}
+        ref={isMobile ? undefined : columnScrollRef}
+        style={isMobile ? undefined : { touchAction: "pan-y" }}
         className={cn(
           "hide-scrollbar overflow-x-hidden px-2 py-2",
           isMobile

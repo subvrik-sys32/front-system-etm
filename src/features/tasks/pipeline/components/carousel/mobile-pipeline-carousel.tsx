@@ -1,22 +1,23 @@
 "use client"
 
+import { useCallback, useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
 import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
 import { getBadgeColors } from "@/shared/utils/badge-colors"
+import { cn } from "@/shared/utils/utils"
 
-import { useSnapCarouselSync } from "@/shared/hooks/use-snap-carousel-sync"
+import { useDragScroll } from "@/shared/ui/horizontal-scroll/use-drag-scroll"
 import { useHorizontalFade } from "@/shared/hooks/use-horizontal-fade"
 
 import { PIPELINE_PROCESS_ORDER } from "../../utils/process-columns"
 import { TaskProcessColumn } from "../../table/task-process-column"
+import { TaskColumnOperator } from "../tasks/task-column-operator"
 
 import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
 
 type Props = {
-  value: ProcessCode
-  onChange: (code: ProcessCode) => void
   tasks: Task[]
   columns: Map<ProcessCode, Task[]>
   expandedKey: string | null
@@ -25,9 +26,23 @@ type Props = {
   onOverlayOpenChange: (key: string, isOpen: boolean) => void
 }
 
+// Mismo mecanismo que la rama desktop de TaskPipelineBoard: un solo
+// contenedor con scroll (useDragScroll) — sin hooks de sync propios,
+// sin estado de "proceso activo". Header y contenido se mueven
+// juntos porque son la misma superficie de scroll.
+//
+// El header NO reutiliza TaskProcessColumn(headerOnly) — ese es
+// ColumnHeader, con "w-72" HARDCODEADO pensado para columnas
+// angostas de desktop. Acá se arma un header propio, centrado y a
+// todo el ancho, que sí escala con la pantalla. Incluye lo mismo
+// que trae ColumnHeader: el chip del proceso Y la fila de operario
+// (TaskColumnOperator) — antes se me había quedado afuera.
+//
+// Las flechas de navegación también son un calco de las de
+// desktop (mismo scrollBy), solo que sin el gate de "hoveringHeader"
+// —en touch no hay hover— así que se muestran directo según haya o
+// no más para scrollear.
 export function MobilePipelineCarousel({
-  value,
-  onChange,
   tasks,
   columns,
   expandedKey,
@@ -36,14 +51,77 @@ export function MobilePipelineCarousel({
   onOverlayOpenChange,
 }: Props) {
 
-  const { containerRef, scrollToPrevious, scrollToNext } =
-    useSnapCarouselSync({
-      value,
-      onChange,
-      order: PIPELINE_PROCESS_ORDER,
-    })
+  const {
+    containerRef,
+    handleMouseDown,
+    handleMouseMove,
+    handleClickCapture,
+    stopDragging,
+  } = useDragScroll()
 
   const { leftFade, rightFade } = useHorizontalFade({ containerRef })
+
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const updateArrows = useCallback(() => {
+
+    const el = containerRef.current
+
+    if (!el) {
+      return
+    }
+
+    setCanScrollLeft(el.scrollLeft > 4)
+
+    setCanScrollRight(
+      el.scrollLeft + el.clientWidth < el.scrollWidth - 4
+    )
+
+  }, [containerRef])
+
+  useEffect(() => {
+
+    const el = containerRef.current
+
+    if (!el) {
+      return
+    }
+
+    updateArrows()
+
+    el.addEventListener("scroll", updateArrows, { passive: true })
+
+    const observer = new ResizeObserver(updateArrows)
+
+    observer.observe(el)
+
+    return () => {
+
+      el.removeEventListener("scroll", updateArrows)
+      observer.disconnect()
+
+    }
+
+  }, [updateArrows, containerRef])
+
+  function scrollToPrevious() {
+
+    containerRef.current?.scrollBy({
+      left: -(containerRef.current?.clientWidth ?? 0),
+      behavior: "smooth",
+    })
+
+  }
+
+  function scrollToNext() {
+
+    containerRef.current?.scrollBy({
+      left: containerRef.current?.clientWidth ?? 0,
+      behavior: "smooth",
+    })
+
+  }
 
   return (
 
@@ -54,7 +132,11 @@ export function MobilePipelineCarousel({
         onClick={scrollToPrevious}
         aria-label="Proceso anterior"
         tabIndex={-1}
-        className="absolute left-1 top-5 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-[#18181b]/80 text-neutral-200 backdrop-blur-xl"
+        className={cn(
+          "absolute left-1 top-5 z-20 flex h-8 w-8 items-center justify-center rounded-full",
+          "bg-[#18181b]/80 text-neutral-200 backdrop-blur-xl transition-opacity duration-200",
+          canScrollLeft ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
       >
         <ChevronLeft size={15} strokeWidth={2.5} />
       </button>
@@ -64,7 +146,11 @@ export function MobilePipelineCarousel({
         onClick={scrollToNext}
         aria-label="Proceso siguiente"
         tabIndex={-1}
-        className="absolute right-1 top-5 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-[#18181b]/80 text-neutral-200 backdrop-blur-xl"
+        className={cn(
+          "absolute right-1 top-5 z-20 flex h-8 w-8 items-center justify-center rounded-full",
+          "bg-[#18181b]/80 text-neutral-200 backdrop-blur-xl transition-opacity duration-200",
+          canScrollRight ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
       >
         <ChevronRight size={15} strokeWidth={2.5} />
       </button>
@@ -78,11 +164,17 @@ export function MobilePipelineCarousel({
           WebkitMaskSize: "100% 100%",
           maskSize: "100% 100%",
         }}
+        className="overflow-hidden"
       >
 
         <div
           ref={containerRef}
-          className="hide-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-contain scroll-smooth"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={stopDragging}
+          onMouseLeave={stopDragging}
+          onClickCapture={handleClickCapture}
+          className="hide-scrollbar flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden select-none"
         >
 
           {PIPELINE_PROCESS_ORDER.map(code => {
@@ -90,7 +182,8 @@ export function MobilePipelineCarousel({
             const definition = PROCESS_DEFINITIONS[code]
             const Icon = ENTITY_ICONS[definition.icon]
             const badge = getBadgeColors(definition.color, "subtle")
-            const count = columns.get(code)?.length ?? 0
+            const processTasks = columns.get(code) ?? []
+            const count = processTasks.length
 
             return (
 
@@ -99,7 +192,15 @@ export function MobilePipelineCarousel({
                 className="w-full shrink-0 snap-center"
               >
 
-                <div className="flex h-10 items-center justify-center gap-2 px-12">
+                {/* Header propio, CENTRADO — igual que el chip
+                    del carrusel de KPIs, no left-aligned con el
+                    contador empujado a la derecha como en
+                    ColumnHeader (desktop). */}
+                <div
+                  data-drag-scroll-ignore
+                  className="flex h-10 items-center justify-center gap-2 border-b px-3"
+                  style={{ borderColor: definition.color, cursor: "default" }}
+                >
 
                   <span
                     className="flex size-6 shrink-0 items-center justify-center rounded-md text-xs font-bold"
@@ -126,11 +227,31 @@ export function MobilePipelineCarousel({
 
                 </div>
 
-                <div className="mt-2">
+                {/* Fila de operario — lo mismo que trae
+                    ColumnHeader en desktop, se había quedado
+                    afuera del header propio de acá. */}
+                <div
+                  data-drag-scroll-ignore
+                  className="border-b border-white/5 px-2 py-1"
+                  style={{ cursor: "default" }}
+                >
+
+                  <TaskColumnOperator
+                    processCode={code}
+                    tasks={processTasks}
+                  />
+
+                </div>
+
+                <div
+                  data-drag-scroll-ignore
+                  className="mt-2"
+                  style={{ cursor: "default" }}
+                >
 
                   <TaskProcessColumn
                     processCode={code}
-                    tasks={columns.get(code) ?? []}
+                    tasks={processTasks}
                     allTasks={tasks}
                     expandedKey={expandedKey}
                     onToggleCard={onToggleCard}

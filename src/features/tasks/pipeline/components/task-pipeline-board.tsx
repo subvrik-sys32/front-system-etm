@@ -370,10 +370,7 @@ export function TaskPipelineBoard({
             onToggleCard={toggleCard}
             activeOverlayKey={activeOverlayKey}
             onOverlayOpenChange={handleOverlayOpenChange}
-<<<<<<< HEAD
-=======
             containerRef={contentScrollRef}
->>>>>>> 42351cd540a77db0a78df520832f0caa134a908e
           />
 
         </div>

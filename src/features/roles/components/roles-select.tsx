@@ -176,7 +176,7 @@ export function RoleSelect({
 
       <PopoverContent
         sideOffset={8}
-        className="w-72 border border-white/10 bg-[#101012] p-2"
+        className="w-72 bg-[#101012] p-2"
       >
 
         <Command

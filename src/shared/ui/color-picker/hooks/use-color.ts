@@ -25,24 +25,31 @@ export function useColor({ value, onChange }: UseColorOptions): UseColorReturn {
 
   const setHue = useCallback(
     (h: number) => {
-      setHsv((current) => {
-        const next = { ...current, h };
-        onChange(hsvToHex(next));
-        return next;
-      });
+      // "next" se calcula UNA vez acá afuera, y setHsv/onChange son
+      // dos statements hermanos — ninguno anidado adentro del
+      // callback del otro. El bug anterior era exactamente eso:
+      // onChange (que dispara setState en EntityDialog, un
+      // componente ANCESTRO vía la cadena de props) estaba adentro
+      // del callback funcional de setHsv, y React puede ejecutar ese
+      // callback durante su propio render/reconciliación — ahí no se
+      // puede disparar el setState de otro componente ("Cannot
+      // update a component while rendering a different component").
+      const next = { ...hsv, h };
+
+      setHsv(next);
+      onChange(hsvToHex(next));
     },
-    [onChange],
+    [hsv, onChange],
   );
 
   const setSaturationAndValue = useCallback(
     (s: number, v: number) => {
-      setHsv((current) => {
-        const next = { ...current, s, v };
-        onChange(hsvToHex(next));
-        return next;
-      });
+      const next = { ...hsv, s, v };
+
+      setHsv(next);
+      onChange(hsvToHex(next));
     },
-    [onChange],
+    [hsv, onChange],
   );
 
   const setFromHex = useCallback(

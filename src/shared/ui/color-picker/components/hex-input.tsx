@@ -17,13 +17,12 @@ export const HexInput = forwardRef<HTMLInputElement, HexInputProps>(
     return (
       <div
         className={[
-          'flex items-center h-9 px-3 rounded-md text-sm gap-0.5',
-          'bg-white border border-neutral-200 focus-within:border-neutral-400',
-          'dark:bg-neutral-900 dark:border-neutral-800 dark:focus-within:border-neutral-600',
+          'flex items-center h-10 px-4 rounded-xl text-sm font-medium gap-0.5',
+          'bg-white/6 border border-transparent',
           'transition-colors',
         ].join(' ')}
       >
-        <span className="text-neutral-400 dark:text-neutral-600 font-mono">#</span>
+        <span className="text-neutral-600 font-mono">#</span>
         <input
           ref={ref}
           type="text"
@@ -36,7 +35,7 @@ export const HexInput = forwardRef<HTMLInputElement, HexInputProps>(
           onBlur={onBlur}
           onKeyDown={onKeyDown}
           className={[
-            'w-full bg-transparent outline-none font-mono text-neutral-900 dark:text-neutral-100',
+            'w-full bg-transparent outline-none font-mono uppercase text-neutral-200',
             'disabled:opacity-50 disabled:cursor-not-allowed',
           ].join(' ')}
         />

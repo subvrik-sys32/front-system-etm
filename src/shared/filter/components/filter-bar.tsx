@@ -92,7 +92,7 @@ export function FilterBar({
         <PopoverContent
           align="start"
           sideOffset={8}
-          className="w-64 border border-white/10 bg-[#101012] p-2"
+          className="w-64 bg-[#101012] p-2"
         >
 
           {!selectedField ? (

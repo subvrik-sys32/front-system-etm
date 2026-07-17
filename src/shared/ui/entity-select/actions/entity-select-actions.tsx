@@ -50,7 +50,7 @@ export function EntitySelectActionMenu({
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="z-9999 w-44 rounded-lg border border-white/10 bg-[#141416] p-1"
+        className="z-9999 w-44 rounded-lg border-none bg-[#141416] p-1"
       >
 
         {onEdit && (

@@ -9,10 +9,36 @@ export interface ColorPreviewProps {
   disabled?: boolean;
   className?: string;
   onClick?: () => void;
+  /**
+   * false: el trigger es un bloque sólido pintado del color, sin
+   * círculo ni texto hex adentro — para cuando el hex ya se muestra
+   * en un campo aparte al lado, y repetirlo acá se ve redundante.
+   * true (default): swatch + código hex, como estaba originalmente.
+   */
+  showLabel?: boolean;
 }
 
 export const ColorPreview = forwardRef<HTMLButtonElement, ColorPreviewProps>(
-  ({ hex, disabled, className, onClick, ...rest }, ref) => {
+  ({ hex, disabled, className, onClick, showLabel = true, ...rest }, ref) => {
+
+    if (!showLabel) {
+      return (
+        <button
+          ref={ref}
+          type="button"
+          disabled={disabled}
+          onClick={onClick}
+          className={[
+            'block',
+            'disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
+            className ?? '',
+          ].join(' ')}
+          style={{ backgroundColor: hex }}
+          {...rest}
+        />
+      );
+    }
+
     return (
       <button
         ref={ref}
@@ -20,20 +46,19 @@ export const ColorPreview = forwardRef<HTMLButtonElement, ColorPreviewProps>(
         disabled={disabled}
         onClick={onClick}
         className={[
-          'flex items-center gap-2 h-9 px-3 rounded-md text-sm',
-          'bg-white border border-neutral-200 hover:border-neutral-300',
-          'dark:bg-neutral-900 dark:border-neutral-800 dark:hover:border-neutral-700',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400/40',
+          'flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-medium',
+          'bg-white/6 border border-transparent hover:bg-white/8',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/15',
           'disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
           className ?? '',
         ].join(' ')}
         {...rest}
       >
         <span
-          className="w-4 h-4 rounded border border-black/10 dark:border-white/10"
+          className="w-4 h-4 rounded-full border border-white/15 shrink-0"
           style={{ backgroundColor: hex }}
         />
-        <span className="text-neutral-700 dark:text-neutral-300 font-mono text-xs">{hex}</span>
+        <span className="text-neutral-300 font-mono text-xs">{hex}</span>
       </button>
     );
   },

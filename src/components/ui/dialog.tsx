@@ -156,8 +156,6 @@ export function DialogContent({
           "overflow-y-auto",
           "overscroll-contain",
           "rounded-2xl",
-          "border",
-          "border-white/10",
           "bg-[#101012]",
           "p-6",
           "shadow-2xl",

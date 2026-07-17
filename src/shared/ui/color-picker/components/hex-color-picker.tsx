@@ -2,7 +2,6 @@ import * as Popover from '@radix-ui/react-popover';
 import { useRef, useState } from 'react';
 import { ColorCanvas } from '../components/color-canvas';
 import { ColorPreview } from '../components/color-preview';
-import { HexInput } from '../components/hex-input';
 import { HueSlider } from '../components/hue-slider';
 import { useColor } from '../hooks/use-color';
 import { useHexFormat } from '../hooks/use-hex-format';
@@ -20,6 +19,7 @@ export function HexColorPicker({
   onChange,
   disabled,
   className,
+  showLabel = true,
 }: HexColorPickerProps): React.JSX.Element {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -34,7 +34,13 @@ export function HexColorPicker({
   return (
     <Popover.Root open={open} onOpenChange={disabled ? undefined : setOpen}>
       <Popover.Trigger asChild>
-        <ColorPreview ref={triggerRef} hex={hex} disabled={disabled} className={className} />
+        <ColorPreview
+          ref={triggerRef}
+          hex={hex}
+          disabled={disabled}
+          className={className}
+          showLabel={showLabel}
+        />
       </Popover.Trigger>
 
       <Popover.Portal>
@@ -43,7 +49,7 @@ export function HexColorPicker({
           sideOffset={6}
           className={[
             'z-50 w-58 p-3 rounded-lg shadow-lg flex flex-col gap-3',
-            'bg-white border border-neutral-200',
+
             'dark:bg-neutral-900 dark:border-neutral-800',
             'animate-in fade-in-0 zoom-in-95',
           ].join(' ')}
@@ -55,13 +61,6 @@ export function HexColorPicker({
             onChange={setSaturationAndValue}
           />
           <HueSlider hue={hsv.h} onChange={setHue} />
-          <HexInput
-            value={inputValue}
-            disabled={disabled}
-            onChange={handleInputChange}
-            onBlur={handleInputBlur}
-            onKeyDown={handleInputKeyDown}
-          />
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>

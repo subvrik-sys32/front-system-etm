@@ -66,8 +66,11 @@ export function DatePicker({
 
   return (
     <Popover.Root open={open} onOpenChange={disabled ? undefined : setOpen}>
-      <Popover.Anchor asChild>
-        <div className={className}>
+      <Popover.Trigger asChild>
+        <div
+          className={className}
+          onClick={event => event.preventDefault()}
+        >
           <DateInput
             ref={inputRef}
             value={inputValue}
@@ -79,17 +82,15 @@ export function DatePicker({
             onFocus={handleInputFocus}
           />
         </div>
-      </Popover.Anchor>
+      </Popover.Trigger>
 
       <Popover.Portal>
         <Popover.Content
-          align="start"
           sideOffset={6}
           onOpenAutoFocus={(event) => event.preventDefault()}
           className={[
-            'z-50 rounded-lg shadow-lg',
-            'bg-white border border-neutral-200',
-            'dark:bg-neutral-900 dark:border-neutral-800',
+            'z-50 rounded-xl shadow-xl',
+            'bg-[#101012]',
             'animate-in fade-in-0 zoom-in-95',
           ].join(' ')}
         >

@@ -12,6 +12,12 @@ export interface HexColorPickerProps {
   disabled?: boolean;
   /** Clases adicionales para el contenedor raíz. */
   className?: string;
+  /**
+   * false: el trigger es un bloque sólido del color, sin círculo ni
+   * texto hex adentro — para cuando el hex ya se muestra en un campo
+   * aparte al lado. true (default): swatch + código hex.
+   */
+  showLabel?: boolean;
 }
 
 export interface RGB {

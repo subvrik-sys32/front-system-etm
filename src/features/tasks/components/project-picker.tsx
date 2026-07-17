@@ -239,7 +239,7 @@ export function ProjectPicker({
 
       <PopoverContent
         className={cn(
-          "rounded-2xl border border-white/10 bg-[#101012] p-4 shadow-2xl",
+          "rounded-2xl bg-[#101012] p-4 shadow-2xl",
           isMobile
             ? "w-[calc(100vw-2rem)] max-w-none"
             : "w-140",

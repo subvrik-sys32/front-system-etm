@@ -10,6 +10,15 @@ import {
   HexColorPicker,
 } from "@/shared/ui/color-picker/components/hex-color-picker"
 
+import {
+  useHexFormat,
+} from "@/shared/ui/color-picker/hooks/use-hex-format"
+
+import {
+  isValidHex,
+  normalizeHex,
+} from "@/shared/ui/color-picker/utils/color"
+
 import type {
   EntityEditorProps,
 } from "../entity-dialog.types"
@@ -40,6 +49,39 @@ export function EntityCustomColor({
         ),
       [value.color],
     )
+
+  // useHexFormat es lo mismo que usa el HexInput de ADENTRO del
+  // popover del color picker — sanitiza mientras se tipea (deja
+  // solo hex válidos parciales) y, al confirmar (blur/Enter), valida
+  // el hex completo: si no es válido, REVIERTE al último valor bueno
+  // en vez de guardar cualquier cosa a medio escribir. El "updateHex"
+  // de acá antes solo hacía un chequeo de regex por tecla y ya, sin
+  // revertir nunca si quedaba inválido.
+  const {
+    inputValue,
+    handleInputChange,
+    handleInputBlur,
+    handleInputKeyDown,
+  } = useHexFormat({
+
+    hex: value.color,
+
+    onCommit: candidate => {
+
+      if (!isValidHex(candidate)) {
+        return false
+      }
+
+      onChange({
+        ...value,
+        color: normalizeHex(candidate),
+      })
+
+      return true
+
+    },
+
+  })
 
   function updateRgb(
 
@@ -92,43 +134,6 @@ export function EntityCustomColor({
 
   }
 
-  function updateHex(
-    nextHex:string,
-  ){
-
-    const normalized=
-
-      nextHex.startsWith(
-        "#",
-      )
-
-        ? nextHex
-
-        : `#${nextHex}`
-
-    if(
-
-      !/^#?[0-9A-Fa-f]{0,6}$/.test(
-        normalized,
-      )
-
-    ){
-
-      return
-
-    }
-
-    onChange({
-
-      ...value,
-
-      color:
-        normalized,
-
-    })
-
-  }
-
   return(
 
     <div className="space-y-3">
@@ -155,22 +160,33 @@ export function EntityCustomColor({
             })
 
           }
-          className="h-9 w-20 shrink-0 rounded-none"
+          showLabel={false}
+          className="h-9 w-20 shrink-0"
         />
 
-        <Input
-          value={
-            value.color.toUpperCase()
-          }
-          onChange={event=>
+        <div className="flex h-9 flex-1 items-center gap-0.5 px-6">
 
-            updateHex(
-              event.target.value,
-            )
+          <span className="font-mono text-base font-semibold text-neutral-500">
+            #
+          </span>
 
-          }
-          className="h-9 flex-1 bg-transparent px-6 text-base font-semibold uppercase tracking-wide text-neutral-200"
-        />
+          <Input
+            value={
+              inputValue.toUpperCase()
+            }
+            onChange={event=>
+
+              handleInputChange(
+                event.target.value,
+              )
+
+            }
+            onBlur={handleInputBlur}
+            onKeyDown={handleInputKeyDown}
+            className="h-9 flex-1 rounded-none bg-transparent px-0 text-base font-semibold uppercase tracking-wide text-neutral-200"
+          />
+
+        </div>
 
       </div>
 

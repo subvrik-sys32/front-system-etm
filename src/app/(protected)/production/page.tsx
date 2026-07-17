@@ -58,21 +58,34 @@ export default function ProductionPage() {
 
   return (
 
-    <main className="flex h-full flex-col bg-[#050505] px-4 py-5 text-white select-none tablet:px-8 tablet:py-10">
+    <main className="flex h-full flex-col overflow-y-auto hide-scrollbar bg-[#050505] px-4 py-5 text-white select-none tablet:px-8 tablet:py-10">
 
-      <header>
+      <header className="flex flex-wrap items-start justify-between gap-4">
 
-        <h1 className="text-2xl font-bold tracking-widest">
-          PRODUCCIÓN
-        </h1>
+        {/*
+          Título y descripción en la misma línea, separados por un
+          punto — mismo tratamiento que TasksPage/ProjectsPage para
+          no perder una línea entera de alto en mobile. min-w-0 +
+          truncate en la descripción para que en pantallas angostas
+          se corte en vez de forzar un wrap que vuelva a sumar alto.
+        */}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
 
-        <p className="mt-2 text-sm text-neutral-500">
-          Un vistazo rápido a cada proceso
-        </p>
+          <h1 className="shrink-0 text-2xl font-bold tracking-widest">
+            PRODUCCIÓN
+          </h1>
+
+          <span className="hidden h-1 w-1 shrink-0 rounded-full bg-neutral-700 tablet:block" />
+
+          <p className="min-w-0 truncate text-sm text-neutral-500">
+            Un vistazo rápido a cada proceso
+          </p>
+
+        </div>
 
       </header>
 
-      <section className="mt-4 min-h-0 flex-1 overflow-y-auto scrollbar-none tablet:mt-6">
+      <section className="mt-4 tablet:mt-6">
 
         {loading ? (
 

@@ -113,7 +113,7 @@ export function VerticalScroll({
 
   return (
 
-    <div className={cn("relative", containerClassName)}>
+    <div className={cn("relative flex min-h-0 flex-col", containerClassName)}>
 
       <button
         type="button"
@@ -145,6 +145,18 @@ export function VerticalScroll({
         <ChevronDown size={14} strokeWidth={2.5} />
       </button>
 
+      {/*
+        min-h-0 flex-1 hardcoded ACÁ (no depende de que cada
+        consumidor lo pase bien en containerClassName/className): el
+        wrapper de arriba ahora es "flex flex-col" siempre, así que
+        este div —el único hijo real en flujo, ya que los botones son
+        absolute— se estira a ocupar exactamente el alto disponible
+        del wrapper como flex item, en vez de crecer libre con su
+        contenido. Sin esto, overflow-y-auto no tiene un alto acotado
+        contra el cual comparar el contenido y nunca detecta que hay
+        overflow — el scroll termina escapándose al documento nativo
+        en vez de quedar contenido acá adentro.
+      */}
       <div
         ref={containerRef}
         style={{
@@ -157,7 +169,7 @@ export function VerticalScroll({
           maskSize: "100% 100%",
         }}
         className={cn(
-          "hide-scrollbar overflow-y-auto overscroll-contain",
+          "hide-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain",
           className,
         )}
       >

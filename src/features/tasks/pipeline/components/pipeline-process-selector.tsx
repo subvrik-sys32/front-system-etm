@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, type RefObject } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
@@ -20,6 +20,13 @@ type Props = {
   value: ProcessCode
   onChange: (code: ProcessCode) => void
   columns: Map<ProcessCode, Task[]>
+  // Opcional: si el padre (TaskPipelineBoard) necesita acceso directo
+  // al nodo scrolleable (ej. para espejar scroll en tiempo real con
+  // el carrusel de tareas de abajo), le pasa su propio ref acá.
+  // useDragScroll ya necesita SU PROPIO ref para el drag — este se
+  // mergea a mano en el callback ref de más abajo, así los dos
+  // apuntan al mismo nodo sin pisarse.
+  containerRef?: RefObject<HTMLDivElement | null>
 }
 
 // Mismo lenguaje visual que el carrusel de KPIs: un ítem a pantalla
@@ -29,6 +36,7 @@ export function PipelineProcessSelector({
   value,
   onChange,
   columns,
+  containerRef: externalContainerRef,
 }: Props) {
 
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -41,6 +49,16 @@ export function PipelineProcessSelector({
     handleClickCapture,
     stopDragging,
   } = useDragScroll()
+
+  const setNodeRefs = useCallback((node: HTMLDivElement | null) => {
+
+    containerRef.current = node
+
+    if (externalContainerRef) {
+      externalContainerRef.current = node
+    }
+
+  }, [containerRef, externalContainerRef])
 
   const { leftFade, rightFade } = useHorizontalFade({ containerRef })
 
@@ -145,7 +163,7 @@ export function PipelineProcessSelector({
       >
 
         <div
-          ref={containerRef}
+          ref={setNodeRefs}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={stopDragging}

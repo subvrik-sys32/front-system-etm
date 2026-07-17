@@ -20,7 +20,7 @@ export default function ProjectsPage(){
 
   return(
 
-    <main className="flex h-full flex-col bg-[#050505] px-4 py-5 text-white select-none tablet:px-8 tablet:py-10">
+    <main className="flex flex-col bg-[#050505] px-4 py-5 text-white select-none tablet:px-8 tablet:py-10 laptop:h-full">
 
       <header className="flex flex-wrap items-start justify-between gap-4">
 
@@ -31,7 +31,7 @@ export default function ProjectsPage(){
         */}
         <div className="flex min-w-0 flex-1 items-center gap-2">
 
-          <h1 className="shrink-0 text-2xl font-bold tracking-widest">
+          <h1 className="shrink-0 text-xl font-bold tracking-widest tablet:text-2xl">
             PROYECTOS
           </h1>
 

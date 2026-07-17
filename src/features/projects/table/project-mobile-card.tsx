@@ -1,6 +1,8 @@
 "use client"
 
-import { ChevronDown } from "lucide-react"
+import { useEffect, useState } from "react"
+
+import { ChevronDown, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
 import { formatDate } from "@/shared/utils/date-format"
@@ -14,6 +16,7 @@ import { ProjectStatusCell } from "../components/cells/project-status-cell"
 import { ProjectPmCell } from "../components/cells/project-pm-cell"
 import { ProjectRowActions } from "../components/actions/project-row-actions"
 import { ProjectExpandedRow } from "../components/expanded-row/project-expanded-row"
+import { IconAction } from "@/shared/ui/actions/icon-action"
 
 type Props = {
   project: Project
@@ -33,6 +36,24 @@ export function ProjectMobileCard({
   expanded,
   onToggle,
 }: Props) {
+
+  // Igual que Pipeline Operativo: los 4 campos editables (Cliente/
+  // Etapa/Estado/PM) arrancan colapsados en un único resumen — se
+  // expanden a la lista completa de Selects recién si el usuario
+  // toca ese resumen. Antes se mostraban siempre los 4 juntos,
+  // sumando mucho alto a la tarjeta solo para un vistazo rápido.
+  const [showFields, setShowFields] = useState(false)
+
+  const [showPipeline, setShowPipeline] = useState(false)
+
+  useEffect(() => {
+
+    if (!expanded) {
+      setShowFields(false)
+      setShowPipeline(false)
+    }
+
+  }, [expanded])
 
   return (
 
@@ -85,25 +106,99 @@ export function ProjectMobileCard({
             ya vimos con DynamicBadge en otros lugares) — una sola
             columna es la opción segura por ahora.
           */}
-          <div className="flex flex-col gap-2">
+          {showFields ? (
 
-            <ProjectClientCell project={project} triggerVariant="row" rowLabel="Cliente" />
+            <div className="flex flex-col gap-2">
 
-            <ProjectStageCell project={project} triggerVariant="row" rowLabel="Etapa" />
+              <button
+                type="button"
+                onClick={() => setShowFields(false)}
+                className="flex w-full items-center justify-between rounded-lg bg-white/3 px-3 py-2 text-xs font-medium text-neutral-500 transition hover:bg-white/5"
+              >
+                Ocultar campos
+                <ChevronDown
+                  size={14}
+                  className="shrink-0 rotate-180 text-neutral-500"
+                />
+              </button>
 
-            <ProjectStatusCell project={project} triggerVariant="row" rowLabel="Estado" />
+              <ProjectClientCell project={project} triggerVariant="row" rowLabel="Cliente" />
 
-            <ProjectPmCell project={project} triggerVariant="row" rowLabel="PM" />
+              <ProjectStageCell project={project} triggerVariant="row" rowLabel="Etapa" />
 
-          </div>
+              <ProjectStatusCell project={project} triggerVariant="row" rowLabel="Estado" />
 
-          <div className="flex justify-end">
+              <ProjectPmCell project={project} triggerVariant="row" rowLabel="PM" />
+
+            </div>
+
+          ) : (
+
+            <button
+              type="button"
+              onClick={() => setShowFields(true)}
+              className="flex w-full items-center gap-2 rounded-lg bg-white/3 px-3 py-2.5 transition hover:bg-white/5"
+            >
+
+              <span className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-sm text-neutral-300">
+
+                <span
+                  className="size-1.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: project.client.color }}
+                />
+                <span className="shrink-0 truncate">{project.client.name}</span>
+
+                <span className="shrink-0 text-neutral-600">·</span>
+
+                <span
+                  className="shrink-0 truncate"
+                  style={{ color: project.stage.color }}
+                >
+                  {project.stage.name}
+                </span>
+
+                <span className="shrink-0 text-neutral-600">·</span>
+
+                <span
+                  className="shrink-0 truncate"
+                  style={{ color: project.status.color }}
+                >
+                  {project.status.name}
+                </span>
+
+                <span className="shrink-0 text-neutral-600">·</span>
+
+                <span className="min-w-0 truncate text-neutral-400">{project.pm.name}</span>
+
+              </span>
+
+              <ChevronDown
+                size={14}
+                className="shrink-0 text-neutral-500"
+              />
+
+            </button>
+
+          )}
+
+          <div className="flex items-center justify-between">
+
+            <IconAction
+              icon={MoreHorizontal}
+              onClick={() =>
+                setShowPipeline(current => !current)
+              }
+            />
 
             <ProjectRowActions project={project} />
 
           </div>
 
-          <ProjectExpandedRow project={project} tasks={tasks} />
+          {showPipeline && (
+
+            <ProjectExpandedRow project={project} tasks={tasks} />
+
+          )}
 
         </div>
 

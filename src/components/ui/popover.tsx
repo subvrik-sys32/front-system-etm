@@ -66,7 +66,8 @@ export function PopoverContent({
   align = "center",
   side = "bottom",
   sideOffset = 4,
-  avoidCollisions = false,
+  avoidCollisions = true,
+  collisionPadding = 12,
   portal = true,
   ...props
 }: PopoverContentProps) {
@@ -81,15 +82,22 @@ export function PopoverContent({
       align={align}
       side={side}
       sideOffset={sideOffset}
-      // Sin esto, al achicarse el viewport por el teclado virtual
-      // en mobile, Radix flippea el popover hacia arriba (side=top)
-      // por falta de espacio debajo. Al cerrar el teclado, el
-      // viewport vuelve a su tamaño pero la posición no siempre se
-      // recalcula a tiempo (iOS no dispara resize estándar, solo
-      // visualViewport), y el popover queda pegado arriba — se ve
-      // como un salto brusco. Fijamos el lado siempre abajo; el
-      // contenido ya tiene scroll interno propio si no entra entero.
+      // true por default (el propio default de Radix): así el
+      // popover se reposiciona/desliza para entrar en la pantalla
+      // cuando no hay espacio de sobra — sin esto, listas largas
+      // (ej. un select de Etapa con muchas opciones) se cortaban
+      // abajo del viewport sin ninguna forma de llegar a las
+      // opciones de más abajo.
+      //
+      // El caso puntual donde SÍ conviene avoidCollisions={false}
+      // (evitar que el teclado virtual, al abrirse/cerrarse, haga
+      // flippear el popover de lado y se sienta como un salto) es
+      // angosto — algún select pegado a un input de texto en un
+      // formulario. Eso lo tiene que pedir explícito el consumidor
+      // puntual pasando la prop, no todos los popovers de la app
+      // por un default global.
       avoidCollisions={avoidCollisions}
+      collisionPadding={collisionPadding}
       onOpenAutoFocus={event => {
         event.preventDefault()
       }}

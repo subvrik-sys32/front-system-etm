@@ -8,15 +8,17 @@ export interface DateInputProps {
   value: string;
   placeholder?: string;
   disabled?: boolean;
+  readOnly?: boolean;
   className?: string;
   onChange: (raw: string) => void;
   onBlur: () => void;
   onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   onFocus?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLInputElement>) => void;
 }
 
 export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
-  ({ value, placeholder = 'dd/mm/aaaa', disabled, className, onChange, onBlur, onKeyDown, onFocus }, ref) => {
+  ({ value, placeholder = 'dd/mm/aaaa', disabled, readOnly, className, onChange, onBlur, onKeyDown, onFocus, onClick }, ref) => {
     return (
       <input
         ref={ref}
@@ -27,10 +29,12 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
         value={value}
         placeholder={placeholder}
         disabled={disabled}
+        readOnly={readOnly}
         onChange={(event) => onChange(event.target.value)}
         onBlur={onBlur}
         onKeyDown={onKeyDown}
         onFocus={onFocus}
+        onClick={onClick}
         className={[
           'w-full h-10 px-4 rounded-xl text-base text-center font-medium outline-none transition-colors',
           'bg-white/6 text-neutral-200 placeholder:text-neutral-600',

@@ -43,6 +43,7 @@ export function VerticalScroll({
 }: Props) {
 
   const containerRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   const [canScrollUp, setCanScrollUp] = useState(false)
   const [canScrollDown, setCanScrollDown] = useState(false)
@@ -66,8 +67,9 @@ export function VerticalScroll({
   useEffect(() => {
 
     const el = containerRef.current
+    const contentEl = contentRef.current
 
-    if (!el) {
+    if (!el || !contentEl) {
       return
     }
 
@@ -75,9 +77,19 @@ export function VerticalScroll({
 
     el.addEventListener("scroll", updateArrows, { passive: true })
 
+    // Observamos DOS cosas, no solo el contenedor: ahora que tiene
+    // alto acotado (flex-1 min-h-0), su propio tamaño ya no cambia
+    // cuando el contenido crece (ej. cuando termina de cargar la
+    // data real, o se expande una tarjeta) — así que un
+    // ResizeObserver solo sobre el contenedor no se entera de nada
+    // en esos casos. Observamos también el wrapper del contenido
+    // (contentRef), que sí cambia de tamaño cuando eso pasa, para
+    // recalcular las flechas apenas hay más para scrollear, sin
+    // esperar a que el usuario mueva el dedo primero.
     const observer = new ResizeObserver(updateArrows)
 
     observer.observe(el)
+    observer.observe(contentEl)
 
     return () => {
 
@@ -174,7 +186,11 @@ export function VerticalScroll({
         )}
       >
 
-        {children}
+        <div ref={contentRef}>
+
+          {children}
+
+        </div>
 
       </div>
 

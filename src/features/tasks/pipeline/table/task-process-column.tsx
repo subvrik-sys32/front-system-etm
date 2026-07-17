@@ -214,27 +214,23 @@ function ColumnContent({
 
                     {nextDefinition && nextBadge ? (
 
-                      // opacity-60: toda la fila de placeholder está
-                      // apagada (número, punto, texto en gris) — este
-                      // chip es lo único con color real (para poder
-                      // identificar el próximo proceso de un vistazo),
-                      // pero sin atenuarlo "brillaba" mucho más que el
-                      // resto de la fila. Con esto queda con presencia
-                      // pero sin competir visualmente con las cards
-                      // reales de la columna.
-                      <span
-                        className="inline-flex shrink-0 items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-semibold opacity-60"
-                        style={{
-                          color: nextBadge.text,
-                          backgroundColor: nextBadge.background,
-                        }}
-                      >
+                      <>
 
-                        {NextIcon && <NextIcon size={15} />}
+                        <span
+                          className="inline-flex shrink-0 items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-bold opacity-60"
+                          style={{
+                            color: nextBadge.text,
+                            backgroundColor: nextBadge.background,
+                          }}
+                        >
 
-                        <span>{nextProcess}</span>
+                          {NextIcon && <NextIcon size={15} />}
 
-                      </span>
+                          <span>{nextProcess}</span>
+
+                        </span>
+
+                      </>
 
                     ) : (
 

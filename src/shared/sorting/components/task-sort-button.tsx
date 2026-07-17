@@ -103,6 +103,7 @@ export function TaskSortButton(){
             current?.label.toUpperCase() ??
             "MANUAL"
           }
+          active={open}
         />
 
       </PopoverTrigger>

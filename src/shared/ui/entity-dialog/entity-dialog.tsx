@@ -3,20 +3,13 @@
 import { useRef } from "react"
 import { Palette } from "lucide-react"
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { FormDialog } from "@/shared/ui/dialogs/form-dialog/form-dialog"
 
 import { EntityPreview } from "./components/entity-preview"
 import { EntityIconPicker } from "./components/entity-icon-picker"
 import { EntityColorPicker } from "./components/entity-color-picker"
 import { EntityCustomColor } from "./components/entity-custom-color"
 import { EntityNameInput } from "./components/entity-name-input"
-import { EntitySaveButton } from "./components/entity-save-button"
 
 import { useEntityDialog } from "./hooks/use-entity-dialog"
 
@@ -35,6 +28,12 @@ type Props = {
   onSubmit: (value: EntityForm) => void | Promise<void>
 }
 
+// Migrado de un Dialog/DialogContent a medida al mismo FormDialog
+// compartido que ya usan ProjectDialog/TaskDialog/UserDialog — mismo
+// header (ícono + título), mismo footer (Cancelar/Guardar blanco),
+// mismo comportamiento fullscreen en mobile. Antes era un modal
+// chico aparte con su propio look, inconsistente con el resto de
+// los diálogos de creación/edición de la app.
 export function EntityDialog({
   open,
   title,
@@ -65,81 +64,42 @@ export function EntityDialog({
 
   return (
 
-    <Dialog
+    <FormDialog
       open={open}
-      onOpenChange={(v) => {
-
-        if (saving) {
-          return
-        }
-
-        if (!v) {
-          onClose()
-        }
-
-      }}
+      title={title}
+      icon={Palette}
+      canSave={canSave}
+      saving={saving}
+      savingLabel="Guardando..."
+      onClose={onClose}
+      onSave={save}
     >
 
-      <DialogContent
-        onOpenAutoFocus={(e) => {
-          e.preventDefault()
-          requestAnimationFrame(() => {
-            inputRef.current?.focus()
-          })
-        }}
-      >
+      <div className="space-y-5">
 
-        <DialogHeader>
+        <EntityPreview value={form} variant={previewVariant} />
 
-          <DialogTitle className="flex items-center gap-3">
-            <Palette size={18} />
-            {title}
-          </DialogTitle>
+        <EntityNameInput
+          ref={inputRef}
+          value={form}
+          onChange={setForm}
+        />
 
-          <DialogDescription className="sr-only">
-            Entity form
-          </DialogDescription>
-
-        </DialogHeader>
-
-        <div className="space-y-5 pt-3">
-
-          <EntityPreview value={form} variant={previewVariant} />
-
-          <EntityNameInput
-            ref={inputRef}
+        {showIconPicker && (
+          <EntityIconPicker
             value={form}
             onChange={setForm}
+            allowedIcons={allowedIcons}
           />
+        )}
 
-          {showIconPicker && (
-            <EntityIconPicker
-              value={form}
-              onChange={setForm}
-              allowedIcons={allowedIcons}
-            />
-          )}
+        <EntityColorPicker value={form} onChange={setForm} />
 
-          <EntityColorPicker value={form} onChange={setForm} />
+        <EntityCustomColor value={form} onChange={setForm} />
 
-          <EntityCustomColor value={form} onChange={setForm} />
+      </div>
 
-          <div className="flex justify-end pt-2">
-
-            <EntitySaveButton
-              disabled={!canSave}
-              saving={saving}
-              savingLabel="Guardando..."
-              onClick={save}
-            />
-
-          </div>
-
-        </div>
-
-      </DialogContent>
-
-    </Dialog>
+    </FormDialog>
 
   )
 

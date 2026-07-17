@@ -102,11 +102,7 @@ export function ExportMenu({
 
       <PopoverTrigger asChild>
 
-        <div>
-
-          <ExportTrigger/>
-
-        </div>
+        <ExportTrigger active={open}/>
 
       </PopoverTrigger>
 

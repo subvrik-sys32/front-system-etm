@@ -15,7 +15,9 @@ import{
 type Props=
   React.ButtonHTMLAttributes<
     HTMLButtonElement
-  >
+  > & {
+    active?:boolean
+  }
 
 export const ExportTrigger=
   forwardRef<
@@ -25,6 +27,7 @@ export const ExportTrigger=
     (
       {
         className,
+        active=false,
         ...props
       },
       ref,
@@ -40,6 +43,7 @@ export const ExportTrigger=
         <div
           className={cn(
             "flex h-8 items-center gap-2 rounded-xl px-2 text-white transition-colors hover:bg-[#101012]",
+            active && "bg-[#101012]",
             className,
           )}
         >

@@ -103,6 +103,7 @@ export function ProjectSortButton(){
             current?.label.toUpperCase() ??
             "SECUENCIA"
           }
+          active={open}
         />
 
       </PopoverTrigger>

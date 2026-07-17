@@ -17,6 +17,7 @@ import { TaskProcessColumn } from "../table/task-process-column"
 import { TaskPipelineHeader } from "../table/task-pipeline-header"
 import { TaskPipelineSkeleton } from "../components/task-pipeline-skeleton"
 import { PipelineProcessSelector } from "./pipeline-process-selector"
+import { TaskPipelineCarousel } from "./task-pipeline-carousel"
 
 import { TaskDialog } from "@/features/tasks/components/dialog/task-dialog"
 
@@ -260,10 +261,8 @@ export function TaskPipelineBoard({
     return <TaskPipelineSkeleton />
   }
 
-  // ---------- Rama mobile: selector + una sola columna ----------
+  // ---------- Rama mobile: selector + carrusel de columnas ----------
   if (isMobile) {
-
-    const activeTasks = columns.get(activeProcess) ?? []
 
     return (
 
@@ -291,15 +290,15 @@ export function TaskPipelineBoard({
 
         <div className="mt-2">
 
-          <TaskProcessColumn
-            processCode={activeProcess}
-            tasks={activeTasks}
-            allTasks={tasks}
+          <TaskPipelineCarousel
+            value={activeProcess}
+            onChange={setActiveProcess}
+            tasks={tasks}
+            columns={columns}
             expandedKey={expandedKey}
             onToggleCard={toggleCard}
             activeOverlayKey={activeOverlayKey}
             onOverlayOpenChange={handleOverlayOpenChange}
-            contentOnly
           />
 
         </div>

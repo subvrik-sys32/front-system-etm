@@ -115,8 +115,9 @@ export function EntityToolbarSearch({
 
             "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white transition-all duration-200",
 
-            !open &&
-              "hover:bg-[#101012]"
+            open
+              ? "bg-[#101012]"
+              : "hover:bg-[#101012]"
 
           )}
         >

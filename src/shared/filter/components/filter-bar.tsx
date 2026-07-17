@@ -83,6 +83,7 @@ export function FilterBar({
             expanded={
               chips.length>0
             }
+            active={open}
             onClick={()=>{}}
           />
 

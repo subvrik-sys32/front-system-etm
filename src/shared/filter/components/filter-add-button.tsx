@@ -14,6 +14,7 @@ import {
 
 type Props={
   expanded?:boolean
+  active?:boolean
 } & React.ButtonHTMLAttributes<HTMLButtonElement>
 
 export const FilterAddButton=
@@ -24,6 +25,7 @@ export const FilterAddButton=
     (
       {
         expanded=false,
+        active=false,
         className,
         ...props
       },
@@ -52,8 +54,10 @@ export const FilterAddButton=
           <span
             className={cn(
               "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl select-none text-white transition-all duration-200",
-              !expanded &&
-                "hover:bg-[#101012]"
+              active
+                ? "bg-[#101012]"
+                : !expanded &&
+                  "hover:bg-[#101012]"
             )}
           >
 

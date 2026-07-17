@@ -14,6 +14,12 @@ import {
 import {
   getBadgeColors,
 } from "@/shared/utils/badge-colors"
+import {
+  useResponsive,
+} from "@/shared/responsive/hooks/use-responsive"
+import {
+  cn,
+} from "@/shared/utils/utils"
 
 type Props = {
   label: string
@@ -68,6 +74,7 @@ export function SelectOption({
     selected && isColor
       ? badge.text
       : "#A1A1AA" // zinc-400
+  const { isMobile } = useResponsive()
 
   return (
     <CommandItem
@@ -120,7 +127,14 @@ export function SelectOption({
         <div className="relative flex h-8 min-w-8 items-center justify-end gap-2">
           {rightSlot}
           {hasActions && (
-            <div className="absolute right-0 translate-x-1 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100">
+            <div
+              className={cn(
+                "absolute right-0 transition-all duration-200",
+                isMobile
+                  ? "translate-x-0 opacity-100"
+                  : "translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100",
+              )}
+            >
               <EntitySelectActionMenu
                 onEdit={actions.edit}
                 onDelete={actions.delete}
@@ -137,13 +151,14 @@ export function SelectOption({
                   ? badge.text
                   : resolvedColor,
               }}
-              className={`transition-all duration-200 ${
-                disableCheckAnimation
-                  ? ""
-                  : hasActions
-                    ? "group-hover:-translate-x-10"
-                    : ""
-              }`}
+              className={cn(
+                "transition-all duration-200",
+                !disableCheckAnimation &&
+                  hasActions &&
+                  (isMobile
+                    ? "-translate-x-10"
+                    : "group-hover:-translate-x-10"),
+              )}
             />
           )}
         </div>

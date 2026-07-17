@@ -167,7 +167,7 @@ function ColumnContent({
 
                 <div
                   key={key}
-                  className="flex h-12 shrink-0 items-center gap-2 rounded-xl bg-white/2 px-3"
+                  className="flex h-12 shrink-0 items-center gap-2.5 rounded-xl bg-white/2 px-3"
                 >
 
                   <span className="shrink-0 text-sm font-semibold text-neutral-600">
@@ -204,7 +204,8 @@ function ColumnContent({
 
                         <ArrowRight
                           size={13}
-                          className="text-neutral-700"
+                          strokeWidth={2.75}
+                          className="text-neutral-600"
                         />
 
                       )}
@@ -213,8 +214,16 @@ function ColumnContent({
 
                     {nextDefinition && nextBadge ? (
 
+                      // opacity-60: toda la fila de placeholder está
+                      // apagada (número, punto, texto en gris) — este
+                      // chip es lo único con color real (para poder
+                      // identificar el próximo proceso de un vistazo),
+                      // pero sin atenuarlo "brillaba" mucho más que el
+                      // resto de la fila. Con esto queda con presencia
+                      // pero sin competir visualmente con las cards
+                      // reales de la columna.
                       <span
-                        className="inline-flex shrink-0 items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-semibold"
+                        className="inline-flex shrink-0 items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-semibold opacity-60"
                         style={{
                           color: nextBadge.text,
                           backgroundColor: nextBadge.background,

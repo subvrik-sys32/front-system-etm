@@ -14,6 +14,7 @@ import {
 
 type Props={
   label:string
+  active?:boolean
 } & React.ButtonHTMLAttributes<HTMLButtonElement>
 
 export const ProjectSortTrigger=
@@ -24,6 +25,7 @@ export const ProjectSortTrigger=
     (
       {
         label,
+        active=false,
         className,
         ...props
       },
@@ -35,6 +37,7 @@ export const ProjectSortTrigger=
         type="button"
         className={cn(
           "flex h-8 items-center gap-2 rounded-xl px-2 select-none text-white transition-colors hover:bg-[#101012]",
+          active && "bg-[#101012]",
           className
         )}
         {...props}

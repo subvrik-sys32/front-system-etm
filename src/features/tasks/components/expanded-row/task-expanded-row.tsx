@@ -50,7 +50,7 @@ export function TaskExpandedRow({
 
       <EntityExpandedContent>
 
-        <div className="flex gap-4 select-none">
+        <div className="flex min-h-43.5 gap-4 select-none">
 
           <div className="w-[50%]">
 

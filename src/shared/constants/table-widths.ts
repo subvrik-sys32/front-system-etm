@@ -5,19 +5,11 @@ export const TABLE_WIDTHS={
   id:"70px",
   projectCode:"80px",
   delivery:"100px",
-  actions:"140px",
-  small:"140px",
-  medium:"190px",
-  large:"220px",
+  actions:"120px",
+  small:"120px",
+  medium:"160px",
+  large:"200px",
   reference:"minmax(120px,1.4fr)",
   email:"minmax(120px,1.4fr)",
-
-} as const
-
-export const TABLE_MIN_WIDTHS={
-
-  projects:1400,
-  tasks:1600,
-  processes:1300,
 
 } as const

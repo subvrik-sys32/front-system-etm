@@ -151,43 +151,9 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
 
               <div className="min-w-0 flex-1">
 
-                <div className="flex items-center justify-between gap-3">
-
-                  <DialogTitle className="text-lg font-bold text-neutral-100">
-                    Historial
-                  </DialogTitle>
-
-                  <div className="flex shrink-0 items-center gap-1">
-
-                    {hasUnread && (
-
-                      <button
-                        type="button"
-                        onClick={() => markAllAsRead()}
-                        title="Marcar todas como leídas"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-white/8 hover:text-cyan-300"
-                      >
-                        <Eraser size={15} />
-                      </button>
-
-                    )}
-
-                    {hasAny && (
-
-                      <button
-                        type="button"
-                        onClick={() => setConfirmDeleteAll(true)}
-                        title="Eliminar todas las notificaciones"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-
-                    )}
-
-                  </div>
-
-                </div>
+                <DialogTitle className="text-lg font-bold text-neutral-100">
+                  Historial
+                </DialogTitle>
 
                 <DialogDescription className="sr-only">
                   Historial completo de notificaciones
@@ -263,7 +229,37 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
 
           <div className="px-5 py-4">
 
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+
+              <div className="flex items-center gap-1">
+
+                {hasUnread && (
+
+                  <button
+                    type="button"
+                    onClick={() => markAllAsRead()}
+                    title="Marcar todas como leídas"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-white/8 hover:text-cyan-300"
+                  >
+                    <Eraser size={16} />
+                  </button>
+
+                )}
+
+                {hasAny && (
+
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDeleteAll(true)}
+                    title="Eliminar todas las notificaciones"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+
+                )}
+
+              </div>
 
               <button
                 type="button"

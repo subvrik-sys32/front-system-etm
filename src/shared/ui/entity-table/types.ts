@@ -15,6 +15,14 @@ export type EntityColumn<T>={
   width:string
   align?:"left"|"center"|"right"
 
+  // Ancho REAL del contenedor de la tabla (no de la ventana) por
+  // debajo del cual esta columna se oculta entera — header y celda
+  // de cada fila. Sin este campo, la columna es "esencial" y nunca
+  // se oculta. Se mide con ResizeObserver sobre el propio
+  // contenedor de la tabla, así funciona igual si la tabla está en
+  // pantalla completa o metida en un panel angosto.
+  minWidth?:number
+
   render:(
     item:T,
     context:EntityColumnContext<T>,

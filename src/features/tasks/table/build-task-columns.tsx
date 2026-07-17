@@ -80,6 +80,9 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       align:"center",
       title:"PRY",
       width:TABLE_WIDTHS.projectCode,
+      // Cuarta en ocultarse — el código corto es útil pero
+      // redundante con REFERENCIA para identificar la tarea.
+      minWidth:600,
       render:task=>(
         <Link
           href={`/projects?projectId=${task.project.id}`}
@@ -108,6 +111,9 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       id:"priority",
       title:"PRIORIDAD",
       width:TABLE_WIDTHS.medium,
+      // Primera en ocultarse — info complementaria, ya visible
+      // igual en el detalle expandido de la tarea.
+      minWidth:900,
       render:task=>(
         <TaskPriorityCell
           task={task}
@@ -119,6 +125,8 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       id:"stage",
       title:"ETAPA",
       width:TABLE_WIDTHS.small,
+      // Tercera en ocultarse.
+      minWidth:700,
       render:task=>{
 
         const stage=
@@ -164,6 +172,8 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       align:"center",
       title:"ENTREGA",
       width:TABLE_WIDTHS.delivery,
+      // Segunda en ocultarse.
+      minWidth:800,
       render:task=>(
         <span>
           {formatDate(task.deliveryDate)}

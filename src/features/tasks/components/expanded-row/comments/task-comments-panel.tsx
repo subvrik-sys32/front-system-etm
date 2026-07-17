@@ -13,7 +13,7 @@ export function TaskCommentsPanel({ taskId }: Props) {
   const target = { scope: "task" as const, taskId }
 
   return (
-    <div className="flex h-43.5 w-full flex-col rounded-xl bg-white/2 p-3">
+    <div className="flex min-h-0 w-full flex-1 flex-col rounded-xl bg-white/2 p-3">
       <div className="grid min-h-0 flex-1 grid-cols-2 gap-3">
         <div className="flex min-h-0 flex-col gap-3">
           <CommentComposer

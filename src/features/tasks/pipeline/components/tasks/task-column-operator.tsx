@@ -11,6 +11,8 @@ import {
 import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
 import { getBadgeColors } from "@/shared/utils/badge-colors"
 import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { cn } from "@/shared/utils/utils"
 
 import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
 import type { WorkflowStep } from "@/features/workflow/types/workflow.types"
@@ -85,6 +87,8 @@ function OperatorRow({
   entry: ActiveEntry
 }) {
 
+  const { isMobile } = useResponsive()
+
   const { operator, status, taskNumber } = entry
 
   const isWorking = status === "PROGRESS"
@@ -105,11 +109,24 @@ function OperatorRow({
 
   return (
 
-    <div className="flex h-10 items-center justify-between gap-2 px-1">
+    <div
+      className={cn(
+        "flex h-10 items-center gap-2 px-1",
+        // En desktop, columna angosta (w-72): separar operario y
+        // estado a los extremos (justify-between) usa bien el poco
+        // ancho disponible. En mobile, a todo el ancho de pantalla,
+        // separarlos a los extremos se sentía desparramado — se
+        // centran como un solo grupo en cambio.
+        isMobile ? "justify-center" : "justify-between",
+      )}
+    >
 
       {/* Badge del operario + tarea */}
       <div
-        className="flex min-w-0 flex-1 items-center gap-1.5 rounded-lg px-2 py-1"
+        className={cn(
+          "flex min-w-0 items-center gap-1.5 rounded-lg px-2 py-1",
+          isMobile ? "shrink-0" : "flex-1",
+        )}
         style={{
           backgroundColor: `${operator.color ?? "#64748B"}14`,
         }}
@@ -182,6 +199,8 @@ function ActiveOperatorsPopover({
   entries: ActiveEntry[]
 }) {
 
+  const { isMobile } = useResponsive()
+
   const workingCount = entries.filter(
     e => e.status === "PROGRESS",
   ).length
@@ -194,7 +213,10 @@ function ActiveOperatorsPopover({
 
         <button
           type="button"
-          className="flex h-10 w-full items-center justify-between gap-2 rounded-lg bg-neutral-800/50 px-2 py-1.5 text-left transition-colors hover:bg-neutral-800"
+          className={cn(
+            "flex h-10 w-full items-center gap-2 rounded-lg bg-neutral-800/50 px-2 py-1.5 text-left transition-colors hover:bg-neutral-800",
+            isMobile ? "justify-center" : "justify-between",
+          )}
         >
 
           <div className="flex min-w-0 items-center gap-1.5">
@@ -256,6 +278,8 @@ export function TaskColumnOperator({
   tasks,
 }: Props) {
 
+  const { isMobile } = useResponsive()
+
   const definition = PROCESS_DEFINITIONS[processCode]
   const badge = getBadgeColors(definition.color, "subtle")
 
@@ -265,7 +289,12 @@ export function TaskColumnOperator({
 
     return (
 
-      <div className="flex h-10 items-center gap-2 px-1">
+      <div
+        className={cn(
+          "flex h-10 items-center gap-2 px-1",
+          isMobile && "justify-center",
+        )}
+      >
 
         <span className="text-xs font-medium text-neutral-600">
           Sin operario asignado

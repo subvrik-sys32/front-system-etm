@@ -58,14 +58,28 @@ function SkeletonKpiCompact() {
 
 }
 
-function SkeletonColumnOperator() {
+function SkeletonColumnOperator({
+  centered = false,
+}: {
+  centered?: boolean
+}) {
 
   return (
 
-    <div className="flex h-10 items-center justify-between gap-2 px-1">
+    <div
+      className={cn(
+        "flex h-10 items-center gap-2 px-1",
+        centered ? "justify-center" : "justify-between",
+      )}
+    >
 
       {/* Badge operario */}
-      <div className="flex flex-1 items-center gap-1.5 rounded-lg bg-white/4 px-2 py-1">
+      <div
+        className={cn(
+          "flex items-center gap-1.5 rounded-lg bg-white/4 px-2 py-1",
+          centered ? "shrink-0" : "flex-1",
+        )}
+      >
 
         <span className="size-4 shrink-0 rounded-full bg-white/10" />
 
@@ -81,6 +95,27 @@ function SkeletonColumnOperator() {
         <span className="h-2.5 w-14 rounded bg-white/8" />
 
       </div>
+
+    </div>
+
+  )
+
+}
+
+// Header centrado a todo el ancho — calco del header propio que
+// arma MobilePipelineCarousel (chip de código + ícono + label +
+// contador, centrados como grupo), NO del ColumnHeader de desktop
+// (left-aligned, w-72 fijo, contador con ml-auto a la derecha).
+function SkeletonMobileHeader() {
+
+  return (
+
+    <div className="flex h-10 items-center justify-center gap-2 border-b border-white/10 px-3">
+
+      <span className="size-6 shrink-0 rounded-md bg-white/10" />
+      <span className="size-4 shrink-0 rounded bg-white/10" />
+      <span className="h-3.5 w-24 rounded bg-white/10" />
+      <span className="h-3.5 w-4 rounded bg-white/5" />
 
     </div>
 
@@ -177,26 +212,37 @@ export function TaskPipelineSkeleton() {
 
     return (
 
-      <div className="flex h-full min-h-0 w-full animate-pulse flex-col overflow-hidden">
+      <div className="flex w-full animate-pulse flex-col">
 
         <SkeletonKpiCompact />
 
-        <div className="mt-2 flex shrink-0 gap-2 px-1 py-2">
+        <div className="mt-3">
 
-          {Array.from({ length: 3 }).map((_, i) => (
+          <SkeletonMobileHeader />
 
-            <span
-              key={i}
-              className="h-9 w-24 shrink-0 rounded-lg bg-white/5"
-            />
+          <div className="border-b border-white/5 px-2 py-1">
 
-          ))}
+            <SkeletonColumnOperator centered />
 
-        </div>
+          </div>
 
-        <div className="mt-1 min-h-0 flex-1 overflow-hidden">
+          {/* Igual que MobilePipelineCarousel */}
+          <div className="mt-2">
 
-          <SkeletonColumn isMobile />
+            <div className="flex flex-col gap-2 px-2 py-2">
+
+              {SKELETON_ROWS.map((opacity, i) => (
+
+                <SkeletonCardCompact
+                  key={i}
+                  opacity={opacity}
+                />
+
+              ))}
+
+            </div>
+
+          </div>
 
         </div>
 

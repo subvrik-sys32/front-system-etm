@@ -1,5 +1,6 @@
 import type {
   Metadata,
+  Viewport,
 } from "next"
 
 import {
@@ -41,6 +42,18 @@ export const metadata: Metadata = {
   title: "ETM PROD",
   description:
     "ETM SAC Production System",
+}
+
+// Explícito en vez de confiar en el default implícito de Next —
+// sin esto, según versión/navegador, el mobile puede aplicar el
+// clásico delay de ~300ms en cada tap (esperando ver si es un
+// doble-tap para hacer zoom), sintiéndose como que "todo responde
+// lento" en toda la app.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default async function RootLayout({

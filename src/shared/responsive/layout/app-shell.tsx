@@ -360,7 +360,15 @@ function CompactShell({ children }: Props) {
             : "transform 300ms cubic-bezier(.22,1,.36,1), clip-path 300ms cubic-bezier(.22,1,.36,1)",
         }}
         onClickCapture={
-          visualState !== "hidden"
+          // Solo mientras el drawer está abierto o abriéndose —
+          // NO mientras se está cerrando (moving-out/curve-closing).
+          // Cerrar tarda ~600ms en dos transiciones encadenadas
+          // (transform + clip-path); con "!== hidden" el intercept
+          // seguía activo todo ese tiempo, tragándose el próximo tap
+          // (ej. volver a tocar el hamburguesa) hasta que la
+          // animación terminara del todo — de ahí el "a veces no
+          // responde, hay que tocar 2 veces".
+          visualState === "visible" || visualState === "moving-in"
             ? (event) => {
                 event.preventDefault()
                 event.stopPropagation()

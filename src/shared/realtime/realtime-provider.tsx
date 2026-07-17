@@ -9,6 +9,7 @@ import {
 } from "@microsoft/fetch-event-source"
 
 import { authSession } from "@/lib/auth-session"
+import { apiBaseUrl } from "@/lib/api"
 import { useAuthStore } from "@/features/auth/store/auth-store"
 
 import { realtimeRegistry } from "./types/realtime-registry"
@@ -50,8 +51,14 @@ export function RealtimeProvider({
     // el stream tras haberse caído por un corte de red/deploy/etc.
     let hasConnectedOnce = false
 
+    // Sin normalizar esto, si NEXT_PUBLIC_API_URL tiene una barra al
+    // final (ej. "https://back-system-etm.onrender.com/", fácil de
+    // pegar así sin querer al configurar la variable en Vercel),
+    // sumada a la barra inicial de "/realtime/events" quedaba
+    // "...com//realtime/events" — doble barra, que el backend no
+    // matcheaba con la ruta real y devolvía 404.
     fetchEventSource(
-      `${process.env.NEXT_PUBLIC_API_URL}/realtime/events`,
+      `${apiBaseUrl}/realtime/events`,
       {
 
         signal: controller.signal,

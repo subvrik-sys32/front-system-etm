@@ -164,6 +164,19 @@ html, body {
   display: none;
 }
 
+/* Elimina el delay clásico de ~300ms que algunos navegadores mobile
+   aplican a cada tap (esperando ver si es un doble-tap para hacer
+   zoom) — sin esto, TODA la app se siente con lag al tocar,
+   independientemente de cuánto se optimice cada componente. */
+button,
+a,
+[role="button"],
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
 /* Chrome, Edge, Safari */
 
 input[type="number"]::-webkit-outer-spin-button,

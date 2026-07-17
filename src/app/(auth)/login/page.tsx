@@ -4,31 +4,41 @@ import Image from "next/image"
 
 import { LoginForm } from "@/features/auth/components/login-form"
 
+// Media query compartido para "viewport bajo de alto" (teléfono
+// acostado, ~360-430px de alto real). Usamos ALTO en vez de
+// "landscape:" a propósito: landscape: también matchea cualquier
+// ventana de escritorio normal (casi siempre son más anchas que
+// altas), lo que pisaría los estilos de "laptop:" sin querer. Con
+// max-height nos aseguramos de compactar solo cuando el alto
+// disponible realmente es chico, sin importar el ancho.
+const SHORT = "[@media(max-height:520px)]"
+
 export default function LoginPage() {
 
   return (
 
-    <div className="flex min-h-dvh w-full items-center justify-center bg-[#050505] text-white select-none">
+    <div className={`flex min-h-dvh w-full items-center justify-center bg-[#050505] px-4 py-4 text-white select-none tablet:px-6 hide-scrollbar overflow-y-auto`}>
 
-      {/*
-        max-w-4xl en vez de max-w-5xl: la card completa (panel
-        izquierdo + formulario) se ve más compacta en desktop,
-        menos "estirada" horizontalmente.
-      */}
-      <div className="relative w-full max-w-4xl px-6">
+      <div className="w-full max-w-4xl">
 
-        <div className="overflow-hidden rounded-2xl bg-white/2 shadow-2xl backdrop-blur-xl laptop:grid laptop:grid-cols-2">
+        {/*
+          Se activa el grid de 2 columnas también cuando el alto es
+          chico (no solo por ancho vía laptop:) — así el espacio
+          horizontal extra de un teléfono acostado se usa para el
+          panel de marca en vez de quedar vacío, y el alto total baja
+          porque deja de apilarse todo en una sola columna.
+        */}
+        <div className={`overflow-hidden rounded-2xl bg-white/2 shadow-2xl backdrop-blur-xl ${SHORT}:grid ${SHORT}:grid-cols-2 laptop:grid laptop:grid-cols-2`}>
 
-          {/* LEFT SIDE — sin cambios de estructura, solo el
-              padding ya ajustado antes. */}
+          {/* LEFT SIDE */}
 
-          <div className="hidden border-r border-white/10 bg-linear-to-br from-[#0A0A0A] to-[#050505] p-8 laptop:flex laptop:flex-col laptop:justify-between">
+          <div className={`hidden border-r border-white/10 bg-linear-to-br from-[#0A0A0A] to-[#050505] p-4 ${SHORT}:flex ${SHORT}:flex-col ${SHORT}:justify-center laptop:flex laptop:flex-col laptop:justify-between laptop:p-8`}>
 
             <div>
 
-              <div className="flex h-20 w-full items-center">
+              <div className={`flex h-12 w-full items-center ${SHORT}:h-12 laptop:h-20`}>
 
-                <div className="relative h-20 w-20 shrink-0">
+                <div className={`relative h-12 w-12 shrink-0 ${SHORT}:h-12 ${SHORT}:w-12 laptop:h-20 laptop:w-20`}>
 
                   <Image
                     src="/icon.svg"
@@ -43,17 +53,24 @@ export default function LoginPage() {
 
               </div>
 
-              <p className="text-xl text-neutral-500">
+              <p className={`text-base text-neutral-500 ${SHORT}:text-base laptop:text-xl`}>
                 COMPANY S.A.C.
               </p>
 
-              <p className="mt-4 text-sm text-neutral-500">
+              <p className={`mt-1 text-xs text-neutral-500 ${SHORT}:mt-1 laptop:mt-4 laptop:text-sm`}>
                 Sistema de Producción
               </p>
 
             </div>
 
-            <div className="space-y-3">
+            {/*
+              Este bloque de pie (tagline + versión) ocupa alto que en
+              un teléfono acostado (alto real ~360-430px) directamente
+              no sobra — se oculta cuando el alto es chico, y vuelve a
+              mostrarse recién en laptop, donde es una ventana de
+              escritorio real con alto de sobra.
+            */}
+            <div className="hidden space-y-3 laptop:block">
 
               <p className="text-xs text-neutral-600">
                 Control de proyectos · tareas · procesos · producción
@@ -69,22 +86,15 @@ export default function LoginPage() {
 
           </div>
 
-          {/* RIGHT SIDE — card más chica: menos padding vertical
-              y el form con max-w-xs en vez de max-w-sm. */}
+          {/* RIGHT SIDE */}
 
-          <div className="flex items-center justify-center p-6 laptop:p-8">
+          <div className={`flex items-center justify-center p-4 tablet:p-5 ${SHORT}:p-4 laptop:p-8`}>
 
-            <div className="w-full max-w-xs">
+            <div className="w-full max-w-[18rem]">
 
-              {/*
-                Logo visible SOLO en mobile/tablet (laptop:hidden) —
-                arriba del título. En desktop el logo ya está en el
-                panel izquierdo, así que acá se oculta para no
-                duplicarlo.
-              */}
-              <div className="mb-6 flex justify-center laptop:hidden">
+              <div className={`mb-3 flex justify-center ${SHORT}:hidden laptop:hidden`}>
 
-                <div className="relative h-14 w-14 shrink-0">
+                <div className="relative h-12 w-12 shrink-0 tablet:h-14 tablet:w-14">
 
                   <Image
                     src="/icon.svg"
@@ -99,13 +109,13 @@ export default function LoginPage() {
 
               </div>
 
-              <div className="mb-6 text-center laptop:text-left">
+              <div className={`mb-3 text-center ${SHORT}:mb-2 ${SHORT}:text-left laptop:mb-6 laptop:text-left`}>
 
-                <h2 className="text-lg font-semibold">
+                <h2 className={`text-lg font-semibold ${SHORT}:text-base`}>
                   Iniciar sesión
                 </h2>
 
-                <p className="mt-1 text-sm text-neutral-500">
+                <p className={`mt-1 text-sm text-neutral-500 ${SHORT}:hidden`}>
                   Accede al sistema de producción
                 </p>
 

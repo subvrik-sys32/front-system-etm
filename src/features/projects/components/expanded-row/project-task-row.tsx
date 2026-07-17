@@ -315,6 +315,7 @@ export function ProjectTaskRow({
         ) : (
           <TaskPipelineCardCompact
             processTask={processTask}
+            reserveActionsSpace
           />
         )
       ) : (

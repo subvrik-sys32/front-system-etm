@@ -1,7 +1,7 @@
 // app-shell.tsx
 "use client"
 
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 
 import { AppSidebar } from "./app-sidebar"
 import { SidebarShowButton } from "./sidebar-show-button"
@@ -140,6 +140,17 @@ function DesktopShell({ children }: Props) {
 
 const DRAWER_REVEAL_OFFSET = 248
 
+// Umbral de arrastre para decidir qué hacer al soltar: si quedó
+// por debajo de este % del ancho revelado, se termina de cerrar;
+// si no, vuelve a abrirse del todo. 0.6 = hay que arrastrar más de
+// la mitad del camino para que "gane" el cierre.
+const CLOSE_THRESHOLD_RATIO = 0.6
+
+// Cuánto movimiento (px) hace falta antes de decidir si el gesto
+// es horizontal (cerrar el drawer) o vertical (dejar que la lista
+// de abajo scrollee normal, sin interferir).
+const DIRECTION_LOCK_THRESHOLD = 6
+
 function CompactShell({ children }: Props) {
   const visualState = useMobileNavStore(s => s.visualState)
   const closeDrawer = useMobileNavStore(s => s.closeDrawer)
@@ -147,7 +158,175 @@ function CompactShell({ children }: Props) {
   const notifyClipTransitionEnd = useMobileNavStore(s => s.notifyClipTransitionEnd)
 
   const targetOffset = DRAWER_REVEAL_OFFSET
-  const offset = visualState === "visible" || visualState === "moving-in" ? targetOffset : 0
+  const stateOffset = visualState === "visible" || visualState === "moving-in" ? targetOffset : 0
+
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  // Mientras el dedo está arrastrando, este valor pisa al offset
+  // que vendría del estado (stateOffset) para que el panel siga el
+  // dedo 1:1, sin la transición de 300ms de por medio (eso se
+  // aplica recién al soltar, animando desde donde quedó). El ref
+  // guarda el mismo valor para poder leerlo de forma síncrona en
+  // touchend sin depender de un closure potencialmente desactualizado
+  // (el efecto de abajo no se re-crea en cada frame de arrastre).
+  const [dragOffset, setDragOffset] = useState<number | null>(null)
+  const dragOffsetRef = useRef<number | null>(null)
+
+  // Evita que el "click" sintético que el navegador dispara justo
+  // después de un touchend de arrastre también dispare el
+  // onClickCapture de "tocar afuera para cerrar" de más abajo,
+  // pisando el snap-back a abierto que acabamos de decidir.
+  const suppressClickRef = useRef(false)
+
+  useEffect(() => {
+
+    const el = contentRef.current
+
+    if (!el) {
+      return
+    }
+
+    // Estado del gesto en curso. Vive en un ref (no en React state)
+    // porque touchmove dispara muy seguido y no necesitamos
+    // re-renderizar por esto, solo por dragOffset.
+    let drag: {
+      startX: number
+      startY: number
+      direction: "horizontal" | "vertical" | null
+      dragged: boolean
+    } | null = null
+
+    const handleTouchStart = (event: TouchEvent) => {
+
+      // Solo tiene sentido arrastrar para CERRAR cuando el drawer
+      // ya está completamente abierto. Mientras se abre/cierra
+      // (moving-in, moving-out, curve-closing) dejamos que termine
+      // su propia animación tranquila.
+      if (visualState !== "visible") {
+        return
+      }
+
+      const touch = event.touches[0]
+
+      drag = {
+        startX: touch.clientX,
+        startY: touch.clientY,
+        direction: null,
+        dragged: false,
+      }
+
+    }
+
+    const handleTouchMove = (event: TouchEvent) => {
+
+      if (!drag) {
+        return
+      }
+
+      const touch = event.touches[0]
+
+      const deltaX = touch.clientX - drag.startX
+      const deltaY = touch.clientY - drag.startY
+
+      if (drag.direction === null) {
+
+        if (
+          Math.abs(deltaX) < DIRECTION_LOCK_THRESHOLD &&
+          Math.abs(deltaY) < DIRECTION_LOCK_THRESHOLD
+        ) {
+          return
+        }
+
+        drag.direction =
+          Math.abs(deltaX) > Math.abs(deltaY)
+            ? "horizontal"
+            : "vertical"
+
+        if (drag.direction === "vertical") {
+          // Es un scroll vertical de la página, no un gesto para
+          // cerrar el drawer — soltamos el seguimiento y dejamos
+          // que el navegador scrollee como siempre.
+          drag = null
+          return
+        }
+
+      }
+
+      // Solo nos importa arrastrar hacia la IZQUIERDA (cerrar). Un
+      // arrastre hacia la derecha no hace nada (ya está abierto del
+      // todo, no hay más para revelar).
+      const nextOffset = Math.min(
+        DRAWER_REVEAL_OFFSET,
+        Math.max(0, DRAWER_REVEAL_OFFSET + deltaX),
+      )
+
+      drag.dragged = true
+
+      dragOffsetRef.current = nextOffset
+      setDragOffset(nextOffset)
+
+      // Necesitamos preventDefault para que el navegador no intente
+      // además scrollear/hacer bounce mientras arrastramos — por
+      // eso este listener se agrega manual con passive:false más
+      // abajo, en vez de depender del onTouchMove sintético de
+      // React (que en touchmove viene passive por defecto y no
+      // puede prevenir nada).
+      event.preventDefault()
+
+    }
+
+    const handleTouchEnd = () => {
+
+      if (!drag || !drag.dragged) {
+        drag = null
+        return
+      }
+
+      const finalOffset =
+        dragOffsetRef.current ?? DRAWER_REVEAL_OFFSET
+
+      const closeThreshold =
+        DRAWER_REVEAL_OFFSET * CLOSE_THRESHOLD_RATIO
+
+      suppressClickRef.current = true
+
+      window.setTimeout(() => {
+        suppressClickRef.current = false
+      }, 300)
+
+      dragOffsetRef.current = null
+      setDragOffset(null)
+
+      // Con el pisado manual ya suelto, si se cerró el estado pasa
+      // a "moving-out" (offset objetivo 0); si no, sigue "visible"
+      // (offset objetivo DRAWER_REVEAL_OFFSET) — ambos casos animan
+      // con la transición normal desde donde quedó el dedo.
+      if (finalOffset < closeThreshold) {
+        closeDrawer()
+      }
+
+      drag = null
+
+    }
+
+    el.addEventListener("touchstart", handleTouchStart, { passive: true })
+    el.addEventListener("touchmove", handleTouchMove, { passive: false })
+    el.addEventListener("touchend", handleTouchEnd, { passive: true })
+    el.addEventListener("touchcancel", handleTouchEnd, { passive: true })
+
+    return () => {
+
+      el.removeEventListener("touchstart", handleTouchStart)
+      el.removeEventListener("touchmove", handleTouchMove)
+      el.removeEventListener("touchend", handleTouchEnd)
+      el.removeEventListener("touchcancel", handleTouchEnd)
+
+    }
+
+  }, [visualState, closeDrawer])
+
+  const isDragging = dragOffset !== null
+  const offset = isDragging ? dragOffset : stateOffset
 
   // Mantenemos la lógica de transición, pero forzamos un orden de ejecución CSS
   const handleTransitionEnd = (event: React.TransitionEvent<HTMLElement>) => {
@@ -165,19 +344,31 @@ function CompactShell({ children }: Props) {
     <div className="relative h-dvh overflow-hidden bg-[#1d1c1c] text-white">
       <SidebarDrawer />
       <div
+        ref={contentRef}
         onTransitionEnd={handleTransitionEnd}
         className="relative z-10 flex h-full min-h-0 flex-col bg-[#050505]"
         style={{
           transform: `translateX(${offset}px)`,
           clipPath: visualState === "hidden" || visualState === "curve-closing" ? CLIP_SQUARE : CLIP_ROUNDED,
-          // La clave: transición explícita combinada para que el browser orqueste el sellado
-          transition: "transform 300ms cubic-bezier(.22,1,.36,1), clip-path 300ms cubic-bezier(.22,1,.36,1)",
+          // Mientras se arrastra con el dedo, sin transición — tiene
+          // que seguir al dedo en tiempo real. Al soltar (isDragging
+          // pasa a false), vuelve la transición normal para animar
+          // suave desde donde quedó hasta el destino final.
+          transition: isDragging
+            ? "none"
+            : "transform 300ms cubic-bezier(.22,1,.36,1), clip-path 300ms cubic-bezier(.22,1,.36,1)",
         }}
         onClickCapture={
           visualState !== "hidden"
             ? (event) => {
                 event.preventDefault()
                 event.stopPropagation()
+
+                if (suppressClickRef.current) {
+                  suppressClickRef.current = false
+                  return
+                }
+
                 closeDrawer()
               }
             : undefined

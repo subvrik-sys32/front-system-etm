@@ -6,6 +6,11 @@ import { authService } from "../services/auth.service"
 import { useAuthStore } from "../store/auth-store"
 import { usePermissionStore } from "@/features/permissions/store/permission-store"
 
+// Mismo criterio que en la página: compactar por ALTO de viewport
+// chico (teléfono acostado), no por "landscape:" (que también
+// matchea cualquier ventana de escritorio normal).
+const SHORT = "[@media(max-height:520px)]"
+
 export function LoginForm() {
   const router = useRouter()
   const setUser = useAuthStore(s=>s.setUser)
@@ -50,16 +55,16 @@ export function LoginForm() {
   }
 
   const inputClass =
-    "h-12 w-full rounded-xl bg-[#111113] px-4 text-base text-white outline-none " +
+    `h-11 ${SHORT}:h-10 w-full rounded-xl bg-[#111113] px-4 text-base text-white outline-none ` +
     "placeholder:text-neutral-600 transition-colors duration-200 " +
     "focus:bg-[#1c1c20] " +
     "disabled:cursor-not-allowed disabled:opacity-60"
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className={`space-y-3 ${SHORT}:space-y-2`}>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-neutral-300">
+        <label className={`mb-1.5 block text-sm font-medium text-neutral-300 ${SHORT}:mb-1 ${SHORT}:text-xs`}>
           Correo
         </label>
         <input
@@ -74,7 +79,7 @@ export function LoginForm() {
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-neutral-300">
+        <label className={`mb-1.5 block text-sm font-medium text-neutral-300 ${SHORT}:mb-1 ${SHORT}:text-xs`}>
           Contraseña
         </label>
         <div className="relative">
@@ -115,14 +120,14 @@ export function LoginForm() {
         </div>
       </div>
 
-      <div className="min-h-5">
-        {error&&<p className="text-sm font-medium text-red-400">{error}</p>}
+      <div className={`min-h-5 ${SHORT}:min-h-0`}>
+        {error && <p className="text-sm font-medium text-red-400">{error}</p>}
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className={`flex h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors ${
+        className={`flex h-11 ${SHORT}:h-10 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors ${
           success
             ? "bg-emerald-500 text-white"
             : "bg-white text-black hover:bg-neutral-200 disabled:cursor-not-allowed disabled:bg-neutral-300"

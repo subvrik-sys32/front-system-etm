@@ -294,6 +294,7 @@ export function TaskPipelineBoard({
           <TaskProcessColumn
             processCode={activeProcess}
             tasks={activeTasks}
+            allTasks={tasks}
             expandedKey={expandedKey}
             onToggleCard={toggleCard}
             activeOverlayKey={activeOverlayKey}
@@ -426,6 +427,7 @@ export function TaskPipelineBoard({
                     key={code}
                     processCode={code}
                     tasks={columns.get(code) ?? []}
+                    allTasks={tasks}
                     expandedKey={expandedKey}
                     onToggleCard={toggleCard}
                     activeOverlayKey={activeOverlayKey}

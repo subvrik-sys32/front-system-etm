@@ -11,6 +11,7 @@ import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-sto
 import { SidebarDrawer } from "@/shared/responsive/mobile/sidebar-drawer"
 import { TopBar } from "@/shared/responsive/mobile/top-bar"
 import { BottomNavigation } from "../mobile/bottom-navigation"
+import { VerticalScroll } from "@/shared/ui/vertical-scroll/vertical-scroll"
 
 type Props = {
   children: ReactNode
@@ -375,9 +376,12 @@ function CompactShell({ children }: Props) {
         }
       >
         <TopBar />
-        <main className="hide-scrollbar min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+        <VerticalScroll
+          containerClassName="min-h-0 flex-1"
+          className="overflow-x-hidden"
+        >
           {children}
-        </main>
+        </VerticalScroll>
         <BottomNavigation />
       </div>
     </div>

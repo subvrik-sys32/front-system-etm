@@ -9,10 +9,17 @@ import {
 } from "@microsoft/fetch-event-source"
 
 import { authSession } from "@/lib/auth-session"
-import { apiBaseUrl } from "@/lib/api"
+import { apiBaseUrl } from "@/lib/api-url"
 import { useAuthStore } from "@/features/auth/store/auth-store"
 
 import { realtimeRegistry } from "./types/realtime-registry"
+
+// Reconexiones más cortas que esto se tratan como "flicker" (cambio de
+// wifi↔datos, breve pausa de la app en segundo plano) y NO disparan
+// invalidateQueries(): en un corte tan breve normalmente no se perdieron
+// eventos reales. Solo si estuvo caído más tiempo que esto
+// asumimos que pudimos perdernos actualizaciones y vale la pena invalidar.
+const RECONNECT_INVALIDATE_THRESHOLD_MS = 15_000
 
 export function RealtimeProvider({
   children,
@@ -51,12 +58,11 @@ export function RealtimeProvider({
     // el stream tras haberse caído por un corte de red/deploy/etc.
     let hasConnectedOnce = false
 
-    // Sin normalizar esto, si NEXT_PUBLIC_API_URL tiene una barra al
-    // final (ej. "https://back-system-etm.onrender.com/", fácil de
-    // pegar así sin querer al configurar la variable en Vercel),
-    // sumada a la barra inicial de "/realtime/events" quedaba
-    // "...com//realtime/events" — doble barra, que el backend no
-    // matcheaba con la ruta real y devolvía 404.
+    // Momento en que la conexión se cayó (error o cierre). Se limpia al
+    // reconectar. Si es null cuando reabrimos, es la conexión inicial
+    // (no hubo caída que invalidar).
+    let disconnectedAt: number | null = null
+
     fetchEventSource(
       `${apiBaseUrl}/realtime/events`,
       {
@@ -79,15 +85,30 @@ export function RealtimeProvider({
           ) {
 
             if (hasConnectedOnce) {
-              // Se reconectó tras un corte: pudimos habernos perdido
-              // eventos mientras estuvo caída. Invalidar todo fuerza
-              // a que, en el próximo acceso/foco, se traiga lo real.
-              // No dispara requests a ciegas: solo refetchea queries
-              // con observadores montados en este momento.
-              queryClient.invalidateQueries()
+
+              const downtimeMs = disconnectedAt
+                ? Date.now() - disconnectedAt
+                : 0
+
+              // Solo invalidamos si estuvo caída un tiempo relevante.
+              // En mobile la conexión SSE se corta y reconecta muy
+              // seguido (cambio de wifi↔datos, la app pasa a segundo
+              // plano un instante) y esos flickers reconectan en
+              // segundos: ahí no nos perdimos eventos reales y no vale
+              // la pena invalidar TODAS las queries activas de golpe.
+              if (downtimeMs >= RECONNECT_INVALIDATE_THRESHOLD_MS) {
+                // Pudimos habernos perdido eventos mientras estuvo
+                // caída. Invalidar todo fuerza a que, en el próximo
+                // acceso/foco, se traiga lo real. No dispara requests
+                // a ciegas: solo refetchea queries con observadores
+                // montados en este momento.
+                queryClient.invalidateQueries()
+              }
+
             }
 
             hasConnectedOnce = true
+            disconnectedAt = null
 
             return
 
@@ -129,7 +150,12 @@ export function RealtimeProvider({
         },
 
         onclose() {
-          // el navegador reintenta solo si el effect sigue montado
+          // el navegador reintenta solo si el effect sigue montado.
+          // Marcamos el inicio de la caída (si no había una ya en curso)
+          // para poder medir cuánto duró cuando se reconecte.
+          if (disconnectedAt === null) {
+            disconnectedAt = Date.now()
+          }
         },
 
         onerror(error) {
@@ -143,6 +169,13 @@ export function RealtimeProvider({
           // si ya hicimos logout, no seguir reintentando en loop
           if (!authSession.get()) {
             throw error // corta el retry automático de fetchEventSource
+          }
+
+          // Marcamos el inicio de la caída (si no había una ya en curso;
+          // reintentos sucesivos del mismo corte no deben resetear el
+          // timestamp, o nunca superaríamos el threshold).
+          if (disconnectedAt === null) {
+            disconnectedAt = Date.now()
           }
 
           // no relanzar acá: dejamos que fetch-event-source reintente

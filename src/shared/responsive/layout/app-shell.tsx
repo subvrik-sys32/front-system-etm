@@ -33,8 +33,16 @@ function DesktopTopBar() {
 
 const CURVE_RADIUS = 28
 
-const CLIP_ROUNDED = `inset(0 round ${CURVE_RADIUS}px 0px 0px ${CURVE_RADIUS}px)`
-const CLIP_SQUARE = "inset(0 round 0px 0px 0px 0px)"
+// Antes esto se hacía con clip-path: inset(... round Npx), pero
+// clip-path con "round" tiene un bug conocido en navegadores basados
+// en Chromium: a zoom de página != 100% el radio se rasteriza mal y
+// la curva se ve cuadrada. border-radius no sufre ese bug (el
+// navegador lo trata como una propiedad geométrica normal del box,
+// no como una máscara rasterizada) y anima igual de bien. El <main>
+// ya tiene overflow-hidden, así que el border-radius recorta el
+// contenido exactamente como lo hacía el clip-path.
+const CURVE_ROUNDED = `${CURVE_RADIUS}px 0px 0px ${CURVE_RADIUS}px`
+const CURVE_SQUARE = "0px 0px 0px 0px"
 
 const TRANSITION_TIMING = "300ms cubic-bezier(.22,1,.36,1)"
 
@@ -49,7 +57,7 @@ function buildContentTransitionBase(
 function buildContentTransitionWithClip(
   property: ContentTransitionProperty,
 ) {
-  return `${buildContentTransitionBase(property)}, clip-path ${TRANSITION_TIMING}`
+  return `${buildContentTransitionBase(property)}, border-radius ${TRANSITION_TIMING}`
 }
 
 const SIDEBAR_OPEN_WIDTH = 248
@@ -69,10 +77,10 @@ function DesktopShell({ children }: Props) {
   const CONTENT_TRANSITION_BASE = buildContentTransitionBase("margin-left")
   const CONTENT_TRANSITION_WITH_CLIP = buildContentTransitionWithClip("margin-left")
 
-  const clipPath =
+  const borderRadius =
     visualState === "hidden" || visualState === "curve-closing"
-      ? CLIP_SQUARE
-      : CLIP_ROUNDED
+      ? CURVE_SQUARE
+      : CURVE_ROUNDED
 
   const contentTransition =
     visualState === "curve-closing"
@@ -101,7 +109,7 @@ function DesktopShell({ children }: Props) {
     }
 
     // Fin de FASE 2: la curva terminó de cerrarse.
-    if (event.propertyName === "clip-path") {
+    if (event.propertyName === "border-radius") {
       notifyClipTransitionEnd()
     }
 
@@ -118,7 +126,7 @@ function DesktopShell({ children }: Props) {
         className="relative z-10 flex h-screen min-w-0 flex-col overflow-hidden bg-[#050505]"
         style={{
           marginLeft: offset,
-          clipPath,
+          borderRadius,
           transition: contentTransition,
         }}
       >
@@ -336,7 +344,7 @@ function CompactShell({ children }: Props) {
     // IMPORTANTE: Solo escuchamos la propiedad específica para no disparar dos veces
     if (event.propertyName === "transform") {
       notifyContentTransitionEnd()
-    } else if (event.propertyName === "clip-path") {
+    } else if (event.propertyName === "border-radius") {
       notifyClipTransitionEnd()
     }
   }
@@ -347,28 +355,30 @@ function CompactShell({ children }: Props) {
       <div
         ref={contentRef}
         onTransitionEnd={handleTransitionEnd}
-        className="relative z-10 flex h-full min-h-0 flex-col bg-[#050505]"
+        className="relative z-10 flex h-full min-h-0 flex-col overflow-hidden bg-[#050505]"
         style={{
           transform: `translateX(${offset}px)`,
-          clipPath: visualState === "hidden" || visualState === "curve-closing" ? CLIP_SQUARE : CLIP_ROUNDED,
+          borderRadius: visualState === "hidden" || visualState === "curve-closing" ? CURVE_SQUARE : CURVE_ROUNDED,
           // Mientras se arrastra con el dedo, sin transición — tiene
           // que seguir al dedo en tiempo real. Al soltar (isDragging
           // pasa a false), vuelve la transición normal para animar
           // suave desde donde quedó hasta el destino final.
           transition: isDragging
             ? "none"
-            : "transform 300ms cubic-bezier(.22,1,.36,1), clip-path 300ms cubic-bezier(.22,1,.36,1)",
+            : "transform 300ms cubic-bezier(.22,1,.36,1), border-radius 300ms cubic-bezier(.22,1,.36,1)",
         }}
         onClickCapture={
-          // Solo mientras el drawer está abierto o abriéndose —
-          // NO mientras se está cerrando (moving-out/curve-closing).
-          // Cerrar tarda ~600ms en dos transiciones encadenadas
-          // (transform + clip-path); con "!== hidden" el intercept
-          // seguía activo todo ese tiempo, tragándose el próximo tap
-          // (ej. volver a tocar el hamburguesa) hasta que la
-          // animación terminara del todo — de ahí el "a veces no
-          // responde, hay que tocar 2 veces".
-          visualState === "visible" || visualState === "moving-in"
+          // OJO: este div envuelve también el TopBar (con el botón
+          // hamburguesa). Por eso este handler de "tocar afuera para
+          // cerrar" solo debe activarse cuando el drawer está
+          // realmente asentado y abierto ("visible"). Si se activara
+          // también durante "moving-out"/"curve-closing" (mientras
+          // anima su cierre), un segundo toque rápido sobre la
+          // hamburguesa quedaría atrapado acá (preventDefault +
+          // stopPropagation) y nunca llegaría al onClick real del
+          // botón — el usuario sentiría que "el primer toque no
+          // abre" hasta que termine la animación de cierre.
+          visualState === "visible"
             ? (event) => {
                 event.preventDefault()
                 event.stopPropagation()

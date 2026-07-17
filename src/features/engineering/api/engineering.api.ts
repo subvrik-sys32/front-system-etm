@@ -1,4 +1,5 @@
-import { api, apiBaseUrl } from '@/lib/api';
+import { api } from '@/lib/api';
+import { apiBaseUrl } from '@/lib/api-url';
 import { EngineeringFile } from '../types/engineering-file';
 
 export const engineeringApi = {

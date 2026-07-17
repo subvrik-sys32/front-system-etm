@@ -1,6 +1,8 @@
 "use client"
 
-import { ChevronDown } from "lucide-react"
+import { useEffect, useState } from "react"
+
+import { ChevronDown, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
 import { formatDate } from "@/shared/utils/date-format"
@@ -14,6 +16,7 @@ import { ProjectStatusCell } from "../components/cells/project-status-cell"
 import { ProjectPmCell } from "../components/cells/project-pm-cell"
 import { ProjectRowActions } from "../components/actions/project-row-actions"
 import { ProjectExpandedRow } from "../components/expanded-row/project-expanded-row"
+import { IconAction } from "@/shared/ui/actions/icon-action"
 
 type Props = {
   project: Project
@@ -33,6 +36,21 @@ export function ProjectMobileCard({
   expanded,
   onToggle,
 }: Props) {
+
+  // El bloque de Pipeline Operativo (KPIs + tareas operativas) arranca
+  // oculto — recién se muestra si el usuario lo pide con el botón
+  // "...". Antes se renderizaba siempre que la tarjeta se expandía,
+  // lo que hacía la tarjeta mucho más alta de lo necesario para un
+  // simple vistazo/edición de los campos de arriba.
+  const [showPipeline, setShowPipeline] = useState(false)
+
+  useEffect(() => {
+
+    if (!expanded) {
+      setShowPipeline(false)
+    }
+
+  }, [expanded])
 
   return (
 
@@ -97,13 +115,24 @@ export function ProjectMobileCard({
 
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between">
+
+            <IconAction
+              icon={MoreHorizontal}
+              onClick={() =>
+                setShowPipeline(current => !current)
+              }
+            />
 
             <ProjectRowActions project={project} />
 
           </div>
 
-          <ProjectExpandedRow project={project} tasks={tasks} />
+          {showPipeline && (
+
+            <ProjectExpandedRow project={project} tasks={tasks} />
+
+          )}
 
         </div>
 

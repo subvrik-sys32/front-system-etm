@@ -10,11 +10,11 @@ import { ProcessOperatorCell } from "@/features/processes/components/cells/proce
 
 import { PIPELINE_SCROLL_INTERACTION_EVENT } from "@/shared/ui/horizontal-scroll/use-drag-scroll"
 
-import { WorkflowActionButtons } from "./workflow-action-buttons"
-import { WorkflowNumericField, type WorkflowNumericFieldKey } from "./workflow-numeric-field"
+import { WorkflowActionButtons } from "../workflow/workflow-action-buttons"
+import { WorkflowNumericField, type WorkflowNumericFieldKey } from "../workflow/workflow-numeric-field"
 
-import { getWorkflowFormFields } from "../utils/get-workflow-form-fields"
-import type { WorkflowFieldType } from "../config/workflow-form-fields"
+import { getWorkflowFormFields } from "../../utils/get-workflow-form-fields"
+import type { WorkflowFieldType } from "../../config/workflow-form-fields"
 
 import type { ProcessTask } from "@/features/processes/types/process.types"
 import type { ProcessCode } from "@/features/tasks/types/task.types"

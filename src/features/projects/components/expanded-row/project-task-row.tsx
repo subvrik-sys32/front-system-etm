@@ -32,7 +32,7 @@ import {
 
 import {
   TaskPipelineCardCompact,
-} from "@/features/tasks/pipeline/components/task-pipeline-card-compact"
+} from "@/features/tasks/pipeline/components/cards/task-pipeline-card-compact"
 
 import {
   useTaskCardOverlay,

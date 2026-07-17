@@ -7,7 +7,7 @@ import {
 
 import type {
   WorkflowFormVariant,
-} from "../components/task-workflow-overlay"
+} from "../components/tasks/task-workflow-overlay"
 
 export function getWorkflowFormFields(
   processCode: ProcessCode,

@@ -1,4 +1,4 @@
-export { TaskPipelineBoard } from "./components/task-pipeline-board"
+export { TaskPipelineBoard } from "./components/tasks/task-pipeline-board"
 export { TaskViewToggle } from "./actions/task-view-toggle"
 export { useTaskView } from "./hooks/use-task-view"
 export { usePipelineTasks } from "./hooks/use-pipeline-tasks"

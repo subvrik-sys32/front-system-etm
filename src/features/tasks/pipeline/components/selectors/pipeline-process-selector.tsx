@@ -12,7 +12,7 @@ import { useDragScroll } from "@/shared/ui/horizontal-scroll/use-drag-scroll"
 import { useHorizontalFade } from "@/shared/hooks/use-horizontal-fade"
 import { useSnapCarouselSync } from "@/shared/hooks/use-snap-carousel-sync"
 
-import { PIPELINE_PROCESS_ORDER } from "../utils/process-columns"
+import { PIPELINE_PROCESS_ORDER } from "../../utils/process-columns"
 
 import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
 

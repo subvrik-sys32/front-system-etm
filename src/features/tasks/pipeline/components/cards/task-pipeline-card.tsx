@@ -24,11 +24,11 @@ import {
 
 import {
   getProcessTask,
-} from "../utils/get-process-task"
+} from "../../utils/get-process-task"
 
 import {
   useTaskCardOverlay,
-} from "../hooks/use-task-card-overlay"
+} from "../../hooks/use-task-card-overlay"
 
 import {
   TaskPipelineCardCompact,
@@ -36,7 +36,7 @@ import {
 
 import {
   TaskWorkflowOverlay,
-} from "./task-workflow-overlay"
+} from "../tasks/task-workflow-overlay"
 
 type Props = {
   task: Task

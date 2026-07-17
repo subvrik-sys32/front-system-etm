@@ -1,5 +1,5 @@
 import type { ProcessCode } from "@/features/tasks/types/task.types"
-import type { WorkflowFormVariant } from "../components/task-workflow-overlay"
+import type { WorkflowFormVariant } from "../components/tasks/task-workflow-overlay"
 
 export type WorkflowFieldType =
   | "operator"

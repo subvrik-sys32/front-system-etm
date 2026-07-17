@@ -71,64 +71,68 @@ export function EntityIconPicker({
 
       <div className="relative">
 
-        <VerticalScroll className="flex max-h-32 flex-wrap justify-center gap-2 overflow-y-auto px-4 py-4 erp-scrollbar">
+        <VerticalScroll className="max-h-32 px-4 py-4">
 
-          {sortedIcons.map(item => {
+          <div className="grid grid-cols-6 justify-items-center gap-2 tablet:grid-cols-8">
 
-            const Icon =
-              item.icon
+            {sortedIcons.map(item => {
 
-            const active =
-              value.icon === item.id
+              const Icon =
+                item.icon
 
-            return (
+              const active =
+                value.icon === item.id
 
-              <button
-                key={item.id}
-                type="button"
-                onClick={() =>
-                  onChange({
-                    ...value,
-                    icon: item.id,
-                  })
-                }
-                style={
-                  active
-                    ? {
-                        color:
-                          value.color,
+              return (
 
-                        backgroundColor:
-                          `${value.color}20`,
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() =>
+                    onChange({
+                      ...value,
+                      icon: item.id,
+                    })
+                  }
+                  style={
+                    active
+                      ? {
+                          color:
+                            value.color,
 
-                        boxShadow: `
-                          inset 0 0 0 1px ${value.color},
-                          0 0 12px ${value.color}35
-                        `,
-                      }
-                    : undefined
-                }
-                className={cn(
-                  "flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200",
-                  !active && [
-                    "bg-white/5",
-                    "text-neutral-500",
-                    "hover:bg-white/8",
-                    "hover:text-neutral-300",
-                  ]
-                )}
-              >
+                          backgroundColor:
+                            `${value.color}20`,
 
-                <Icon
-                  size={20}
-                  strokeWidth={2}
-                />
+                          boxShadow: `
+                            inset 0 0 0 1px ${value.color},
+                            0 0 12px ${value.color}35
+                          `,
+                        }
+                      : undefined
+                  }
+                  className={cn(
+                    "flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200",
+                    !active && [
+                      "bg-white/5",
+                      "text-neutral-500",
+                      "hover:bg-white/8",
+                      "hover:text-neutral-300",
+                    ]
+                  )}
+                >
 
-              </button>
+                  <Icon
+                    size={20}
+                    strokeWidth={2}
+                  />
 
-            )
+                </button>
 
-          })}
+              )
+
+            })}
+
+          </div>
 
         </VerticalScroll>
 

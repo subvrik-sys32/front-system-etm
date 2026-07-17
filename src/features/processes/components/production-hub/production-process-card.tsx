@@ -7,7 +7,7 @@ import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
 import { getBadgeColors } from "@/shared/utils/badge-colors"
 import { cn } from "@/shared/utils/utils"
 
-import { TaskPipelineCardCompact } from "@/features/tasks/pipeline/components/task-pipeline-card-compact"
+import { TaskPipelineCardCompact } from "@/features/tasks/pipeline/components/cards/task-pipeline-card-compact"
 
 import type { ProcessDefinition } from "../../constants/process-definitions"
 import type { ProcessTask } from "../../types/process.types"

@@ -16,6 +16,7 @@ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 
 import { EntityTable } from "@/shared/ui/entity-table"
 import { EntityTableLoading } from "@/shared/ui/entity-table/entity-table-loading"
+import { ProcessTableSkeleton } from "./process-table-skeleton"
 
 import { TaskProcessColumn } from "@/features/tasks/pipeline/table/task-process-column"
 
@@ -193,11 +194,17 @@ export function ProcessTable({
   }, [isMobile, focusedTaskId, displayedTasks, processDefinition.code])
 
   if (!hydrated || loading) {
+
+    if (isMobile) {
+      return <ProcessTableSkeleton />
+    }
+
     return (
       <EntityTableLoading
         label="Cargando procesos..."
       />
     )
+
   }
 
   if (isMobile) {

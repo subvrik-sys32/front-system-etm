@@ -3,7 +3,7 @@
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { cn } from "@/shared/utils/utils"
 
-import { PIPELINE_PROCESS_ORDER, PIPELINE_KPI_COLORS } from "../utils/process-columns"
+import { PIPELINE_PROCESS_ORDER, PIPELINE_KPI_COLORS } from "../../utils/process-columns"
 
 const KPI_SKELETON_COLORS = Object.values(PIPELINE_KPI_COLORS)
 

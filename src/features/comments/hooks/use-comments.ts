@@ -9,10 +9,15 @@ export function useComments(target:CommentTarget){
 
   const query=useQuery({
     queryKey:commentsQueryKey(target),
-    queryFn:({signal})=>
-      target.scope==="task"
-        ?commentsService.getTaskComments(target.taskId,signal)
-        :commentsService.getWorkflowStepComments(target.workflowStepId,signal),
+    queryFn:({signal})=>{
+      if(target.scope==="task"){
+        return commentsService.getTaskComments(target.taskId,signal)
+      }
+      if(target.scope==="workflowStep"){
+        return commentsService.getWorkflowStepComments(target.workflowStepId,signal)
+      }
+      return commentsService.getProjectComments(target.projectId,signal)
+    },
   })
 
   return{

@@ -90,7 +90,7 @@ export function EntityTableItem<T>({
           :(
 
             <div
-              className="grid min-w-0 items-center rounded-xl border-b border-white/5 px-2 transition-colors hover:bg-white/2"
+              className="grid min-w-0 items-center rounded-lg border-b border-white/5 px-3 transition-colors hover:bg-white/2"
               style={{
                 gridTemplateColumns:templateColumns,
               }}

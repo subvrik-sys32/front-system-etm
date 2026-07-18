@@ -15,12 +15,20 @@ export const commentsApi={
     const response=await api.get<Comment[]>(`/workflow-steps/${workflowStepId}/comments`,{ signal })
     return response.data
   },
+  async getProjectComments(projectId:string,signal?:AbortSignal){
+    const response=await api.get<Comment[]>(`/projects/${projectId}/comments`,{ signal })
+    return response.data
+  },
   async createTaskComment(taskId:string,dto:CreateCommentDto){
     const response=await api.post<Comment>(`/tasks/${taskId}/comments`,dto)
     return response.data
   },
   async createWorkflowStepComment(workflowStepId:string,dto:CreateCommentDto){
     const response=await api.post<Comment>(`/workflow-steps/${workflowStepId}/comments`,dto)
+    return response.data
+  },
+  async createProjectComment(projectId:string,dto:CreateCommentDto){
+    const response=await api.post<Comment>(`/projects/${projectId}/comments`,dto)
     return response.data
   },
   async updateComment(id:string,dto:UpdateCommentDto){

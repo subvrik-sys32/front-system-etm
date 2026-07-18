@@ -16,10 +16,15 @@ export function useCreateComment(target:CommentTarget){
 
   const mutation=useMutation({
 
-    mutationFn:(dto:CreateCommentDto)=>
-      target.scope==="task"
-        ?commentsService.createTaskComment(target.taskId,dto)
-        :commentsService.createWorkflowStepComment(target.workflowStepId,dto),
+    mutationFn:(dto:CreateCommentDto):Promise<Comment>=>{
+      if(target.scope==="task"){
+        return commentsService.createTaskComment(target.taskId,dto)
+      }
+      if(target.scope==="workflowStep"){
+        return commentsService.createWorkflowStepComment(target.workflowStepId,dto)
+      }
+      return commentsService.createProjectComment(target.projectId,dto)
+    },
 
     // El comentario aparece YA en pantalla, sin esperar la confirmación
     // del servidor (que hoy tarda ~1.3s por latencia de infraestructura
@@ -45,7 +50,8 @@ export function useCreateComment(target:CommentTarget){
       // el caso y ajusto los nombres de campo exactos.
       const optimisticComment = {
         id: optimisticId,
-        taskId: target.scope === "task" ? target.taskId : (previousComments?.[0]?.taskId ?? ""),
+        taskId: target.scope === "task" ? target.taskId : null,
+        projectId: target.scope === "project" ? target.projectId : null,
         workflowStepId: target.scope === "workflowStep" ? target.workflowStepId : null,
         userId: currentUser?.id ?? "",
         message: dto.message?.trim() ?? "",

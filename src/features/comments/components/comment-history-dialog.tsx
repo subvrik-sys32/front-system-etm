@@ -28,6 +28,14 @@ type Props = {
   onEditComment?: (comment: Comment) => void
 }
 
+// Extrae un id estable del target, sin importar el scope, solo para
+// usarlo como dependencia del useEffect de abajo (no se muestra en UI).
+function getTargetId(target: CommentTarget) {
+  if (target.scope === "task") return target.taskId
+  if (target.scope === "workflowStep") return target.workflowStepId
+  return target.projectId
+}
+
 export function CommentHistoryDialog({
   target,
   open,
@@ -41,11 +49,14 @@ export function CommentHistoryDialog({
   const { comments, loading } = useComments(target)
   const { deleteComment } = useDeleteComment(target)
 
-  const targetId = target.scope === "task" ? target.taskId : target.workflowStepId
+  const targetId = getTargetId(target)
 
   // Al abrir el historial, marcamos como leídas las notificaciones de
   // esta tarea/step. Es la acción explícita de "vine y vi los
   // comentarios" que dispara el doble check para quien comentó.
+  // Nota: para comentarios de proyecto esto es un no-op (ver
+  // commentsService.markCommentsAsRead), ya que no generan
+  // notificaciones.
   useEffect(() => {
 
     if (!open) return

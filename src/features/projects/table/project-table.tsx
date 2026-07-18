@@ -15,7 +15,7 @@ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
 
 import { EntityTable } from "@/shared/ui/entity-table"
-import { EntityTableLoading } from "@/shared/ui/entity-table/entity-table-loading"
+import { EntityTableSkeleton } from "@/shared/ui/entity-table"
 
 import { buildProjectColumns } from "./build-project-columns"
 import { ProjectExpandedRow } from "../components/expanded-row/project-expanded-row"
@@ -158,8 +158,8 @@ export function ProjectTable({
     }
 
     return (
-      <EntityTableLoading
-        label="Cargando proyectos..."
+      <EntityTableSkeleton
+        columns={columns}
       />
     )
   }

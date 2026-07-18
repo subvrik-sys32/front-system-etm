@@ -15,7 +15,7 @@ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
 
 import { EntityTable } from "@/shared/ui/entity-table"
-import { EntityTableLoading } from "@/shared/ui/entity-table/entity-table-loading"
+import { EntityTableSkeleton } from "@/shared/ui/entity-table"
 
 import { buildTaskColumns } from "../table/build-task-columns"
 import { TaskExpandedRow } from "../components/expanded-row/task-expanded-row"
@@ -160,8 +160,8 @@ export function TaskTable({
 
   if (!hydrated || loading) {
     return (
-      <EntityTableLoading
-        label="Cargando tareas..."
+      <EntityTableSkeleton
+        columns={columns}
       />
     )
   }

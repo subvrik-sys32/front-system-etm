@@ -14,8 +14,8 @@ import {
 } from "@/shared/ui/entity-table"
 
 import {
-  EntityTableLoading,
-} from "@/shared/ui/entity-table/entity-table-loading"
+  EntityTableSkeleton,
+} from "@/shared/ui/entity-table"
 
 import {
   useHydrated,
@@ -101,8 +101,8 @@ export function UserTable({
     }
 
     return (
-      <EntityTableLoading
-        label="Cargando usuarios..."
+      <EntityTableSkeleton
+        columns={columns}
       />
     )
   }

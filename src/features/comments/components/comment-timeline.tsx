@@ -16,6 +16,15 @@ type Props={
   target:CommentTarget
   onEditComment?:(comment:Comment)=>void
 }
+
+// Extrae un id estable del target, sin importar el scope, solo para
+// usarlo como dependencia del useEffect de abajo (no se muestra en UI).
+function getTargetId(target: CommentTarget) {
+  if (target.scope === "task") return target.taskId
+  if (target.scope === "workflowStep") return target.workflowStepId
+  return target.projectId
+}
+
 export function CommentTimeline({
   target,
   onEditComment,
@@ -36,12 +45,15 @@ export function CommentTimeline({
     deleteComment,
   }=useDeleteComment(target)
 
-  const targetId = target.scope === "task" ? target.taskId : target.workflowStepId
+  const targetId = getTargetId(target)
 
   // Los comentarios recientes se ven directamente acá, sin necesidad
   // de abrir "Ver historial". Si ya hay comentarios cargados, se
   // consideran vistos: marcamos como leídas las notificaciones de
   // este target igual que en CommentHistoryDialog.
+  // Nota: para comentarios de proyecto esto es un no-op (ver
+  // commentsService.markCommentsAsRead), ya que no generan
+  // notificaciones.
   useEffect(() => {
 
     if (loading || comments.length === 0) return

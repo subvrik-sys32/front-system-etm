@@ -4,7 +4,52 @@ import type { ReactNode } from "react"
 
 import type { EntityColumn, EntityColumnContext } from "./types"
 
-const STRUCTURAL_IDS = new Set(["drag", "expand", "actions"])
+export const CARD_STRUCTURAL_IDS = new Set(["drag", "expand", "actions"])
+
+export type CardColumnGroup<T> = { key: string; columns: EntityColumn<T>[] }
+
+// Extraída para que EntityTableCardRow (la card real) y
+// EntityTableSkeleton (su esqueleto de carga) usen EXACTAMENTE la
+// misma lógica de estructural/orden/agrupado — antes el skeleton
+// tenía su propia versión simplificada a mano, y con el tiempo dejó
+// de calcar la estructura real (títulos genéricos en vez de los
+// reales, cantidad de grupos distinta).
+export function groupCardColumns<T>(columns: EntityColumn<T>[]) {
+
+  const structural = columns.filter(c => CARD_STRUCTURAL_IDS.has(c.id))
+
+  // Se ordena por cardOrder (las que no lo tienen quedan al final,
+  // en su orden natural del array) — esto es INDEPENDIENTE del
+  // orden de columnas de la tabla normal, que no cambia.
+  const content = columns
+    .filter(c => !CARD_STRUCTURAL_IDS.has(c.id))
+    .map((column, naturalIndex) => ({
+      column,
+      order: column.cardOrder ?? 1000 + naturalIndex,
+    }))
+    .sort((a, b) => a.order - b.order)
+    .map(({ column }) => column)
+
+  // Agrupa manteniendo el orden ya resuelto arriba — cada grupo
+  // distinto (o "sin grupo") se separa visualmente con una línea.
+  const groups: CardColumnGroup<T>[] = []
+
+  for (const column of content) {
+
+    const key = column.cardGroup ?? "__default"
+    const lastGroup = groups[groups.length - 1]
+
+    if (lastGroup?.key === key) {
+      lastGroup.columns.push(column)
+    } else {
+      groups.push({ key, columns: [column] })
+    }
+
+  }
+
+  return { structural, groups }
+
+}
 
 type Props<T> = {
   item: T
@@ -35,36 +80,7 @@ export function EntityTableCardRow<T>({
     toggleExpanded,
   }
 
-  const structural = columns.filter(c => STRUCTURAL_IDS.has(c.id))
-
-  // Se ordena por cardOrder (las que no lo tienen quedan al final,
-  // en su orden natural del array) — esto es INDEPENDIENTE del
-  // orden de columnas de la tabla normal, que no cambia.
-  const content = columns
-    .filter(c => !STRUCTURAL_IDS.has(c.id))
-    .map((column, naturalIndex) => ({
-      column,
-      order: column.cardOrder ?? 1000 + naturalIndex,
-    }))
-    .sort((a, b) => a.order - b.order)
-    .map(({ column }) => column)
-
-  // Agrupa manteniendo el orden ya resuelto arriba — cada grupo
-  // distinto (o "sin grupo") se separa visualmente con una línea.
-  const groups: { key: string; columns: EntityColumn<T>[] }[] = []
-
-  for (const column of content) {
-
-    const key = column.cardGroup ?? "__default"
-    const lastGroup = groups[groups.length - 1]
-
-    if (lastGroup?.key === key) {
-      lastGroup.columns.push(column)
-    } else {
-      groups.push({ key, columns: [column] })
-    }
-
-  }
+  const { structural, groups } = groupCardColumns(columns)
 
   return (
 

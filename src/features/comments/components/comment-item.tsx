@@ -2,9 +2,11 @@
 import {
   Check,
   CheckCheck,
+  ImageIcon,
   Pencil,
   Trash2,
 } from "lucide-react"
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { IconAction } from "@/shared/ui/actions/icon-action"
 import { useAuthStore } from "@/features/auth/store/auth-store"
@@ -12,6 +14,7 @@ import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { formatCommentDate } from "../utils/format-comment-date"
 import { commentsService } from "../services/comments.service"
+import { CommentImageDialog } from "./comment-image-dialog"
 import type { Comment } from "../types/comment.types"
 
 type Props={
@@ -26,6 +29,7 @@ export function CommentItem({
   onDelete,
 }:Props){
   const currentUser=useAuthStore(s=>s.user)
+  const [imageDialogOpen,setImageDialogOpen]=useState(false)
   const { has }=usePermissions()
   const { user }=comment
   const isPending=Boolean((comment as { pending?: boolean }).pending)
@@ -149,21 +153,22 @@ export function CommentItem({
 
         {comment.imageUrl && (
 
-          <a
-            href={comment.imageUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 block w-fit"
+          <button
+            type="button"
+            onClick={()=>setImageDialogOpen(true)}
+            className="mt-2 flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs font-medium text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
           >
-            <img
-              src={comment.imageUrl}
-              alt="Foto adjunta"
-              className="max-h-64 rounded-lg object-cover"
-            />
-          </a>
+            <ImageIcon size={13} />
+            Ver foto adjunta
+          </button>
 
         )}
       </div>
+
+      <CommentImageDialog
+        imageUrl={imageDialogOpen ? comment.imageUrl : null}
+        onClose={()=>setImageDialogOpen(false)}
+      />
     </div>
   )
 }

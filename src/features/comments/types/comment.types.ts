@@ -11,7 +11,8 @@ export interface CommentUser{
 
 export interface Comment{
   id:string
-  taskId:string
+  taskId:string|null
+  projectId:string|null
   workflowStepId:string|null
   userId:string
   message:string
@@ -34,6 +35,7 @@ export interface UpdateCommentDto{
 export type CommentTarget=
   | { scope:"task"; taskId:string }
   | { scope:"workflowStep"; workflowStepId:string }
+  | { scope:"project"; projectId:string }
 
 export type CommentReadState =
   | "SENT"

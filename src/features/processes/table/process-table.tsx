@@ -15,7 +15,7 @@ import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus"
 import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 
 import { EntityTable } from "@/shared/ui/entity-table"
-import { EntityTableLoading } from "@/shared/ui/entity-table/entity-table-loading"
+import { EntityTableSkeleton } from "@/shared/ui/entity-table"
 import { ProcessTableSkeleton } from "./process-table-skeleton"
 
 import { TaskProcessColumn } from "@/features/tasks/pipeline/table/task-process-column"
@@ -200,8 +200,8 @@ export function ProcessTable({
     }
 
     return (
-      <EntityTableLoading
-        label="Cargando procesos..."
+      <EntityTableSkeleton
+        columns={columns}
       />
     )
 

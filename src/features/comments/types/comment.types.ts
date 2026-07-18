@@ -15,13 +15,16 @@ export interface Comment{
   workflowStepId:string|null
   userId:string
   message:string
+  imageUrl:string|null
   createdAt:string
   updatedAt:string
   user:CommentUser
 }
 
 export interface CreateCommentDto{
-  message:string
+  // Opcional: un comentario puede ser solo una foto, sin texto.
+  message?:string
+  imageBase64?:string
 }
 
 export interface UpdateCommentDto{

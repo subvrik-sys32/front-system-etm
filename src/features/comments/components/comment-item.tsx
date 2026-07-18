@@ -139,9 +139,30 @@ export function CommentItem({
             )}
           </div>
         </div>
-        <p className="mt-1 whitespace-pre-wrap wrap-break-word text-sm leading-6 text-neutral-300">
-          {comment.message}
-        </p>
+        {comment.message && (
+
+          <p className="mt-1 whitespace-pre-wrap wrap-break-word text-sm leading-6 text-neutral-300">
+            {comment.message}
+          </p>
+
+        )}
+
+        {comment.imageUrl && (
+
+          <a
+            href={comment.imageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 block w-fit"
+          >
+            <img
+              src={comment.imageUrl}
+              alt="Foto adjunta"
+              className="max-h-64 rounded-lg object-cover"
+            />
+          </a>
+
+        )}
       </div>
     </div>
   )

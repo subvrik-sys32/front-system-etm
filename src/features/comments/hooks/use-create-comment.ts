@@ -48,7 +48,11 @@ export function useCreateComment(target:CommentTarget){
         taskId: target.scope === "task" ? target.taskId : (previousComments?.[0]?.taskId ?? ""),
         workflowStepId: target.scope === "workflowStep" ? target.workflowStepId : null,
         userId: currentUser?.id ?? "",
-        message: dto.message.trim(),
+        message: dto.message?.trim() ?? "",
+        // El base64 ya es un data URI válido como src de <img> — se
+        // muestra tal cual mientras se sube, sin esperar la URL real
+        // de Storage que devuelve el servidor.
+        imageUrl: dto.imageBase64 ?? null,
         createdAt: now,
         updatedAt: now,
         deletedAt: null,

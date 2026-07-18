@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, KeyboardEvent, ChangeEvent } from "react"
-import { SendHorizontal, X } from "lucide-react"
+import { Camera, SendHorizontal, X } from "lucide-react"
 import { PrimaryAction } from "@/shared/ui/actions/primary-action"
 import { IconAction } from "@/shared/ui/actions/icon-action"
 import { Popover, PopoverAnchor } from "@/components/ui/popover"
@@ -25,7 +25,11 @@ export function CommentComposer({
 
   const [message, setMessage] = useState("")
   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
+  // data URI ("data:image/...;base64,...") de la foto elegida, lista
+  // para mandarse tal cual como imageBase64 — null si no hay ninguna.
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { createComment } = useCreateComment(target)
   const { updateComment, updating } = useUpdateComment(target)
@@ -86,15 +90,45 @@ export function CommentComposer({
 
   }
 
+  const handleRemoveImage = () => {
+    setSelectedImage(null)
+  }
+
   const handleCancel = () => {
     setMessage("")
+    setSelectedImage(null)
     onCancelEdit?.()
+  }
+
+  const handleSelectImage = (e: ChangeEvent<HTMLInputElement>) => {
+
+    const file = e.target.files?.[0]
+
+    // Limpiar el input ya, para poder elegir la misma foto de nuevo
+    // más adelante si hace falta (si no, el navegador no dispara
+    // "onChange" de nuevo con el mismo archivo).
+    e.target.value = ""
+
+    if (!file) return
+
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      setSelectedImage(reader.result as string)
+    }
+
+    reader.readAsDataURL(file)
+
   }
 
   const handleSubmit = () => {
 
     const trimmed = message.trim()
-    if (!trimmed || busy) return
+
+    // Ahora alcanza con tener texto O foto — antes exigía texto sí o
+    // sí, lo que no tenía sentido para un comentario que es solo una
+    // foto compartida.
+    if ((!trimmed && !selectedImage) || busy) return
 
     if (isEditing && editingComment) {
 
@@ -114,13 +148,17 @@ export function CommentComposer({
       // NO se espera esto. onMutate ya insertó el comentario optimista
       // de forma síncrona antes de que esta función siga corriendo, así
       // que el textarea puede limpiarse YA, sin esperar al servidor.
-      createComment({ message: trimmed }).catch(() => {
+      createComment({
+        message: trimmed || undefined,
+        imageBase64: selectedImage ?? undefined,
+      }).catch(() => {
         // El rollback (si falla de verdad) ya lo maneja useCreateComment.
       })
 
     }
 
     setMessage("")
+    setSelectedImage(null)
     setMentionQuery(null)
 
   }
@@ -159,6 +197,36 @@ export function CommentComposer({
 
       )}
 
+      {selectedImage && (
+
+        <div className="relative mb-1.5 inline-block">
+
+          <img
+            src={selectedImage}
+            alt="Foto adjunta"
+            className="h-20 w-20 rounded-lg object-cover"
+          />
+
+          <button
+            type="button"
+            onClick={handleRemoveImage}
+            className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+          >
+            <X size={12} />
+          </button>
+
+        </div>
+
+      )}
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleSelectImage}
+      />
+
       <Popover
         open={mentionOpen}
         onOpenChange={(next) => {
@@ -190,7 +258,17 @@ export function CommentComposer({
 
       </Popover>
 
-      <div className="mt-1 flex justify-end">
+      <div className="mt-1 flex items-center justify-between">
+
+        {/* Solo al crear — editar sigue siendo texto solamente. */}
+        {!isEditing && (
+
+          <IconAction
+            icon={Camera}
+            onClick={() => fileInputRef.current?.click()}
+          />
+
+        )}
 
         <PrimaryAction
           label={
@@ -200,7 +278,7 @@ export function CommentComposer({
           }
           icon={SendHorizontal}
           onClick={handleSubmit}
-          disabled={!message.trim() || busy}
+          disabled={(!message.trim() && !selectedImage) || busy}
         />
 
       </div>

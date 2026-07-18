@@ -1,8 +1,8 @@
-import { useMemo } from "react"
+"use client"
 
-import { useProjects } from "@/features/projects/hooks/use-projects"
-import { isProjectCompleted } from "@/features/projects/selectors/is-project-completed"
-import { useTasks } from "@/features/tasks/hooks/use-tasks"
+import { useQuery } from "@tanstack/react-query"
+
+import { sidebarService } from "../services/sidebar.service"
 
 const EMPTY_PROCESS_COUNTS={
   CT:0,
@@ -15,55 +15,34 @@ const EMPTY_PROCESS_COUNTS={
 
 export type ProcessCounts=typeof EMPTY_PROCESS_COUNTS
 
+export const sidebarCountsQueryKey=["sidebar-counts"] as const
+
+// Antes: useProjects()+useTasks() acá adentro — traía la lista
+// COMPLETA de proyectos y tareas (con TODOS sus includes pesados:
+// cliente, etapa, estado, pm, workflowSteps, prioridad, material,
+// espesor, color...) solo para contarlos del lado del cliente. Como
+// el sidebar está SIEMPRE montado, eso se disparaba en cada página
+// de la app, aunque el usuario esté mirando Producción o Usuarios,
+// donde esos datos ni se usan.
+//
+// Ahora pega a un endpoint liviano (/sidebar/counts) que ya devuelve
+// los 3 números calculados del lado del servidor con queries de
+// agregación (COUNT/GROUP BY) — nada de relaciones anidadas. Se
+// mantiene al día vía invalidación desde los mismos realtime
+// handlers que ya tocan proyectos/tareas/workflow (ver
+// project-handler.ts, task-handler.ts, workflow-handler.ts).
 export function useSidebarCounts(){
 
-  const{projects}=useProjects()
-  const{tasks}=useTasks()
-
-  const projectsCount=useMemo(
-    ()=>projects.filter(
-      project=>!isProjectCompleted(project),
-    ).length,
-    [projects],
-  )
-
-  const activeTasksCount=useMemo(
-    ()=>tasks.filter(
-      task=>task.workflowSteps?.some(
-        step=>step.status!=="REVIEWED",
-      ),
-    ).length,
-    [tasks],
-  )
-
-  const processCounts=useMemo(()=>{
-
-    const counts={...EMPTY_PROCESS_COUNTS}
-
-    for(const task of tasks){
-
-      for(const step of task.workflowSteps??[]){
-
-        if(step.status==="REVIEWED"){
-          continue
-        }
-
-        if(counts[step.processCode as keyof typeof counts]!==undefined){
-          counts[step.processCode as keyof typeof counts]++
-        }
-
-      }
-
-    }
-
-    return counts
-
-  },[tasks])
+  const { data }=useQuery({
+    queryKey:sidebarCountsQueryKey,
+    queryFn:({ signal })=>sidebarService.getCounts(signal),
+    staleTime:1000*60,
+  })
 
   return{
-    projectsCount,
-    activeTasksCount,
-    processCounts,
+    projectsCount:data?.projectsCount??0,
+    activeTasksCount:data?.activeTasksCount??0,
+    processCounts:data?.processCounts??EMPTY_PROCESS_COUNTS,
   }
 
 }

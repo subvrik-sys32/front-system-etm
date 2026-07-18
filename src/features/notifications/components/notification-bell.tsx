@@ -51,7 +51,7 @@ export function NotificationBell({ collapsed, variant = "sidebar" }: Props) {
     loadMore,
     hasMore,
     loadingMore,
-  } = useNotifications()
+  } = useNotifications(open)
 
   const { count } = useUnreadCount()
 

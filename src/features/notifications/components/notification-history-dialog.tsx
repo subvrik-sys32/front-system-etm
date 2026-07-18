@@ -40,7 +40,7 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
 
   const router = useRouter()
 
-  const { notifications, loading, loadMore, hasMore, loadingMore } = useNotifications()
+  const { notifications, loading, loadMore, hasMore, loadingMore } = useNotifications(open)
   const { markAsRead } = useMarkNotificationRead()
   const { markAllAsRead } = useMarkAllNotificationsRead()
   const { deleteNotification } = useDeleteNotification()

@@ -8,8 +8,8 @@ import {
 } from "@/features/users/components/user-select"
 
 import {
-  useUsers,
-} from "@/features/users/hooks/use-users"
+  useUsersDirectory,
+} from "@/features/users/hooks/use-users-directory"
 
 import {
   useWorkflowStepField,
@@ -51,7 +51,7 @@ export function ProcessOperatorCell({
 
   const{
     users,
-  }=useUsers()
+  }=useUsersDirectory()
 
   const updateField=
     useWorkflowStepField()

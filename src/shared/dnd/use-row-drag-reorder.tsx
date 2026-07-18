@@ -192,6 +192,14 @@ export function useRowDragReorder<T>({
     const isDragging = drag?.id === rowId
     const rowDisabled = disabled || isRowDisabled?.(item)
 
+    // En modo card (EntityTable ya encogido), "templateColumns"
+    // viene vacío — ahí no hay que forzar display:grid, porque el
+    // contenido (EntityTableCardRow) maneja su propio layout. Antes
+    // esto SIEMPRE forzaba gridTemplateColumns, y al usarse en modo
+    // card rompía la card metiéndola en columnas que no tenían nada
+    // que ver — por eso el drag-and-drop no se podía usar ahí.
+    const isGridMode = templateColumns.length > 0
+
     return (
       <div
         style={{
@@ -202,13 +210,16 @@ export function useRowDragReorder<T>({
       >
         <div
           ref={el => { rowEls.current[rowId] = el }}
-          data-expanded-row-id={rowId}
-          className="grid min-w-0 items-center border-b border-white/5"
+          className={
+            isGridMode
+              ? "grid min-w-0 items-center rounded-xl border-b border-white/5 px-2 transition-colors hover:bg-white/2"
+              : "min-w-0"
+          }
           style={{
-            gridTemplateColumns: templateColumns,
+            gridTemplateColumns: isGridMode ? templateColumns : undefined,
             opacity: isDragging ? 0 : 1,
             transform: isDragging ? "scale(0.98)" : "scale(1)",
-            transition: "opacity 160ms ease, transform 160ms ease",
+            transition: "opacity 160ms ease, transform 160ms ease, background-color 150ms ease",
           }}
         >
           <DndRowProvider
@@ -241,7 +252,7 @@ export function useRowDragReorder<T>({
         <div className="absolute inset-0 rounded-full bg-linear-to-r from-transparent via-sky-500 to-transparent opacity-70 blur-[3px]" />
       </div>
 
-      <div className="mt-2 flex w-64 items-center gap-3 rounded-xl border border-white/10 bg-neutral-900/95 px-3 py-2 backdrop-blur-xl shadow-[0_28px_70px_rgba(0,0,0,.45)]">
+      <div className="mt-2 flex w-64 items-center gap-3 rounded-xl bg-neutral-900/95 px-3 py-2 backdrop-blur-xl shadow-[0_28px_70px_rgba(0,0,0,.45)]">
         <span className="text-white/35 shrink-0">≡</span>
         <div className="min-w-0 overflow-hidden">
           {renderDragLabel(drag.item)}

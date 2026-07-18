@@ -15,13 +15,17 @@ export type EntityColumn<T>={
   width:string
   align?:"left"|"center"|"right"
 
-  // Ancho REAL del contenedor de la tabla (no de la ventana) por
-  // debajo del cual esta columna se oculta entera — header y celda
-  // de cada fila. Sin este campo, la columna es "esencial" y nunca
-  // se oculta. Se mide con ResizeObserver sobre el propio
-  // contenedor de la tabla, así funciona igual si la tabla está en
-  // pantalla completa o metida en un panel angosto.
-  minWidth?:number
+  // Orden dentro de la card compacta (menor = aparece antes) —
+  // independiente del orden en la grilla normal de la tabla, que
+  // no cambia. Sin esto, cae al final, en su orden natural.
+  cardOrder?:number
+
+  // Agrupa visualmente varios campos como un solo bloque dentro de
+  // la card (con un separador entre grupos distintos) — por ejemplo
+  // "Cliente/Etapa/Estado/PM" como un conjunto aparte de
+  // "ID/Proyecto/Código/Entrega". Columnas sin grupo caen en un
+  // grupo default sin nombre.
+  cardGroup?:string
 
   render:(
     item:T,

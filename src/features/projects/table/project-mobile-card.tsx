@@ -17,6 +17,7 @@ import { ProjectPmCell } from "../components/cells/project-pm-cell"
 import { ProjectRowActions } from "../components/actions/project-row-actions"
 import { ProjectExpandedRow } from "../components/expanded-row/project-expanded-row"
 import { IconAction } from "@/shared/ui/actions/icon-action"
+import { DragCell } from "@/shared/ui/entity-table-common/drag-cell"
 
 type Props = {
   project: Project
@@ -59,41 +60,52 @@ export function ProjectMobileCard({
 
     <div className="overflow-hidden rounded-xl bg-white/2">
 
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center gap-2.5 px-3 py-3 text-left"
-      >
+      <div className="flex items-center gap-1 px-1">
 
-        <span className="shrink-0 rounded-md bg-white/8 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white/50">
-          {String(project.sequence).padStart(3, "0")}
-        </span>
+        {/* Mismo componente que ya usa desktop (DragCell) — mismo
+            orden que la grilla ahí (drag primero, afuera de
+            cualquier botón de expandir), para que agarrar los
+            puntitos arrastre y tocar el resto de la fila expanda,
+            sin que se pisen los dos gestos. */}
+        <DragCell />
 
-        <div className="min-w-0 flex-1">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex min-w-0 flex-1 items-center gap-2.5 py-3 pr-2 text-left"
+        >
 
-          <p className="truncate text-sm font-semibold text-white">
-            {project.name}
-          </p>
+          <span className="shrink-0 rounded-md bg-white/8 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white/50">
+            {String(project.sequence).padStart(3, "0")}
+          </span>
 
-          <p className="mt-0.5 truncate text-xs text-neutral-500">
-            {project.projectCode}
-          </p>
+          <div className="min-w-0 flex-1">
 
-        </div>
+            <p className="truncate text-sm font-semibold text-white">
+              {project.name}
+            </p>
 
-        <span className="shrink-0 text-xs text-neutral-500">
-          {formatDate(project.deliveryDate)}
-        </span>
+            <p className="mt-0.5 truncate text-xs text-neutral-500">
+              {project.projectCode}
+            </p>
 
-        <ChevronDown
-          size={16}
-          className={cn(
-            "shrink-0 text-neutral-500 transition-transform duration-200",
-            expanded && "rotate-180",
-          )}
-        />
+          </div>
 
-      </button>
+          <span className="shrink-0 text-xs text-neutral-500">
+            {formatDate(project.deliveryDate)}
+          </span>
+
+          <ChevronDown
+            size={16}
+            className={cn(
+              "shrink-0 text-neutral-500 transition-transform duration-200",
+              expanded && "rotate-180",
+            )}
+          />
+
+        </button>
+
+      </div>
 
       {expanded && (
 

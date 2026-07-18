@@ -36,6 +36,13 @@ type Props={
 
   fullWidth?:boolean
 
+  // Sin min-width fijo (120px) y padding más chico — para columnas
+  // de tabla angostas, donde el botón no tenía espacio real y
+  // terminaba "saliéndose" de su columna. Los otros usos (overlay
+  // del pipeline, botones del workflow expandido) siguen con el
+  // tamaño cómodo de siempre.
+  compact?:boolean
+
 }
 
 export function WorkflowAction({
@@ -55,6 +62,8 @@ export function WorkflowAction({
   loadingLabel,
 
   fullWidth=false,
+
+  compact=false,
 
 }:Props){
 
@@ -152,11 +161,15 @@ export function WorkflowAction({
 
           ?"w-10 px-0"
 
-          :fullWidth
+          :compact
 
-            ?"w-full gap-2 px-3"
+            ? "w-28 gap-1.5 px-2"
 
-            :"min-w-30 gap-2 px-3",
+            :fullWidth
+
+              ?"w-full gap-2 px-3"
+
+              :"min-w-30 gap-2 px-3",
 
         isDisabled
 

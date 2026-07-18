@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useLayoutEffect, useMemo, useRef, useState } from "react"
 
 import {
   EntityTableHeader,
@@ -11,54 +11,38 @@ import {
 } from "./entity-table-item"
 
 import {
-  EntityTableHiddenColumns,
-} from "./entity-table-hidden-columns"
+  EntityTableCardRow,
+} from "./entity-table-card-row"
 
 import {
   TableScrollContainer,
 } from "../horizontal-scroll/table-scroll-container"
 
 import type {
-  EntityColumn,
   EntityTableProps,
 } from "./types"
 
-// Separa las columnas en "las que entran" y "las que no" según el
-// ancho real medido. Las que tienen "minWidth" y no lo alcanzan se
-// ocultan; las que no tienen "minWidth" son esenciales y nunca se
-// filtran.
-function splitColumns<T>(
-  columns:EntityColumn<T>[],
-  containerWidth:number|null,
-):{
-  visible:EntityColumn<T>[]
-  hidden:EntityColumn<T>[]
-}{
+// Extrae el ancho mínimo en px de un string de columna — "70px" ->
+// 70, "minmax(140px,2fr)" -> 140. Es lo mínimo real que esa columna
+// puede llegar a ocupar (definido en TABLE_WIDTHS), no un número
+// adivinado a mano.
+function parseMinWidthPx(width:string):number{
 
-  // null = todavía no midió (primer render) — mostramos todo para
-  // no hacer parpadear columnas que van a aparecer un instante
-  // después de todos modos.
-  if(containerWidth===null){
-    return { visible:columns, hidden:[] }
+  const minmaxMatch=
+    /minmax\(\s*(\d+)px/.exec(width)
+
+  if(minmaxMatch){
+    return Number(minmaxMatch[1])
   }
 
-  const visible:EntityColumn<T>[]=[]
-  const hidden:EntityColumn<T>[]=[]
+  const pxMatch=
+    /^(\d+)px$/.exec(width)
 
-  for(const column of columns){
-
-    if(
-      column.minWidth===undefined||
-      containerWidth>=column.minWidth
-    ){
-      visible.push(column)
-    }else{
-      hidden.push(column)
-    }
-
+  if(pxMatch){
+    return Number(pxMatch[1])
   }
 
-  return { visible, hidden }
+  return 0
 
 }
 
@@ -79,13 +63,24 @@ export function EntityTable<T>({
   const [containerWidth,setContainerWidth]=
     useState<number|null>(null)
 
-  useEffect(()=>{
+  useLayoutEffect(()=>{
 
     const el=containerRef.current
 
     if(!el){
       return
     }
+
+    // Medición sincrónica INMEDIATA, antes de que el navegador
+    // pinte — sin esto, cada vez que el componente se monta de
+    // nuevo (ej. cambiar de página y volver), containerWidth
+    // arrancaba en null, se mostraba la grilla por default, y
+    // recién attention al primer callback (asíncrono) del
+    // ResizeObserver se recalculaba a modo card — ese hueco de
+    // tiempo era el flash de la versión tabla que se veía.
+    setContainerWidth(
+      el.getBoundingClientRect().width,
+    )
 
     const observer=new ResizeObserver(entries=>{
 
@@ -104,47 +99,29 @@ export function EntityTable<T>({
 
   },[])
 
-  const { visible, hidden }=useMemo(
-    ()=>splitColumns(columns,containerWidth),
-    [columns,containerWidth],
+  // Suma de los pisos mínimos REALES de cada columna (los mismos
+  // números que ya definís en TABLE_WIDTHS) — no un umbral fijo
+  // adivinado. Apenas el contenedor medido llega a este punto (el
+  // momento exacto en que la grilla ya no puede encogerse más sin
+  // necesitar scroll horizontal), se pasa a modo card — nunca se
+  // llega a mostrar la scrollbar.
+  const totalMinWidthPx=useMemo(
+    ()=>columns.reduce(
+      (sum,column)=>sum+parseMinWidthPx(column.width),
+      0,
+    ),
+    [columns],
   )
 
-  // Cuando hay columnas ocultas, se agrega una columna "virtual"
-  // al final — mismo mecanismo de renderizado que cualquier otra
-  // columna (header vacío + una celda por fila), así que no hace
-  // falta tocar EntityTableHeader/Item/Content para nada: solo
-  // reciben un array de columnas un poco más largo.
-  const tableColumns=useMemo(
-    ():EntityColumn<T>[]=>{
-
-      if(hidden.length===0){
-        return visible
-      }
-
-      const indicatorColumn:EntityColumn<T>={
-        id:"__hidden-columns",
-        title:"",
-        width:"44px",
-        align:"center",
-        render:(item,context)=>(
-          <EntityTableHiddenColumns
-            item={item}
-            context={context}
-            hiddenColumns={hidden}
-          />
-        ),
-        renderOverlay:()=>null,
-      }
-
-      return [...visible,indicatorColumn]
-
-    },
-    [visible,hidden],
-  )
+  // null (primer render, todavía no midió) se trata como "no
+  // compacto" — evita un parpadeo de cards -> grilla apenas carga.
+  const isCompact=
+    containerWidth!==null&&
+    containerWidth<=totalMinWidthPx
 
   const templateColumns=useMemo(
-    ()=>tableColumns.map(column=>column.width).join(" "),
-    [tableColumns],
+    ()=>columns.map(column=>column.width).join(" "),
+    [columns],
   )
 
   return(
@@ -163,9 +140,16 @@ export function EntityTable<T>({
 
       <TableScrollContainer>
 
-        <EntityTableHeader
-          columns={tableColumns}
-        />
+        {/* Sin header de columnas en modo card — cada campo ya
+            trae su propio label (ver EntityTableCardRow), un header
+            de grilla ahí arriba no tendría con qué alinearse. */}
+        {!isCompact&&(
+
+          <EntityTableHeader
+            columns={columns}
+          />
+
+        )}
 
         <div
           data-entity-table-scroll
@@ -185,22 +169,73 @@ export function EntityTable<T>({
 
           )}
 
-          {data.map((item,rowIndex)=>(
+          {isCompact
 
-            <EntityTableItem
-              key={rowId(item)}
-              id={rowId(item)}
-              item={item}
-              rowIndex={rowIndex}
-              columns={tableColumns}
-              templateColumns={templateColumns}
-              renderRow={renderRow}
-              expandedRowId={expandedRowId}
-              onExpandedRowChange={onExpandedRowChange}
-              renderExpandedRow={renderExpandedRow}
-            />
+            ?data.map((item,rowIndex)=>{
 
-          ))}
+              const id=rowId(item)
+              const isExpanded=expandedRowId===id
+
+              const cardContent=(
+
+                <EntityTableCardRow
+                  item={item}
+                  rowIndex={rowIndex}
+                  columns={columns}
+                  isExpanded={isExpanded}
+                  toggleExpanded={()=>
+                    onExpandedRowChange?.(
+                      isExpanded?null:id,
+                    )
+                  }
+                />
+
+              )
+
+              return(
+
+                <div key={id} data-expanded-row-id={id}>
+
+                  {renderRow
+
+                    // templateColumns vacío a propósito: en modo
+                    // card el contenido maneja su propio layout
+                    // (EntityTableCardRow), no hace falta que
+                    // renderRow le fuerce un grid de columnas que
+                    // no tienen nada que ver — ver el fix en
+                    // useRowDragReorder.renderRow.
+                    ?renderRow(item,cardContent,"",id)
+
+                    :cardContent
+
+                  }
+
+                  {isExpanded&&renderExpandedRow?.(item)}
+
+                </div>
+
+              )
+
+            })
+
+            :data.map((item,rowIndex)=>(
+
+              <EntityTableItem
+                key={rowId(item)}
+                id={rowId(item)}
+                item={item}
+                rowIndex={rowIndex}
+                columns={columns}
+                templateColumns={templateColumns}
+                renderRow={renderRow}
+                expandedRowId={expandedRowId}
+                onExpandedRowChange={onExpandedRowChange}
+                renderExpandedRow={renderExpandedRow}
+              />
+
+            ))
+
+          }
 
         </div>
 

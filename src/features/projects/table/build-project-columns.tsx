@@ -82,6 +82,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       align:"center",
       title:"ID",
       width:TABLE_WIDTHS.id,
+      cardOrder:0,
       render:project=>(
         <span className="font-semibold text-white">
           {String(project.sequence).padStart(3,"0")}
@@ -94,6 +95,8 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       align:"center",
       title:"CLIENTE",
       width:TABLE_WIDTHS.medium,
+      cardOrder:4,
+      cardGroup:"meta",
       render:project=>(
         <ProjectClientCell
           project={project}
@@ -106,6 +109,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       align:"center",
       title:"PRY",
       width:TABLE_WIDTHS.projectCode,
+      cardOrder:2,
       render:project=>(
         <span>{project.projectCode}</span>
       ),
@@ -116,6 +120,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       align:"left",
       title:"PROYECTO",
       width:TABLE_WIDTHS.reference,
+      cardOrder:1,
       render:project=>(
         <span className="block truncate font-medium">
           {project.name}
@@ -128,6 +133,8 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       align:"center",
       title:"ETAPA",
       width:TABLE_WIDTHS.large,
+      cardOrder:5,
+      cardGroup:"meta",
       render:project=>(
         <ProjectStageCell
           project={project}
@@ -140,6 +147,8 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       align:"center",
       title:"ESTADO",
       width:TABLE_WIDTHS.medium,
+      cardOrder:6,
+      cardGroup:"meta",
       render:project=>(
         <ProjectStatusCell
           project={project}
@@ -152,6 +161,8 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       align:"center",
       title:"PM",
       width:TABLE_WIDTHS.medium,
+      cardOrder:7,
+      cardGroup:"meta",
       render:project=>(
         <ProjectPmCell
           project={project}
@@ -164,6 +175,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       align:"center",
       title:"ENTREGA",
       width:TABLE_WIDTHS.delivery,
+      cardOrder:3,
       render:project=>(
         <span>
           {formatDate(project.deliveryDate)}

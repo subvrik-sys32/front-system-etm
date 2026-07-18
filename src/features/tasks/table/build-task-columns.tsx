@@ -54,6 +54,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       align:"center",
       title:"ID",
       width:TABLE_WIDTHS.id,
+      cardOrder:0,
       render:task=>(
         <span className="font-semibold text-white">
           {String(task.taskNumber).padStart(3,"0")}
@@ -65,6 +66,8 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       id:"client",
       title:"CLIENTE",
       width:TABLE_WIDTHS.medium,
+      cardOrder:4,
+      cardGroup:"meta",
       render:task=>(
         <DynamicBadge
           label={task.project.client.name}
@@ -80,9 +83,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       align:"center",
       title:"PRY",
       width:TABLE_WIDTHS.projectCode,
-      // Cuarta en ocultarse — el código corto es útil pero
-      // redundante con REFERENCIA para identificar la tarea.
-      minWidth:600,
+      cardOrder:2,
       render:task=>(
         <Link
           href={`/projects?projectId=${task.project.id}`}
@@ -98,6 +99,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       align:"left",
       title:"REFERENCIA",
       width:TABLE_WIDTHS.reference,
+      cardOrder:1,
       render:task=>(
         <div className="min-w-0 overflow-hidden">
           <span className="block truncate font-medium">
@@ -111,9 +113,8 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       id:"priority",
       title:"PRIORIDAD",
       width:TABLE_WIDTHS.medium,
-      // Primera en ocultarse — info complementaria, ya visible
-      // igual en el detalle expandido de la tarea.
-      minWidth:900,
+      cardOrder:5,
+      cardGroup:"meta",
       render:task=>(
         <TaskPriorityCell
           task={task}
@@ -125,8 +126,8 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       id:"stage",
       title:"ETAPA",
       width:TABLE_WIDTHS.small,
-      // Tercera en ocultarse.
-      minWidth:700,
+      cardOrder:6,
+      cardGroup:"meta",
       render:task=>{
 
         const stage=
@@ -150,6 +151,8 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       id:"status",
       title:"ESTADO",
       width:TABLE_WIDTHS.medium,
+      cardOrder:7,
+      cardGroup:"meta",
       render:task=>{
 
         const status=
@@ -172,8 +175,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       align:"center",
       title:"ENTREGA",
       width:TABLE_WIDTHS.delivery,
-      // Segunda en ocultarse.
-      minWidth:800,
+      cardOrder:3,
       render:task=>(
         <span>
           {formatDate(task.deliveryDate)}

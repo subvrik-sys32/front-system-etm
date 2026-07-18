@@ -74,6 +74,7 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       align: "center",
       title: "ID",
       width: TABLE_WIDTHS.id,
+      cardOrder: 0,
       render: item => (
         <span className="font-semibold text-white">
           {String(processAccess.task(item).taskNumber).padStart(3, "0")}
@@ -86,6 +87,8 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       align: "center",
       title: "CLIENTE",
       width: TABLE_WIDTHS.medium,
+      cardOrder: 4,
+      cardGroup: "meta",
       render: item => {
         const client = processAccess.project(item).client
         return (
@@ -104,6 +107,7 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       align: "center",
       title: "PRY",
       width: TABLE_WIDTHS.projectCode,
+      cardOrder: 2,
       render: item => {
         const project = processAccess.project(item)
         return (
@@ -122,6 +126,7 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       align: "left",
       title: "REFERENCIA",
       width: TABLE_WIDTHS.reference,
+      cardOrder: 1,
       render: item => {
         const task = processAccess.task(item)
         return (
@@ -140,6 +145,8 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       align: "center",
       title: "PRIORIDAD",
       width: TABLE_WIDTHS.medium,
+      cardOrder: 5,
+      cardGroup: "meta",
       render: item => {
         const priority = processAccess.priority(item)
         return (
@@ -158,6 +165,8 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       align: "center",
       title: "ESTADO",
       width: TABLE_WIDTHS.medium,
+      cardOrder: 6,
+      cardGroup: "meta",
       render: item => (
         <WorkflowStatusBadge
           status={workflowAccess.status(item)}
@@ -170,6 +179,8 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       align: "center",
       title: "OPERADOR",
       width: TABLE_WIDTHS.medium,
+      cardOrder: 7,
+      cardGroup: "meta",
       render: item => (
         <ProcessOperatorCell processTask={item} />
       ),
@@ -180,6 +191,7 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       align: "center",
       title: "ENTREGA",
       width: TABLE_WIDTHS.delivery,
+      cardOrder: 3,
       render: item => (
         <span>
           {formatDate(processAccess.task(item).deliveryDate)}

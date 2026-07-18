@@ -1,8 +1,7 @@
 "use client"
 
-import{
-  Fragment,
-  type ReactNode,
+import type{
+  ReactNode,
 }from"react"
 
 import{
@@ -67,7 +66,15 @@ export function EntityTableItem<T>({
 
   return(
 
-    <Fragment>
+    // Antes esto era un Fragment (sin elemento propio), y
+    // "data-expanded-row-id" vivía en la fila colapsada misma —
+    // useFocusedRow buscaba ESE elemento y centraba el scroll
+    // respecto a él, sin contar el contenido expandido que se
+    // renderiza como hermano JUSTO DEBAJO. Resultado: al enfocar
+    // una fila y expandirla, el scroll centraba la fila sola, no el
+    // bloque fila+contenido expandido junto. Ahora este div externo
+    // (que sí envuelve a los dos) es el que tiene el atributo.
+    <div data-expanded-row-id={id}>
 
       {
 
@@ -83,8 +90,7 @@ export function EntityTableItem<T>({
           :(
 
             <div
-              data-expanded-row-id={id}
-              className="grid min-w-0 items-center border-b border-white/5 transition-colors"
+              className="grid min-w-0 items-center rounded-xl border-b border-white/5 px-2 transition-colors hover:bg-white/2"
               style={{
                 gridTemplateColumns:templateColumns,
               }}
@@ -107,7 +113,7 @@ export function EntityTableItem<T>({
 
       }
 
-    </Fragment>
+    </div>
 
   )
 

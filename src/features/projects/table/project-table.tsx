@@ -168,35 +168,64 @@ export function ProjectTable({
 
     return (
 
-      <div className="flex flex-col gap-2 pb-2">
+      <>
 
-        {displayedProjects.map(project => (
+        <div className="flex flex-col gap-2 pb-2">
 
-          <ProjectMobileCard
-            key={project.id}
-            project={project}
-            tasks={tasks}
-            expanded={expand.expandedRowId === project.id}
-            onToggle={() =>
-              expand.setExpandedRowId(
-                expand.expandedRowId === project.id
-                  ? null
-                  : project.id,
-              )
-            }
-          />
+          {displayedProjects.map(project => {
 
-        ))}
+            const card = (
 
-        {displayedProjects.length === 0 && (
+              <ProjectMobileCard
+                project={project}
+                tasks={tasks}
+                expanded={expand.expandedRowId === project.id}
+                onToggle={() =>
+                  expand.setExpandedRowId(
+                    expand.expandedRowId === project.id
+                      ? null
+                      : project.id,
+                  )
+                }
+              />
 
-          <div className="flex h-24 items-center justify-center rounded-xl bg-white/2 text-sm text-neutral-500">
-            Sin proyectos
-          </div>
+            )
 
-        )}
+            return (
 
-      </div>
+              <div key={project.id}>
+
+                {/* Mismo dragApi que ya usa la grilla de desktop —
+                    templateColumns vacío porque la card mobile maneja
+                    su propio layout, no un grid de columnas. */}
+                {dragApi.renderRow(project, card, "", project.id)}
+
+              </div>
+
+            )
+
+          })}
+
+          {displayedProjects.length === 0 && (
+
+            <div className="flex h-24 items-center justify-center rounded-xl bg-white/2 text-sm text-neutral-500">
+              Sin proyectos
+            </div>
+
+          )}
+
+        </div>
+
+        {/* Antes esto solo estaba en el return de desktop, más
+            abajo en el archivo — como el branch de mobile hace
+            return ACÁ arriba, ese código nunca se alcanzaba. El
+            globito flotante y la línea de inserción no aparecían
+            nunca al arrastrar en mobile; lo que se veía era la
+            propia card a mitad de su animación de desaparecer
+            (opacity+scale), no el overlay real. */}
+        {isManualMode && dragApi.overlay}
+
+      </>
 
     )
 

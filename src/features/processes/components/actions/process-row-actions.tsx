@@ -313,7 +313,7 @@ export function ProcessRowActions({
 
       <div className="flex w-full items-center justify-center">
 
-        <div className="flex h-8 min-w-30 items-center justify-center rounded-lg border-2 border-dashed border-neutral-600/40 bg-transparent">
+        <div className="flex h-8 w-full items-center justify-center rounded-lg border-2 border-dashed border-neutral-600/40 bg-transparent">
 
           <div className="h-1.5 w-1.5 rounded-full bg-white/20"/>
 
@@ -331,9 +331,9 @@ export function ProcessRowActions({
 
       <div className="flex w-full items-center justify-center">
 
-        <div className="flex h-8 min-w-30 items-center justify-center rounded-lg bg-emerald-500/5 px-4 text-xs font-semibold uppercase text-emerald-300">
+        <div className="flex h-8 w-full items-center justify-center rounded-lg bg-emerald-500/5 px-4 text-xs font-semibold uppercase text-emerald-300">
 
-          ✓ Revisado
+          Revisado
 
         </div>
 
@@ -354,6 +354,8 @@ export function ProcessRowActions({
           label="Iniciar"
 
           variant="start"
+
+          compact
 
           disabled={!canUpdate}
 
@@ -407,6 +409,8 @@ export function ProcessRowActions({
 
           variant="start"
 
+          compact
+
           disabled={!canUpdate}
 
           onClick={handleResume}
@@ -422,6 +426,8 @@ export function ProcessRowActions({
           label="Revisar"
 
           variant="review"
+
+          compact
 
           disabled={!canReview}
 

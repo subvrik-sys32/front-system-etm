@@ -15,7 +15,7 @@ export function EntityTableHeader<T>({
   return (
 
     <div
-      className="grid bg-white/2 select-none"
+      className="grid bg-white/2 px-2 select-none"
       style={{
         gridTemplateColumns:
           columns

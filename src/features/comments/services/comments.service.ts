@@ -3,6 +3,11 @@ import { toast } from "sonner"
 import { commentsApi } from "../api/comments.api"
 import type { CommentTarget } from "../types/comment.types"
 
+// Evita mostrar el mismo toast de error una y otra vez si el
+// endpoint está caído y el usuario abre varios comment timelines
+// seguidos. Se resetea solo al recargar la página (module-level).
+let hasNotifiedProjectReadFailure = false
+
 export const commentsService = {
   getTaskComments: commentsApi.getTaskComments,
   getWorkflowStepComments: commentsApi.getWorkflowStepComments,
@@ -31,14 +36,13 @@ export const commentsService = {
           { projectId: target.projectId, error },
         )
 
-        // No bloqueamos ni interrumpimos al usuario por esto (es
-        // una acción de fondo, no algo que disparó activamente),
-        // pero un toast discreto avisa que algo no sincronizó bien
-        // en vez de fallar 100% invisible.
-        toast.error("No se pudo marcar el comentario como leído", {
-          description: "Se reintentará automáticamente más tarde.",
-          duration: 4000,
-        })
+        if (!hasNotifiedProjectReadFailure) {
+
+          hasNotifiedProjectReadFailure = true
+
+          toast.error("No se pudo marcar el comentario como leído")
+
+        }
 
       })
   },

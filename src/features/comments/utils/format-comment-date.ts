@@ -10,12 +10,16 @@ export function formatCommentDate(dateInput:string){
   if(diffMin<60)return`Hace ${diffMin} min`
   if(diffHours<24)return`Hace ${diffHours} ${diffHours===1?"hora":"horas"}`
 
-  const isYesterday=
-    date.getDate()===now.getDate()-1&&
-    date.getMonth()===now.getMonth()&&
-    date.getFullYear()===now.getFullYear()
+  // Comparamos por medianoche local en vez de restar getDate() directo:
+  // "now.getDate()-1" se rompe el primer día de cada mes (da 0, que
+  // nunca matchea ningún día real), así que un comentario de ayer, si
+  // ayer fue el último día del mes anterior, terminaba mostrando la
+  // fecha completa en vez de "Ayer".
+  const startOfToday=new Date(now.getFullYear(),now.getMonth(),now.getDate())
+  const startOfDate=new Date(date.getFullYear(),date.getMonth(),date.getDate())
+  const dayDiff=Math.round((startOfToday.getTime()-startOfDate.getTime())/86400000)
 
-  if(isYesterday)return"Ayer"
+  if(dayDiff===1)return"Ayer"
 
   return date.toLocaleDateString("es-AR",{
     day:"numeric",

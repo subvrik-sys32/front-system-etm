@@ -20,6 +20,7 @@ import {
 } from "@/shared/ui/entity-expanded-row"
 
 import { ProjectTasksList } from "./project-tasks-list"
+import { ProjectCommentsPanel } from "../comments/project-comments-panel"
 
 type Props={
   project:Project
@@ -197,6 +198,14 @@ export function ProjectExpandedRow({
           <ProjectTasksList
             projectId={project.id}
             tasks={tasks}
+          />
+
+        </EntityExpandedSection>
+
+        <EntityExpandedSection title="MENSAJES">
+
+          <ProjectCommentsPanel
+            projectId={project.id}
           />
 
         </EntityExpandedSection>

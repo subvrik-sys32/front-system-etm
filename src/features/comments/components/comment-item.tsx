@@ -29,7 +29,6 @@ export function CommentItem({
   onDelete,
 }:Props){
   const currentUser=useAuthStore(s=>s.user)
-  const [imageDialogOpen,setImageDialogOpen]=useState(false)
   const { has }=usePermissions()
   const { user }=comment
   const isPending=Boolean((comment as { pending?: boolean }).pending)
@@ -37,6 +36,13 @@ export function CommentItem({
   const canDeleteAny=has(PermissionCode.COMMENT_DELETE_ANY)
   const canEdit=isOwner&&!isPending
   const canDelete=(isOwner||canDeleteAny)&&!isPending
+
+  // La foto NO se muestra abierta acá adentro — en paneles chicos
+  // (como "Últimos comentarios") eso rompía todo el layout, empujando
+  // el resto del contenido. Solo mostramos un botón compacto; la
+  // imagen a tamaño completo vive en CommentImageDialog, que se abre
+  // recién al tocarlo.
+  const [imageDialogOpen, setImageDialogOpen]=useState(false)
 
   // El doble check solo le sirve al autor del comentario. Se hidrata
   // con fetch inicial y luego se actualiza solo, en vivo, cuando llega

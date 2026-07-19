@@ -26,10 +26,12 @@ import { useTasks } from "@/features/tasks/hooks/use-tasks"
 
 type Props={
   focusedProjectId?:string
+  focusToken?:string
 }
 
 export function ProjectPageContent({
   focusedProjectId,
+  focusToken,
 }:Props){
 
   const { isMobile } = useResponsive()
@@ -116,6 +118,7 @@ export function ProjectPageContent({
             tasks={tasks}
             loading={loading}
             focusedProjectId={focusedProjectId}
+            focusToken={focusToken}
             search={search}
             showHistory={showHistory}
             reorderProjects={reorderProjects}

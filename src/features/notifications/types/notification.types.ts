@@ -11,7 +11,7 @@ export type WorkflowStatusValue =
   | "REVIEWED"
 
 export interface NotificationRoute {
-  module: "tasks" | "processes"
+  module: "tasks" | "processes" | "projects"
   history: boolean
   processCode?: ProcessCode
 }
@@ -24,12 +24,23 @@ export interface NotificationActor {
   color: string
 }
 
+export interface NotificationProjectRef {
+  id: string
+  projectCode: string
+  name: string
+}
+
 export interface Notification {
   id: string
   type: NotificationType
   read: boolean
   createdAt: string
-  taskId: string
+
+  // Un comentario de proyecto no cuelga de ninguna tarea, así que
+  // taskId/task son nulos en ese caso — usar `project` en su lugar.
+  // (ver NotificationRoute.module==="projects")
+  taskId: string | null
+  projectId: string | null
   workflowStepId: string | null
   commentId: string
   messageSnippet: string
@@ -46,7 +57,11 @@ export interface Notification {
       projectCode: string
       name: string
     }
-  }
+  } | null
+
+  // Presente cuando route.module==="projects" (o siempre, como
+  // referencia rápida al proyecto sin tener que entrar a `task`).
+  project: NotificationProjectRef | null
 
   workflowStep: {
     id: string

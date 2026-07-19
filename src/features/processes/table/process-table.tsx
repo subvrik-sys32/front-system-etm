@@ -74,7 +74,7 @@ export function ProcessTable({
   useFocusedRow({
     focusedId: focusedTaskId,
     setExpandedRowId: expand.setExpandedRowId,
-    retryKey: `${focusToken ?? ""}:${showHistory}`,
+    focusToken,
   })
 
   const filteredTasks = useProcessSearch(processTasks, search)

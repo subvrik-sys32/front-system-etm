@@ -47,12 +47,18 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
   const { deleteAll } = useDeleteAllNotifications()
 
   const filteredNotifications = search.trim()
-    ? notifications.filter(n =>
-        n.messageSnippet.toLowerCase().includes(search.toLowerCase()) ||
-        n.actor.name.toLowerCase().includes(search.toLowerCase()) ||
-        n.task.project.name.toLowerCase().includes(search.toLowerCase()) ||
-        n.task.project.projectCode.toLowerCase().includes(search.toLowerCase()),
-      )
+    ? notifications.filter(n => {
+
+        const projectRef = n.task?.project ?? n.project
+
+        return (
+          n.messageSnippet.toLowerCase().includes(search.toLowerCase()) ||
+          n.actor.name.toLowerCase().includes(search.toLowerCase()) ||
+          (projectRef?.name.toLowerCase().includes(search.toLowerCase()) ?? false) ||
+          (projectRef?.projectCode.toLowerCase().includes(search.toLowerCase()) ?? false)
+        )
+
+      })
     : notifications
 
   const hasUnread = notifications.some(n => !n.read)

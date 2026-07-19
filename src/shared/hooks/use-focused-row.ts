@@ -7,13 +7,13 @@ import {
 type Props = {
   focusedId?: string
   setExpandedRowId: (id: string | null) => void
-  retryKey?: unknown
+  focusToken?: string
 }
 
 export function useFocusedRow({
   focusedId,
   setExpandedRowId,
-  retryKey,
+  focusToken,
 }: Props) {
 
   useEffect(() => {
@@ -26,57 +26,62 @@ export function useFocusedRow({
       focusedId
     )
 
-    let attempts = 0
+    const selector =
+      `[data-expanded-row-id="${focusedId}"]`
 
-    const interval =
-      setInterval(() => {
+    const scrollToRow = (el: HTMLElement) => {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      })
+    }
 
-        const expanded =
-          document.querySelector(
-            `[data-expanded-row-id="${focusedId}"]`
-          ) as HTMLElement | null
+    // Si el nodo ya está en el DOM (caso normal cuando la fila
+    // no estaba colapsada), no hace falta observar nada.
+    const existing =
+      document.querySelector<HTMLElement>(selector)
 
-        if (!expanded) {
+    if (existing) {
+      scrollToRow(existing)
+      return
+    }
 
-          attempts++
+    // Si no existe todavía, es porque setExpandedRowId dispara un
+    // render async y el nodo se monta después. En vez de sondear
+    // a ciegas, observamos el DOM y reaccionamos apenas aparezca.
+    const observer = new MutationObserver(() => {
 
-          if (
-            attempts >= 20
-          ) {
+      const el =
+        document.querySelector<HTMLElement>(selector)
 
-            clearInterval(
-              interval
-            )
+      if (el) {
+        scrollToRow(el)
+        observer.disconnect()
+      }
 
-          }
+    })
 
-          return
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
 
-        }
+    // Salvavidas: si por lo que sea el nodo nunca aparece
+    // (id inválido, fila filtrada, etc.), no dejamos el
+    // observer corriendo para siempre.
+    const timeout = setTimeout(() => {
+      observer.disconnect()
+    }, 3000)
 
-        expanded.scrollIntoView({
-
-          behavior: "smooth",
-
-          block: "center",
-
-        })
-
-        clearInterval(
-          interval
-        )
-
-      }, 50)
-
-    return () =>
-      clearInterval(
-        interval
-      )
+    return () => {
+      observer.disconnect()
+      clearTimeout(timeout)
+    }
 
   }, [
     focusedId,
     setExpandedRowId,
-    retryKey,
+    focusToken,
   ])
 
 }

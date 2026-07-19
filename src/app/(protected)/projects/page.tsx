@@ -18,17 +18,15 @@ export default function ProjectsPage(){
   const projectId =
     searchParams.get("projectId") ?? undefined
 
+  const focusToken =
+    searchParams.get("focus") ?? undefined
+
   return(
 
     <main className="flex flex-col bg-[#050505] px-4 py-5 text-white select-none tablet:px-8 tablet:py-10 tablet:h-full">
 
       <header className="flex flex-wrap items-start justify-between gap-4">
 
-        {/*
-          Título y descripción en la misma línea, separados por un
-          punto — mismo tratamiento que TasksPage para no perder una
-          línea entera de alto en mobile.
-        */}
         <div className="flex min-w-0 flex-1 items-center gap-2">
 
           <h1 className="shrink-0 text-xl font-bold tracking-widest tablet:text-2xl">
@@ -55,6 +53,7 @@ export default function ProjectsPage(){
 
         <ProjectPageContent
           focusedProjectId={projectId}
+          focusToken={focusToken}
         />
 
       </section>

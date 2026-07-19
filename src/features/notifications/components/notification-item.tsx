@@ -49,13 +49,19 @@ export function NotificationItem({
   onCancelConfirm,
 }: Props) {
 
-  const { actor, task, workflowStep } = notification
+  const { actor, task, project, workflowStep } = notification
 
   const isMention =
     notification.type === "MENTION"
 
+  // Un comentario de proyecto no tiene `task` — el contexto se arma
+  // directo desde `project` en ese caso.
   const contextLabel =
-    `${task.project.projectCode} | ${task.project.name}`
+    task
+      ? `${task.project.projectCode} | ${task.project.name}`
+      : project
+        ? `${project.projectCode} | ${project.name}`
+        : ""
 
   const status =
     workflowStep
@@ -105,7 +111,9 @@ export function NotificationItem({
           <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg bg-white/5 px-2 py-1.5">
 
             <span className="text-xs text-neutral-400">
-              Esta tarea está en el historial
+              {task
+                ? "Esta tarea está en el historial"
+                : "Este elemento está en el historial"}
             </span>
 
             <div className="flex shrink-0 items-center gap-1">
@@ -345,7 +353,9 @@ export function NotificationItem({
 
             {workflowStep
               ? `PROCESO · ${workflowStep.processCode}`
-              : "TAREA"}
+              : task
+                ? "TAREA"
+                : "PROYECTO"}
 
           </span>
 

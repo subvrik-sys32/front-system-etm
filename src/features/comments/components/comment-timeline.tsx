@@ -50,10 +50,7 @@ export function CommentTimeline({
   // Los comentarios recientes se ven directamente acá, sin necesidad
   // de abrir "Ver historial". Si ya hay comentarios cargados, se
   // consideran vistos: marcamos como leídas las notificaciones de
-  // este target igual que en CommentHistoryDialog.
-  // Nota: para comentarios de proyecto esto es un no-op (ver
-  // commentsService.markCommentsAsRead), ya que no generan
-  // notificaciones.
+  // este target igual que en CommentHistoryDialog (incluye proyecto).
   useEffect(() => {
 
     if (loading || comments.length === 0) return

@@ -49,4 +49,7 @@ export const commentsApi={
   async markWorkflowStepCommentsAsRead(workflowStepId:string){
     await api.patch(`/workflow-steps/${workflowStepId}/comments/read`)
   },
+  async markProjectCommentsAsRead(projectId:string){
+    await api.patch(`/projects/${projectId}/comments/read`)
+  },
 }

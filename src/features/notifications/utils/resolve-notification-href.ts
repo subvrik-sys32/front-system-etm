@@ -22,6 +22,12 @@ export function resolveNotificationHref(
 
   }
 
+  if (notification.route.module === "projects") {
+
+    return `/projects?projectId=${notification.projectId}&focus=${focus}${historyParam}`
+
+  }
+
   return `/tasks?taskId=${notification.taskId}&focus=${focus}${historyParam}`
 
 }

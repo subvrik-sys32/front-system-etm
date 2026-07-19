@@ -1,7 +1,7 @@
 "use client"
 
-import { AlertTriangle,CheckCircle2,ClipboardList,Puzzle } from "lucide-react"
-import { useMemo } from "react"
+import { AlertTriangle,CheckCircle2,ClipboardList,MessageSquare,Puzzle } from "lucide-react"
+import { useMemo, useState } from "react"
 
 import type { Project } from "../../types/project.types"
 import type { Task } from "@/features/tasks/types/task.types"
@@ -16,7 +16,7 @@ import {
   EntityExpandedContent,
   EntityExpandedHeader,
   EntityExpandedRow,
-  EntityExpandedSection,
+  EntityExpandedToggle,
 } from "@/shared/ui/entity-expanded-row"
 
 import { ProjectTasksList } from "./project-tasks-list"
@@ -79,6 +79,11 @@ export function ProjectExpandedRow({
   ])
 
   const { isMobile } = useResponsive()
+
+  const [
+    activeView,
+    setActiveView,
+  ] = useState<"tasks" | "comments">("tasks")
 
   const cards = [
 
@@ -193,22 +198,49 @@ export function ProjectExpandedRow({
 
       <EntityExpandedContent>
 
-        <EntityExpandedSection title="TAREAS OPERATIVAS">
+        <div className="mb-2 flex items-center justify-between select-none">
+
+          <span className="text-xs font-semibold tracking-widest text-neutral-500">
+            {activeView === "tasks"
+              ? "TAREAS OPERATIVAS"
+              : "MENSAJES"}
+          </span>
+
+          <EntityExpandedToggle
+            value={activeView}
+            onChange={setActiveView}
+            fullWidth={isMobile}
+            options={[
+              {
+                value: "tasks",
+                label: "Tareas",
+                icon: ClipboardList,
+                count: totalTasks,
+              },
+              {
+                value: "comments",
+                label: "Mensajes",
+                icon: MessageSquare,
+              },
+            ]}
+          />
+
+        </div>
+
+        {activeView === "tasks" ? (
 
           <ProjectTasksList
             projectId={project.id}
             tasks={tasks}
           />
 
-        </EntityExpandedSection>
-
-        <EntityExpandedSection title="MENSAJES">
+        ) : (
 
           <ProjectCommentsPanel
             projectId={project.id}
           />
 
-        </EntityExpandedSection>
+        )}
 
       </EntityExpandedContent>
 

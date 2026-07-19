@@ -39,6 +39,7 @@ type Props = {
   tasks: Task[]
   loading: boolean
   focusedProjectId?: string
+  focusToken?: string
   search: string
   showHistory: boolean
   reorderProjects: (projects: Project[]) => Promise<unknown>
@@ -49,6 +50,7 @@ export function ProjectTable({
   tasks,
   loading,
   focusedProjectId,
+  focusToken,
   search,
   showHistory,
   reorderProjects,
@@ -68,6 +70,7 @@ export function ProjectTable({
   useFocusedRow({
     focusedId: focusedProjectId,
     setExpandedRowId: expand.setExpandedRowId,
+    focusToken,
   })
 
   const filteredProjects = useProjectSearch(projects, search)

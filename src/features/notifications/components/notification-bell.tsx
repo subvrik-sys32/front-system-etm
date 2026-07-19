@@ -159,8 +159,8 @@ export function NotificationBell({ collapsed, variant = "sidebar" }: Props) {
               type="button"
               aria-label="Notificaciones"
               className={cn(
-                "relative flex size-9 shrink-0 items-center justify-center rounded-lg text-neutral-300 transition hover:bg-white/5 active:bg-white/10",
-                open && "bg-white/5 text-white",
+                "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-white/6 text-neutral-300 transition hover:bg-white/10 active:bg-white/14",
+                open && "bg-white/14 text-white",
               )}
             >
 

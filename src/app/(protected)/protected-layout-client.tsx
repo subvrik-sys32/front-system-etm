@@ -9,6 +9,10 @@ import {
   useRouter,
 } from "next/navigation"
 
+import {
+  useQueryClient,
+} from "@tanstack/react-query"
+
 import type {
   ReactNode,
 } from "react"
@@ -41,6 +45,14 @@ import{
   RealtimeProvider,
 }from"@/shared/realtime/realtime-provider"
 
+import {
+  taskService,
+} from "@/features/tasks/services/task.service"
+
+import {
+  projectService,
+} from "@/features/projects/services/project.service"
+
 export function ProtectedLayoutClient({
   children,
 }:{
@@ -49,6 +61,9 @@ export function ProtectedLayoutClient({
 
   const router=
     useRouter()
+
+  const queryClient=
+    useQueryClient()
 
   const setUser=
     useAuthStore(
@@ -109,6 +124,24 @@ export function ProtectedLayoutClient({
           true,
         )
 
+        // Precarga en paralelo, sin esperar — el splash "ETM" ya
+        // se está mostrando de todos modos mientras se confirma la
+        // sesión; aprovechamos ESE momento para que el caché de
+        // Tasks/Projects ya esté tibio cuando el usuario haga el
+        // primer click, en vez de arrancar en frío recién ahí.
+        // prefetchQuery no bloquea nada: si el usuario ya está en
+        // otra pantalla cuando termina, no hace nada malo (React
+        // Query lo descarta si nadie lo usa antes de que expire).
+        queryClient.prefetchQuery({
+          queryKey:["tasks"],
+          queryFn:({ signal })=>taskService.findAll(signal),
+        })
+
+        queryClient.prefetchQuery({
+          queryKey:["projects"],
+          queryFn:({ signal })=>projectService.findAll(signal),
+        })
+
       }catch{
 
         authSession.set(
@@ -129,6 +162,7 @@ export function ProtectedLayoutClient({
     router,
     setUser,
     setPermissions,
+    queryClient,
   ])
 
   if(showLoading){

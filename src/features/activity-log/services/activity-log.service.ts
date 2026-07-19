@@ -37,6 +37,10 @@ export const activityLogService = {
     return response.data
   },
 
+  async remove(id: string) {
+    await api.delete(`/activity-log/${id}`)
+  },
+
   async getMyToday(signal?: AbortSignal) {
     const response = await api.get<ActivityLog[]>("/activity-log/me/today", { signal })
     return response.data

@@ -1,5 +1,6 @@
 "use client"
 
+import { Trash2 } from "lucide-react"
 import { getActivityIcon } from "../constants/activity-icons"
 import { getShiftState } from "../constants/shift-definitions"
 import { cn } from "@/shared/utils/utils"
@@ -15,6 +16,8 @@ type Props = {
   endHour: number
   logs: ActivityLog[]
   onLogClick: () => void
+  onDeleteLog: (id: string) => void
+  deletingLogId?: string | null
 }
 
 export function ShiftSection({
@@ -25,6 +28,8 @@ export function ShiftSection({
   endHour,
   logs,
   onLogClick,
+  onDeleteLog,
+  deletingLogId,
 }: Props) {
 
   const state = getShiftState({ startHour, endHour } as never, new Date())
@@ -62,7 +67,7 @@ export function ShiftSection({
 
             <div
               key={log.id}
-              className="flex items-start gap-2.5 rounded-xl bg-white/4 p-2.5"
+              className="group flex items-start gap-2.5 rounded-xl bg-white/4 p-2.5"
             >
 
               <div
@@ -93,12 +98,26 @@ export function ShiftSection({
 
               </div>
 
-              <span className="shrink-0 text-xs text-neutral-500">
-                {new Date(log.loggedAt).toLocaleTimeString("es-PE", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
+              <div className="flex shrink-0 items-center gap-2">
+
+                <span className="text-xs text-neutral-500">
+                  {new Date(log.loggedAt).toLocaleTimeString("es-PE", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => onDeleteLog(log.id)}
+                  disabled={deletingLogId === log.id}
+                  aria-label="Eliminar entrada"
+                  className="rounded-md p-1 text-neutral-600 opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-400 focus-visible:opacity-100 group-hover:opacity-100 disabled:opacity-50"
+                >
+                  <Trash2 size={14} />
+                </button>
+
+              </div>
 
             </div>
 

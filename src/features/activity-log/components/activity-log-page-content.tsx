@@ -4,6 +4,7 @@ import { useState } from "react"
 import { NotebookPen, Plus } from "lucide-react"
 
 import { useMyActivityLog } from "../hooks/use-my-activity-log"
+import { useDeleteActivityLog } from "../hooks/use-delete-activity-log"
 import { SHIFT_DEFINITIONS } from "../constants/shift-definitions"
 import { ShiftSection } from "./shift-section"
 import { ActivityPickerDialog } from "./activity-picker-dialog"
@@ -23,8 +24,22 @@ export function ActivityLogPageContent() {
   const { isMobile } = useResponsive()
 
   const { logs } = useMyActivityLog()
+  const { deleteLog } = useDeleteActivityLog()
 
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [deletingLogId, setDeletingLogId] = useState<string | null>(null)
+
+  async function handleDeleteLog(id: string) {
+
+    setDeletingLogId(id)
+
+    try {
+      await deleteLog(id)
+    } finally {
+      setDeletingLogId(null)
+    }
+
+  }
 
   return (
 
@@ -82,6 +97,8 @@ export function ActivityLogPageContent() {
             endHour={def.endHour}
             logs={logs.filter((log) => log.shift === def.shift)}
             onLogClick={() => setPickerOpen(true)}
+            onDeleteLog={handleDeleteLog}
+            deletingLogId={deletingLogId}
           />
 
         ))}

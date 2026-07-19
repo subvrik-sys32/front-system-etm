@@ -1,6 +1,6 @@
 "use client"
 
-import { useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import type { EntityColumn } from "./types"
 
@@ -43,7 +43,7 @@ export function useTableCompactMode<T>(columns:EntityColumn<T>[]){
   const [containerWidth,setContainerWidth]=
     useState<number|null>(null)
 
-  useLayoutEffect(()=>{
+  useEffect(()=>{
 
     const el=containerRef.current
 
@@ -51,13 +51,16 @@ export function useTableCompactMode<T>(columns:EntityColumn<T>[]){
       return
     }
 
-    // Medición sincrónica INMEDIATA, antes de que el navegador
-    // pinte — evita el flash de un modo mostrándose brevemente
-    // antes de corregirse al otro.
-    setContainerWidth(
-      el.getBoundingClientRect().width,
-    )
-
+    // Antes acá había un getBoundingClientRect() sincrónico ANTES
+    // de armar el observer — eso FUERZA al navegador a resolver
+    // cualquier layout pendiente antes de devolver el valor (reflow
+    // forzado), justo en el momento de montar la tabla, es decir,
+    // en CADA navegación a Tasks/Projects/Processes/Users. Eso
+    // bloqueaba el primer pintado y se sentía como una traba en
+    // cada click del sidebar. El propio ResizeObserver ya dispara
+    // su callback una vez, solo, apenas empieza a observar — sin
+    // forzar nada — así que alcanza con eso, no hace falta la
+    // medición manual de más.
     const observer=new ResizeObserver(entries=>{
 
       const width=

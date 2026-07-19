@@ -27,11 +27,13 @@ import { useTasks } from "@/features/tasks/hooks/use-tasks"
 type Props={
   focusedProjectId?:string
   focusToken?:string
+  initialShowHistory?:boolean
 }
 
 export function ProjectPageContent({
   focusedProjectId,
   focusToken,
+  initialShowHistory=false,
 }:Props){
 
   const { isMobile } = useResponsive()
@@ -44,7 +46,7 @@ export function ProjectPageContent({
   const[
     showHistory,
     setShowHistory,
-  ]=useState(false)
+  ]=useState(initialShowHistory)
 
   const{
     projects,

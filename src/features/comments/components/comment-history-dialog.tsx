@@ -52,11 +52,8 @@ export function CommentHistoryDialog({
   const targetId = getTargetId(target)
 
   // Al abrir el historial, marcamos como leídas las notificaciones de
-  // esta tarea/step. Es la acción explícita de "vine y vi los
-  // comentarios" que dispara el doble check para quien comentó.
-  // Nota: para comentarios de proyecto esto es un no-op (ver
-  // commentsService.markCommentsAsRead), ya que no generan
-  // notificaciones.
+  // esta tarea/step/proyecto. Es la acción explícita de "vine y vi
+  // los comentarios" que dispara el doble check para quien comentó.
   useEffect(() => {
 
     if (!open) return

@@ -197,28 +197,6 @@ export function CommentComposer({
 
       )}
 
-      {selectedImage && (
-
-        <div className="relative mb-1.5 inline-block">
-
-          <img
-            src={selectedImage}
-            alt="Foto adjunta"
-            className="h-20 w-20 rounded-lg object-cover"
-          />
-
-          <button
-            type="button"
-            onClick={handleRemoveImage}
-            className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
-          >
-            <X size={12} />
-          </button>
-
-        </div>
-
-      )}
-
       <input
         ref={fileInputRef}
         type="file"
@@ -236,7 +214,34 @@ export function CommentComposer({
 
         <PopoverAnchor asChild>
 
-          <div className="relative flex min-h-0 flex-1 flex-col">
+          {/* Foto (si hay) y texto van uno al lado del otro — antes
+              la foto se apilaba ARRIBA del textarea en su propio
+              bloque separado, empujando todo hacia abajo y
+              generando un layout roto que además parece haber
+              interferido con el click de "Publicar". */}
+          <div className="flex min-h-0 flex-1 gap-2">
+
+            {selectedImage && (
+
+              <div className="relative shrink-0">
+
+                <img
+                  src={selectedImage}
+                  alt="Foto adjunta"
+                  className="h-16 w-16 rounded-lg object-cover"
+                />
+
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+                >
+                  <X size={12} />
+                </button>
+
+              </div>
+
+            )}
 
             <textarea
               ref={textareaRef}
@@ -245,7 +250,7 @@ export function CommentComposer({
               onKeyDown={handleKeyDown}
               disabled={busy}
               placeholder="Escribe una observación... y usa @ para mencionar"
-              className="text-sm font-medium min-h-9 flex-1 resize-none bg-transparent text-white outline-none placeholder:text-neutral-600"
+              className="text-sm font-medium min-h-9 min-w-0 flex-1 resize-none bg-transparent text-white outline-none placeholder:text-neutral-600"
             />
 
           </div>

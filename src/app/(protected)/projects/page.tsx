@@ -21,6 +21,9 @@ export default function ProjectsPage(){
   const focusToken =
     searchParams.get("focus") ?? undefined
 
+  const initialShowHistory =
+    searchParams.get("history") === "1"
+
   return(
 
     <main className="flex flex-col bg-[#050505] px-4 py-5 text-white select-none tablet:px-8 tablet:py-10 tablet:h-full">
@@ -54,6 +57,7 @@ export default function ProjectsPage(){
         <ProjectPageContent
           focusedProjectId={projectId}
           focusToken={focusToken}
+          initialShowHistory={initialShowHistory}
         />
 
       </section>

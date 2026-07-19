@@ -6,9 +6,15 @@ import type { RealtimeEvent } from "../types/realtime-event"
 
 function resolveQueryKey(comment: Comment) {
 
-  return comment.workflowStepId
-    ? (["comments", "workflowStep", comment.workflowStepId] as const)
-    : (["comments", "task", comment.taskId] as const)
+  if (comment.workflowStepId) {
+    return ["comments", "workflowStep", comment.workflowStepId] as const
+  }
+
+  if (comment.projectId) {
+    return ["comments", "project", comment.projectId] as const
+  }
+
+  return ["comments", "task", comment.taskId] as const
 
 }
 
@@ -59,14 +65,17 @@ export function commentHandler(
     case "DELETED": {
 
       const payload = event.payload as
-        | { id: string; taskId: string; workflowStepId: string | null }
+        | { id: string; taskId: string | null; workflowStepId: string | null; projectId: string | null }
         | undefined
 
       if (!payload) return
 
-      const queryKey = payload.workflowStepId
-        ? (["comments", "workflowStep", payload.workflowStepId] as const)
-        : (["comments", "task", payload.taskId] as const)
+      const queryKey =
+        payload.workflowStepId
+          ? (["comments", "workflowStep", payload.workflowStepId] as const)
+          : payload.projectId
+            ? (["comments", "project", payload.projectId] as const)
+            : (["comments", "task", payload.taskId] as const)
 
       queryClient.setQueryData<Comment[]>(
         queryKey,

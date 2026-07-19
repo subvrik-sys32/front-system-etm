@@ -28,7 +28,9 @@ export function BottomNavigation() {
           {BOTTOM_NAV_ITEMS.map((item) => {
           const isActive =
             item.action.type === "link" &&
-            pathname.startsWith(item.matchPrefix)
+            (Array.isArray(item.matchPrefix)
+              ? item.matchPrefix.some(prefix => pathname.startsWith(prefix))
+              : pathname.startsWith(item.matchPrefix))
 
           const Icon = item.icon
 

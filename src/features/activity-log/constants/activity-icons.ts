@@ -1,30 +1,19 @@
 import {
-  Coffee,
-  GraduationCap,
-  Hammer,
-  MoreHorizontal,
-  Package,
-  Sparkles,
-  Users,
-  Wrench,
-  type LucideIcon,
-} from "lucide-react"
+  ENTITY_ICONS,
+  type EntityIcon,
+} from "@/shared/constants/entity-icons"
 
-// Mapa chico y propio de Bitácora — separado del ENTITY_ICONS
-// compartido (usado por badges de Cliente/Etapa/etc. en toda la
-// app) para no arriesgar nada ahí. Las keys son las mismas que
-// activity-type.seed.ts en el backend.
-export const ACTIVITY_ICONS: Record<string, LucideIcon> = {
-  hammer: Hammer,
-  sparkles: Sparkles,
-  wrench: Wrench,
-  "graduation-cap": GraduationCap,
-  users: Users,
-  package: Package,
-  coffee: Coffee,
-  "more-horizontal": MoreHorizontal,
-}
+import { MoreHorizontal, type LucideIcon } from "lucide-react"
 
+// Antes esto era un catálogo propio y chico (7 íconos) — pero el
+// selector de íconos del formulario de administración (que ahora
+// reusa EntityIconPicker, igual que Cliente) permite elegir de TODO
+// el catálogo compartido de la app. Este archivo queda solo como
+// wrapper de esa misma fuente, para que lo que se elige en el
+// formulario se pueda renderizar bien en cualquier lugar que
+// muestre una actividad (Bitácora, el picker, la lista de admin).
 export function getActivityIcon(icon: string): LucideIcon {
-  return ACTIVITY_ICONS[icon] ?? MoreHorizontal
+  return (ENTITY_ICONS as Record<string, LucideIcon>)[icon] ?? MoreHorizontal
 }
+
+export type { EntityIcon }

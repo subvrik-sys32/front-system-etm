@@ -9,7 +9,12 @@ export type BottomNavItem = {
   label: string
   icon: LucideIcon
   action: BottomNavAction
-  matchPrefix: string
+  // Puede ser más de un prefijo — "Producción" tiene que quedar
+  // activo tanto en /production como en cualquiera de las rutas
+  // independientes de proceso (/processes?code=ct para Corte,
+  // ?code=pl para Plegado, etc.), que antes no matcheaban con nada
+  // y el chip activo desaparecía al entrar a esas pantallas.
+  matchPrefix: string | string[]
 }
 
 export const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
@@ -29,7 +34,7 @@ export const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
     label: "Producción",
     icon: Factory,
     action: { type: "link", href: "/production" },
-    matchPrefix: "/production",
+    matchPrefix: ["/production", "/processes"],
   },
   {
     // Antes: "Menú", abría el sidebar (acción "sidebar"). Ya se

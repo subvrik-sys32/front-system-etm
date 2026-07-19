@@ -9,14 +9,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
-import { PrimaryAction } from "@/shared/ui/actions/primary-action"
-import { HexColorPicker } from "@/shared/ui/color-picker/components/hex-color-picker"
-import { Save } from "lucide-react"
-import { cn } from "@/shared/utils/utils"
+import { EntityNameInput } from "@/shared/ui/entity-dialog/components/entity-name-input"
+import { EntityColorPicker } from "@/shared/ui/entity-dialog/components/entity-color-picker"
+import { EntityIconPicker } from "@/shared/ui/entity-dialog/components/entity-icon-picker"
+import { EntityPreview } from "@/shared/ui/entity-dialog/components/entity-preview"
+import { EntitySaveButton } from "@/shared/ui/entity-dialog/components/entity-save-button"
 
 import { useActivityTypeMutations } from "../hooks/use-activity-type-mutations"
-import { ACTIVITY_ICONS, getActivityIcon } from "../constants/activity-icons"
 import type { ActivityType } from "../types/activity-log.types"
+import type { EntityForm } from "@/shared/ui/entity-dialog/entity-dialog.types"
 
 type Props = {
   open: boolean
@@ -25,6 +26,17 @@ type Props = {
   editingType?: ActivityType | null
 }
 
+const DEFAULT_VALUE: EntityForm = {
+  name: "",
+  color: "#3B82F6",
+  icon: undefined,
+}
+
+// Mismo kit que ya usa Cliente y el resto de entidades con
+// nombre+color+ícono (EntityNameInput/EntityColorPicker/
+// EntityIconPicker/EntityPreview/EntitySaveButton) — antes esto
+// tenía su propio grid de 7 íconos hardcodeados y un input de texto
+// suelto, sin relación con el resto de la app.
 export function ActivityTypeFormDialog({
   open,
   onOpenChange,
@@ -33,9 +45,7 @@ export function ActivityTypeFormDialog({
 
   const { createType, updateType, creating, updating } = useActivityTypeMutations()
 
-  const [label, setLabel] = useState("")
-  const [icon, setIcon] = useState("sparkles")
-  const [color, setColor] = useState("#0EA5E9")
+  const [value, setValue] = useState<EntityForm>(DEFAULT_VALUE)
 
   const isEditing = !!editingType
   const busy = creating || updating
@@ -43,16 +53,18 @@ export function ActivityTypeFormDialog({
   useEffect(() => {
 
     if (open) {
-      setLabel(editingType?.label ?? "")
-      setIcon(editingType?.icon ?? "sparkles")
-      setColor(editingType?.color ?? "#0EA5E9")
+      setValue(
+        editingType
+          ? { name: editingType.label, color: editingType.color, icon: editingType.icon as EntityForm["icon"] }
+          : DEFAULT_VALUE,
+      )
     }
 
   }, [open, editingType])
 
   const handleSubmit = async () => {
 
-    if (!label.trim()) {
+    if (!value.name.trim() || !value.icon) {
       return
     }
 
@@ -60,15 +72,15 @@ export function ActivityTypeFormDialog({
 
       await updateType({
         id: editingType.id,
-        dto: { label: label.trim(), icon, color },
+        dto: { label: value.name.trim(), icon: value.icon, color: value.color },
       })
 
     } else {
 
       await createType({
-        label: label.trim(),
-        icon,
-        color,
+        label: value.name.trim(),
+        icon: value.icon,
+        color: value.color,
       })
 
     }
@@ -91,81 +103,23 @@ export function ActivityTypeFormDialog({
 
         <div className="flex flex-col gap-4 px-5 pb-5">
 
-          <div>
+          <EntityPreview value={value} />
 
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Nombre
-            </label>
+          <EntityNameInput value={value} onChange={setValue} />
 
-            <input
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              placeholder="Ej: Inventario"
-              className="w-full rounded-xl bg-white/6 px-3 py-2.5 text-sm text-white outline-none placeholder:text-neutral-600"
+          <EntityColorPicker value={value} onChange={setValue} />
+
+          <EntityIconPicker value={value} onChange={setValue} />
+
+          <div className="flex justify-center">
+
+            <EntitySaveButton
+              disabled={!value.name.trim() || !value.icon}
+              saving={busy}
+              onClick={handleSubmit}
             />
 
           </div>
-
-          <div className="flex items-center gap-4">
-
-            <div>
-
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                Color
-              </label>
-
-              <HexColorPicker
-                value={color}
-                onChange={setColor}
-                showLabel={false}
-                className="h-9 w-16"
-              />
-
-            </div>
-
-            <div className="min-w-0 flex-1">
-
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                Ícono
-              </label>
-
-              <div className="grid grid-cols-7 gap-1.5">
-
-                {Object.keys(ACTIVITY_ICONS).map((key) => {
-
-                  const Icon = getActivityIcon(key)
-                  const isSelected = icon === key
-
-                  return (
-
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setIcon(key)}
-                      className={cn(
-                        "flex size-8 items-center justify-center rounded-lg transition-colors",
-                        isSelected ? "bg-white/16 ring-1 ring-white/25" : "bg-white/6 hover:bg-white/10",
-                      )}
-                    >
-                      <Icon size={14} className="text-neutral-200" />
-                    </button>
-
-                  )
-
-                })}
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <PrimaryAction
-            label={busy ? "Guardando..." : "Guardar"}
-            icon={Save}
-            onClick={handleSubmit}
-            disabled={!label.trim() || busy}
-          />
 
         </div>
 

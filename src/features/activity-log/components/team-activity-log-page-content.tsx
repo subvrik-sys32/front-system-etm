@@ -2,13 +2,15 @@
 
 import { useMemo, useState } from "react"
 
+import { DatePicker } from "@/shared/ui/date-picker/components/date-picker"
+import { UserSelect } from "@/features/users/components/user-select"
+import { parseISODate, toISODateString } from "@/shared/ui/date-picker/utils/date-format"
+
 import { useTeamActivityLog } from "../hooks/use-team-activity-log"
 import { useUsersDirectory } from "@/features/users/hooks/use-users-directory"
 import { getActivityIcon } from "../constants/activity-icons"
 
-function toDateInputValue(date: Date) {
-  return date.toISOString().slice(0, 10)
-}
+import type { User } from "@/features/users/types/user.types"
 
 function startOfDayISO(dateInput: string) {
   return new Date(`${dateInput}T00:00:00`).toISOString()
@@ -18,20 +20,25 @@ function endOfDayISO(dateInput: string) {
   return new Date(`${dateInput}T23:59:59`).toISOString()
 }
 
+// Antes esto usaba un <input type="date"> y un <select> nativos —
+// reemplazados por DatePicker (el mismo que ya usás en Proyectos/
+// Tareas para fecha de entrega) y UserSelect (el mismo Popover con
+// búsqueda que ya usás para elegir PM/operario), en vez de inventar
+// controles nuevos para esta pantalla puntual.
 export function TeamActivityLogPageContent() {
 
   const { users } = useUsersDirectory()
 
-  const [userId, setUserId] = useState("")
-  const [date, setDate] = useState(() => toDateInputValue(new Date()))
+  const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined)
+  const [date, setDate] = useState<Date | null>(new Date())
 
   const filters = useMemo(
     () => ({
-      userId: userId || undefined,
-      from: startOfDayISO(date),
-      to: endOfDayISO(date),
+      userId: selectedUser?.id,
+      from: date ? startOfDayISO(toISODateString(date)) : undefined,
+      to: date ? endOfDayISO(toISODateString(date)) : undefined,
     }),
-    [userId, date],
+    [selectedUser, date],
   )
 
   const { logs, loading } = useTeamActivityLog(filters)
@@ -42,27 +49,17 @@ export function TeamActivityLogPageContent() {
 
       <div className="flex flex-wrap items-center gap-2">
 
-        <select
-          value={userId}
-          onChange={(e) => setUserId(e.target.value)}
-          className="rounded-lg bg-white/6 px-3 py-2 text-sm text-white outline-none"
-        >
+        <UserSelect
+          value={selectedUser}
+          items={users as User[]}
+          placeholder="Todo el equipo"
+          onChange={setSelectedUser}
+        />
 
-          <option value="">Todo el equipo</option>
-
-          {users.map((user) => (
-            <option key={user.id} value={user.id}>
-              {user.name}
-            </option>
-          ))}
-
-        </select>
-
-        <input
-          type="date"
+        <DatePicker
           value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="rounded-lg bg-white/6 px-3 py-2 text-sm text-white outline-none"
+          onChange={setDate}
+          placeholder="Fecha"
         />
 
         <span className="text-sm text-neutral-500">

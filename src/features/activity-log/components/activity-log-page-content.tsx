@@ -8,6 +8,10 @@ import { SHIFT_DEFINITIONS } from "../constants/shift-definitions"
 import { ShiftSection } from "./shift-section"
 import { ActivityPickerDialog } from "./activity-picker-dialog"
 
+import { PrimaryAction } from "@/shared/ui/actions/primary-action"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { cn } from "@/shared/utils/utils"
+
 const TODAY_LABEL = new Date().toLocaleDateString("es-PE", {
   weekday: "long",
   day: "numeric",
@@ -15,6 +19,8 @@ const TODAY_LABEL = new Date().toLocaleDateString("es-PE", {
 })
 
 export function ActivityLogPageContent() {
+
+  const { isMobile } = useResponsive()
 
   const { logs } = useMyActivityLog()
 
@@ -24,23 +30,42 @@ export function ActivityLogPageContent() {
 
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-5">
 
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-between gap-2.5">
 
-        <div className="flex size-9 items-center justify-center rounded-full bg-white/8">
-          <NotebookPen size={16} className="text-neutral-300" />
+        <div className="flex items-center gap-2.5">
+
+          <div className="flex size-9 items-center justify-center rounded-full bg-white/8">
+            <NotebookPen size={16} className="text-neutral-300" />
+          </div>
+
+          <div>
+
+            <h1 className="text-lg font-bold tracking-tight text-white">
+              Bitácora
+            </h1>
+
+            <p className="text-xs capitalize text-neutral-500">
+              {TODAY_LABEL}
+            </p>
+
+          </div>
+
         </div>
 
-        <div>
+        {/* Versión desktop que faltaba — antes esto solo mostraba
+            el botón circular flotante sin importar el dispositivo,
+            que se ve fuera de lugar en una pantalla grande. Mismo
+            patrón que ProjectActions/TaskActions: PrimaryAction en
+            desktop, círculo fijo solo en mobile. */}
+        {!isMobile && (
 
-          <h1 className="text-lg font-bold tracking-tight text-white">
-            Bitácora
-          </h1>
+          <PrimaryAction
+            label="Registrar"
+            icon={Plus}
+            onClick={() => setPickerOpen(true)}
+          />
 
-          <p className="text-xs capitalize text-neutral-500">
-            {TODAY_LABEL}
-          </p>
-
-        </div>
+        )}
 
       </div>
 
@@ -63,14 +88,22 @@ export function ActivityLogPageContent() {
 
       </div>
 
-      <button
-        type="button"
-        onClick={() => setPickerOpen(true)}
-        aria-label="Registrar actividad"
-        className="fixed bottom-24 right-5 z-30 flex size-14 items-center justify-center rounded-full bg-white text-black shadow-lg shadow-black/40 transition active:scale-95"
-      >
-        <Plus size={24} strokeWidth={2.5} />
-      </button>
+      {isMobile && (
+
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          aria-label="Registrar actividad"
+          className={cn(
+            "fixed bottom-20 right-4 z-30 flex size-12 items-center justify-center rounded-full transition-all duration-200",
+            "bg-white text-black hover:scale-105 hover:bg-neutral-100 active:scale-95",
+            "shadow-[0_12px_32px_rgba(0,0,0,0.55),0_4px_10px_rgba(255,255,255,0.08)]",
+          )}
+        >
+          <Plus size={20} strokeWidth={2.5} />
+        </button>
+
+      )}
 
       <ActivityPickerDialog
         open={pickerOpen}

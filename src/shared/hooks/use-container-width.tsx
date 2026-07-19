@@ -27,10 +27,12 @@ export function useContainerWidth<T extends HTMLElement = HTMLDivElement>() {
     ref.current = node
 
     if (node) {
-      // Medición inicial sincrónica — no esperamos al primer
-      // callback del ResizeObserver para tener un valor
-      setWidth(node.getBoundingClientRect().width)
-
+      // Antes había un getBoundingClientRect() sincrónico acá,
+      // corriendo durante la fase de commit de React — fuerza al
+      // navegador a resolver cualquier layout pendiente antes de
+      // devolver el valor (reflow forzado), en cada montaje. El
+      // propio ResizeObserver ya dispara su callback una vez, solo,
+      // apenas empieza a observar — sin forzar nada.
       const observer = new ResizeObserver((entries) => {
         const entry = entries[0]
         if (!entry) return

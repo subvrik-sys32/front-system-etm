@@ -30,6 +30,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       id:"drag",
       title:"",
       width:TABLE_WIDTHS.drag,
+      skeletonShape:"icon",
       render:()=>(
         <DragCell/>
       ),
@@ -40,6 +41,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       id:"expand",
       title:"",
       width:TABLE_WIDTHS.expand,
+      skeletonShape:"icon",
       render:(_,context)=>(
         <ExpandCell
           expanded={context.isExpanded}
@@ -55,6 +57,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       title:"ID",
       width:TABLE_WIDTHS.id,
       cardOrder:0,
+      skeletonShape:"text",
       render:task=>(
         <span className="font-semibold text-white">
           {String(task.taskNumber).padStart(3,"0")}
@@ -68,6 +71,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       width:TABLE_WIDTHS.medium,
       cardOrder:4,
       cardGroup:"meta",
+      skeletonShape:"badge",
       render:task=>(
         <DynamicBadge
           label={task.project.client.name}
@@ -84,6 +88,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       title:"PRY",
       width:TABLE_WIDTHS.projectCode,
       cardOrder:2,
+      skeletonShape:"text",
       render:task=>(
         <Link
           href={`/projects?projectId=${task.project.id}`}
@@ -100,6 +105,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       title:"REFERENCIA",
       width:TABLE_WIDTHS.reference,
       cardOrder:1,
+      skeletonShape:"text",
       render:task=>(
         <div className="min-w-0 overflow-hidden">
           <span className="block truncate font-medium">
@@ -115,6 +121,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       width:TABLE_WIDTHS.medium,
       cardOrder:5,
       cardGroup:"meta",
+      skeletonShape:"badge",
       render:task=>(
         <TaskPriorityCell
           task={task}
@@ -128,6 +135,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       width:TABLE_WIDTHS.small,
       cardOrder:6,
       cardGroup:"meta",
+      skeletonShape:"badge",
       render:task=>{
 
         const stage=
@@ -153,6 +161,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       width:TABLE_WIDTHS.medium,
       cardOrder:7,
       cardGroup:"meta",
+      skeletonShape:"badge",
       render:task=>{
 
         const status=
@@ -176,6 +185,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       title:"ENTREGA",
       width:TABLE_WIDTHS.delivery,
       cardOrder:3,
+      skeletonShape:"text",
       render:task=>(
         <span>
           {formatDate(task.deliveryDate)}
@@ -187,6 +197,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       id:"actions",
       title:"",
       width:TABLE_WIDTHS.actions,
+      skeletonShape:"actions-pair",
       render:task=>(
         <TaskRowActions
           task={task}

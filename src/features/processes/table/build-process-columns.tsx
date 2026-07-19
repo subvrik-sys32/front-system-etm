@@ -51,6 +51,9 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       align: "center",
       title: "",
       width: TABLE_WIDTHS.drag,
+      // No hay reorden manual en Procesos (el orden lo da el
+      // workflow, no el usuario) — no renderiza nada real ahí.
+      skeletonShape: "none",
       render: () => null,
       renderOverlay: () => null,
     },
@@ -60,6 +63,8 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       align: "center",
       title: "",
       width: TABLE_WIDTHS.expand,
+      // ExpandCell real: h-9 w-9, rounded-lg.
+      skeletonShape: "icon",
       render: (_, ctx) => (
         <ExpandCell
           expanded={ctx.isExpanded}
@@ -75,6 +80,7 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       title: "ID",
       width: TABLE_WIDTHS.id,
       cardOrder: 0,
+      skeletonShape: "text",
       render: item => (
         <span className="font-semibold text-white">
           {String(processAccess.task(item).taskNumber).padStart(3, "0")}
@@ -89,6 +95,8 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       width: TABLE_WIDTHS.medium,
       cardOrder: 4,
       cardGroup: "meta",
+      // DynamicBadge real: min-h-8, rounded-full.
+      skeletonShape: "badge",
       render: item => {
         const client = processAccess.project(item).client
         return (
@@ -108,6 +116,7 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       title: "PRY",
       width: TABLE_WIDTHS.projectCode,
       cardOrder: 2,
+      skeletonShape: "text",
       render: item => {
         const project = processAccess.project(item)
         return (
@@ -127,6 +136,7 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       title: "REFERENCIA",
       width: TABLE_WIDTHS.reference,
       cardOrder: 1,
+      skeletonShape: "text",
       render: item => {
         const task = processAccess.task(item)
         return (
@@ -147,6 +157,7 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       width: TABLE_WIDTHS.medium,
       cardOrder: 5,
       cardGroup: "meta",
+      skeletonShape: "badge",
       render: item => {
         const priority = processAccess.priority(item)
         return (
@@ -167,6 +178,9 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       width: TABLE_WIDTHS.medium,
       cardOrder: 6,
       cardGroup: "meta",
+      // WorkflowStatusBadge también es un pill redondo, mismo trato
+      // que DynamicBadge para el skeleton.
+      skeletonShape: "badge",
       render: item => (
         <WorkflowStatusBadge
           status={workflowAccess.status(item)}
@@ -181,6 +195,7 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       width: TABLE_WIDTHS.medium,
       cardOrder: 7,
       cardGroup: "meta",
+      skeletonShape: "badge",
       render: item => (
         <ProcessOperatorCell processTask={item} />
       ),
@@ -192,6 +207,7 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       title: "ENTREGA",
       width: TABLE_WIDTHS.delivery,
       cardOrder: 3,
+      skeletonShape: "text",
       render: item => (
         <span>
           {formatDate(processAccess.task(item).deliveryDate)}
@@ -204,6 +220,9 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       align: "center",
       title: "",
       width: TABLE_WIDTHS.actions,
+      // WorkflowAction (Iniciar/Completar) o el placeholder
+      // punteado de QUEUE — ambos h-9.
+      skeletonShape: "workflow-action",
       render: item => {
         const task = processAccess.task(item)
         const stepId = workflowAccess.stepId(item)

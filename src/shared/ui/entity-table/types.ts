@@ -27,6 +27,23 @@ export type EntityColumn<T>={
   // grupo default sin nombre.
   cardGroup?:string
 
+  // Forma real que el skeleton de carga debe calcar para esta
+  // columna — no un texto genérico. "badge": píldora redonda tipo
+  // DynamicBadge (min-h-8, rounded-full). "icon": un solo ícono
+  // cuadrado (DragCell/ExpandCell, h-9 w-9). "actions-pair": dos
+  // íconos en fila con separación (TaskRowActions/ProjectRowActions/
+  // UserRowActions, h-8 w-8 cada uno). "workflow-action": el botón
+  // Iniciar/Completar de Procesos (WorkflowAction, h-9). "none":
+  // no renderiza nada real ahí (ej. drag en Procesos). Sin esto,
+  // cae en "text" (una barra angosta, para texto simple).
+  skeletonShape?:
+    |"badge"
+    |"icon"
+    |"actions-pair"
+    |"workflow-action"
+    |"text"
+    |"none"
+
   render:(
     item:T,
     context:EntityColumnContext<T>,

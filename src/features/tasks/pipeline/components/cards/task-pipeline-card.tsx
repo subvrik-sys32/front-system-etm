@@ -3,7 +3,12 @@
 import {
   useCallback,
   useMemo,
+  useState,
 } from "react"
+
+import {
+  MessageCircle,
+} from "lucide-react"
 
 import {
   cn,
@@ -12,6 +17,10 @@ import {
 import {
   KanbanCardFromTask,
 } from "@/features/tasks/components/kanban-card/kanban-card-from-task"
+
+import {
+  CommentHistoryDialog,
+} from "@/features/comments/components/comment-history-dialog"
 
 import type {
   ProcessCode,
@@ -127,6 +136,11 @@ export function TaskPipelineCard({
     !finalized &&
     isReachedStage
 
+  const [
+    commentsOpen,
+    setCommentsOpen,
+  ] = useState(false)
+
   return (
     <div
       {...(
@@ -181,6 +195,40 @@ export function TaskPipelineCard({
             onClose={closeOverlay}
           />
         )}
+
+      {/* Ícono flotante, afuera del <button> y sin tocar
+          KanbanCardView (se comparte con la lista de tareas de
+          Proyectos, que no debería ganar este ícono por tarea) —
+          se posiciona encima, en el hueco vacío de abajo a la
+          derecha que ya existía en esa card. */}
+      {expanded &&
+        processTask.workflowStep && (
+
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              setCommentsOpen(true)
+            }}
+            className="absolute bottom-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-white/8 text-neutral-300 transition-colors hover:bg-white/15 hover:text-white"
+          >
+            <MessageCircle size={15} />
+          </button>
+
+        )}
+
+      {processTask.workflowStep && (
+
+        <CommentHistoryDialog
+          target={{
+            scope: "workflowStep",
+            workflowStepId: processTask.workflowStep.id,
+          }}
+          open={commentsOpen}
+          onOpenChange={setCommentsOpen}
+        />
+
+      )}
     </div>
   )
 }

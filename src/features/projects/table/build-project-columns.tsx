@@ -57,6 +57,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       align:"center",
       title:"",
       width:TABLE_WIDTHS.drag,
+      skeletonShape:"icon",
       render:()=>(
         <DragCell/>
       ),
@@ -68,6 +69,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       align:"center",
       title:"",
       width:TABLE_WIDTHS.expand,
+      skeletonShape:"icon",
       render:(_,context)=>(
         <ExpandCell
           expanded={context.isExpanded}
@@ -83,6 +85,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       title:"ID",
       width:TABLE_WIDTHS.id,
       cardOrder:0,
+      skeletonShape:"text",
       render:project=>(
         <span className="font-semibold text-white">
           {String(project.sequence).padStart(3,"0")}
@@ -97,6 +100,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       width:TABLE_WIDTHS.medium,
       cardOrder:4,
       cardGroup:"meta",
+      skeletonShape:"badge",
       render:project=>(
         <ProjectClientCell
           project={project}
@@ -110,6 +114,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       title:"PRY",
       width:TABLE_WIDTHS.projectCode,
       cardOrder:2,
+      skeletonShape:"text",
       render:project=>(
         <span>{project.projectCode}</span>
       ),
@@ -121,6 +126,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       title:"PROYECTO",
       width:TABLE_WIDTHS.reference,
       cardOrder:1,
+      skeletonShape:"text",
       render:project=>(
         <span className="block truncate font-medium">
           {project.name}
@@ -135,6 +141,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       width:TABLE_WIDTHS.large,
       cardOrder:5,
       cardGroup:"meta",
+      skeletonShape:"badge",
       render:project=>(
         <ProjectStageCell
           project={project}
@@ -149,6 +156,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       width:TABLE_WIDTHS.medium,
       cardOrder:6,
       cardGroup:"meta",
+      skeletonShape:"badge",
       render:project=>(
         <ProjectStatusCell
           project={project}
@@ -163,6 +171,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       width:TABLE_WIDTHS.medium,
       cardOrder:7,
       cardGroup:"meta",
+      skeletonShape:"badge",
       render:project=>(
         <ProjectPmCell
           project={project}
@@ -176,6 +185,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       title:"ENTREGA",
       width:TABLE_WIDTHS.delivery,
       cardOrder:3,
+      skeletonShape:"text",
       render:project=>(
         <span>
           {formatDate(project.deliveryDate)}
@@ -188,6 +198,7 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       align:"center",
       title:"",
       width:TABLE_WIDTHS.actions,
+      skeletonShape:"actions-pair",
       render:project=>(
         <ProjectRowActions
           project={project}

@@ -17,6 +17,7 @@ import { preventNestedDialogClose } from "@/shared/ui/dialogs/prevent-nested-dia
 import { useComments } from "../hooks/use-comments"
 import { useDeleteComment } from "../hooks/use-delete-comment"
 import { commentsService } from "../services/comments.service"
+import { CommentComposer } from "./comment-composer"
 import { CommentList } from "./comment-list"
 import { EmptyComments } from "./empty-comments"
 import type { Comment, CommentTarget } from "../types/comment.types"
@@ -45,6 +46,12 @@ export function CommentHistoryDialog({
 
   const [search, setSearch] = useState("")
   const [pendingDelete, setPendingDelete] = useState<Comment | null>(null)
+  // Edición inline dentro del propio diálogo — separado del
+  // onEditComment externo (que algunos consumidores usan para editar
+  // desde OTRO composer, afuera de este diálogo). Si no se pasa
+  // onEditComment, este estado local se usa para editar sin salir de
+  // acá.
+  const [editingComment, setEditingComment] = useState<Comment | null>(null)
 
   const { comments, loading } = useComments(target)
   const { deleteComment } = useDeleteComment(target)
@@ -52,8 +59,11 @@ export function CommentHistoryDialog({
   const targetId = getTargetId(target)
 
   // Al abrir el historial, marcamos como leídas las notificaciones de
-  // esta tarea/step/proyecto. Es la acción explícita de "vine y vi
-  // los comentarios" que dispara el doble check para quien comentó.
+  // esta tarea/step. Es la acción explícita de "vine y vi los
+  // comentarios" que dispara el doble check para quien comentó.
+  // Nota: para comentarios de proyecto esto es un no-op (ver
+  // commentsService.markCommentsAsRead), ya que no generan
+  // notificaciones.
   useEffect(() => {
 
     if (!open) return
@@ -75,8 +85,15 @@ export function CommentHistoryDialog({
     : comments
 
   const handleEdit = (comment: Comment) => {
-    onEditComment?.(comment)
-    onOpenChange(false)
+
+    if (onEditComment) {
+      onEditComment(comment)
+      onOpenChange(false)
+      return
+    }
+
+    setEditingComment(comment)
+
   }
 
   const handleConfirmDelete = () => {
@@ -108,6 +125,14 @@ export function CommentHistoryDialog({
               Historial completo de comentarios
             </DialogDescription>
           </DialogHeader>
+
+          <div className="border-b border-white/5 px-4 py-2.5">
+            <CommentComposer
+              target={target}
+              editingComment={editingComment}
+              onCancelEdit={() => setEditingComment(null)}
+            />
+          </div>
 
           <div className="border-b border-white/5 px-4 py-2.5">
 

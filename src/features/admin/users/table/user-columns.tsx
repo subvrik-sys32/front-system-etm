@@ -30,6 +30,7 @@ EntityColumn<User>[]{
       align:"center",
       title:"N°",
       width:TABLE_WIDTHS.medium,
+      skeletonShape:"text",
       render:(_,context)=>(
 
         <span className="font-semibold text-white">
@@ -46,6 +47,7 @@ EntityColumn<User>[]{
       align:"center",
       title:"USUARIO",
       width:TABLE_WIDTHS.large,
+      skeletonShape:"badge",
       render:user=>(
 
         <DynamicBadge
@@ -63,6 +65,7 @@ EntityColumn<User>[]{
       align:"center",
       title:"USERNAME",
       width:TABLE_WIDTHS.large,
+      skeletonShape:"text",
       render:user=>(
 
         <span>
@@ -78,6 +81,7 @@ EntityColumn<User>[]{
       id:"email",
       align:"center",
       title:"EMAIL",
+      skeletonShape:"text",
       width:TABLE_WIDTHS.email,
       render:user=>(
 
@@ -94,6 +98,7 @@ EntityColumn<User>[]{
       id:"role",
       align:"center",
       title:"ROL",
+      skeletonShape:"badge",
       width:TABLE_WIDTHS.large,
       render:user=>(
 
@@ -112,6 +117,7 @@ EntityColumn<User>[]{
       align:"center",
       title:"ESTADO",
       width:TABLE_WIDTHS.large,
+      skeletonShape:"text",
       render:user=>(
         <span className="inline-flex items-center justify-center gap-1.5 text-xs font-medium text-neutral-300">
           <span
@@ -135,6 +141,7 @@ EntityColumn<User>[]{
       align:"center",
       title:"",
       width:TABLE_WIDTHS.actions,
+      skeletonShape:"actions-pair",
       render:user=>(
 
         <UserRowActions

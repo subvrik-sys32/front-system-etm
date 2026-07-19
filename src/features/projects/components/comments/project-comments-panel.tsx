@@ -3,31 +3,37 @@
 import { useState } from "react"
 import { CommentComposer } from "@/features/comments/components/comment-composer"
 import { CommentTimeline } from "@/features/comments/components/comment-timeline"
-import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { useContainerWidth } from "@/shared/hooks/use-container-width"
 import { cn } from "@/shared/utils/utils"
 import type { Comment } from "@/features/comments/types/comment.types"
 
 type Props = { projectId: string }
 
-// Altura propia y fija (h-43.5, mismo valor que ProcessCommentsPanel) —
-// a diferencia de TaskCommentsPanel, este panel NO vive dentro de un
-// contenedor flex con min-h definido (ProjectExpandedRow apila las
-// secciones verticalmente, sin ese wrapper), así que no puede depender
-// de flex-1 del padre para acotar su altura. Sin esto, el composer y
-// el timeline crecerían sin límite en vez de scrollear.
+const STACK_BREAKPOINT_PX = 480
+
+// min-h-43.5 (no h-43.5): esa altura es un PISO, no un techo. Fija
+// no dejaba crecer al composer/timeline cuando el contenido
+// necesitaba más espacio (ej: placeholder en 2 líneas), y todo se
+// apretaba/cortaba. Con min-h, si no hay contenido cae en 43.5 igual
+// que antes; si hay más, el panel crece.
 export function ProjectCommentsPanel({ projectId }: Props) {
 
-  const { isMobile } = useResponsive()
+  const { ref, width } = useContainerWidth()
+
+  const isNarrow = width !== null && width < STACK_BREAKPOINT_PX
 
   const [editingComment, setEditingComment] = useState<Comment | null>(null)
   const target = { scope: "project" as const, projectId }
 
   return (
-    <div className="flex h-43.5 w-full flex-col rounded-xl bg-white/2 p-3">
+    <div
+      ref={ref}
+      className="flex min-h-43.5 w-full flex-col rounded-xl bg-white/2 p-3"
+    >
       <div
         className={cn(
           "grid min-h-0 flex-1 gap-3",
-          isMobile ? "grid-cols-1" : "grid-cols-2",
+          isNarrow ? "grid-cols-1" : "grid-cols-2",
         )}
       >
         <div className="flex min-h-0 flex-col gap-3">

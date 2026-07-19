@@ -21,6 +21,7 @@ import {
 
 import { ProjectTasksList } from "./project-tasks-list"
 import { ProjectCommentsPanel } from "../comments/project-comments-panel"
+import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
 
 type Props={
   project:Project
@@ -84,6 +85,28 @@ export function ProjectExpandedRow({
     activeView,
     setActiveView,
   ] = useState<"tasks" | "comments">("tasks")
+
+  const [
+    commentsDialogOpen,
+    setCommentsDialogOpen,
+  ] = useState(false)
+
+  // En mobile, "Mensajes" abre el diálogo en vez de cambiar la vista
+  // inline (el panel completo, con composer + historial, no entra
+  // bien apretado en pantalla chica). En desktop se queda igual que
+  // antes: cambia activeView y muestra ProjectCommentsPanel ahí mismo.
+  const handleViewChange = (
+    next: "tasks" | "comments",
+  ) => {
+
+    if (isMobile && next === "comments") {
+      setCommentsDialogOpen(true)
+      return
+    }
+
+    setActiveView(next)
+
+  }
 
   const cards = [
 
@@ -208,7 +231,7 @@ export function ProjectExpandedRow({
 
           <EntityExpandedToggle
             value={activeView}
-            onChange={setActiveView}
+            onChange={handleViewChange}
             fullWidth={isMobile}
             options={[
               {
@@ -243,6 +266,15 @@ export function ProjectExpandedRow({
         )}
 
       </EntityExpandedContent>
+
+      {/* Solo relevante en mobile — en desktop activeView ya
+          maneja "Mensajes" mostrando ProjectCommentsPanel inline
+          (ver handleViewChange). */}
+      <CommentHistoryDialog
+        target={{ scope: "project", projectId: project.id }}
+        open={commentsDialogOpen}
+        onOpenChange={setCommentsDialogOpen}
+      />
 
     </EntityExpandedRow>
 

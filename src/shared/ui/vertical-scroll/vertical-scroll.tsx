@@ -12,6 +12,15 @@ type Props = {
   className?: string
   containerClassName?: string
   style?: React.CSSProperties
+  // En px. Antes las flechas estaban siempre a 4px del borde
+  // (top-1/bottom-1) — bien para el caso normal, pero si este
+  // VerticalScroll vive debajo de barras flotantes ABSOLUTE que no
+  // forman parte de su propio layout (como el TopBar/BottomNav
+  // mobile), las flechas quedaban tapadas por esas barras. Estos
+  // props dejan que quien lo usa le diga cuánto espacio real hay
+  // que dejar antes de dibujarlas.
+  arrowTopOffset?: number
+  arrowBottomOffset?: number
 }
 
 // Arma el mask-image según qué lado tiene contenido real por
@@ -40,6 +49,8 @@ export function VerticalScroll({
   className,
   containerClassName,
   style,
+  arrowTopOffset = 4,
+  arrowBottomOffset = 4,
 }: Props) {
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -132,8 +143,9 @@ export function VerticalScroll({
         onClick={scrollUp}
         aria-label="Desplazar arriba"
         tabIndex={-1}
+        style={{ top: arrowTopOffset }}
         className={cn(
-          "absolute left-1/2 top-1 z-20 -translate-x-1/2",
+          "absolute left-1/2 z-20 -translate-x-1/2",
           "flex h-6 w-8 items-center justify-center rounded-full",
           "bg-[#18181b]/80 backdrop-blur-xl text-neutral-200 transition-opacity duration-200",
           canScrollUp ? "opacity-100" : "pointer-events-none opacity-0",
@@ -147,8 +159,9 @@ export function VerticalScroll({
         onClick={scrollDown}
         aria-label="Desplazar abajo"
         tabIndex={-1}
+        style={{ bottom: arrowBottomOffset }}
         className={cn(
-          "absolute bottom-1 left-1/2 z-20 -translate-x-1/2",
+          "absolute left-1/2 z-20 -translate-x-1/2",
           "flex h-6 w-8 items-center justify-center rounded-full",
           "bg-[#18181b]/80 backdrop-blur-xl text-neutral-200 transition-opacity duration-200",
           canScrollDown ? "opacity-100" : "pointer-events-none opacity-0",

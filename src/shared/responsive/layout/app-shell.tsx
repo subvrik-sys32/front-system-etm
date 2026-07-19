@@ -350,7 +350,7 @@ function CompactShell({ children }: Props) {
   }
 
   return (
-    <div className="relative h-dvh overflow-hidden bg-[#1d1c1c] text-white">
+    <div className="relative h-dvh overflow-hidden select-none bg-[#1d1c1c] text-white">
       <SidebarDrawer />
       <div
         ref={contentRef}
@@ -393,13 +393,26 @@ function CompactShell({ children }: Props) {
             : undefined
         }
       >
+        {/* TopBar/BottomNav flotan ENCIMA con position:absolute — no
+            adentro del área que scrollea (ahí adentro, la máscara de
+            fade de VerticalScroll las desvanecería según el scroll,
+            que está mal, tienen que quedar siempre visibles), y no
+            como hermanos flex empujando contenido (eso hacía que el
+            bottom nav se "moviera" con poco contenido en vez de
+            quedar siempre pegado abajo). VerticalScroll ocupa TODO
+            el alto — su padding interno (abajo, en className) deja
+            lugar para que el último contenido no quede tapado. */}
         <TopBar />
+
         <VerticalScroll
-          containerClassName="min-h-0 flex-1"
-          className="overflow-x-hidden"
+          containerClassName="h-full"
+          className="overflow-x-hidden pt-14 pb-20"
+          arrowTopOffset={64}
+          arrowBottomOffset={88}
         >
           {children}
         </VerticalScroll>
+
         <BottomNavigation />
       </div>
     </div>

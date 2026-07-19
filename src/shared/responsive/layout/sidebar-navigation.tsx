@@ -13,7 +13,7 @@ import { cn } from "@/shared/utils/utils"
 
 import { NotificationBell } from "@/features/notifications/components/notification-bell"
 
-import { useAuthStore } from "@/features/auth/store/auth-store"
+import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 
 import type { ProcessCounts } from "./hooks/use-sidebar-counts"
 
@@ -45,9 +45,7 @@ export function SidebarNavigation({
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const user = useAuthStore(
-    state => state.user,
-  )
+  const { has } = usePermissions()
 
   return (
 
@@ -74,14 +72,10 @@ export function SidebarNavigation({
 
       {NAVIGATION.map((section, index) => {
 
-        const restrictedRoles = ["OPERARIO", "PROJECT_MANAGER"]
-
         const items = section.items.filter(
           item =>
-            !(
-              restrictedRoles.includes(user?.role?.code ?? "") &&
-              item.href === "/admin/users"
-            ),
+            !("permission" in item) ||
+            has(item.permission),
         )
 
         if (items.length === 0) {

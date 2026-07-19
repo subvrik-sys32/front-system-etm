@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react"
-import { Factory, FolderKanban, ClipboardList, LayoutGrid } from "lucide-react" // Cambié UserRound por LayoutGrid (ejemplo)
+import { Factory, FolderKanban, ClipboardList, NotebookPen } from "lucide-react"
 
 type BottomNavAction =
   | { type: "link"; href: string }
@@ -32,9 +32,12 @@ export const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
     matchPrefix: "/production",
   },
   {
-    label: "Menú",
-    icon: LayoutGrid, // Ícono para abrir el sidebar
-    action: { type: "sidebar" },
-    matchPrefix: "__never_matches__",
+    // Antes: "Menú", abría el sidebar (acción "sidebar"). Ya se
+    // puede abrir el mismo sidebar desde el ☰ del TopBar, así que
+    // no se pierde ese acceso — este lugar pasa a ser la Bitácora.
+    label: "Bitácora",
+    icon: NotebookPen,
+    action: { type: "link", href: "/bitacora" },
+    matchPrefix: "/bitacora",
   },
 ]

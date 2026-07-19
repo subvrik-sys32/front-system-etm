@@ -36,18 +36,18 @@ export function TopBar() {
 
     <>
 
-      <header className="flex h-12 shrink-0 items-center gap-2 px-2">
+      <header className="flex h-14 shrink-0 items-center gap-2 px-3">
 
         <button
           type="button"
           onClick={toggleDrawer}
           aria-label="Abrir navegación"
-          className="flex size-9 shrink-0 items-center justify-center rounded-lg text-neutral-300 transition hover:bg-white/5 active:bg-white/10"
+          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/6 text-neutral-300 transition hover:bg-white/10 active:bg-white/14"
         >
           <Menu size={18} strokeWidth={2.2} />
         </button>
 
-        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-neutral-100">
+        <span className="min-w-0 flex-1 truncate text-base font-semibold text-neutral-100">
           {title}
         </span>
 
@@ -58,7 +58,7 @@ export function TopBar() {
           onClick={() => setProfileOpen(true)}
           aria-label="Perfil"
           disabled={!user}
-          className="flex size-9 shrink-0 items-center justify-center rounded-lg transition hover:bg-white/5 active:bg-white/10 disabled:opacity-50"
+          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/6 transition hover:bg-white/10 active:bg-white/14 disabled:opacity-50"
         >
           <div className="relative size-7 shrink-0">
             {user ? (

@@ -219,7 +219,7 @@ export function CommentComposer({
               bloque separado, empujando todo hacia abajo y
               generando un layout roto que además parece haber
               interferido con el click de "Publicar". */}
-          <div className="flex min-h-0 flex-1 gap-2">
+          <div className="flex min-h-0 flex-1 gap-4">
 
             {selectedImage && (
 

@@ -1,4 +1,4 @@
-import type { RealtimeEvent } from "../types/realtime-event"
+import type { RealtimeEntity, RealtimeEvent } from "../types/realtime-event"
 
 import { taskHandler } from "../handlers/task-handler"
 import { projectHandler } from "../handlers/project-handler"
@@ -34,12 +34,12 @@ const handlers = {
   STATUS: statusHandler,
   THICKNESS: thicknessHandler,
   ROLE_PERMISSIONS: rolePermissionsHandler,
-} as const
+} satisfies Record<RealtimeEntity, (event: RealtimeEvent) => void>
 
 export function realtimeRegistry(
   event: RealtimeEvent,
 ) {
-  const handler = handlers[event.entity as keyof typeof handlers]
+  const handler = handlers[event.entity]
 
   if (!handler) {
     return

@@ -71,7 +71,7 @@ function SkeletonGroup({
 
   return (
 
-    <section className="rounded-2xl border border-white/8 bg-white/2 p-4">
+    <section className="rounded-2xl bg-white/2 p-4">
 
       <div className="mb-4 h-3 w-32 rounded bg-white/10" />
 

@@ -120,45 +120,47 @@ export function ProfilePreviewPanel({
 
       <div className="mt-3 space-y-1">
 
-
         <ProfileRow
-          icon={<Mail size={13}/>}
-          value={user?.email ?? ""}
-          copied={copied==="email"}
-          onCopy={()=>{
-            copyValue(
-              user?.email ?? "",
-              "email",
-            )
-          }}
-        />
-
-
-        <ProfileRow
-          icon={<Phone size={13}/>}
-          value={user?.phone ?? "Sin teléfono registrado"}
-          copied={copied==="phone"}
+          icon={<Mail size={13} />}
+          value={user?.email}
+          placeholder="Sin correo registrado"
+          copied={copied === "email"}
           onCopy={
-            user?.phone
-            ? ()=>{
-                copyValue(
-                  user.phone,
-                  "phone",
-                )
-              }
-            : undefined
+            user?.email
+              ? () => {
+                  copyValue(
+                    user.email,
+                    "email",
+                  )
+                }
+              : undefined
           }
         />
 
-
         <ProfileRow
-          icon={<Briefcase size={13}/>}
-          value={user?.position ?? "Sin cargo registrado"}
+          icon={<Phone size={13} />}
+          value={user?.phone}
+          placeholder="Sin teléfono registrado"
+          copied={copied === "phone"}
+          onCopy={
+            user?.phone
+              ? () => {
+                  copyValue(
+                    user.phone,
+                    "phone",
+                  )
+                }
+              : undefined
+          }
         />
 
+        <ProfileRow
+          icon={<Briefcase size={13} />}
+          value={user?.position}
+          placeholder="Sin cargo registrado"
+        />
 
       </div>
-
 
       <div className="mt-3">
 
@@ -189,14 +191,19 @@ export function ProfilePreviewPanel({
 function ProfileRow({
   icon,
   value,
+  placeholder,
   copied,
   onCopy,
-}:{
-  icon:React.ReactNode
-  value:string
-  copied?:boolean
-  onCopy?:()=>void
-}){
+}: {
+  icon: React.ReactNode
+  value?: string | null
+  placeholder: string
+  copied?: boolean
+  onCopy?: () => void
+}) {
+
+  const hasValue =
+    !!value?.trim()
 
   return (
 
@@ -206,13 +213,20 @@ function ProfileRow({
         {icon}
       </span>
 
-
-      <p className="min-w-0 flex-1 truncate text-xs text-neutral-200">
-        {value}
+      <p
+        className={cn(
+          "min-w-0 flex-1 truncate text-xs",
+          hasValue
+            ? "text-neutral-200"
+            : "text-neutral-500",
+        )}
+      >
+        {hasValue
+          ? value
+          : placeholder}
       </p>
 
-
-      {onCopy && (
+      {onCopy && hasValue && (
 
         <button
           type="button"
@@ -223,11 +237,11 @@ function ProfileRow({
 
           {copied ? (
 
-            <Check size={12}/>
+            <Check size={12} />
 
           ) : (
 
-            <Copy size={12}/>
+            <Copy size={12} />
 
           )}
 

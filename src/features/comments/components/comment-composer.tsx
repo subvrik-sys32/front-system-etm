@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, KeyboardEvent, ChangeEvent } from "react"
+import { useEffect, useLayoutEffect, useRef, useState, KeyboardEvent, ChangeEvent } from "react"
 import { Camera, SendHorizontal, X } from "lucide-react"
 import { PrimaryAction } from "@/shared/ui/actions/primary-action"
 import { IconAction } from "@/shared/ui/actions/icon-action"
@@ -41,17 +41,14 @@ export function CommentComposer({
     setMessage(editingComment?.message ?? "")
   }, [editingComment])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
 
     if (message !== "") return
 
     const el = textareaRef.current
     if (!el) return
 
-    const prevDisplay = el.style.display
-    el.style.display = "none"
     void el.offsetHeight
-    el.style.display = prevDisplay
 
   }, [message])
 

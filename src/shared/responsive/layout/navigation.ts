@@ -46,13 +46,6 @@ export const NAVIGATION = [
         icon: DraftingCompass,
       },
 
-      {
-        label: "Bitácora",
-        href: "/bitacora",
-        icon: NotebookPen,
-        permission: PermissionCode.ACTIVITY_LOG_READ,
-      },
-
     ],
   },
 
@@ -114,7 +107,13 @@ export const NAVIGATION = [
         permission: PermissionCode.ACTIVITY_TYPE_MANAGE,
       },
       {
-        label: "Bitácora del equipo",
+        label: "Bitácora Personal",
+        href: "/bitacora",
+        icon: NotebookPen,
+        permission: PermissionCode.ACTIVITY_LOG_READ,
+      },
+      {
+        label: "Bitácora del Equipo",
         href: "/bitacora/equipo",
         icon: NotebookPen,
         permission: PermissionCode.ACTIVITY_LOG_READ_ANY,

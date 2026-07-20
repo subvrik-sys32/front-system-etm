@@ -61,7 +61,6 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
       render:()=>(
         <DragCell/>
       ),
-
     },
 
     {
@@ -76,7 +75,6 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
           onClick={context.toggleExpanded}
         />
       ),
-
     },
 
     {
@@ -204,7 +202,6 @@ export function buildProjectColumns(): EntityColumn<Project>[] {
           project={project}
         />
       ),
-
     },
 
   ]

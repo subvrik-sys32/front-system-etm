@@ -1,3 +1,7 @@
+// shared/responsive/breakpoints.ts
+
+// Única fuente de verdad. Todo el sistema (Tailwind config,
+// ResponsiveProvider, detección server-side) lee de acá.
 export const BREAKPOINTS = {
   mobile: 0,
   tablet: 640,

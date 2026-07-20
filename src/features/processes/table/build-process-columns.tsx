@@ -55,7 +55,6 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
       // workflow, no el usuario) — no renderiza nada real ahí.
       skeletonShape: "none",
       render: () => null,
-
     },
 
     {
@@ -71,7 +70,6 @@ export function buildProcessColumns(): EntityColumn<ProcessTask>[] {
           onClick={ctx.toggleExpanded}
         />
       ),
-
     },
 
     {

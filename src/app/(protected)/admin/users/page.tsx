@@ -34,10 +34,6 @@ export default function UsersPage() {
 
         </div>
 
-        {/* Siempre montado: UserActions decide su propio render
-            según breakpoint (botón normal en desktop, FAB fixed en
-            mobile) — adentro de un padre hidden, el FAB no se
-            pintaría en mobile. */}
         <div className="shrink-0">
 
           <UserActions />

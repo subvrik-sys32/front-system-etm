@@ -26,10 +26,6 @@ import{
 }from"@/shared/realtime/realtime-provider"
 
 import {
-  getInitialBreakpoint,
-} from "@/shared/responsive/get-initial-breakpoint"
-
-import {
   ResponsiveProvider,
 } from "@/shared/responsive/responsive-context"
 
@@ -56,13 +52,11 @@ export const viewport: Viewport = {
   userScalable: false,
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-
-  const initialBreakpoint = await getInitialBreakpoint()
 
   return (
 
@@ -76,7 +70,7 @@ export default async function RootLayout({
 
           <RealtimeProvider>
 
-            <ResponsiveProvider initialBreakpoint={initialBreakpoint}>
+            <ResponsiveProvider initialBreakpoint="desktop">
 
               <div className="flex h-full min-h-0 flex-col overflow-hidden">
 

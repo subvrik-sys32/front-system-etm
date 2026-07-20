@@ -18,10 +18,6 @@ import {
 } from "@/shared/ui/entity-table"
 
 import {
-  useHydrated,
-} from "@/shared/hooks/use-hydrated"
-
-import {
   useUsers,
 } from "@/features/users/hooks/use-users"
 
@@ -44,9 +40,6 @@ type Props = {
 export function UserTable({
   search,
 }: Props) {
-  const hydrated =
-    useHydrated()
-
   const {
     isMobile,
   } =
@@ -94,7 +87,7 @@ export function UserTable({
       search,
     ])
 
-  if (!hydrated || loading) {
+  if (loading) {
 
     if (isMobile) {
       return <UserMobileSkeleton />

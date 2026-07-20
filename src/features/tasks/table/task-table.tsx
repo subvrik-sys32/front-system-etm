@@ -7,7 +7,6 @@ import {
 
 import type { Task } from "../types/task.types"
 
-import { useHydrated } from "@/shared/hooks/use-hydrated"
 import { useFocusedRow } from "@/shared/hooks/use-focused-row"
 import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus"
 
@@ -52,7 +51,6 @@ export function TaskTable({
   onHistoryRequired,
 }: Props) {
 
-  const hydrated = useHydrated()
   const expand = useEntityExpand()
 
   const taskSortMode = useSortStore(
@@ -158,7 +156,7 @@ export function TaskTable({
     [],
   )
 
-  if (!hydrated || loading) {
+  if (loading) {
     return (
       <EntityTableSkeleton
         columns={columns}

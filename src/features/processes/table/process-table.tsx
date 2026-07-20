@@ -8,7 +8,6 @@ import {
 
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
-import { useHydrated } from "@/shared/hooks/use-hydrated"
 import { useFocusedRow } from "@/shared/hooks/use-focused-row"
 import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus"
 
@@ -64,7 +63,6 @@ export function ProcessTable({
 
   const { isMobile } = useResponsive()
 
-  const hydrated = useHydrated()
   const expand = useEntityExpand()
 
   const taskSortMode = useSortStore(
@@ -193,7 +191,7 @@ export function ProcessTable({
 
   }, [isMobile, focusedTaskId, displayedTasks, processDefinition.code])
 
-  if (!hydrated || loading) {
+  if (loading) {
 
     if (isMobile) {
       return <ProcessTableSkeleton />

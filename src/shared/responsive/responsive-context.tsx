@@ -20,13 +20,15 @@ export type ResponsiveState = {
   // (mobile o tablet), útil para decisiones binarias rápidas.
   isCompact: boolean
   // false hasta que el cliente corrió su primera medición real con
-  // matchMedia. Antes de eso, `breakpoint` es solo una adivinanza
-  // por User-Agent (ver get-initial-breakpoint.ts) — puede estar
-  // mal para ventanas de desktop angostas, tablets en landscape,
-  // etc. Componentes que renderizan árboles MUY distintos según el
-  // breakpoint (como AppShell: sidebar vs. bottom nav) deberían
-  // esperar a `ready` antes de decidir, para no mostrar el layout
-  // adivinado y después saltar al real.
+  // matchMedia. Antes de eso, `breakpoint` arranca fijo en "desktop"
+  // (antes venía de un guess server-side por User-Agent vía headers(),
+  // pero eso forzaba TODA la app a renderizado dinámico y mataba el
+  // Router Cache en cada navegación). Puede estar mal para ventanas
+  // de desktop angostas, tablets en landscape, mobile, etc. hasta que
+  // este efecto corre. Componentes que renderizan árboles MUY
+  // distintos según el breakpoint (como AppShell: sidebar vs. bottom
+  // nav) deberían esperar a `ready` antes de decidir, para no mostrar
+  // el layout adivinado y después saltar al real.
   ready: boolean
 }
 

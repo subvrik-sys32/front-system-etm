@@ -8,7 +8,6 @@ import {
 import type { Project } from "../types/project.types"
 import type { Task } from "@/features/tasks/types/task.types"
 
-import { useHydrated } from "@/shared/hooks/use-hydrated"
 import { useFocusedRow } from "@/shared/hooks/use-focused-row"
 
 import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
@@ -56,7 +55,6 @@ export function ProjectTable({
   reorderProjects,
 }: Props) {
 
-  const hydrated = useHydrated()
   const expand = useEntityExpand()
 
   const { isMobile } = useResponsive()
@@ -154,7 +152,7 @@ export function ProjectTable({
     [],
   )
 
-  if (!hydrated || loading) {
+  if (loading) {
 
     if (isMobile) {
       return <ProjectMobileSkeleton />

@@ -9,8 +9,6 @@ import { ShiftSection } from "./shift-section"
 import { ActivityPickerDialog } from "./activity-picker-dialog"
 import { ActivityLogSkeleton } from "./activity-log-skeleton"
 
-import { useHydrated } from "@/shared/hooks/use-hydrated"
-
 const TODAY_LABEL = new Date().toLocaleDateString("es-PE", {
   weekday: "long",
   day: "numeric",
@@ -18,8 +16,6 @@ const TODAY_LABEL = new Date().toLocaleDateString("es-PE", {
 })
 
 export function ActivityLogPageContent() {
-
-  const hydrated = useHydrated()
 
   const { logs, loading } = useMyActivityLog()
   const { deleteLog } = useDeleteActivityLog()
@@ -55,7 +51,7 @@ export function ActivityLogPageContent() {
 
       <div className="flex flex-col gap-3">
 
-        {!hydrated || loading ? (
+        {loading ? (
 
           <ActivityLogSkeleton />
 

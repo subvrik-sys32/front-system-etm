@@ -1,3 +1,4 @@
+// use-roles.ts
 "use client"
 
 import {
@@ -12,7 +13,9 @@ import {
   rolesService,
 } from "../services/roles.service"
 
-export function useRoles(){
+export function useRoles(
+  enabled = true,
+){
 
   const{
 
@@ -33,6 +36,8 @@ export function useRoles(){
 
       queryFn:
         ({signal})=>rolesService.findAll(signal),
+
+      enabled,
 
     })
 

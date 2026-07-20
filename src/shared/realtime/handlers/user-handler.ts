@@ -12,6 +12,18 @@ import{
   cacheRemoveEntity,
 }from"@/shared/core/entity/cache/entity-cache"
 
+import{
+  authService,
+}from"@/features/auth/services/auth.service"
+
+import{
+  useAuthStore,
+}from"@/features/auth/store/auth-store"
+
+import{
+  usePermissionStore,
+}from"@/features/permissions/store/permission-store"
+
 import type{
   RealtimeEvent,
 }from"../types/realtime-event"
@@ -43,8 +55,6 @@ function isPresenceOnlyPayload(
 
 }
 
-// Query keys que contienen listas de usuarios y deben
-// reflejar el estado de presencia en tiempo real.
 const USER_LIST_QUERY_KEYS=[
   ["users"],
   ["users","directory"],
@@ -79,9 +89,6 @@ export function userHandler(
 
     case"UPDATED":{
 
-      // Evento de presencia: solo trae { id, online }.
-      // Debe hacer merge parcial, sin reemplazar el resto del usuario,
-      // y en TODAS las listas de usuarios cacheadas (findAll y directory).
       if(isPresenceOnlyPayload(event.payload)){
 
         const{
@@ -139,7 +146,6 @@ export function userHandler(
 
       }
 
-      // Evento normal: el payload trae el usuario completo.
       cacheReplaceEntity<User>(
 
         queryClient,
@@ -151,6 +157,42 @@ export function userHandler(
         event.payload as User,
 
       )
+
+      // El payload trae al usuario ya actualizado (nuevo roleId,
+      // active, etc). Si el usuario editado es UNO MISMO, hay que
+      // reemitir el JWT: el backend arma request.user.permissions
+      // desde lo firmado en el token, no contra la base de datos en
+      // cada request. Antes esto solo actualizaba la caché de React
+      // Query (útil para la tabla de usuarios en pantalla), pero
+      // nunca tocaba la propia sesión — si un admin te reasignaba a
+      // otro rol (en vez de editar los permisos del rol que ya
+      // tenías), tu token seguía firmado con los permisos viejos
+      // hasta que cerraras sesión manualmente, y seguías viendo
+      // "Insufficient permissions" pese a ya tener el permiso nuevo.
+      const updatedUser=
+        event.payload as User
+
+      const currentUser=
+        useAuthStore.getState().user
+
+      if(
+        currentUser &&
+        updatedUser.id===currentUser.id
+      ){
+
+        authService.refresh()
+          .then(({ user, permissions })=>{
+
+            useAuthStore.getState().setUser(user)
+            usePermissionStore.getState().setPermissions(permissions)
+
+          })
+          .catch(()=>{
+            // no crítico: la próxima navegación ya dispara sus
+            // propios chequeos contra el backend si hiciera falta.
+          })
+
+      }
 
       return
 
@@ -175,5 +217,4 @@ export function userHandler(
     }
 
   }
-
 }

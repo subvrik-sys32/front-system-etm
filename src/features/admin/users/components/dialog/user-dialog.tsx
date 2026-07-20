@@ -105,7 +105,7 @@ export function UserDialog({
   const {
     roles,
     loading,
-  } = useRoles()
+  } = useRoles(open)
 
   const {
     createUser,

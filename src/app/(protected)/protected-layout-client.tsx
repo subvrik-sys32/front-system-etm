@@ -41,10 +41,6 @@ import {
   AppLoadingScreen,
 } from "@/shared/ui/loading/app-loading-screen"
 
-import{
-  RealtimeProvider,
-}from"@/shared/realtime/realtime-provider"
-
 import {
   taskService,
 } from "@/features/tasks/services/task.service"
@@ -180,11 +176,7 @@ export function ProtectedLayoutClient({
 
     <AppShell>
 
-      <RealtimeProvider>
-
-        {children}
-
-      </RealtimeProvider>
+      {children}
 
     </AppShell>
 

@@ -52,7 +52,7 @@ export function SidebarNavigation({
     <div
       className={cn(
         "min-h-0 flex-1 overflow-x-hidden overflow-y-auto scrollbar-gutter-stable",
-        isDrawer ? "hide-scrollbar px-2 py-4" : "erp-scrollbar px-3 py-3",
+        isDrawer ? "hide-scrollbar px-2 py-4" : "hide-scrollbar px-3 py-3",
       )}
       style={{
         maskImage:

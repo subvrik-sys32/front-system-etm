@@ -6,6 +6,35 @@ import { getQueryClient } from "@/lib/query-client"
 import type { RealtimeEvent } from "../types/realtime-event"
 import { consumePendingSelfDeletion } from "../pending-self-deletions"
 
+// Guarda contra duplicados: si el mismo evento CREATED llega más de una
+// vez (dos conexiones SSE vivas por error, reconexión con solape, etc.),
+// no queremos sumar +1 al contador más de una vez por notificación. La
+// lista (["notifications"]) ya se protege sola comparando ids; el
+// contador es solo un número, así que necesita su propio registro.
+// Cap chico porque solo importa detectar duplicados que llegan juntos
+// (mismo instante), no mantener historial completo de la sesión.
+const MAX_TRACKED_IDS = 200
+const recentlyCountedIds = new Set<string>()
+
+function markCountedOnce(id: string): boolean {
+
+  if (recentlyCountedIds.has(id)) {
+    return false
+  }
+
+  recentlyCountedIds.add(id)
+
+  if (recentlyCountedIds.size > MAX_TRACKED_IDS) {
+    const oldest = recentlyCountedIds.values().next().value
+    if (oldest !== undefined) {
+      recentlyCountedIds.delete(oldest)
+    }
+  }
+
+  return true
+
+}
+
 export function notificationHandler(
   event: RealtimeEvent,
 ) {
@@ -25,10 +54,14 @@ export function notificationHandler(
       // campana, el contador se quedaba pegado sin importar cuántas
       // notificaciones nuevas llegaran por tiempo real. El contador
       // ahora es independiente de si esa lista existe o no.
-      queryClient.setQueryData<number>(
-        ["notifications", "unread-count"],
-        current => (current ?? 0) + 1,
-      )
+      if (markCountedOnce(notification.id)) {
+
+        queryClient.setQueryData<number>(
+          ["notifications", "unread-count"],
+          current => (current ?? 0) + 1,
+        )
+
+      }
 
       queryClient.setQueryData<InfiniteData<NotificationsPage>>(
         ["notifications"],

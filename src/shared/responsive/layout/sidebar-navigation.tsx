@@ -128,6 +128,11 @@ export function SidebarNavigation({
                         ? () => prefetchOnHover?.(item.href)
                         : undefined
                     }
+                    onTouchStart={
+                      hasQuery
+                        ? () => prefetchOnHover?.(item.href)
+                        : undefined
+                    }
                   />
 
                 )

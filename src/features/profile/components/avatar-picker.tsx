@@ -97,8 +97,8 @@ export function AvatarPicker({
 
         <div
           className={cn(
-            "absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60 opacity-0 transition-opacity duration-150",
-            "group-hover:opacity-100",
+            "absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60 opacity-100 transition-opacity duration-150",
+            "tablet:opacity-0 tablet:group-hover:opacity-100",
           )}
         >
 

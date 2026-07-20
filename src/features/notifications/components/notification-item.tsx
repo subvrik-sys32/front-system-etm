@@ -268,7 +268,7 @@ export function NotificationItem({
 
                 }}
                 title="Marcar como leída"
-                className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-500 opacity-0 transition-all hover:bg-white/10 hover:text-cyan-300 group-hover:opacity-100"
+                className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-500 opacity-100 transition-all hover:bg-white/10 hover:text-cyan-300 tablet:opacity-0 tablet:group-hover:opacity-100"
               >
 
                 <Check
@@ -308,7 +308,7 @@ export function NotificationItem({
 
                 }}
                 title="Eliminar notificación"
-                className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-500 opacity-0 transition-all hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100"
+                className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-500 opacity-100 transition-all hover:bg-red-500/10 hover:text-red-400 tablet:opacity-0 tablet:group-hover:opacity-100"
               >
 
                 <Trash2

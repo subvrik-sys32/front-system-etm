@@ -1,13 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Pencil, Plus, Power, Trash2 } from "lucide-react"
+import { Pencil, Power, Trash2 } from "lucide-react"
 
 import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
-import { PrimaryAction } from "@/shared/ui/actions/primary-action"
 import { IconAction } from "@/shared/ui/actions/icon-action"
-import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
-import { cn } from "@/shared/utils/utils"
 
 import { useActivityTypes } from "../hooks/use-activity-types"
 import { useActivityTypeMutations } from "../hooks/use-activity-type-mutations"
@@ -18,8 +15,6 @@ import type { ActivityType } from "../types/activity-log.types"
 
 export function ActivityTypesPageContent() {
 
-  const { isMobile } = useResponsive()
-
   // true: trae también los desactivados, para poder reactivarlos.
   const { types } = useActivityTypes(true)
   const { updateType, removeType } = useActivityTypeMutations()
@@ -27,11 +22,6 @@ export function ActivityTypesPageContent() {
   const [formOpen, setFormOpen] = useState(false)
   const [editingType, setEditingType] = useState<ActivityType | null>(null)
   const [pendingDelete, setPendingDelete] = useState<ActivityType | null>(null)
-
-  const handleCreate = () => {
-    setEditingType(null)
-    setFormOpen(true)
-  }
 
   const handleEdit = (type: ActivityType) => {
     setEditingType(type)
@@ -56,39 +46,6 @@ export function ActivityTypesPageContent() {
   return (
 
     <div className="flex flex-col gap-3">
-
-      {/* Mismo patrón que ProjectActions/TaskActions/UserActions —
-          círculo fijo abajo a la derecha en mobile, PrimaryAction
-          (el botón pill) solo en desktop. Antes esto mostraba
-          siempre PrimaryAction, sin importar el dispositivo. */}
-      {isMobile ? (
-
-        <button
-          type="button"
-          onClick={handleCreate}
-          aria-label="Nueva actividad"
-          className={cn(
-            "fixed bottom-20 right-4 z-30 flex size-12 items-center justify-center rounded-full transition-all duration-200",
-            "bg-white text-black hover:scale-105 hover:bg-neutral-100 active:scale-95",
-            "shadow-[0_12px_32px_rgba(0,0,0,0.55),0_4px_10px_rgba(255,255,255,0.08)]",
-          )}
-        >
-          <Plus size={20} strokeWidth={2.5} />
-        </button>
-
-      ) : (
-
-        <div className="flex justify-end">
-
-          <PrimaryAction
-            label="Nueva actividad"
-            icon={Plus}
-            onClick={handleCreate}
-          />
-
-        </div>
-
-      )}
 
       <div className="flex flex-col gap-2">
 

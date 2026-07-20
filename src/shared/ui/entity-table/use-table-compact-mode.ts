@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+
 import type { EntityColumn } from "./types"
 
 // Extrae el ancho mínimo en px de un string de columna — "70px" ->
@@ -36,6 +38,10 @@ function parseMinWidthPx(width:string):number{
 // (EntityTable real, o su skeleton) pueda medir su PROPIO contenedor
 // y llegar a la misma decisión, usando el mismo array de columnas.
 export function useTableCompactMode<T>(columns:EntityColumn<T>[]){
+
+  // Fallback mientras el ResizeObserver todavía no disparó su
+  // primera medición real del contenedor.
+  const { isCompact:viewportIsCompact }=useResponsive()
 
   const containerRef=
     useRef<HTMLDivElement>(null)
@@ -86,11 +92,17 @@ export function useTableCompactMode<T>(columns:EntityColumn<T>[]){
     [columns],
   )
 
-  // null (primer render, todavía no midió) se trata como "no
-  // compacto" — evita un parpadeo de cards -> grilla apenas carga.
+  // null (primer render, todavía no midió el contenedor real): en
+  // vez de asumir siempre "no compacto" — lo que hacía flashear la
+  // tabla en grilla completa por un instante en pantallas angostas
+  // antes de recién ahí saltar a cardrow — se usa el breakpoint de
+  // viewport (ya conocido desde el server, sin esperar nada) como
+  // mejor estimación disponible. El ResizeObserver corrige apenas
+  // mide, así que esto solo importa para ese primer frame.
   const isCompact=
-    containerWidth!==null&&
-    containerWidth<=totalMinWidthPx
+    containerWidth!==null
+      ? containerWidth<=totalMinWidthPx
+      : viewportIsCompact
 
   return { containerRef, isCompact }
 

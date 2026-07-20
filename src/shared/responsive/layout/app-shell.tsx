@@ -422,8 +422,20 @@ function CompactShell({ children }: Props) {
 
 export function AppShell({ children }: Props) {
 
-  const { isMobile } = useResponsive()
+  const { isMobile, ready } = useResponsive()
 
+  // Antes de la primera medición real (matchMedia), `isMobile`
+  // solo refleja la adivinanza por User-Agent del server — puede
+  // estar mal (ventana de desktop angosta, tablet en landscape,
+  // etc.), y como Compact/DesktopShell son árboles completamente
+  // distintos (sidebar vs. bottom nav), adivinar mal se veía como
+  // un parpadeo de todo el shell apenas hidrataba. Se muestra un
+  // frame en blanco (mismo fondo, sin contenido) en vez de eso —
+  // dura lo mismo que tardaba el salto, pero sin el flash de un
+  // layout completo por otro.
+  if (!ready) {
+    return <div className="h-full bg-[#050505]" />
+  }
 
   if (isMobile) {
     return (

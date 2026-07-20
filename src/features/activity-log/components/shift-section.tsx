@@ -112,7 +112,7 @@ export function ShiftSection({
                   onClick={() => onDeleteLog(log.id)}
                   disabled={deletingLogId === log.id}
                   aria-label="Eliminar entrada"
-                  className="rounded-md p-1 text-neutral-600 opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-400 focus-visible:opacity-100 group-hover:opacity-100 disabled:opacity-50"
+                  className="rounded-md p-1 text-neutral-600 opacity-100 transition-opacity hover:bg-red-500/10 hover:text-red-400 focus-visible:opacity-100 disabled:opacity-50 tablet:opacity-0 tablet:group-hover:opacity-100"
                 >
                   <Trash2 size={14} />
                 </button>

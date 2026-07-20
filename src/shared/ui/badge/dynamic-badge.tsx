@@ -309,7 +309,7 @@ export function DynamicBadge({
                   "absolute inset-0 transition-all duration-200 ease-out",
 
                   showRemove &&
-                    "opacity-50 group-hover:scale-75 group-hover:opacity-0",
+                    "opacity-0 tablet:opacity-50 tablet:group-hover:scale-75 tablet:group-hover:opacity-0",
 
                   !showRemove &&
                     "opacity-50",
@@ -356,7 +356,7 @@ export function DynamicBadge({
 
                   "absolute inset-0 flex cursor-pointer items-center justify-center transition-all duration-200 ease-out",
 
-                  "scale-75 opacity-0 group-hover:scale-100 group-hover:opacity-100",
+                  "scale-100 opacity-100 tablet:scale-75 tablet:opacity-0 tablet:group-hover:scale-100 tablet:group-hover:opacity-100",
 
                 )}
               >

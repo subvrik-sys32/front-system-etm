@@ -16,6 +16,7 @@ type Props = {
   // de la app de Claude. Desktop queda igual, sin cambios.
   isDrawer?: boolean
   onMouseEnter?: () => void
+  onTouchStart?: () => void
 }
 
 export function SidebarItem({
@@ -27,6 +28,7 @@ export function SidebarItem({
   collapsed,
   isDrawer = false,
   onMouseEnter,
+  onTouchStart,
 }: Props) {
 
   if (isDrawer) {
@@ -36,11 +38,12 @@ export function SidebarItem({
       <Link
         href={href}
         onMouseEnter={onMouseEnter}
+        onTouchStart={onTouchStart}
         className={cn(
           "flex h-12 items-center gap-3 rounded-xl px-4 text-base font-medium transition-colors",
           active
             ? "bg-white/10 text-white"
-            : "text-neutral-300 hover:bg-white/5 hover:text-white"
+            : "text-neutral-300 hover:bg-white/5 hover:text-white active:bg-white/10 active:text-white"
         )}
       >
 
@@ -71,12 +74,13 @@ export function SidebarItem({
       href={href}
       title={collapsed ? label : undefined}
       onMouseEnter={onMouseEnter}
+      onTouchStart={onTouchStart}
       className={cn(
         "mx-1 flex h-8 items-center rounded-md text-sm font-medium transition-colors",
         collapsed ? "justify-center px-0" : "gap-2 px-3",
         active
           ? "bg-white/6 text-white"
-          : "text-neutral-400 hover:bg-white/4 hover:text-white"
+          : "text-neutral-400 hover:bg-white/4 hover:text-white active:bg-white/8 active:text-white"
       )}
     >
 

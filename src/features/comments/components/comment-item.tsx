@@ -91,7 +91,7 @@ export function CommentItem({
           </div>
           <div className="flex items-center gap-1.5">
             {(canEdit||canDelete)&&(
-              <div className="flex items-center gap-0.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <div className="flex items-center gap-0.5 opacity-100 transition-opacity duration-200 tablet:opacity-0 tablet:group-hover:opacity-100">
                 {canEdit&&(
                   <IconAction
                     icon={Pencil}

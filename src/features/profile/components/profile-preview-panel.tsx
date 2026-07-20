@@ -90,7 +90,7 @@ export function ProfilePreviewPanel({
 
             <div
               className={cn(
-                "absolute inset-0 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-[2px] opacity-0 transition-opacity duration-200 group-hover:opacity-100",
+                "absolute inset-0 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-[2px] opacity-100 transition-opacity duration-200 tablet:opacity-0 tablet:group-hover:opacity-100",
               )}
             >
 

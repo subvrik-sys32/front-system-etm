@@ -25,8 +25,6 @@ export function CommentComposer({
 
   const [message, setMessage] = useState("")
   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
-  // data URI ("data:image/...;base64,...") de la foto elegida, lista
-  // para mandarse tal cual como imageBase64 — null si no hay ninguna.
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -37,17 +35,25 @@ export function CommentComposer({
 
   const isEditing = !!editingComment
 
-  // "busy" ahora SOLO refleja edición (una acción puntual, tiene sentido
-  // esperar su confirmación antes de permitir tocar de nuevo el mismo
-  // comentario). Crear NO bloquea nada: el comentario ya aparece
-  // optimista en la lista (con su propio loader en CommentItem), así que
-  // el usuario debe poder seguir escribiendo y mandar otro de inmediato,
-  // sin esperar los ~1.3s que tarda el servidor en confirmar.
   const busy = updating
 
   useEffect(() => {
     setMessage(editingComment?.message ?? "")
   }, [editingComment])
+
+  useEffect(() => {
+
+    if (message !== "") return
+
+    const el = textareaRef.current
+    if (!el) return
+
+    const prevDisplay = el.style.display
+    el.style.display = "none"
+    void el.offsetHeight
+    el.style.display = prevDisplay
+
+  }, [message])
 
   const filteredUsers = mentionQuery === null
     ? []
@@ -104,9 +110,6 @@ export function CommentComposer({
 
     const file = e.target.files?.[0]
 
-    // Limpiar el input ya, para poder elegir la misma foto de nuevo
-    // más adelante si hace falta (si no, el navegador no dispara
-    // "onChange" de nuevo con el mismo archivo).
     e.target.value = ""
 
     if (!file) return
@@ -125,34 +128,21 @@ export function CommentComposer({
 
     const trimmed = message.trim()
 
-    // Ahora alcanza con tener texto O foto — antes exigía texto sí o
-    // sí, lo que no tenía sentido para un comentario que es solo una
-    // foto compartida.
     if ((!trimmed && !selectedImage) || busy) return
 
     if (isEditing && editingComment) {
 
-      // Editar sí espera confirmación: es una acción puntual sobre UN
-      // comentario ya existente, no algo que se manda en ráfaga como
-      // crear. Cerramos el modo edición recién cuando el servidor
-      // confirma, para no dar por hecho un cambio que podría fallar.
       updateComment({ id: editingComment.id, dto: { message: trimmed } })
         .then(() => onCancelEdit?.())
         .catch(() => {
-          // El rollback visual ya lo maneja useUpdateComment (si tiene
-          // el mismo patrón optimista); acá no hace falta nada más.
         })
 
     } else {
 
-      // NO se espera esto. onMutate ya insertó el comentario optimista
-      // de forma síncrona antes de que esta función siga corriendo, así
-      // que el textarea puede limpiarse YA, sin esperar al servidor.
       createComment({
         message: trimmed || undefined,
         imageBase64: selectedImage ?? undefined,
       }).catch(() => {
-        // El rollback (si falla de verdad) ya lo maneja useCreateComment.
       })
 
     }
@@ -214,11 +204,6 @@ export function CommentComposer({
 
         <PopoverAnchor asChild>
 
-          {/* Foto (si hay) y texto van uno al lado del otro — antes
-              la foto se apilaba ARRIBA del textarea en su propio
-              bloque separado, empujando todo hacia abajo y
-              generando un layout roto que además parece haber
-              interferido con el click de "Publicar". */}
           <div className="flex min-h-0 flex-1 gap-4">
 
             {selectedImage && (
@@ -265,7 +250,6 @@ export function CommentComposer({
 
       <div className="mt-1 flex items-center justify-between">
 
-        {/* Solo al crear — editar sigue siendo texto solamente. */}
         {!isEditing && (
 
           <IconAction

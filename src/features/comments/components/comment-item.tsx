@@ -31,11 +31,17 @@ export function CommentItem({
   const currentUser=useAuthStore(s=>s.user)
   const { has }=usePermissions()
   const { user }=comment
-  const isPending=Boolean((comment as { pending?: boolean }).pending)
+  const isPending=Boolean(comment.pending)
+  // Marcado por useDeleteComment#onMutate apenas se confirma el
+  // ActionDialog, mientras el servidor responde (~1.3s). Mientras
+  // esto es true: sin acciones (nada de reintentar borrar sobre un
+  // comentario que el backend ya está procesando -> "no encontrado"),
+  // y el usuario ve que algo está pasando en vez de que no reaccione.
+  const isDeleting=Boolean(comment.deleting)
   const isOwner=currentUser?.id===user.id
   const canDeleteAny=has(PermissionCode.COMMENT_DELETE_ANY)
-  const canEdit=isOwner&&!isPending
-  const canDelete=(isOwner||canDeleteAny)&&!isPending
+  const canEdit=isOwner&&!isPending&&!isDeleting
+  const canDelete=(isOwner||canDeleteAny)&&!isPending&&!isDeleting
 
   // La foto NO se muestra abierta acá adentro — en paneles chicos
   // (como "Últimos comentarios") eso rompía todo el layout, empujando
@@ -50,13 +56,13 @@ export function CommentItem({
   const { data: readStatus }=useQuery({
     queryKey:["comment-read-status",comment.id],
     queryFn:()=>commentsService.getReadStatus(comment.id),
-    enabled:isOwner&&!isPending,
+    enabled:isOwner&&!isPending&&!isDeleting,
   })
 
   return(
     <div
       className={`group animate-comment-in flex gap-2.5 rounded-lg bg-white/3 px-3 py-2.5 transition-colors hover:bg-white/6 ${
-        isPending?"opacity-60":""
+        isPending||isDeleting?"opacity-60":""
       }`}
     >
         <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-white/5 ring-1 ring-white/8 text-xs font-semibold text-white shadow-inner">
@@ -81,6 +87,11 @@ export function CommentItem({
                 <span className="flex items-center gap-1 text-xs text-neutral-500">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neutral-400" />
                   Enviando…
+                </span>
+              ) : isDeleting ? (
+                <span className="flex items-center gap-1 text-xs text-red-400/80">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" />
+                  Eliminando…
                 </span>
               ) : (
                 <span className="text-xs text-neutral-500">
@@ -111,7 +122,7 @@ export function CommentItem({
                 )}
               </div>
             )}
-            {isOwner && !isPending && readStatus && (
+            {isOwner && !isPending && !isDeleting && readStatus && (
               <span
                 className="shrink-0"
                 title={
@@ -162,7 +173,8 @@ export function CommentItem({
           <button
             type="button"
             onClick={()=>setImageDialogOpen(true)}
-            className="mt-2 flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs font-medium text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
+            disabled={isDeleting}
+            className="mt-2 flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs font-medium text-neutral-300 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             <ImageIcon size={13} />
             Ver foto adjunta

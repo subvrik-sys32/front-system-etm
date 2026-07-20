@@ -21,6 +21,23 @@ type Props = {
   // que dejar antes de dibujarlas.
   arrowTopOffset?: number
   arrowBottomOffset?: number
+  // "center" (default): flechas centradas horizontalmente — bien para
+  // contenido que ocupa todo el ancho (listas, popovers). "right": las
+  // pega al borde derecho — pensado para columnas angostas como el
+  // sidebar, donde centrarlas queda raro sobre texto alineado a la
+  // izquierda.
+  arrowAlign?: "center" | "right"
+  // Clases extra para el botón de flecha (fondo, blur, opacidad
+  // base). Se agregan DESPUÉS de las clases default, así que pueden
+  // pisarlas — pensado para casos como el sidebar, donde el fondo
+  // default (bg-[#18181b]/80) se ve muy sólido sobre un panel que ya
+  // es oscuro de por sí.
+  arrowClassName?: string
+}
+
+const ARROW_ALIGN_CLASSNAME: Record<"center" | "right", string> = {
+  center: "left-1/2 -translate-x-1/2",
+  right: "right-2",
 }
 
 // Arma el mask-image según qué lado tiene contenido real por
@@ -51,6 +68,8 @@ export function VerticalScroll({
   style,
   arrowTopOffset = 4,
   arrowBottomOffset = 4,
+  arrowAlign = "center",
+  arrowClassName,
 }: Props) {
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -145,10 +164,12 @@ export function VerticalScroll({
         tabIndex={-1}
         style={{ top: arrowTopOffset }}
         className={cn(
-          "absolute left-1/2 z-20 -translate-x-1/2",
+          "absolute z-20",
+          ARROW_ALIGN_CLASSNAME[arrowAlign],
           "flex h-6 w-8 items-center justify-center rounded-full",
           "bg-[#18181b]/80 backdrop-blur-xl text-neutral-200 transition-opacity duration-200",
           canScrollUp ? "opacity-100" : "pointer-events-none opacity-0",
+          arrowClassName,
         )}
       >
         <ChevronUp size={14} strokeWidth={2.5} />
@@ -161,10 +182,12 @@ export function VerticalScroll({
         tabIndex={-1}
         style={{ bottom: arrowBottomOffset }}
         className={cn(
-          "absolute left-1/2 z-20 -translate-x-1/2",
+          "absolute z-20",
+          ARROW_ALIGN_CLASSNAME[arrowAlign],
           "flex h-6 w-8 items-center justify-center rounded-full",
           "bg-[#18181b]/80 backdrop-blur-xl text-neutral-200 transition-opacity duration-200",
           canScrollDown ? "opacity-100" : "pointer-events-none opacity-0",
+          arrowClassName,
         )}
       >
         <ChevronDown size={14} strokeWidth={2.5} />

@@ -20,6 +20,8 @@ export interface Comment{
   createdAt:string
   updatedAt:string
   user:CommentUser
+  pending?: boolean
+  deleting?: boolean
 }
 
 export interface CreateCommentDto{

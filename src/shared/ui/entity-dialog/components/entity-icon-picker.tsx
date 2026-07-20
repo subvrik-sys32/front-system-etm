@@ -71,7 +71,7 @@ export function EntityIconPicker({
 
       <div className="relative">
 
-        <VerticalScroll className="max-h-32 px-4 py-4">
+        <VerticalScroll className="max-h-[40vh] px-4 py-4 tablet:max-h-64">
 
           <div className="grid grid-cols-6 justify-items-center gap-2 tablet:grid-cols-8">
 

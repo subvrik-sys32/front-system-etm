@@ -15,6 +15,8 @@ import { NotificationBell } from "@/features/notifications/components/notificati
 
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 
+import { VerticalScroll } from "@/shared/ui/vertical-scroll/vertical-scroll"
+
 import type { ProcessCounts } from "./hooks/use-sidebar-counts"
 
 type SidebarNavigationProps = {
@@ -49,22 +51,19 @@ export function SidebarNavigation({
 
   return (
 
-    <div
+    <VerticalScroll
+      containerClassName="min-h-0 flex-1"
       className={cn(
-        "min-h-0 flex-1 overflow-x-hidden overflow-y-auto scrollbar-gutter-stable",
-        isDrawer ? "hide-scrollbar px-2 py-4" : "hide-scrollbar px-3 py-3",
+        "overflow-x-hidden scrollbar-gutter-stable",
+        isDrawer ? "px-2 py-4" : "px-3 py-3",
       )}
-      style={{
-        maskImage:
-          "linear-gradient(to bottom,transparent,black 4px,black calc(100% - 4px),transparent)",
-        WebkitMaskImage:
-          "linear-gradient(to bottom,transparent,black 4px,black calc(100% - 4px),transparent)",
-      }}
+      arrowAlign="center"
+      arrowClassName="bg-[#18181b]/5 backdrop-blur-md"
     >
 
       {!isDrawer && (
 
-        <div className={collapsed ? "mb-3 flex justify-center" : "mb-3"}>
+        <div className={collapsed ? "mb-3 flex justify-end" : "mb-3"}>
           <NotificationBell collapsed={collapsed} />
         </div>
 
@@ -156,7 +155,7 @@ export function SidebarNavigation({
 
       })}
 
-    </div>
+    </VerticalScroll>
 
   )
 

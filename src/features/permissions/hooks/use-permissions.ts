@@ -10,9 +10,20 @@ import {
 
 export function usePermissions(){
 
-  const hasPermission=
+  // OJO: antes esto seleccionaba `state.has` (la función), no
+  // `state.permissions` (el Set). `has` se define UNA sola vez
+  // adentro del store y nunca se reasigna — sigue siendo la MISMA
+  // referencia en cada `setPermissions()`. Zustand solo re-renderiza
+  // si el valor seleccionado cambia de referencia, así que ningún
+  // componente que usaba este hook se enteraba cuando los permisos
+  // cambiaban en vivo (ver role-permissions-handler.ts): el sidebar
+  // se quedaba mostrando ítems ya sin permiso hasta que algo MÁS
+  // forzara un re-render. Seleccionando el Set directamente, cada
+  // `setPermissions` crea un Set nuevo → cambia de referencia → el
+  // componente sí se re-renderiza.
+  const permissions=
     usePermissionStore(
-      state=>state.has,
+      state=>state.permissions,
     )
 
   return{
@@ -23,21 +34,21 @@ export function usePermissions(){
 
     )=>
 
-      hasPermission(
+      permissions.has(
         permission,
       ),
 
     hasAny:(
 
-      ...permissions:PermissionCode[]
+      ...codes:PermissionCode[]
 
     )=>
 
-      permissions.some(
+      codes.some(
 
         permission=>
 
-          hasPermission(
+          permissions.has(
             permission,
           ),
 
@@ -45,15 +56,15 @@ export function usePermissions(){
 
     hasAll:(
 
-      ...permissions:PermissionCode[]
+      ...codes:PermissionCode[]
 
     )=>
 
-      permissions.every(
+      codes.every(
 
         permission=>
 
-          hasPermission(
+          permissions.has(
             permission,
           ),
 

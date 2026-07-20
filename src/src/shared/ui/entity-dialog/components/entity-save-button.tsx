@@ -1,0 +1,53 @@
+import { Loader2 } from "lucide-react"
+
+import {
+  cn,
+} from "@/shared/utils/utils"
+
+type Props={
+  disabled: boolean
+  saving?: boolean
+  saveLabel?: string
+  savingLabel?: string
+  onClick: () => void
+  className?: string
+}
+
+export function EntitySaveButton({
+  disabled,
+  saving = false,
+  saveLabel = "Guardar",
+  savingLabel = "Guardando...",
+  onClick,
+  className,
+}: Props){  
+
+  const isDisabled = disabled || saving
+
+  return(
+
+    <button
+      disabled={isDisabled}
+      onClick={onClick}
+      className={cn(
+        "flex min-w-38 items-center justify-center gap-2 rounded-xl px-7 py-3 text-sm font-semibold transition",
+        saving
+          ? "cursor-not-allowed bg-white/10 text-neutral-400"
+          : !disabled
+            ? "bg-white text-black hover:bg-neutral-200"
+            : "cursor-not-allowed bg-white/10 text-neutral-600",
+        className
+      )}
+    >
+
+      {saving && (
+        <Loader2 size={16} className="animate-spin" />
+      )}
+
+      {saving ? savingLabel : saveLabel}
+
+    </button>
+
+  )
+
+}

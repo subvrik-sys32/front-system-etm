@@ -34,7 +34,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
       render:()=>(
         <DragCell/>
       ),
-      renderOverlay:()=>null,
+
     },
 
     {
@@ -48,7 +48,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
           onClick={context.toggleExpanded}
         />
       ),
-      renderOverlay:()=>null,
+
     },
 
     {
@@ -203,7 +203,7 @@ export function buildTaskColumns():EntityColumn<Task>[]{
           task={task}
         />
       ),
-      renderOverlay:()=>null,
+
     },
 
   ]

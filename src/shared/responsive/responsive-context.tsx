@@ -1,4 +1,3 @@
-// shared/responsive/responsive-context.tsx
 "use client"
 
 import { createContext, useEffect, useState } from "react"
@@ -16,17 +15,7 @@ export type ResponsiveState = {
   isLaptop: boolean
   isDesktop: boolean
   isWide: boolean
-  // Atajo de uso muy frecuente: "estamos en un layout compacto"
-  // (mobile o tablet), útil para decisiones binarias rápidas.
   isCompact: boolean
-  // false hasta que el cliente corrió su primera medición real con
-  // matchMedia. Antes de eso, `breakpoint` es solo una adivinanza
-  // por User-Agent (ver get-initial-breakpoint.ts) — puede estar
-  // mal para ventanas de desktop angostas, tablets en landscape,
-  // etc. Componentes que renderizan árboles MUY distintos según el
-  // breakpoint (como AppShell: sidebar vs. bottom nav) deberían
-  // esperar a `ready` antes de decidir, para no mostrar el layout
-  // adivinado y después saltar al real.
   ready: boolean
 }
 
@@ -66,8 +55,6 @@ export function ResponsiveProvider({
 
   useEffect(() => {
 
-    // matchMedia por breakpoint: más barato que un resize listener
-    // recalculando todo, y no dispara renders de más entre breakpoints.
     const queries = (Object.keys(BREAKPOINTS) as BreakpointName[]).map(
       name => ({
         name,

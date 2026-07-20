@@ -1,6 +1,5 @@
 "use client"
 
-import { useTableCompactMode } from "./use-table-compact-mode"
 import { groupCardColumns } from "./entity-table-card-row"
 import type { EntityColumn } from "./types"
 
@@ -40,57 +39,6 @@ function ShapePlaceholder({
     default:
       return <span className="block h-4 w-4/5 max-w-24 rounded bg-white/6" />
   }
-}
-
-function GridHeaderRow<T>({
-  columns,
-}: {
-  columns: EntityColumn<T>[]
-}) {
-  return (
-    <div
-      className="grid bg-white/2 px-3 select-none"
-      style={{
-        gridTemplateColumns: columns.map(c => c.width).join(" "),
-        paddingRight: 10,
-      }}
-    >
-      {columns.map(column => (
-        <div
-          key={column.id}
-          className="px-2.5 py-3 text-center text-sm font-semibold tracking-[0.08em] select-none"
-        >
-          {column.title}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function GridSkeletonRow<T>({
-  columns,
-  opacity,
-}: {
-  columns: EntityColumn<T>[]
-  opacity: number
-}) {
-  return (
-    <div
-      className="grid min-w-0 items-center rounded-lg border-b border-white/5 px-3 transition-colors hover:bg-white/2"
-      style={{
-        gridTemplateColumns: columns.map(c => c.width).join(" "),
-        opacity,
-      }}
-    >
-      {columns.map(column => (
-        <div key={column.id} className="min-w-0 px-2.5 py-2.5">
-          <div className="flex justify-center">
-            <ShapePlaceholder shape={column.skeletonShape} />
-          </div>
-        </div>
-      ))}
-    </div>
-  )
 }
 
 function CardSkeletonRow<T>({
@@ -144,34 +92,22 @@ function CardSkeletonRow<T>({
   )
 }
 
+// Modo tabla/grid eliminado, igual que en EntityTable: el skeleton
+// ahora solo calca la forma de card, en todos los breakpoints.
 export function EntityTableSkeleton<T>({
   columns,
   rows = 6,
 }: Props<T>) {
-  const { containerRef, isCompact } =
-    useTableCompactMode(columns)
-
   return (
-    <div
-      ref={containerRef}
-      className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl bg-[#101012] ring-1 ring-white/6"
-    >
-      {!isCompact && (
-        <GridHeaderRow columns={columns} />
-      )}
-
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl bg-[#101012] ring-1 ring-white/6">
       <div className="flex min-h-0 flex-1">
         <div
           data-entity-table-scroll
           className="min-h-0 flex-1 animate-pulse overflow-hidden"
         >
-          {ROW_OPACITIES.slice(0, rows).map((opacity, i) =>
-            isCompact ? (
-              <CardSkeletonRow key={i} columns={columns} opacity={opacity} />
-            ) : (
-              <GridSkeletonRow key={i} columns={columns} opacity={opacity} />
-            ),
-          )}
+          {ROW_OPACITIES.slice(0, rows).map((opacity, i) => (
+            <CardSkeletonRow key={i} columns={columns} opacity={opacity} />
+          ))}
         </div>
 
         {/* Espacio reservado para el scrollbar */}

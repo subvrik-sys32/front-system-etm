@@ -15,6 +15,7 @@ import { priorityHandler } from "../handlers/priority-handler"
 import { stageHandler } from "../handlers/stage-handler"
 import { statusHandler } from "../handlers/status-handler"
 import { thicknessHandler } from "../handlers/thickness-handler"
+import { rolePermissionsHandler } from "../handlers/role-permissions-handler"
 
 const handlers = {
   TASK: taskHandler,
@@ -32,6 +33,7 @@ const handlers = {
   STAGE: stageHandler,
   STATUS: statusHandler,
   THICKNESS: thicknessHandler,
+  ROLE_PERMISSIONS: rolePermissionsHandler,
 } as const
 
 export function realtimeRegistry(

@@ -11,6 +11,7 @@ import {
   DraftingCompass,
   NotebookPen,
   ListChecks,
+  ShieldCheck,
 } from "lucide-react"
 
 import {
@@ -99,6 +100,12 @@ export const NAVIGATION = [
         href: "/admin/users",
         icon: Users,
         permission: PermissionCode.USER_READ,
+      },
+      {
+        label: "Roles y Permisos",
+        href: "/admin/roles",
+        icon: ShieldCheck,
+        permission: PermissionCode.ROLE_MANAGE,
       },
       {
         label: "Actividades",

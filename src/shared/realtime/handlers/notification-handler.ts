@@ -17,7 +17,17 @@ export function notificationHandler(
 
       const notification = event.payload as Notification
 
-      let inserted = false
+      // Antes esto solo subía si la lista completa (["notifications"])
+      // ya tenía algo en caché — y esa lista es "enabled:open" (solo
+      // se pide una vez que se abrió la campana al menos una vez en
+      // esta sesión). En un dispositivo/sesión donde nunca se tocó la
+      // campana, el contador se quedaba pegado sin importar cuántas
+      // notificaciones nuevas llegaran por tiempo real. El contador
+      // ahora es independiente de si esa lista existe o no.
+      queryClient.setQueryData<number>(
+        ["notifications", "unread-count"],
+        current => (current ?? 0) + 1,
+      )
 
       queryClient.setQueryData<InfiniteData<NotificationsPage>>(
         ["notifications"],
@@ -31,8 +41,6 @@ export function notificationHandler(
 
           if (alreadyExists) return current
 
-          inserted = true
-
           const [firstPage, ...rest] = current.pages
 
           return {
@@ -45,13 +53,6 @@ export function notificationHandler(
 
         },
       )
-
-      if (inserted) {
-        queryClient.setQueryData<number>(
-          ["notifications", "unread-count"],
-          current => (current ?? 0) + 1,
-        )
-      }
 
       return
 

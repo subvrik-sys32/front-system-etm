@@ -8,6 +8,7 @@ import type { User } from "@/features/users/types/user.types"
 
 import { DatePicker } from "@/shared/ui/date-picker/components/date-picker"
 import { toISODateString } from "@/shared/ui/date-picker/utils/date-format"
+import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
 
 import { getActivityIcon } from "../constants/activity-icons"
 import { useTeamActivityLog } from "../hooks/use-team-activity-log"
@@ -19,6 +20,65 @@ function startOfDayISO(date: string) {
 
 function endOfDayISO(date: string) {
   return new Date(`${date}T23:59:59`).toISOString()
+}
+
+type ActivityCardProps = {
+  log: ReturnType<typeof useTeamActivityLog>["logs"][number]
+}
+
+function ActivityLogCard({
+  log,
+}: ActivityCardProps) {
+  const Icon = getActivityIcon(log.activityType.icon)
+
+  return (
+    <div className="rounded-2xl bg-white/3 p-4 transition-colors hover:bg-white/5">
+      <div className="flex items-start gap-4">
+        <div
+          className="flex size-10 shrink-0 items-center justify-center rounded-full"
+          style={{
+            backgroundColor: `${log.activityType.color}22`,
+            color: log.activityType.color,
+          }}
+        >
+          <Icon size={18} />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="font-medium text-neutral-100">
+              {log.user?.name ?? "—"}
+            </span>
+
+            <span className="text-xs text-neutral-500">
+              {new Date(log.loggedAt).toLocaleTimeString("es-PE", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          </div>
+
+          <p className="mt-1 text-sm text-neutral-300">
+            {log.activityType.label}
+          </p>
+
+          {log.project && (
+            <p className="mt-2 text-xs text-cyan-400">
+              {log.project.projectCode} · {log.project.name}
+              {log.task &&
+                ` · #${String(log.task.taskNumber).padStart(3, "0")} ${log.task.reference}`}
+            </p>
+          )}
+
+          {log.note && (
+            <p className="mt-2 text-xs leading-relaxed text-neutral-500">
+              {log.note}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function TeamActivityLogPageContent() {
@@ -38,17 +98,54 @@ export function TeamActivityLogPageContent() {
 
   const { logs, loading } = useTeamActivityLog(filters)
 
+  const groupedLogs = useMemo(() => {
+    if (selectedUser) {
+      return []
+    }
+
+    const groups = new Map<
+      string,
+      {
+        user: User | null
+        logs: typeof logs
+      }
+    >()
+
+    for (const log of logs) {
+      const key = log.user?.id ?? "unknown"
+      const existing = groups.get(key)
+
+      if (existing) {
+        existing.logs.push(log)
+        continue
+      }
+
+      groups.set(key, {
+        user: (log.user as User) ?? null,
+        logs: [log],
+      })
+    }
+
+    return [...groups.values()]
+  }, [logs, selectedUser])
+
+  const handleUserChange = (user?: User) => {
+    if (selectedUser?.id === user?.id) {
+      setSelectedUser(undefined)
+    } else {
+      setSelectedUser(user)
+    }
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-
       <div className="flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-white/2 p-4">
-
         <div className="w-56 shrink-0">
           <UserSelect
             value={selectedUser}
             items={users as User[]}
             placeholder="Todo el equipo"
-            onChange={setSelectedUser}
+            onChange={handleUserChange}
           />
         </div>
 
@@ -61,84 +158,62 @@ export function TeamActivityLogPageContent() {
         <div className="rounded-lg bg-white/5 px-3 py-2 text-sm text-neutral-400">
           {logs.length} {logs.length === 1 ? "entrada" : "entradas"}
         </div>
-
       </div>
 
-      <div className="flex flex-col gap-3">
-
+      <div className="flex flex-col gap-6">
         {loading ? (
           <TeamActivityLogSkeleton />
         ) : logs.length === 0 ? (
           <div className="flex h-40 items-center justify-center rounded-2xl border-white/10 bg-white/2 text-sm text-neutral-500">
             Sin entradas para este filtro
           </div>
-        ) : (
-          logs.map((log) => {
-            const Icon = getActivityIcon(log.activityType.icon)
-
-            return (
-              <div
+        ) : selectedUser ? (
+          <div className="flex flex-col gap-3">
+            {logs.map(log => (
+              <ActivityLogCard
                 key={log.id}
-                className="rounded-2xl border bg-white/3 p-4 transition-colors hover:bg-white/5"
+                log={log}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-8">
+            {groupedLogs.map(group => (
+              <section
+                key={group.user?.id ?? "unknown"}
+                className="flex flex-col gap-3"
               >
-                <div className="flex items-start gap-4">
-
-                  <div
-                    className="flex size-10 shrink-0 items-center justify-center rounded-full"
-                    style={{
-                      backgroundColor: `${log.activityType.color}22`,
-                      color: log.activityType.color,
-                    }}
-                  >
-                    <Icon size={18} />
+                <div className="flex items-center justify-between border-b border-white/8 pb-2">
+                  <div className="flex items-center gap-3">
+                    <DynamicBadge
+                      label={group.user?.name ?? "Sin usuario"}
+                      color={group.user?.color ?? "#71717A"}
+                      icon={group.user?.icon}
+                      width="field"
+                    />
                   </div>
 
-                  <div className="min-w-0 flex-1">
-
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-
-                      <span className="font-medium text-neutral-100">
-                        {log.user?.name ?? "—"}
-                      </span>
-
-                      <span className="text-xs text-neutral-500">
-                        {new Date(log.loggedAt).toLocaleTimeString("es-PE", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-
-                    </div>
-
-                    <p className="mt-1 text-sm text-neutral-300">
-                      {log.activityType.label}
-                    </p>
-
-                    {log.project && (
-                      <p className="mt-2 text-xs text-cyan-400">
-                        {log.project.projectCode} · {log.project.name}
-                        {log.task &&
-                          ` · #${String(log.task.taskNumber).padStart(3, "0")} ${log.task.reference}`}
-                      </p>
-                    )}
-
-                    {log.note && (
-                      <p className="mt-2 text-xs leading-relaxed text-neutral-500">
-                        {log.note}
-                      </p>
-                    )}
-
+                  <div className="rounded-lg bg-white/5 px-3 py-1 text-xs font-medium text-neutral-400">
+                    {group.logs.length}{" "}
+                    {group.logs.length === 1
+                      ? "actividad"
+                      : "actividades"}
                   </div>
-
                 </div>
 
-              </div>
-            )
-          })
+                <div className="flex flex-col gap-3">
+                  {group.logs.map(log => (
+                    <ActivityLogCard
+                      key={log.id}
+                      log={log}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
         )}
-
       </div>
-
     </div>
   )
 }

@@ -10,6 +10,7 @@ import { useUpdateComment } from "../hooks/use-update-comment"
 import { useMentionableUsers } from "../hooks/use-mentionable-users"
 import { MentionSuggestions } from "./mention-suggestions"
 import type { Comment, CommentTarget } from "../types/comment.types"
+import { flushSync } from "react-dom"
 
 type Props = {
   target: CommentTarget
@@ -40,17 +41,6 @@ export function CommentComposer({
   useEffect(() => {
     setMessage(editingComment?.message ?? "")
   }, [editingComment])
-
-  useLayoutEffect(() => {
-
-    if (message !== "") return
-
-    const el = textareaRef.current
-    if (!el) return
-
-    void el.offsetHeight
-
-  }, [message])
 
   const filteredUsers = mentionQuery === null
     ? []
@@ -144,9 +134,19 @@ export function CommentComposer({
 
     }
 
-    setMessage("")
-    setSelectedImage(null)
-    setMentionQuery(null)
+    flushSync(() => {
+      setMessage("")
+      setSelectedImage(null)
+      setMentionQuery(null)
+    })
+
+    const el = textareaRef.current
+
+    if (el) {
+      // Fuerza un layout síncrono para que el navegador
+      // repinte completamente el ::placeholder.
+      void el.offsetHeight
+    }
 
   }
 

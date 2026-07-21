@@ -1,6 +1,9 @@
 "use client"
 
 import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+
+import { VerticalScroll } from "@/shared/ui/vertical-scroll/vertical-scroll"
+
 import { ActivityLogPageContent } from "@/features/activity-log/components/activity-log-page-content"
 import { ActivityLogActions } from "@/features/activity-log/components/activity-log-actions"
 
@@ -10,7 +13,7 @@ export default function BitacoraPage() {
 
   return (
 
-    <main className="flex flex-col bg-[#050505] px-4 pt-3 pb-5 text-white select-none tablet:px-8 tablet:py-10 tablet:h-full">
+    <main className="flex flex-col bg-[#050505] px-4 pt-3 pb-5 text-white select-none tablet:h-full tablet:px-8 tablet:py-10">
 
       <header className="flex flex-wrap items-start justify-between gap-4">
 
@@ -39,9 +42,13 @@ export default function BitacoraPage() {
 
       </header>
 
-      <section className="mt-2 min-h-0 flex-1 tablet:mt-3 overflow-y-auto">
+      <section className="mt-2 min-h-0 flex-1 overflow-hidden tablet:mt-3">
 
-        <ActivityLogPageContent />
+        <VerticalScroll containerClassName="h-full">
+
+          <ActivityLogPageContent />
+
+        </VerticalScroll>
 
       </section>
 

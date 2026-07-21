@@ -1,27 +1,118 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Pencil, Power, Trash2 } from "lucide-react"
 
 import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
 import { IconAction } from "@/shared/ui/actions/icon-action"
+import { EntityToolbar } from "@/shared/ui/entity-toolbar/entity-toolbar"
+import { EntityToolbarSearch } from "@/shared/ui/entity-toolbar/entity-toolbar-search"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { cn } from "@/shared/utils/utils"
 
 import { useActivityTypes } from "../hooks/use-activity-types"
 import { useActivityTypeMutations } from "../hooks/use-activity-type-mutations"
 import { getActivityIcon } from "../constants/activity-icons"
 import { ActivityTypeFormDialog } from "./activity-type-form-dialog"
+import { ActivityTypesSkeleton } from "./activity-types-skeleton"
 
 import type { ActivityType } from "../types/activity-log.types"
 
+function ActivityTypeRow({
+  type,
+  onEdit,
+  onToggleActive,
+  onDelete,
+}: {
+  type: ActivityType
+  onEdit: (type: ActivityType) => void
+  onToggleActive: (type: ActivityType) => void
+  onDelete: (type: ActivityType) => void
+}) {
+
+  const Icon = getActivityIcon(type.icon)
+
+  return (
+
+    <div className="flex items-center gap-3 rounded-xl bg-white/3 p-3">
+
+      <div
+        className="flex size-9 shrink-0 items-center justify-center rounded-full"
+        style={{ backgroundColor: `${type.color}22`, color: type.color }}
+      >
+        <Icon size={16} />
+      </div>
+
+      <div className="min-w-0 flex-1">
+
+        <p className="truncate text-sm font-medium text-neutral-200">
+          {type.label}
+        </p>
+
+        <p className="text-xs text-neutral-500">
+          {type.active ? "Activa" : "Desactivada"}
+        </p>
+
+      </div>
+
+      <div className="flex items-center gap-1">
+
+        <IconAction
+          icon={Power}
+          onClick={() => onToggleActive(type)}
+        />
+
+        <IconAction
+          icon={Pencil}
+          onClick={() => onEdit(type)}
+        />
+
+        <IconAction
+          icon={Trash2}
+          variant="danger"
+          onClick={() => onDelete(type)}
+        />
+
+      </div>
+
+    </div>
+
+  )
+
+}
+
 export function ActivityTypesPageContent() {
 
+  const { isMobile } = useResponsive()
+  const [search, setSearch] = useState("")
+
   // true: trae también los desactivados, para poder reactivarlos.
-  const { types } = useActivityTypes(true)
+  const { types, loading } = useActivityTypes(true)
   const { updateType, removeType } = useActivityTypeMutations()
 
   const [formOpen, setFormOpen] = useState(false)
   const [editingType, setEditingType] = useState<ActivityType | null>(null)
   const [pendingDelete, setPendingDelete] = useState<ActivityType | null>(null)
+
+  // "Predeterminada" = seedeada por el sistema (tiene code, ver
+  // schema.prisma: code es nullable A PROPÓSITO justo para esto —
+  // solo los tipos con seed lo tienen, así que su sola presencia ya
+  // nos dice el origen sin necesitar un flag isDefault/isCustom
+  // aparte en el modelo).
+  const { defaultTypes, customTypes } = useMemo(() => {
+
+    const query = search.trim().toLowerCase()
+
+    const filtered = query
+      ? types.filter(type => type.label.toLowerCase().includes(query))
+      : types
+
+    return {
+      defaultTypes: filtered.filter(type => Boolean(type.code)),
+      customTypes: filtered.filter(type => !type.code),
+    }
+
+  }, [types, search])
 
   const handleEdit = (type: ActivityType) => {
     setEditingType(type)
@@ -43,73 +134,110 @@ export function ActivityTypesPageContent() {
 
   }
 
+  const hasResults = defaultTypes.length > 0 || customTypes.length > 0
+
   return (
 
-    <div className="flex flex-col gap-3">
+    <div className={cn(
+      "mx-auto flex w-full max-w-400 flex-col",
+      isMobile ? "" : "h-full min-h-0 overflow-hidden",
+    )}>
 
-      <div className="flex flex-col gap-2">
+      <div className="shrink-0">
 
-        {types.map((type) => {
+        <EntityToolbar
 
-          const Icon = getActivityIcon(type.icon)
+          left={
 
-          return (
+            <div className="flex flex-wrap items-center gap-2 py-1">
 
-            <div
-              key={type.id}
-              className="flex items-center gap-3 rounded-xl bg-white/3 p-3"
-            >
-
-              <div
-                className="flex size-9 shrink-0 items-center justify-center rounded-full"
-                style={{ backgroundColor: `${type.color}22`, color: type.color }}
-              >
-                <Icon size={16} />
-              </div>
-
-              <div className="min-w-0 flex-1">
-
-                <p className="truncate text-sm font-medium text-neutral-200">
-                  {type.label}
-                </p>
-
-                <p className="text-xs text-neutral-500">
-                  {type.active ? "Activa" : "Desactivada"}
-                </p>
-
-              </div>
-
-              <div className="flex items-center gap-1">
-
-                <IconAction
-                  icon={Power}
-                  onClick={() => handleToggleActive(type)}
-                />
-
-                <IconAction
-                  icon={Pencil}
-                  onClick={() => handleEdit(type)}
-                />
-
-                <IconAction
-                  icon={Trash2}
-                  variant="danger"
-                  onClick={() => setPendingDelete(type)}
-                />
-
-              </div>
+              <EntityToolbarSearch
+                value={search}
+                onChange={setSearch}
+              />
 
             </div>
 
-          )
+          }
 
-        })}
+        />
 
-        {types.length === 0 && (
+      </div>
 
-          <div className="flex h-32 items-center justify-center rounded-xl bg-white/2 text-sm text-neutral-500">
-            Sin tipos de actividad todavía
-          </div>
+      <div className={cn(
+        "flex flex-col gap-6",
+        isMobile
+          ? ""
+          : "erp-scrollbar min-h-0 flex-1 overflow-y-auto",
+      )}>
+
+        {loading ? (
+
+          <ActivityTypesSkeleton />
+
+        ) : (
+
+          <>
+
+            <section className="flex flex-col gap-2">
+
+              <h2 className="px-1 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                Predeterminadas
+              </h2>
+
+              {defaultTypes.map(type => (
+                <ActivityTypeRow
+                  key={type.id}
+                  type={type}
+                  onEdit={handleEdit}
+                  onToggleActive={handleToggleActive}
+                  onDelete={setPendingDelete}
+                />
+              ))}
+
+              {defaultTypes.length === 0 && (
+                <div className="flex h-20 items-center justify-center rounded-xl bg-white/2 text-sm text-neutral-500">
+                  {search
+                    ? "Ninguna coincide con la búsqueda"
+                    : "Sin actividades predeterminadas"}
+                </div>
+              )}
+
+            </section>
+
+            <section className="flex flex-col gap-2">
+
+              <h2 className="px-1 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                Personalizadas
+              </h2>
+
+              {customTypes.map(type => (
+                <ActivityTypeRow
+                  key={type.id}
+                  type={type}
+                  onEdit={handleEdit}
+                  onToggleActive={handleToggleActive}
+                  onDelete={setPendingDelete}
+                />
+              ))}
+
+              {customTypes.length === 0 && (
+                <div className="flex h-20 items-center justify-center rounded-xl bg-white/2 text-sm text-neutral-500">
+                  {search
+                    ? "Ninguna coincide con la búsqueda"
+                    : "Sin actividades personalizadas todavía"}
+                </div>
+              )}
+
+            </section>
+
+            {!hasResults && (
+              <div className="flex h-32 items-center justify-center rounded-xl bg-white/2 text-sm text-neutral-500">
+                Sin tipos de actividad todavía
+              </div>
+            )}
+
+          </>
 
         )}
 

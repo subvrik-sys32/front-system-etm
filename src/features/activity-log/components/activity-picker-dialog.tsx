@@ -94,18 +94,6 @@ export function ActivityPickerDialog({
     setTaskId,
   ] = useState("")
 
-  const selectedType =
-    types.find(
-      type => type.id === selectedTypeId,
-    )
-
-  // Por ahora solo "Produciendo" pide proyecto/tarea — es el tipo
-  // pensado para cruzar la bitácora con el trabajo real y sacar
-  // KPIs (tiempo por proyecto/tarea/operario). Los demás tipos
-  // (Limpieza, Descanso, etc.) no lo necesitan.
-  const requiresWorkRef =
-    selectedType?.code === "PRODUCIENDO"
-
   const tasksForProject =
     useMemo(
       () =>
@@ -136,13 +124,6 @@ export function ActivityPickerDialog({
       return
     }
 
-    if (
-      requiresWorkRef &&
-      !projectId
-    ) {
-      return
-    }
-
     await createLog({
       activityTypeId: selectedTypeId,
       projectId:
@@ -160,12 +141,7 @@ export function ActivityPickerDialog({
 
   }
 
-  const canSave =
-    !!selectedTypeId &&
-    (
-      !requiresWorkRef ||
-      !!projectId
-    )
+  const canSave = !!selectedTypeId
 
   return (
 
@@ -213,8 +189,8 @@ export function ActivityPickerDialog({
                   setSelectedTypeId(type.id)
 
                   // Cambiar de tipo limpia proyecto/tarea — evita
-                  // mandar un projectId elegido para "Produciendo"
-                  // si la persona cambia de opinión.
+                  // arrastrar una elección hecha para el tipo
+                  // anterior si la persona cambia de opinión.
                   setProjectId("")
                   setTaskId("")
 
@@ -251,12 +227,12 @@ export function ActivityPickerDialog({
 
         </div>
 
-        {requiresWorkRef && (
+        {selectedTypeId && (
 
           <div className="flex flex-col gap-2 rounded-xl bg-white/4 p-3">
 
             <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              ¿En qué proyecto?
+              ¿En qué proyecto? (opcional)
             </span>
 
             <ProjectPicker

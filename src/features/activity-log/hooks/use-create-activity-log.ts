@@ -3,21 +3,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { activityLogService } from "../services/activity-log.service"
 import { myActivityLogQueryKey } from "./use-my-activity-log"
+import { getCurrentShift } from "../constants/shift-definitions"
 import type { ActivityLog, ActivityType, CreateActivityLogDto } from "../types/activity-log.types"
-
-// Misma franja que calcula el backend (getShiftForDate) — se
-// duplica acá SOLO para el preview optimista; lo que realmente
-// queda guardado es lo que devuelve el servidor.
-function getShiftNow(): ActivityLog["shift"] {
-
-  const hour = new Date().getHours()
-
-  if (hour >= 6 && hour < 12) return "MORNING"
-  if (hour >= 12 && hour < 18) return "AFTERNOON"
-
-  return "NIGHT"
-
-}
 
 export function useCreateActivityLog(types: ActivityType[]) {
 
@@ -44,7 +31,7 @@ export function useCreateActivityLog(types: ActivityType[]) {
           projectId: dto.projectId ?? null,
           taskId: dto.taskId ?? null,
           note: dto.note ?? null,
-          shift: getShiftNow(),
+          shift: getCurrentShift(new Date()),
           loggedAt: new Date().toISOString(),
           activityType,
           // El preview optimista no tiene los datos completos de

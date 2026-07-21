@@ -32,7 +32,7 @@ export function EntityTable<T>({
 
       <div
         data-entity-table-scroll
-        className="erp-scrollbar min-h-0 flex-1 overflow-y-auto"
+        className="erp-scrollbar min-h-0 flex-1 overflow-y-auto p-1.5"
         style={{
           scrollbarGutter:"stable",
         }}

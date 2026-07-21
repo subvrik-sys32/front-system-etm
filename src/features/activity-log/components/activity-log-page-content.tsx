@@ -4,8 +4,9 @@ import { useState } from "react"
 
 import { useMyActivityLog } from "../hooks/use-my-activity-log"
 import { useDeleteActivityLog } from "../hooks/use-delete-activity-log"
-import { SHIFT_DEFINITIONS } from "../constants/shift-definitions"
-import { ShiftSection } from "./shift-section"
+import { SHIFT_GROUPS } from "../constants/shift-definitions"
+import type { ShiftSlotDefinition } from "../constants/shift-definitions"
+import { ShiftGroupSection } from "./shift-group-section"
 import { ActivityPickerDialog } from "./activity-picker-dialog"
 import { ActivityLogSkeleton } from "./activity-log-skeleton"
 
@@ -21,7 +22,13 @@ export function ActivityLogPageContent() {
   const { deleteLog } = useDeleteActivityLog()
 
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [activeSlot, setActiveSlot] = useState<ShiftSlotDefinition | null>(null)
   const [deletingLogId, setDeletingLogId] = useState<string | null>(null)
+
+  function handleOpenPicker(slot: ShiftSlotDefinition) {
+    setActiveSlot(slot)
+    setPickerOpen(true)
+  }
 
   async function handleDeleteLog(id: string) {
 
@@ -57,22 +64,28 @@ export function ActivityLogPageContent() {
 
         ) : (
 
-          SHIFT_DEFINITIONS.map((def) => (
+          SHIFT_GROUPS.map((group) => {
 
-            <ShiftSection
-              key={def.shift}
-              label={def.label}
-              hours={def.hours}
-              icon={def.icon}
-              startHour={def.startHour}
-              endHour={def.endHour}
-              logs={logs.filter((log) => log.shift === def.shift)}
-              onLogClick={() => setPickerOpen(true)}
-              onDeleteLog={handleDeleteLog}
-              deletingLogId={deletingLogId}
-            />
+            const logsBySlot: Record<string, typeof logs> = {}
 
-          ))
+            for (const slot of group.slots) {
+              logsBySlot[slot.shift] = logs.filter((log) => log.shift === slot.shift)
+            }
+
+            return (
+
+              <ShiftGroupSection
+                key={group.key}
+                group={group}
+                logsBySlot={logsBySlot}
+                onLogClick={handleOpenPicker}
+                onDeleteLog={handleDeleteLog}
+                deletingLogId={deletingLogId}
+              />
+
+            )
+
+          })
 
         )}
 
@@ -80,7 +93,13 @@ export function ActivityLogPageContent() {
 
       <ActivityPickerDialog
         open={pickerOpen}
-        onOpenChange={setPickerOpen}
+        activeSlot={activeSlot}
+        onOpenChange={(open) => {
+          setPickerOpen(open)
+          if (!open) {
+            setActiveSlot(null)
+          }
+        }}
       />
 
     </div>

@@ -103,7 +103,7 @@ export function EntityTableSkeleton<T>({
       <div className="flex min-h-0 flex-1">
         <div
           data-entity-table-scroll
-          className="min-h-0 flex-1 animate-pulse overflow-hidden"
+          className="min-h-0 flex-1 animate-pulse overflow-hidden p-1.5"
         >
           {ROW_OPACITIES.slice(0, rows).map((opacity, i) => (
             <CardSkeletonRow key={i} columns={columns} opacity={opacity} />

@@ -37,14 +37,28 @@ import {
   getActivityIcon,
 } from "../constants/activity-icons"
 
+import {
+  getCurrentShift,
+} from "../constants/shift-definitions"
+
+import type {
+  ShiftSlotDefinition,
+} from "../constants/shift-definitions"
+
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
+  // Slot sobre el que se tocó "+ Registrar" — solo para mostrar
+  // contexto y el aviso de abajo. Lo que realmente queda guardado
+  // como franja lo decide el servidor a partir de la hora real al
+  // momento de guardar (ver activity-log.service.ts), no este valor.
+  activeSlot?: ShiftSlotDefinition | null
 }
 
 export function ActivityPickerDialog({
   open,
   onOpenChange,
+  activeSlot,
 }: Props) {
 
   const {
@@ -168,6 +182,16 @@ export function ActivityPickerDialog({
     >
 
       <div className="flex flex-col gap-4">
+
+        {activeSlot && activeSlot.shift !== getCurrentShift(new Date()) && (
+
+          <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-400">
+            Ya pasó la hora de &ldquo;{activeSlot.label}&rdquo; — esto se
+            va a guardar en la franja que corresponde a la hora
+            actual, no en esa.
+          </p>
+
+        )}
 
         <div className="grid grid-cols-3 gap-2">
 

@@ -142,7 +142,7 @@ export function RolePermissionsPageContent() {
                       onClick={() => setSelectedRole(role)}
                       className={cn(
                         "flex items-center justify-between rounded-xl px-3 py-3 text-left transition-all",
-                        isSelected ? "bg-white/8 ring-1 ring-white/12" : "hover:bg-white/5"
+                        isSelected ? "bg-white/8" : "hover:bg-white/5"
                       )}
                     >
                       <DynamicBadge

@@ -1,4 +1,10 @@
-export type DayShift = "MORNING" | "AFTERNOON" | "NIGHT"
+export type DayShift =
+  | "MORNING_1"
+  | "MORNING_2"
+  | "LUNCH"
+  | "AFTERNOON_1"
+  | "AFTERNOON_2"
+  | "NIGHT"
 
 export interface ActivityType {
   id: string

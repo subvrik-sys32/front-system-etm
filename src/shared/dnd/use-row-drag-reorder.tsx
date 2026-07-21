@@ -153,6 +153,16 @@ export function useRowDragReorder<T>({
       if (raf.current) cancelAnimationFrame(raf.current)
 
       raf.current = requestAnimationFrame(() => {
+        // Antes esto usaba rects.current tal como quedó capturado
+        // en beginDrag — una sola vez, al arrancar el drag. La fila
+        // arrastrada colapsa su altura a 0 en una transición de
+        // 180ms, así que las filas de abajo se corren hacia arriba
+        // apenas eso termina — pero el cálculo seguía usando las
+        // posiciones de ANTES del colapso, cada vez más
+        // desactualizadas cuanto más duraba el drag. Re-medir acá
+        // (ya limitado a 1 vez por frame) hace que el cálculo
+        // siempre use las posiciones reales actuales.
+        capture()
         setInsertIndex(getInsertIndex(e.clientY, dragId))
       })
     }

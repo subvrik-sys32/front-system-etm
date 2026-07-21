@@ -48,7 +48,7 @@ function SkeletonPermissionGroup({
 
 export function RolePermissionsSkeleton() {
   return (
-    <div className="flex animate-pulse flex-col gap-4 pr-3">
+    <div className="flex animate-pulse flex-col gap-4 tablet:pr-3">
       <SkeletonPermissionGroup rows={4} />
       <SkeletonPermissionGroup rows={3} />
       <SkeletonPermissionGroup rows={5} />

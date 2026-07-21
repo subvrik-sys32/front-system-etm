@@ -1,10 +1,10 @@
 "use client"
 
-// Skeleton mobile de Roles -- coincide con el contenido real: mismo
-// stack (label chico + píldora de color a ancho completo) que
-// RoleMobileCard, en vez de una forma genérica adivinada. Vive en
-// archivo aparte pero en la misma carpeta que role-mobile-card.tsx,
-// igual que project-mobile-skeleton.tsx / project-mobile-card.tsx.
+// Skeleton mobile de Roles -- calco estructural exacto de
+// SkeletonUserRow (user-mobile-skeleton.tsx): mismo wrapper
+// <button disabled>, mismo padding de header (px-3 py-3) separado
+// de la fila de contenido (px-3 pb-3), mismo tamaño de label
+// (h-4 w-24), y el mismo fade de opacidad de 6 pasos.
 //
 // Sin wrapper propio con gap a propósito: esto se inserta DENTRO del
 // mismo "space-y-3" que ya envuelve las cards reales (ver
@@ -16,15 +16,29 @@ function SkeletonRoleMobileCard({ opacity }: { opacity: number }) {
       className="overflow-hidden rounded-xl bg-white/2"
       style={{ opacity }}
     >
-      <div className="flex animate-pulse flex-col gap-2 px-3 py-3">
-        <span className="h-3 w-16 rounded bg-white/10" />
-        <span className="block h-8 w-full rounded-full bg-white/6" />
-      </div>
+      <button
+        type="button"
+        disabled
+        className="w-full text-left"
+      >
+        <header className="flex items-center justify-between gap-2.5 px-3 py-3">
+          <span className="h-4 w-24 rounded bg-white/10" />
+
+          {/* Placeholder del "Inactivo" opcional de la card real */}
+          <span className="hidden h-4 w-14 rounded bg-white/8" />
+        </header>
+
+        <div className="flex items-center gap-2.5 px-3 pb-3">
+          <div className="min-w-0 flex-1">
+            <span className="block h-8 w-full rounded-full bg-white/6" />
+          </div>
+        </div>
+      </button>
     </article>
   )
 }
 
-const OPACITIES = [1, 0.85, 0.7, 0.55, 0.4]
+const OPACITIES = [1, 0.85, 0.7, 0.55, 0.4, 0.3]
 
 export function RoleMobileSkeleton() {
   return (

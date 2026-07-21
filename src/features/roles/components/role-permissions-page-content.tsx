@@ -126,7 +126,7 @@ export function RolePermissionsPageContent() {
       <div
         className={cn(
           "flex min-h-0 flex-1 gap-4",
-          isMobile ? "mt-3 flex-col" : "overflow-hidden"
+          isMobile ? "flex-col" : "overflow-hidden"
         )}
       >
         {/* PANEL ROLES */}

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { AnimatePresence, motion } from "motion/react"
+import { motion } from "motion/react"
 
 import { cn } from "@/shared/utils/utils"
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
@@ -13,14 +13,22 @@ export function BottomNavigation() {
   const openDrawer = useMobileNavStore((s) => s.openDrawer)
 
   return (
+
     <div className="absolute inset-x-0 bottom-0 z-20 px-3 pb-3">
+
       <nav className="flex items-stretch gap-1 rounded-full bg-white/8 px-1.5 py-1.5 shadow-lg shadow-black/30 ring-1 ring-white/10 backdrop-blur-xl">
+
         {BOTTOM_NAV_ITEMS.map((item) => {
-          const isActive =
-            item.action.type === "link" &&
-            (Array.isArray(item.matchPrefix)
-              ? item.matchPrefix.some((prefix) => pathname.startsWith(prefix))
-              : pathname.startsWith(item.matchPrefix))
+
+          const isBitacoraTab = item.label === "Bitácora"
+
+          const isActive = isBitacoraTab
+            ? pathname.startsWith("/bitacora") ||
+              pathname.startsWith("/admin/activity-types")
+            : item.action.type === "link" &&
+              (Array.isArray(item.matchPrefix)
+                ? item.matchPrefix.some((prefix) => pathname.startsWith(prefix))
+                : pathname.startsWith(item.matchPrefix))
 
           const Icon = item.icon
 
@@ -28,32 +36,18 @@ export function BottomNavigation() {
             <div
               className="relative flex flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] font-semibold"
             >
-              <AnimatePresence mode="popLayout">
-                {isActive && (
-                  <motion.div
-                    layoutId="bottom-nav-active-chip"
-                    className="absolute inset-0 rounded-full bg-white/12"
-                    initial={{ opacity: 0, scale: 0.85 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.85 }}
-                    transition={{
-                      layout: {
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 35,
-                      },
-                      opacity: {
-                        duration: 0.18,
-                      },
-                      scale: {
-                        type: "spring",
-                        stiffness: 400,
-                        damping: 25,
-                      },
-                    }}
-                  />
-                )}
-              </AnimatePresence>
+
+              {isActive && (
+                <motion.div
+                  layoutId="bottom-nav-active-chip"
+                  className="absolute inset-0 rounded-full bg-white/12"
+                  transition={{
+                    type: "spring",
+                    stiffness: 500,
+                    damping: 35,
+                  }}
+                />
+              )}
 
               <span
                 className={cn(
@@ -69,6 +63,7 @@ export function BottomNavigation() {
                 />
                 {item.label}
               </span>
+
             </div>
           )
 
@@ -97,7 +92,10 @@ export function BottomNavigation() {
             </Link>
           )
         })}
+
       </nav>
+
     </div>
+
   )
 }

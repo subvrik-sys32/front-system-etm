@@ -74,7 +74,7 @@ export function ProductionProcessCard({
           className="shrink-0 text-xs font-bold uppercase tracking-[0.18em]"
           style={{ color: textColor }}
         >
-          {definition.label}
+          {definition.code}
         </span>
 
         <div className="flex min-w-0 flex-1 items-center justify-end gap-4 tablet:gap-8">

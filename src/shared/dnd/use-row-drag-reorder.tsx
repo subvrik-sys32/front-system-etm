@@ -22,6 +22,10 @@ type DragState<T> = {
   id: string
   left: number
   width: number
+  // NUEVO: necesitamos la altura de la fila arrastrada para poder
+  // correr hacia abajo las filas que quedan por ENCIMA del punto de
+  // inserción cuando se arrastra hacia arriba (ver getRowShift).
+  height: number
 }
 
 type Props<T> = {
@@ -117,6 +121,7 @@ export function useRowDragReorder<T>({
       id,
       left: rect.left,
       width: rect.width,
+      height: rect.height,
     })
   }
 
@@ -203,6 +208,47 @@ export function useRowDragReorder<T>({
     return otherRects[insertIndex]?.top ?? 0
   })()
 
+  // NUEVO: cuánto tiene que correrse verticalmente una fila que NO
+  // es la arrastrada, para que se "abra" el hueco de inserción.
+  //
+  // Cuando arrastrás hacia ABAJO, el hueco se abre solo: la fila
+  // arrastrada colapsa su altura in-place y todo lo que está DEBAJO
+  // de su posición original se corre hacia arriba por el flujo
+  // normal del documento. Eso ya funcionaba.
+  //
+  // Cuando arrastrás hacia ARRIBA, el destino queda ANTES de la
+  // posición original de la fila arrastrada. Esas filas de arriba
+  // nunca se mueven por sí solas (colapsar un elemento no afecta a
+  // lo que está antes de él en el DOM), así que sin este shift no
+  // hay ningún feedback visual de que se está por insertar ahí —
+  // la línea azul aparece en el lugar correcto, pero ninguna fila
+  // se corre para abrirle lugar. Por eso "solo funciona al bajar".
+  //
+  // Regla: una fila necesita correrse hacia abajo (altura de la fila
+  // arrastrada) solo si estaba ANTES que la fila arrastrada en el
+  // orden original, Y en el resultado final queda en o después del
+  // punto de inserción (es decir, la fila arrastrada terminará
+  // ubicada antes que ella).
+  function getRowShift(rowId: string): number {
+    if (!drag || insertIndex === null) return 0
+    if (rowId === drag.id) return 0
+
+    const list = itemsRef.current
+    const rowIdx = list.findIndex(i => getId(i) === rowId)
+    const dragIdx = list.findIndex(i => getId(i) === drag.id)
+    if (rowIdx === -1 || dragIdx === -1) return 0
+
+    // Posición de esta fila en el espacio "reducido" (sin la fila
+    // arrastrada) — mismo criterio que getInsertIndex/lineTop.
+    const reducedIdx = rowIdx < dragIdx ? rowIdx : rowIdx - 1
+
+    if (rowIdx < dragIdx && reducedIdx >= insertIndex) {
+      return drag.height
+    }
+
+    return 0
+  }
+
   function renderRow(
     item: T,
     content: ReactNode,
@@ -211,6 +257,7 @@ export function useRowDragReorder<T>({
   ) {
     const isDragging = drag?.id === rowId
     const rowDisabled = disabled || isRowDisabled?.(item)
+    const shift = getRowShift(rowId)
 
     // En modo card (EntityTable ya encogido), "templateColumns"
     // viene vacío — ahí no hay que forzar display:grid, porque el
@@ -225,7 +272,9 @@ export function useRowDragReorder<T>({
         style={{
           height: isDragging ? 0 : undefined,
           overflow: isDragging ? "hidden" : undefined,
-          transition: "height 180ms cubic-bezier(.2,.8,.2,1)",
+          transform: shift ? `translateY(${shift}px)` : undefined,
+          transition:
+            "height 180ms cubic-bezier(.2,.8,.2,1), transform 180ms cubic-bezier(.2,.8,.2,1)",
         }}
       >
         <div

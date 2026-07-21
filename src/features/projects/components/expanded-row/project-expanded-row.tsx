@@ -225,7 +225,7 @@ export function ProjectExpandedRow({
 
           <span className="text-xs font-semibold tracking-widest text-neutral-500">
             {activeView === "tasks"
-              ? "TAREAS OPERATIVAS"
+              ? "TAREAS"
               : "MENSAJES"}
           </span>
 

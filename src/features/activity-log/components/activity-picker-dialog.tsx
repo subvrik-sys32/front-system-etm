@@ -1,7 +1,6 @@
 "use client"
 
 import {
-  useMemo,
   useState,
 } from "react"
 
@@ -22,8 +21,8 @@ import {
 } from "@/features/tasks/components/project-picker"
 
 import {
-  useTasks,
-} from "@/features/tasks/hooks/use-tasks"
+  TaskPicker,
+} from "@/features/tasks/components/task-picker"
 
 import {
   useActivityTypes,
@@ -70,10 +69,6 @@ export function ActivityPickerDialog({
     creating,
   } = useCreateActivityLog(types)
 
-  const {
-    tasks,
-  } = useTasks()
-
   const [
     selectedTypeId,
     setSelectedTypeId,
@@ -93,19 +88,6 @@ export function ActivityPickerDialog({
     taskId,
     setTaskId,
   ] = useState("")
-
-  const tasksForProject =
-    useMemo(
-      () =>
-        tasks.filter(
-          task =>
-            task.project.id === projectId,
-        ),
-      [
-        tasks,
-        projectId,
-      ],
-    )
 
   function handleClose() {
 
@@ -253,33 +235,11 @@ export function ActivityPickerDialog({
                   ¿Qué tarea? (opcional)
                 </span>
 
-                <select
+                <TaskPicker
+                  projectId={projectId}
                   value={taskId}
-                  onChange={event =>
-                    setTaskId(event.target.value)
-                  }
-                  className="rounded-lg bg-white/6 px-3 py-2 text-sm text-white outline-none"
-                >
-
-                  <option value="">
-                    Sin tarea puntual
-                  </option>
-
-                  {tasksForProject.map(task => (
-
-                    <option
-                      key={task.id}
-                      value={task.id}
-                    >
-                      #
-                      {String(task.taskNumber).padStart(3, "0")}
-                      {" · "}
-                      {task.reference}
-                    </option>
-
-                  ))}
-
-                </select>
+                  onChange={setTaskId}
+                />
 
               </>
 

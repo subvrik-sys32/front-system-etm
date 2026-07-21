@@ -183,14 +183,24 @@ export function useRowDragReorder<T>({
   }, [drag])
 
   const lineTop = (() => {
-    if (insertIndex === null) return 0
+    if (insertIndex === null || !drag) return 0
 
-    if (insertIndex >= rects.current.length) {
-      const last = rects.current.at(-1)
+    // Mismo criterio que getInsertIndex: la fila arrastrada se
+    // saltea, así que hay que indexar sobre la lista SIN ella, no
+    // sobre rects.current completo (que todavía la incluye). Antes
+    // esto indexaba el array completo — coincidía por casualidad
+    // mientras el destino estaba ANTES de la fila arrastrada
+    // (arrastrar hacia arriba), pero quedaba corrido en 1 apenas el
+    // destino pasaba de ahí (arrastrar hacia abajo), señalando
+    // siempre una fila antes de la que correspondía.
+    const otherRects = rects.current.filter(r => r.id !== drag.id)
+
+    if (insertIndex >= otherRects.length) {
+      const last = otherRects.at(-1)
       return last ? last.top + last.height : 0
     }
 
-    return rects.current[insertIndex]?.top ?? 0
+    return otherRects[insertIndex]?.top ?? 0
   })()
 
   function renderRow(

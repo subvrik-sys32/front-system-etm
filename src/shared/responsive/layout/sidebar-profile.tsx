@@ -115,7 +115,7 @@ export function SidebarProfile({
               side="right"
               align="end"
               sideOffset={12}
-              className="w-72 border-none bg-[#171717] p-0"
+              className="w-72 border-none p-0"
             >
               <div ref={panelRef} className="overflow-hidden rounded-xl">
                 <div ref={contentRef}>

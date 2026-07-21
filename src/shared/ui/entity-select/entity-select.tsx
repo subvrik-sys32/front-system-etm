@@ -233,9 +233,9 @@ export function EntitySelect<T extends EntityBase>({
 
         </PopoverTrigger>
 
-        <PopoverContent className="w-72 bg-[#101012] p-2">
+        <PopoverContent className="w-72 p-2">
           <Command>
-            <div className="sticky top-0 z-20 mb-2 flex items-center gap-2 bg-[#101012] px-2 pb-2">
+            <div className="sticky top-0 z-20 mb-2 flex items-center gap-2 px-2 pb-2">
               <Search size={14} className="text-white/35" />
 
               <Input

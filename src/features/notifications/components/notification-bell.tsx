@@ -245,7 +245,7 @@ export function NotificationBell({ collapsed, variant = "sidebar" }: Props) {
           side={isTopbar ? "bottom" : "right"}
           align={isTopbar ? "end" : "start"}
           sideOffset={8}
-          className="z-90 w-80 bg-[#101012] p-0"
+          className="z-90 w-80 p-0"
         >
 
           <div className="flex items-center justify-between px-3.5 py-3">

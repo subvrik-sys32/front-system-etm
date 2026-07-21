@@ -109,7 +109,7 @@ export function ExportMenu({
       <PopoverContent
         align="start"
         sideOffset={8}
-        className="w-72 bg-[#101012] p-2"
+        className="w-72 p-2"
       >
 
         {!selectedFormat?(

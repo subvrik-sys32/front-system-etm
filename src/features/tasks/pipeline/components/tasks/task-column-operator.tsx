@@ -245,7 +245,7 @@ function ActiveOperatorsPopover({
       <PopoverContent
         align="start"
         sideOffset={6}
-        className="w-(--radix-popover-trigger-width) bg-[#101012] p-2"
+        className="w-(--radix-popover-trigger-width) p-2"
       >
 
         <div className="px-1 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-wide text-neutral-500">

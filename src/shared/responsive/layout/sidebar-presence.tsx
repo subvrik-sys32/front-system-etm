@@ -206,7 +206,7 @@ export function SidebarPresence({
             side="right"
             align="start"
             sideOffset={8}
-            className="z-90 w-72 bg-[#101012] p-0"
+            className="z-90 w-72 p-0"
           >
 
             <div className="flex items-center justify-between px-3.5 py-3">

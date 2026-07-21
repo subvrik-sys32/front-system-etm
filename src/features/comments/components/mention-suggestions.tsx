@@ -32,7 +32,7 @@ export function MentionSuggestions({ users, onSelect }: Props) {
       side="top"
       sideOffset={8}
       onOpenAutoFocus={(e) => e.preventDefault()}
-      className="w-64 bg-[#101012] p-2"
+      className="w-64 p-2"
     >
 
       <Command className="bg-transparent">

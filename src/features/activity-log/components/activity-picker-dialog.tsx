@@ -13,16 +13,17 @@ import {
 } from "@/shared/ui/dialogs/form-dialog/form-dialog"
 
 import {
+  FormField,
+} from "@/shared/ui/dialogs/form-dialog/form-field"
+
+import {
   cn,
 } from "@/shared/utils/utils"
 
 import {
-  ProjectPicker,
-} from "@/features/tasks/components/project-picker"
-
-import {
-  TaskPicker,
-} from "@/features/tasks/components/task-picker"
+  ContextPicker,
+  type ContextPickerValue,
+} from "@/features/tasks/components/context-picker"
 
 import {
   useActivityTypes,
@@ -54,6 +55,11 @@ type Props = {
   activeSlot?: ShiftSlotDefinition | null
 }
 
+const EMPTY_CONTEXT: ContextPickerValue = {
+  projectId: "",
+  taskId: "",
+}
+
 export function ActivityPickerDialog({
   open,
   onOpenChange,
@@ -80,38 +86,59 @@ export function ActivityPickerDialog({
   ] = useState("")
 
   const [
-    projectId,
-    setProjectId,
-  ] = useState("")
+    context,
+    setContext,
+  ] = useState<ContextPickerValue>(EMPTY_CONTEXT)
 
+  // Sólo se muestra el mensaje rojo después de un intento de
+  // guardar fallido — igual que el form de Task, no molesta con
+  // rojo mientras la persona todavía está eligiendo tipo/proyecto.
   const [
-    taskId,
-    setTaskId,
-  ] = useState("")
+    submitAttempted,
+    setSubmitAttempted,
+  ] = useState(false)
 
   function handleClose() {
 
     setSelectedTypeId(null)
     setNote("")
-    setProjectId("")
-    setTaskId("")
+    setContext(EMPTY_CONTEXT)
+    setSubmitAttempted(false)
 
     onOpenChange(false)
 
   }
 
+  const canSave =
+    !!selectedTypeId && !!context.projectId
+
+  const errors = {
+
+    projectId:
+
+      submitAttempted && !context.projectId
+
+        ? "El proyecto es obligatorio"
+
+        : undefined,
+
+  }
+
   async function handleSubmit() {
 
-    if (!selectedTypeId) {
+    if (!canSave) {
+
+      setSubmitAttempted(true)
+
       return
+
     }
 
     await createLog({
-      activityTypeId: selectedTypeId,
-      projectId:
-        projectId || undefined,
+      activityTypeId: selectedTypeId!,
+      projectId: context.projectId,
       taskId:
-        taskId || undefined,
+        context.taskId || undefined,
       note:
         note.trim() || undefined,
     }).catch(() => {
@@ -123,15 +150,13 @@ export function ActivityPickerDialog({
 
   }
 
-  const canSave = !!selectedTypeId
-
   return (
 
     <FormDialog
       open={open}
       title="¿Qué estás haciendo?"
       icon={Search}
-      canSave={canSave}
+      canSave={!!selectedTypeId}
       saving={creating}
       saveLabel="Registrar"
       savingLabel="Guardando..."
@@ -151,6 +176,53 @@ export function ActivityPickerDialog({
 
         )}
 
+        <div className="flex flex-col gap-2 rounded-xl bg-white/4 p-3">
+
+          <FormField label="Proyecto *" error={errors.projectId}>
+
+            <ContextPicker
+              mode="projects"
+              value={context}
+              onChange={next =>
+                setContext({
+
+                  projectId: next.projectId,
+
+                  // Si cambia el proyecto, la tarea elegida antes
+                  // ya no aplica.
+                  taskId:
+                    next.projectId === context.projectId
+                      ? context.taskId
+                      : "",
+
+                })
+              }
+            />
+
+          </FormField>
+
+          <FormField label="Tarea (opcional)">
+
+            <ContextPicker
+              mode="tasks"
+              // Sin proyecto elegido todavía, taskProjectId queda
+              // undefined y el picker simplemente lista tareas de
+              // todos los proyectos — elegir una tarea acá también
+              // completa el proyecto solo (ver selectTask).
+              taskProjectId={context.projectId || undefined}
+              value={context}
+              onChange={next =>
+                setContext({
+                  projectId: next.projectId,
+                  taskId: next.taskId,
+                })
+              }
+            />
+
+          </FormField>
+
+        </div>
+
         <div className="grid grid-cols-3 gap-2">
 
           {types.map(type => {
@@ -166,17 +238,9 @@ export function ActivityPickerDialog({
               <button
                 key={type.id}
                 type="button"
-                onClick={() => {
-
+                onClick={() =>
                   setSelectedTypeId(type.id)
-
-                  // Cambiar de tipo limpia proyecto/tarea — evita
-                  // arrastrar una elección hecha para el tipo
-                  // anterior si la persona cambia de opinión.
-                  setProjectId("")
-                  setTaskId("")
-
-                }}
+                }
                 className={cn(
                   "flex flex-col items-center gap-1.5 rounded-xl p-3 text-center transition-colors",
                   isSelected
@@ -208,46 +272,6 @@ export function ActivityPickerDialog({
           })}
 
         </div>
-
-        {selectedTypeId && (
-
-          <div className="flex flex-col gap-2 rounded-xl bg-white/4 p-3">
-
-            <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              ¿En qué proyecto? (opcional)
-            </span>
-
-            <ProjectPicker
-              value={projectId}
-              onChange={next => {
-
-                setProjectId(next)
-                setTaskId("")
-
-              }}
-            />
-
-            {projectId && (
-
-              <>
-
-                <span className="mt-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                  ¿Qué tarea? (opcional)
-                </span>
-
-                <TaskPicker
-                  projectId={projectId}
-                  value={taskId}
-                  onChange={setTaskId}
-                />
-
-              </>
-
-            )}
-
-          </div>
-
-        )}
 
         <textarea
           value={note}

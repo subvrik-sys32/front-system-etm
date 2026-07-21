@@ -1,9 +1,8 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { ArrowLeft, Save } from "lucide-react"
+import { useMemo, useState } from "react"
+import { ArrowLeft, Check, Save } from "lucide-react"
 
-import { useRoles } from "../hooks/use-roles"
 import { usePermissionCatalog } from "../hooks/use-permission-catalog"
 import { useRolePermissions } from "../hooks/use-role-permissions"
 import { useUpdateRolePermissions } from "../hooks/use-update-role-permissions"
@@ -16,15 +15,118 @@ import {
 } from "../utils/permission-groups"
 
 import { RolePermissionsSkeleton, RolesListSkeleton } from "./role-permissions-skeleton"
+import { useRoles } from "../hooks/use-roles"
 
-import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
 import { PrimaryAction } from "@/shared/ui/actions/primary-action"
 import { EntityToolbar } from "@/shared/ui/entity-toolbar/entity-toolbar"
 import { EntityToolbarSearch } from "@/shared/ui/entity-toolbar/entity-toolbar-search"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { cn } from "@/shared/utils/utils"
 
-import type { Role } from "../types/role.types"
+import type { Permission, Role } from "../types/role.types"
+
+type PermissionToggleProps = {
+  label: string
+  checked: boolean
+  onToggle: () => void
+}
+
+function PermissionToggle({ label, checked, onToggle }: PermissionToggleProps) {
+  return (
+    <div
+      role="checkbox"
+      aria-checked={checked}
+      tabIndex={0}
+      onClick={onToggle}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault()
+          onToggle()
+        }
+      }}
+      className={cn(
+        "flex min-w-0 cursor-pointer select-none items-center gap-2.5 rounded-xl px-3 py-2.5 transition-colors",
+        checked ? "bg-gray-500/10" : "hover:bg-white/4",
+      )}
+    >
+      <span
+        className={cn(
+          "flex size-4.5 shrink-0 items-center justify-center rounded-md border transition-colors",
+          checked
+            ? "border-cyan-500 bg-cyan-500"
+            : "border-white/15 bg-white/4",
+        )}
+      >
+        {checked && <Check size={11} strokeWidth={3} className="text-black" />}
+      </span>
+
+      <span
+        className={cn(
+          "min-w-0 truncate text-sm transition-colors",
+          checked ? "text-neutral-100" : "text-neutral-400",
+        )}
+      >
+        {label}
+      </span>
+    </div>
+  )
+}
+
+type PermissionGroupProps = {
+  title: string
+  permissions: Permission[]
+  checkedIds: Set<string>
+  onToggle: (permissionId: string) => void
+  onToggleAll: (permissionIds: string[], nextChecked: boolean) => void
+  getLabel: (permission: Permission) => string
+}
+
+function PermissionGroup({
+  title,
+  permissions,
+  checkedIds,
+  onToggle,
+  onToggleAll,
+  getLabel,
+}: PermissionGroupProps) {
+  const ids = useMemo(() => permissions.map((p) => p.id), [permissions])
+  const allChecked = ids.every((id) => checkedIds.has(id))
+  const someChecked = !allChecked && ids.some((id) => checkedIds.has(id))
+
+  return (
+    <section className="min-w-0 rounded-2xl bg-white/2 p-4">
+      <header className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+          {title}
+        </h3>
+
+        <button
+          type="button"
+          onClick={() => onToggleAll(ids, !allChecked)}
+          className={cn(
+            "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide transition-colors",
+            allChecked
+              ? "bg-cyan-500/15 text-cyan-400 hover:bg-cyan-500/20"
+              : "bg-white/5 text-neutral-500 hover:bg-white/8 hover:text-neutral-300",
+          )}
+        >
+          {allChecked ? "Todos" : someChecked ? "Completar" : "Seleccionar todos"}
+        </button>
+      </header>
+
+      <div className="grid grid-cols-1 gap-1 tablet:grid-cols-2 desktop:grid-cols-3">
+        {permissions.map((permission) => (
+          <PermissionToggle
+            key={permission.id}
+            label={getLabel(permission)}
+            checked={checkedIds.has(permission.id)}
+            onToggle={() => onToggle(permission.id)}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
 
 export function RolePermissionsPageContent() {
   const { isMobile } = useResponsive()
@@ -40,10 +142,17 @@ export function RolePermissionsPageContent() {
   )
   const { updatePermissions, saving } = useUpdateRolePermissions(selectedRole?.id ?? null)
 
-  useEffect(() => {
+  const [loadedForRoleId, setLoadedForRoleId] = useState<string | null>(null)
+
+  if (selectedRole && !loadingRolePermissions && loadedForRoleId !== selectedRole.id) {
+    setLoadedForRoleId(selectedRole.id)
     setCheckedIds(new Set(rolePermissions.map((p) => p.id)))
     setDirty(false)
-  }, [rolePermissions])
+  }
+
+  if (!selectedRole && loadedForRoleId !== null) {
+    setLoadedForRoleId(null)
+  }
 
   const filteredRoles = useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -67,6 +176,18 @@ export function RolePermissionsPageContent() {
       const next = new Set(current)
       if (next.has(permissionId)) next.delete(permissionId)
       else next.add(permissionId)
+      return next
+    })
+    setDirty(true)
+  }
+
+  const handleToggleAll = (permissionIds: string[], nextChecked: boolean) => {
+    setCheckedIds((current) => {
+      const next = new Set(current)
+      for (const id of permissionIds) {
+        if (nextChecked) next.add(id)
+        else next.delete(id)
+      }
       return next
     })
     setDirty(true)
@@ -108,21 +229,22 @@ export function RolePermissionsPageContent() {
         {showRolesPanel && (
           <aside
             className={cn(
-              "flex flex-col overflow-hidden rounded-2xl bg-[#101012] ring-1 ring-white/6",
+              "flex flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#101012]",
               isMobile ? "" : "h-full w-72 shrink-0"
             )}
           >
             <div className="shrink-0 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+              <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
                 Roles
               </p>
             </div>
 
             <div
               className={cn(
-                "flex flex-col gap-2 p-2",
+                "flex flex-col gap-2.5 p-2",
                 isMobile ? "" : "erp-scrollbar min-h-0 flex-1 overflow-y-auto"
               )}
+              style={isMobile ? undefined : { scrollbarGutter: "stable" }}
             >
               {loadingRoles && <RolesListSkeleton />}
 
@@ -135,23 +257,32 @@ export function RolePermissionsPageContent() {
               {!loadingRoles &&
                 filteredRoles.map((role) => {
                   const isSelected = selectedRole?.id === role.id
+
                   return (
                     <button
                       key={role.id}
                       type="button"
                       onClick={() => setSelectedRole(role)}
                       className={cn(
-                        "flex items-center justify-between rounded-xl px-3 py-3 text-left transition-all",
-                        isSelected ? "bg-white/8" : "hover:bg-white/5"
+                        "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
+                        isSelected
+                          ? "bg-white/10 text-white"
+                          : "hover:bg-white/4 text-neutral-300"
                       )}
                     >
-                      <DynamicBadge
-                        label={role.name}
-                        color={role.color}
-                        icon={role.icon}
-                        width="field"
-                      />
-                      {!role.active && <span className="text-xs text-neutral-500">Inactivo</span>}
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <span
+                          className="size-2.5 shrink-0 rounded-full"
+                          style={{ backgroundColor: role.color || "#71717a" }}
+                        />
+                        <span className="truncate text-sm font-medium">
+                          {role.name}
+                        </span>
+                      </div>
+
+                      {!role.active && (
+                        <span className="shrink-0 text-xs text-neutral-500">Inactivo</span>
+                      )}
                     </button>
                   )
                 })}
@@ -161,9 +292,9 @@ export function RolePermissionsPageContent() {
 
         {/* PANEL PERMISOS */}
         {showPermissionsPanel && (
-          <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-[#101012] ring-1 ring-white/6">
+          <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#101012]">
             <header className="flex shrink-0 items-start justify-between gap-4 px-5 py-4">
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-3">
                 {isMobile && selectedRole && (
                   <button
                     type="button"
@@ -175,20 +306,35 @@ export function RolePermissionsPageContent() {
                 )}
 
                 {!selectedRole && (
-                  <div>
-                    <h2 className="text-sm font-semibold text-neutral-300">Permisos</h2>
-                    <p className="mt-1 text-sm text-neutral-500">
+                  <div className="min-w-0">
+                    <h2 className="truncate text-sm font-semibold text-neutral-300">Permisos</h2>
+                    <p className="mt-1 truncate text-sm text-neutral-500">
                       Seleccioná un rol para visualizar y editar sus permisos.
                     </p>
                   </div>
                 )}
 
                 {selectedRole && (
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
                       Permisos
                     </p>
-                    <h2 className="mt-1 text-lg font-semibold text-white">{selectedRole.name}</h2>
+                    <div className="mt-1 flex items-center gap-2.5">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="size-2.5 shrink-0 rounded-full"
+                          style={{ backgroundColor: selectedRole.color || "#71717a" }}
+                        />
+                        <span className="truncate text-sm font-medium text-white">
+                          {selectedRole.name}
+                        </span>
+                      </div>
+                      {dirty && (
+                        <span className="shrink-0 text-xs font-medium text-amber-400">
+                          Cambios sin guardar
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -216,34 +362,19 @@ export function RolePermissionsPageContent() {
               {selectedRole && permissionsLoading && <RolePermissionsSkeleton />}
 
               {selectedRole && !permissionsLoading && (
-                <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-4">
                   {grouped.map(([groupKey, groupPermissions]) => (
-                    <section key={groupKey} className="rounded-2xl bg-white/2 p-4">
-                      <header className="mb-4">
-                        <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-                          {getPermissionGroupLabel(groupKey)}
-                        </h3>
-                      </header>
-
-                      <div className="grid grid-cols-1 gap-2 tablet:grid-cols-2 desktop:grid-cols-3">
-                        {groupPermissions.map((permission) => (
-                          <label
-                            key={permission.id}
-                            className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-white/4"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={checkedIds.has(permission.id)}
-                              onChange={() => handleToggle(permission.id)}
-                              className="size-4 rounded bg-white/6 accent-cyan-500"
-                            />
-                            <span className="text-sm text-neutral-300">
-                              {getPermissionActionLabel(permission.code, groupKey)}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </section>
+                    <PermissionGroup
+                      key={groupKey}
+                      title={getPermissionGroupLabel(groupKey)}
+                      permissions={groupPermissions}
+                      checkedIds={checkedIds}
+                      onToggle={handleToggle}
+                      onToggleAll={handleToggleAll}
+                      getLabel={(permission) =>
+                        getPermissionActionLabel(permission.code, groupKey)
+                      }
+                    />
                   ))}
                 </div>
               )}

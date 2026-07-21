@@ -99,7 +99,7 @@ export function EntityToolbarSearch({
           "flex items-center overflow-hidden transition-all duration-200 ease-out",
 
           open
-            ? "w-56"
+            ? "w-60"
             : "w-8"
 
         )}
@@ -129,26 +129,27 @@ export function EntityToolbarSearch({
 
         </button>
 
-        <input
-          ref={inputRef}
-          value={value}
-          onChange={event=>
-            onChange(
-              event.target.value
-            )
-          }
-          onBlur={handleBlur}
-          placeholder="Buscar..."
+        <div
           className={cn(
-
-            "bg-transparent text-sm text-white outline-none placeholder:text-white/35 transition-all duration-200",
-
+            "flex min-w-0 flex-1 items-center transition-all duration-200",
             open
-              ? "w-full opacity-100"
-              : "w-0 opacity-0"
-
+              ? "pl-2.5 opacity-100"
+              : "pl-0 opacity-0 pointer-events-none"
           )}
-        />
+        >
+          <input
+            ref={inputRef}
+            value={value}
+            onChange={event=>
+              onChange(
+                event.target.value
+              )
+            }
+            onBlur={handleBlur}
+            placeholder="Buscar..."
+            className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/35"
+          />
+        </div>
 
       </div>
 

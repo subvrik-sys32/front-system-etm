@@ -307,20 +307,19 @@ export function ProcessRowActions({
 
   }
 
-  if(status==="QUEUE"){
+  if (status === "QUEUE") {
 
-    return(
-
+    return (
       <div className="flex w-full items-center justify-center">
 
-        <div className="flex h-8 w-full items-center justify-center rounded-lg border-2 border-dashed border-neutral-600/40 bg-transparent">
+        <div className="flex h-8 w-full min-w-28 items-center justify-center rounded-lg border-2 border-dashed border-neutral-600/40 bg-transparent">
 
-          <div className="h-1.5 w-1.5 rounded-full bg-white/20"/>
+          <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
 
         </div>
 
       </div>
-
+      
     )
 
   }

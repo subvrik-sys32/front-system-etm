@@ -15,6 +15,16 @@ import type {
 // shell (isMobile viewport vs isCompact contenedor), lo que producía
 // combinaciones de layout inconsistentes durante resize/rotación.
 // Al eliminar la rama de grid, esa clase entera de bugs desaparece.
+//
+// NOTA sobre "border" en vez de "ring": el resto de la app usa
+// "ring-1 ring-white/6" para este mismo hairline decorativo, pero
+// acá específicamente causaba un corte visual en el borde superior
+// del panel (confirmado a mano, reproducible con hardware
+// acceleration prendida — un bug de compositor GPU con ring/
+// box-shadow + border-radius + overflow-hidden anidado varias veces
+// en el shell). "border" se pinta como parte normal de la caja, no
+// como una capa de sombra aparte, y no lo sufre. Es una excepción
+// puntual a propósito, no un cambio de lenguaje visual general.
 export function EntityTable<T>({
   data,
   columns,
@@ -28,7 +38,7 @@ export function EntityTable<T>({
 
   return(
 
-    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl bg-[#101012] ring-1 ring-white/6">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#101012]">
 
       <div
         data-entity-table-scroll

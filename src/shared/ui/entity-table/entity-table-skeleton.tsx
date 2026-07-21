@@ -1,6 +1,7 @@
 "use client"
 
 import { groupCardColumns } from "./entity-table-card-row"
+import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
 import type { EntityColumn } from "./types"
 
 type Props<T> = {
@@ -17,7 +18,19 @@ function ShapePlaceholder({
 }) {
   switch (shape) {
     case "badge":
-      return <span className="block min-h-8 w-full rounded-full bg-white/6" />
+      // Componente real con label vacío y sin ícono, no un <span>
+      // clonando su forma a mano — mismo alto, mismo padding, mismo
+      // radio que el badge real siempre, porque es literalmente el
+      // mismo componente. Si el diseño de DynamicBadge cambia algún
+      // día, esto cambia solo con él.
+      return (
+        <DynamicBadge
+          label=""
+          color="#71717a"
+          width="field"
+          pulse
+        />
+      )
 
     case "icon":
       return <span className="block h-9 w-9 rounded-lg bg-white/6" />
@@ -92,14 +105,16 @@ function CardSkeletonRow<T>({
   )
 }
 
-// Modo tabla/grid eliminado, igual que en EntityTable: el skeleton
-// ahora solo calca la forma de card, en todos los breakpoints.
+// Modo tabla/grid eliminado, igual que en EntityTable. Mismo fix de
+// "border" en vez de "ring" que el archivo real (ver comentario en
+// entity-table.tsx) — el skeleton usa el mismo panel exterior, así
+// que sufre el mismo corte si no se corrige acá también.
 export function EntityTableSkeleton<T>({
   columns,
   rows = 6,
 }: Props<T>) {
   return (
-    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl bg-[#101012] ring-1 ring-white/6">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#101012]">
       <div className="flex min-h-0 flex-1">
         <div
           data-entity-table-scroll

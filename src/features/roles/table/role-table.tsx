@@ -7,7 +7,7 @@ import { EntityTable, EntityTableSkeleton } from "@/shared/ui/entity-table"
 
 import { useRoles } from "../hooks/use-roles"
 import { RoleMobileCard } from "../components/cards/role-mobile-card"
-import { RoleMobileSkeleton } from "../components/cards/role-mobile-skeleton"
+import { RoleMobileSkeleton } from "../components/cards/role-card-skeleton"
 import { buildRoleColumns } from "./build-role-columns"
 
 import type { Role } from "../types/role.types"

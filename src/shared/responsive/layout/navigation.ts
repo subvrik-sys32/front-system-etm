@@ -40,13 +40,11 @@ export const NAVIGATION = [
         icon: ClipboardList,
         permission: PermissionCode.TASK_READ,
       },
-
       {
         label: "Engineering",
         href: "/engineering",
         icon: DraftingCompass,
       },
-
     ],
   },
 
@@ -93,6 +91,24 @@ export const NAVIGATION = [
   },
 
   {
+    title: "Bitácoras",
+    items: [
+      {
+        label: "Bitácora Personal",
+        href: "/bitacora",
+        icon: NotebookPen,
+        permission: PermissionCode.ACTIVITY_LOG_READ,
+      },
+      {
+        label: "Bitácora del Equipo",
+        href: "/bitacora/equipo",
+        icon: NotebookPen,
+        permission: PermissionCode.ACTIVITY_LOG_READ_ANY,
+      },
+    ],
+  },
+
+  {
     title: "Administración",
     items: [
       {
@@ -112,18 +128,6 @@ export const NAVIGATION = [
         href: "/admin/activity-types",
         icon: ListChecks,
         permission: PermissionCode.ACTIVITY_TYPE_MANAGE,
-      },
-      {
-        label: "Bitácora Personal",
-        href: "/bitacora",
-        icon: NotebookPen,
-        permission: PermissionCode.ACTIVITY_LOG_READ,
-      },
-      {
-        label: "Bitácora del Equipo",
-        href: "/bitacora/equipo",
-        icon: NotebookPen,
-        permission: PermissionCode.ACTIVITY_LOG_READ_ANY,
       },
     ],
   },

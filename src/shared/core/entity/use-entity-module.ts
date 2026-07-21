@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react"
 import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query"
 
+import { sidebarCountsQueryKey } from "@/shared/responsive/layout/hooks/use-sidebar-counts"
+
 type EntityWithId={id:string}
 
 export type CacheHandlers<T extends EntityWithId>={
@@ -107,6 +109,18 @@ export function useEntityModule<
     mutationFn:service.create,
 
     onSuccess:async created=>{
+
+      // El backend excluye al propio actor de su propio evento de
+      // tiempo real (excludeUserId) — a propósito, para no
+      // reprocesar tu propia acción como si viniera de otro lado.
+      // Pero eso significa que SIN esto, el contador del sidebar
+      // (proyectos activos, tareas activas, por proceso) se quedaba
+      // desactualizado para quien acaba de crear algo, hasta que
+      // recargara la página a mano — mientras que otros usuarios sí
+      // lo veían actualizarse solos vía el handler de realtime.
+      qc.invalidateQueries({
+        queryKey:sidebarCountsQueryKey,
+      })
 
       if(!handlers?.onCreate){
 
@@ -234,6 +248,10 @@ export function useEntityModule<
 
     onSuccess:async updated=>{
 
+      qc.invalidateQueries({
+        queryKey:sidebarCountsQueryKey,
+      })
+
       if(handlers?.onUpdate){
 
         qc.setQueryData<T[]>(
@@ -267,6 +285,10 @@ export function useEntityModule<
     mutationFn:service.remove,
 
     onSuccess:async(_,id)=>{
+
+      qc.invalidateQueries({
+        queryKey:sidebarCountsQueryKey,
+      })
 
       if(handlers?.onRemove){
 

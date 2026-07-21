@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { ArrowLeft, Check, Save } from "lucide-react"
+import { ArrowLeft, Save } from "lucide-react"
 
 import { usePermissionCatalog } from "../hooks/use-permission-catalog"
 import { useRolePermissions } from "../hooks/use-role-permissions"
@@ -14,222 +14,23 @@ import {
   getPermissionGroupLabel,
 } from "../utils/permission-groups"
 
-import { RolePermissionsSkeleton, RolesListSkeleton, RolesMobileSkeleton } from "./role-permissions-skeleton"
+import { RolePermissionsSkeleton } from "./role-permissions-skeleton"
+import { PermissionGroup } from "./permissions/permission-group"
+import {
+  RoleDesktopRow,
+  RoleDesktopRowSkeleton,
+  RoleMobileCard,
+  RoleMobileSkeleton,
+} from "../table"
 import { useRoles } from "../hooks/use-roles"
 
-import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
 import { PrimaryAction } from "@/shared/ui/actions/primary-action"
 import { EntityToolbar } from "@/shared/ui/entity-toolbar/entity-toolbar"
 import { EntityToolbarSearch } from "@/shared/ui/entity-toolbar/entity-toolbar-search"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { cn } from "@/shared/utils/utils"
 
-import type { Permission, Role } from "../types/role.types"
-
-type PermissionToggleProps = {
-  label: string
-  checked: boolean
-  onToggle: () => void
-}
-
-function PermissionToggle({ label, checked, onToggle }: PermissionToggleProps) {
-  return (
-    <div
-      role="checkbox"
-      aria-checked={checked}
-      tabIndex={0}
-      onClick={onToggle}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault()
-          onToggle()
-        }
-      }}
-      className={cn(
-        "flex min-w-0 cursor-pointer select-none items-center gap-2.5 rounded-xl px-3 py-2.5 transition-colors",
-        checked ? "bg-gray-500/10" : "hover:bg-white/4",
-      )}
-    >
-      <span
-        className={cn(
-          "flex size-4.5 shrink-0 items-center justify-center rounded-md transition-colors",
-          checked
-            ? "bg-green-500"
-            : "bg-white/4",
-        )}
-      >
-        {checked && <Check size={11} strokeWidth={3} className="text-black" />}
-      </span>
-
-      <span
-        className={cn(
-          "min-w-0 truncate text-sm transition-colors",
-          checked ? "text-neutral-100" : "text-neutral-400",
-        )}
-      >
-        {label}
-      </span>
-    </div>
-  )
-}
-
-type PermissionGroupProps = {
-  title: string
-  permissions: Permission[]
-  checkedIds: Set<string>
-  onToggle: (permissionId: string) => void
-  onToggleAll: (permissionIds: string[], nextChecked: boolean) => void
-  getLabel: (permission: Permission) => string
-}
-
-function PermissionGroup({
-  title,
-  permissions,
-  checkedIds,
-  onToggle,
-  onToggleAll,
-  getLabel,
-}: PermissionGroupProps) {
-  const ids = useMemo(() => permissions.map((p) => p.id), [permissions])
-  const allChecked = ids.every((id) => checkedIds.has(id))
-  const someChecked = !allChecked && ids.some((id) => checkedIds.has(id))
-
-  return (
-    <section className="min-w-0 rounded-2xl bg-white/2 p-4">
-      <header className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-          {title}
-        </h3>
-
-        <button
-          type="button"
-          onClick={() => onToggleAll(ids, !allChecked)}
-          className={cn(
-            "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide transition-colors",
-            allChecked
-              ? "bg-green-500/15 text-green-400 hover:bg-green  -500/20"
-              : "bg-white/5 text-neutral-500 hover:bg-white/8 hover:text-neutral-300",
-          )}
-        >
-          {allChecked ? "Todos" : someChecked ? "Completar" : "Seleccionar todos"}
-        </button>
-      </header>
-
-      <div className="grid grid-cols-1 gap-1 tablet:grid-cols-2 desktop:grid-cols-3">
-        {permissions.map((permission) => (
-          <PermissionToggle
-            key={permission.id}
-            label={getLabel(permission)}
-            checked={checkedIds.has(permission.id)}
-            onToggle={() => onToggle(permission.id)}
-          />
-        ))}
-      </div>
-    </section>
-  )
-}
-
-// -----------------------------------------------------------------
-// Fila de rol en DESKTOP -- lista plana dentro del aside, sin card
-// propia (el aside ya es el panel completo).
-// -----------------------------------------------------------------
-type RoleRowProps = {
-  role: Role
-  selected: boolean
-  onSelect: () => void
-}
-
-function RoleDesktopRow({ role, selected, onSelect }: RoleRowProps) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={cn(
-        "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
-        selected
-          ? "bg-white/10 text-white"
-          : "hover:bg-white/4 text-neutral-300"
-      )}
-    >
-      <div className="flex min-w-0 items-center gap-2.5">
-        <span
-          className="size-2.5 shrink-0 rounded-full"
-          style={{ backgroundColor: role.color || "#71717a" }}
-        />
-        <span className="truncate text-sm font-medium">
-          {role.name}
-        </span>
-      </div>
-
-      {!role.active && (
-        <span className="shrink-0 text-xs text-neutral-500">Inactivo</span>
-      )}
-    </button>
-  )
-}
-
-// -----------------------------------------------------------------
-// Card de rol en MOBILE -- copia exacta de la estructura de
-// UserMobileCard: header con label chico ("ROL 001") + estado a la
-// derecha, después una fila con el badge de color a ancho completo.
-// Sin chevron: en Usuarios el chevron abre detalles inline (mismo
-// card se expande), acá tocar la card ya navega directo al panel de
-// Permisos -- no hay nada que expandir en el lugar.
-// -----------------------------------------------------------------
-type RoleMobileRowProps = {
-  role: Role
-  index: number
-  onSelect: () => void
-}
-
-function RoleMobileRow({ role, index, onSelect }: RoleMobileRowProps) {
-
-  return (
-
-    <article className="overflow-hidden rounded-xl bg-white/2">
-
-      <button
-        type="button"
-        onClick={onSelect}
-        className="w-full text-left"
-      >
-
-        <header className="flex items-center justify-between gap-2.5 px-3 py-3">
-
-          <span className="text-xs font-semibold tracking-[0.12em] text-neutral-500">
-            ROL {String(index + 1).padStart(3, "0")}
-          </span>
-
-          {!role.active && (
-            <span className="text-xs font-medium text-neutral-500">
-              Inactivo
-            </span>
-          )}
-
-        </header>
-
-        <div className="flex items-center gap-2.5 px-3 pb-3">
-
-          <div className="min-w-0 flex-1">
-
-            <DynamicBadge
-              label={role.name}
-              icon={role.icon}
-              color={role.color}
-              width="field"
-            />
-
-          </div>
-
-        </div>
-
-      </button>
-
-    </article>
-
-  )
-
-}
+import type { Role } from "../types/role.types"
 
 export function RolePermissionsPageContent() {
   const { isMobile } = useResponsive()
@@ -335,7 +136,7 @@ export function RolePermissionsPageContent() {
           // sobre el negro de la página. El panel envolvente
           // (rounded-2xl border bg) es cosa de desktop únicamente.
           <div className="space-y-3">
-            {loadingRoles && <RolesMobileSkeleton />}
+            {loadingRoles && <RoleMobileSkeleton />}
 
             {!loadingRoles && filteredRoles.length === 0 && (
               <div className="rounded-2xl bg-[#101012] px-4 py-8 text-center text-sm text-neutral-500">
@@ -345,7 +146,7 @@ export function RolePermissionsPageContent() {
 
             {!loadingRoles &&
               filteredRoles.map((role, index) => (
-                <RoleMobileRow
+                <RoleMobileCard
                   key={role.id}
                   role={role}
                   index={index}
@@ -367,7 +168,7 @@ export function RolePermissionsPageContent() {
               className="erp-scrollbar flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-2"
               style={{ scrollbarGutter: "stable" }}
             >
-              {loadingRoles && <RolesListSkeleton />}
+              {loadingRoles && <RoleDesktopRowSkeleton />}
 
               {!loadingRoles && filteredRoles.length === 0 && (
                 <p className="px-3 py-6 text-center text-sm text-neutral-500">

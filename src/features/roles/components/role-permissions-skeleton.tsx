@@ -1,64 +1,10 @@
 "use client"
 
-// Roles ahora tiene dos formas completamente distintas según el
-// breakpoint (ver role-permissions-page-content.tsx): en desktop es
-// una fila plana (punto de color + texto) dentro del aside; en
-// mobile es una card de dos pisos (label + píldora de color a ancho
-// completo), igual que UserMobileCard. Un solo skeleton ya no
-// alcanza para calcar los dos -- de ahí los dos de acá abajo.
-
-// ---- Desktop: fila plana, como RoleDesktopRow ----
-
-function SkeletonRoleDesktopRow() {
-  return (
-    <div className="flex w-full items-center justify-between gap-3 px-3 py-2.5">
-      <div className="flex min-w-0 items-center gap-2.5">
-        <span className="size-2.5 shrink-0 rounded-full bg-white/10" />
-        <span className="h-4 w-28 rounded bg-white/10" />
-      </div>
-    </div>
-  )
-}
-
-export function RolesListSkeleton() {
-  return (
-    <div className="flex animate-pulse flex-col gap-2.5 p-2 pr-3.5">
-      {[0, 1, 2, 3, 4].map((index) => (
-        <SkeletonRoleDesktopRow key={index} />
-      ))}
-    </div>
-  )
-}
-
-// ---- Mobile: card de dos pisos, como RoleMobileRow ----
-
-function SkeletonRoleMobileCard() {
-  return (
-    <article className="overflow-hidden rounded-xl bg-white/2">
-      <div className="flex items-center justify-between gap-2.5 px-3 py-3">
-        <span className="h-3 w-16 rounded bg-white/10" />
-      </div>
-
-      <div className="px-3 pb-3">
-        <span className="block h-8 w-full rounded-full bg-white/6" />
-      </div>
-    </article>
-  )
-}
-
-export function RolesMobileSkeleton() {
-  return (
-    <div className="flex animate-pulse flex-col gap-3">
-      {[0, 1, 2, 3, 4].map((index) => (
-        <SkeletonRoleMobileCard key={index} />
-      ))}
-    </div>
-  )
-}
-
-// ---- Panel de Permisos (sin cambios: mismas cards en mobile y
-// desktop, solo cambia el contenedor exterior en page-content, no
-// esto) ----
+// El skeleton de la lista de Roles (desktop y mobile) vive en
+// src/features/roles/table/ (role-desktop-row-skeleton.tsx,
+// role-mobile-skeleton.tsx), junto a sus componentes reales -- igual
+// convención que project-mobile-skeleton.tsx. Acá solo queda el
+// skeleton del panel de Permisos, que es igual en los dos breakpoints.
 
 function SkeletonPermissionToggle({
   opacity,

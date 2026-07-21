@@ -411,10 +411,15 @@ export function ContextPicker({
 
       </PopoverTrigger>
 
-      <PopoverContent
-        sideOffset={8}
-        className="w-96 p-2"
-      >
+        <PopoverContent
+            sideOffset={8}
+            className={cn(
+                "p-2",
+                isCompact
+                ? "w-[calc(100vw-2rem)] max-w-96"
+                : "w-96",
+            )}
+        >
 
         <Command
           className="bg-transparent"

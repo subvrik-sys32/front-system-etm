@@ -71,7 +71,7 @@ export function Command({
 
     <CommandPrimitive
       className={cn(
-        "flex flex-col overflow-hidden rounded-xl bg-[#101012] text-white",
+        "flex flex-col overflow-hidden rounded-xl text-white",
         className
       )}
       {...props}

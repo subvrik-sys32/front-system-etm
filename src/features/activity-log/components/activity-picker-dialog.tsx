@@ -244,7 +244,7 @@ export function ActivityPickerDialog({
                 className={cn(
                   "flex flex-col items-center gap-1.5 rounded-xl p-3 text-center transition-colors",
                   isSelected
-                    ? "bg-white/12 ring-1 ring-white/20"
+                    ? "bg-white/12"
                     : "bg-white/4 hover:bg-white/8",
                 )}
               >

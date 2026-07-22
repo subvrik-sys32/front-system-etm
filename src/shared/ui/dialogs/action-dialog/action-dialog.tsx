@@ -93,8 +93,8 @@ export function ActionDialog({
       <DialogContent
         className={cn(
           "max-w-[calc(100vw-2rem)] sm:max-w-90 rounded-2xl p-5 text-white shadow-2xl",
-          // Definimos explícitamente el fondo y borde para prevenir el cuadro negro opaco/desfasado
-          "bg-neutral-900 border border-white/10 backdrop-blur-xl"
+
+          "bg-neutral-900 backdrop-blur-xl"
         )}
         onPointerDownOutside={preventNestedDialogClose}
         onInteractOutside={preventNestedDialogClose}

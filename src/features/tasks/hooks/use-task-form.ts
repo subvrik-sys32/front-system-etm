@@ -1,15 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
+import { useProjects } from "@/features/projects/hooks/use-projects"
+import type { Task, ProcessCode } from "../types/task.types"
 
-import { taskService } from "../services/task.service"
-import type { ProcessCode, Task } from "../types/task.types"
-
-export type TaskFormValue = {
+export interface TaskFormValue {
   projectId: string
   reference: string
-  pieces: number
   lotNumber: number
+  pieces: number
   assemblyCount: number
   paintKg: number
   route: ProcessCode[]
@@ -18,119 +17,100 @@ export type TaskFormValue = {
   thicknessId: string
   colorId: string | null
   plRt: string | null
-  deliveryDate: string | null
+  deliveryDate: string
 }
 
-const initialForm: TaskFormValue = {
-  projectId: "",
-  reference: "",
-  pieces: 1,
-  lotNumber: 1,
-  assemblyCount: 1,
-  paintKg: 0,
-  route: [],
-  priorityId: "",
-  materialId: "",
-  thicknessId: "",
-  colorId: null,
-  plRt: null,
-  deliveryDate: null,
-}
+export function useTaskForm(initialTask?: Task, initialProjectId?: string) {
+  const { projects = [] } = useProjects()
 
-const mapTaskToForm = (task: Task): TaskFormValue => ({
-  projectId: task.project.id,
-  reference: task.reference,
-  pieces: task.pieces,
-  lotNumber: task.lotNumber,
-  assemblyCount: task.assemblyCount,
-  paintKg: task.paintKg,
-  route: task.route,
-  priorityId: task.priority.id,
-  materialId: task.material.id,
-  thicknessId: task.thickness.id,
-  colorId: task.color?.id ?? null,
-  plRt: task.plRt,
-  deliveryDate: task.deliveryDate?.slice(0, 10) ?? null,
-})
+  const [form, setForm] = useState<TaskFormValue>({
+    projectId: initialProjectId || initialTask?.project?.id || "",
+    reference: initialTask?.reference || "",
+    lotNumber: initialTask?.lotNumber || 1,
+    pieces: initialTask?.pieces || 1,
+    assemblyCount: initialTask?.assemblyCount || 0,
+    paintKg: initialTask?.paintKg || 0,
+    route: initialTask?.route || [],
+    priorityId: initialTask?.priority?.id || "",
+    materialId: initialTask?.material?.id || "",
+    thicknessId: initialTask?.thickness?.id || "",
+    colorId: initialTask?.color?.id || null,
+    plRt: initialTask?.plRt || null,
+    deliveryDate: initialTask?.deliveryDate || "",
+  })
 
-const getInitialForm = (task?: Task, projectId?: string): TaskFormValue =>
-  task
-    ? mapTaskToForm(task)
-    : { ...initialForm, projectId: projectId ?? "" }
-
-export function useTaskForm(task?: Task, projectId?: string) {
-  const [form, setForm] = useState<TaskFormValue>(() =>
-    getInitialForm(task, projectId),
-  )
+  // Sincronización reactiva del proyecto y su fecha de entrega por defecto
+  const activeProjectId = initialProjectId || form.projectId
 
   useEffect(() => {
-    setForm(getInitialForm(task, projectId))
-  }, [task, projectId])
+    if (!activeProjectId || projects.length === 0) return
 
-  useEffect(() => {
-    if (task || !form.projectId) return
+    const selectedProject = projects.find((p) => p.id === activeProjectId)
+    if (!selectedProject?.deliveryDate) return
 
-    let cancelled = false
+    const formattedDate = selectedProject.deliveryDate.split("T")[0]
 
-    void taskService
-      .getNextLot(form.projectId)
-      .then(({ nextLot }) => {
-        if (!cancelled) {
-          setForm(current => ({
-            ...current,
-            lotNumber: nextLot,
-          }))
-        }
-      })
-      .catch(console.error)
+    setForm((prev) => ({
+      ...prev,
+      projectId: activeProjectId,
+      // Solo sobreescribimos la fecha automáticamente si es una tarea nueva (no al editar)
+      deliveryDate: !initialTask && !prev.deliveryDate ? formattedDate : prev.deliveryDate,
+    }))
+  }, [activeProjectId, projects, initialTask])
 
-    return () => {
-      cancelled = true
-    }
-  }, [task, form.projectId])
-
-  const update = (data: Partial<TaskFormValue>) => {
-    setForm(current => ({ ...current, ...data }))
+  const update = (fields: Partial<TaskFormValue>) => {
+    setForm((prev) => ({ ...prev, ...fields }))
   }
 
   const reset = () => {
-    setForm(getInitialForm(task, projectId))
+    setForm({
+      projectId: initialProjectId || "",
+      reference: "",
+      lotNumber: 1,
+      pieces: 1,
+      assemblyCount: 0,
+      paintKg: 0,
+      route: [],
+      priorityId: "",
+      materialId: "",
+      thicknessId: "",
+      colorId: null,
+      plRt: null,
+      deliveryDate: "",
+    })
   }
 
-  const requiresAssembly = form.route.includes("EN")
-  const requiresPaint = form.route.includes("PT")
+  const buildTask = () => ({
+    projectId: form.projectId,
+    reference: form.reference,
+    lotNumber: Number(form.lotNumber),
+    pieces: Number(form.pieces),
+    assemblyCount: Number(form.assemblyCount),
+    paintKg: Number(form.paintKg),
+    route: form.route,
+    priorityId: form.priorityId,
+    materialId: form.materialId,
+    thicknessId: form.thicknessId,
+    colorId: form.colorId || null,
+    plRt: form.plRt || null,
+    deliveryDate: form.deliveryDate || null,
+  })
 
-  const canSave =
-    Boolean(
-      form.projectId &&
-        form.reference.trim() &&
-        form.lotNumber > 0 &&
-        form.route.length &&
-        form.priorityId &&
-        form.materialId &&
-        form.thicknessId &&
-        form.pieces > 0 &&
-        form.deliveryDate,
-    ) &&
-    (!requiresAssembly || form.assemblyCount > 0) &&
-    (!requiresPaint || (Boolean(form.colorId) && form.paintKg > 0))
-
-  const buildTask = () => {
-    const data = { ...form }
-
-    if (task && JSON.stringify(form.route) === JSON.stringify(task.route)) {
-      const { route: _route, ...rest } = data
-      return rest
-    }
-
-    return data
-  }
+  const canSave = Boolean(
+    form.projectId &&
+    form.reference.trim() &&
+    form.route.length > 0 &&
+    form.deliveryDate &&
+    form.priorityId &&
+    form.materialId &&
+    form.thicknessId
+  )
 
   return {
     form,
     update,
     reset,
-    canSave,
     buildTask,
+    canSave,
   }
 }

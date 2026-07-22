@@ -102,9 +102,6 @@ function validateTask(
 
 }
 
-// Qué claves de error pertenecen a cada paso del wizard mobile —
-// solo se usa cuando isMobile es true; en desktop todo el formulario
-// se muestra junto y esta agrupación no aplica.
 const STEP_ERROR_KEYS: Record<number, (keyof TaskFormErrors)[]> = {
   0: ["projectId"],
   1: ["reference", "lotNumber", "route", "deliveryDate", "priorityId", "colorId", "paintKg", "assemblyCount"],
@@ -139,14 +136,9 @@ export function TaskDialog({
 
   const { isMobile } = useResponsive()
 
-  // Estado del wizard — solo relevante en mobile. En desktop el
-  // formulario completo se muestra siempre junto, como siempre.
   const [step, setStep] = useState(0)
   const [stepAttempted, setStepAttempted] = useState<Set<number>>(new Set())
 
-  // Cada vez que el diálogo se abre, arranca el wizard desde el
-  // primer paso — evita que quede "a mitad de camino" de una
-  // apertura anterior.
   useEffect(() => {
 
     if (open) {
@@ -178,7 +170,6 @@ export function TaskDialog({
 
   const projectLocked=!!projectId
 
-  // Si la tarea ya inició producción, la ruta no puede cambiarse.
   const routeLocked =
     !!task &&
     task.workflowSteps.some(
@@ -312,10 +303,6 @@ export function TaskDialog({
 
   const isLastStep = step === TASK_FORM_STEP_COUNT - 1
 
-  // En mobile, mientras no sea el último paso, el footer de
-  // FormDialog se reutiliza como navegación del wizard (Atrás /
-  // Siguiente) en vez de Cancelar / Guardar. En desktop, o en el
-  // último paso mobile, el comportamiento es el de siempre.
   const showWizardFooter = isMobile && !isLastStep
 
   const footerCancelLabel =
@@ -350,11 +337,6 @@ export function TaskDialog({
       ? handleWizardNext
       : save
 
-  // Errores visibles: en desktop, solo tras el primer intento de
-  // guardar (comportamiento sin cambios). En mobile, solo para el
-  // paso actual, y solo si ya se intentó avanzar desde ese paso
-  // estando inválido — así no se muestran errores de pasos que
-  // el usuario ni siquiera intentó completar todavía.
   const visibleErrors =
     isMobile
       ? (stepAttempted.has(step) ? errors : undefined)

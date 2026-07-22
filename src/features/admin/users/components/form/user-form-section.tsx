@@ -25,7 +25,7 @@ import {
 
 import type {
   UserErrors,
-} from "../hooks/validate-user"
+} from "../../hooks/validate-user"
 
 const CORPORATE_DOMAIN = "@etmperu.com"
 

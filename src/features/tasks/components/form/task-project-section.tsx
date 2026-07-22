@@ -3,7 +3,6 @@
 import { Folder } from "lucide-react"
 
 import { FormSection } from "@/shared/ui/dialogs/form-dialog/form-section"
-
 import { ContextPicker } from "@/features/tasks/components/context-picker"
 
 import type { TaskFormSectionProps } from "./types"

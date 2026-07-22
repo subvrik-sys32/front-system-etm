@@ -6,10 +6,10 @@ import { WizardProgress } from "@/shared/ui/dialogs/form-dialog/wizard-progress"
 import type { EntityIcon } from "@/shared/constants/entity-icons"
 import type { Role } from "@/features/roles/types/role.types"
 
-import type { UserErrors } from "../hooks/validate-user"
+import type { UserErrors } from "../../hooks/validate-user"
 
 import { UserColorSection } from "./user-color-section"
-import { UserDialogHeader } from "./user-dialog-header"
+import { UserDialogHeader } from "../dialog/user-dialog-header"
 import { UserFormSection } from "./user-form-section"
 
 export const USER_FORM_STEPS = [

@@ -42,7 +42,7 @@ import {
   UserForm,
   UserFormWizardProgress,
   USER_FORM_STEP_COUNT,
-} from "../user-form"
+} from "../form/user-form"
 
 type Props = {
   open: boolean

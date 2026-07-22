@@ -1,6 +1,8 @@
 "use client"
 
+import { useEffect } from "react"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { useProjects } from "@/features/projects/hooks/use-projects"
 
 import { WizardProgress } from "@/shared/ui/dialogs/form-dialog/wizard-progress"
 
@@ -10,10 +12,6 @@ import { TaskMaterialSection } from "./task-material-section"
 
 import type { TaskFormSectionProps } from "./types"
 
-// Un solo array define el wizard: agregar/quitar/reordenar un paso
-// acá alcanza, no hay que tocar TaskDialog para eso (solo la
-// validación por paso, que vive en TaskDialog junto al resto de
-// las reglas de negocio del formulario).
 export const TASK_FORM_STEPS = [
   { label: "Proyecto" },
   { label: "Información" },
@@ -22,19 +20,11 @@ export const TASK_FORM_STEPS = [
 
 export const TASK_FORM_STEP_COUNT = TASK_FORM_STEPS.length
 
-// Reexportado por compatibilidad — TaskDialog usa este componente
-// como subHeader del wizard. Es un simple wrapper de WizardProgress
-// con los steps de tareas ya aplicados.
 export function TaskFormWizardProgress({ step }: { step: number }) {
   return <WizardProgress steps={TASK_FORM_STEPS} step={step} />
 }
 
 type Props = TaskFormSectionProps & {
-  // Ignorado en desktop (siempre se muestran las 3 secciones juntas,
-  // comportamiento sin cambios). En mobile, controla qué sección del
-  // wizard está visible — el estado vive en TaskDialog porque ahí es
-  // también donde vive el indicador de progreso (TaskFormWizardProgress)
-  // y el footer (Atrás/Siguiente vs Cancelar/Guardar).
   step?: number
 }
 
@@ -48,6 +38,21 @@ export function TaskForm({
 }: Props) {
 
   const { isMobile } = useResponsive()
+  
+  // Obtenemos los proyectos directamente aquí para que el formulario sea reactivo al cambio
+  const { projects = [] } = useProjects()
+
+  // Sincroniza la fecha de entrega automáticamente cada vez que cambie el proyecto seleccionado
+  useEffect(() => {
+    if (!form.projectId) return
+
+    const selectedProject = projects.find((p) => p.id === form.projectId)
+
+    if (selectedProject?.deliveryDate) {
+      const formattedDate = selectedProject.deliveryDate.split("T")[0]
+      update({ deliveryDate: formattedDate })
+    }
+  }, [form.projectId, projects, update])
 
   if (!isMobile) {
 

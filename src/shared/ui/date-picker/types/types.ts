@@ -65,3 +65,19 @@ export interface UseDateFormatReturn {
   handleInputKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   syncFromExternalValue: (date: Date | null) => void;
 }
+
+export interface DateInputProps {
+  value: string;
+  placeholder?: string;
+  disabled?: boolean;
+  readOnly?: boolean;
+  className?: string;
+  onChange: (raw: string) => void;
+  onBlur: () => void;
+  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  /** Soporta detección de PointerEvent (mouse vs touch) */
+  onClick?: (event: React.PointerEvent<HTMLInputElement>) => void;
+  /** Acción para abrir el calendario manualmente desde el ícono */
+  onCalendarClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}

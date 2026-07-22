@@ -91,16 +91,20 @@ export function ActionDialog({
       }}
     >
       <DialogContent
-        className="max-w-[calc(100vw-2rem)] sm:max-w-90 rounded-2xl bg-[#101012] p-5 text-white shadow-2xl"
+        className={cn(
+          "max-w-[calc(100vw-2rem)] sm:max-w-90 rounded-2xl p-5 text-white shadow-2xl",
+          // Definimos explícitamente el fondo y borde para prevenir el cuadro negro opaco/desfasado
+          "bg-neutral-900 border border-white/10 backdrop-blur-xl"
+        )}
         onPointerDownOutside={preventNestedDialogClose}
         onInteractOutside={preventNestedDialogClose}
       >
         <DialogHeader>
-          <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+          <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-neutral-200">
             <Icon size={20} />
           </div>
 
-          <DialogTitle className="text-lg font-bold">{title}</DialogTitle>
+          <DialogTitle className="text-lg font-bold text-white">{title}</DialogTitle>
 
           <DialogDescription className="pt-3 text-sm leading-relaxed text-neutral-400">
             {description}

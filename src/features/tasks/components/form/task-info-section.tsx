@@ -200,7 +200,7 @@ export function TaskInfoSection({
               onChange={(date) =>
                 update({ deliveryDate: toISODateString(date) })
               }
-              placeholder="Seleccionar fecha"
+              placeholder="fecha"
               className="w-44"
             />
 

@@ -88,6 +88,17 @@ export function DatePicker({
     [handleInputKeyDown, handleOpenChange],
   );
 
+  const handleInputClick = useCallback((event: React.PointerEvent<HTMLInputElement>) => {
+    if (event.pointerType === 'mouse') {
+      setOpen(true);
+    }
+  }, []);
+
+  const handleCalendarIconClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    setOpen((prev) => !prev);
+  }, []);
+
   return (
     <Popover.Root open={open} onOpenChange={disabled ? undefined : handleOpenChange}>
       <Popover.Trigger asChild>
@@ -100,7 +111,8 @@ export function DatePicker({
             onChange={handleInputChange}
             onBlur={handleInputBlur}
             onKeyDown={handleKeyDownWithEscape}
-            onCalendarClick={() => setOpen((prev) => !prev)}
+            onClick={handleInputClick}
+            onCalendarClick={handleCalendarIconClick}
           />
         </div>
       </Popover.Trigger>
@@ -108,6 +120,9 @@ export function DatePicker({
       <Popover.Portal>
         <Popover.Content
           sideOffset={6}
+          // PreventAutofocus evita que Radix robe o fuerce el foco al abrir el popup
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
           className="z-50 rounded-xl shadow-xl bg-[#101012] animate-in fade-in-0 zoom-in-95"
         >
           <DateCalendar

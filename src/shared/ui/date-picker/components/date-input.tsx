@@ -1,20 +1,6 @@
 import { forwardRef } from 'react';
 import { Calendar as CalendarIcon } from 'lucide-react';
-
-export interface DateInputProps {
-  value: string;
-  placeholder?: string;
-  disabled?: boolean;
-  readOnly?: boolean;
-  className?: string;
-  onChange: (raw: string) => void;
-  onBlur: () => void;
-  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
-  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
-  onClick?: (event: React.MouseEvent<HTMLInputElement>) => void;
-  /** Acción para abrir el calendario manualmente desde el ícono */
-  onCalendarClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-}
+import type { DateInputProps } from '../types/types';
 
 export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
   (
@@ -51,7 +37,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
           onFocus={onFocus}
           onClick={onClick}
           className={[
-            'w-full h-10 pl-4 pr-10 rounded-xl text-base font-medium outline-none transition-colors',
+            'w-full h-10 pl-4 pr-10 rounded-xl text-base text-center font-medium outline-none transition-colors',
             'bg-white/6 text-neutral-200 placeholder:text-neutral-600',
             'border border-transparent',
             'focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0',
@@ -60,14 +46,12 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
           ].join(' ')}
         />
 
-        {/* Ícono de calendario exclusivo para desplegar el Popover */}
         <button
           type="button"
+          tabIndex={-1}
           disabled={disabled}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onCalendarClick) onCalendarClick(e);
-          }}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={onCalendarClick}
           className="absolute right-2.5 flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50"
           aria-label="Abrir calendario"
         >

@@ -92,7 +92,7 @@ export function UserDialogHeader({
           </span>
 
           <span className="min-w-0 truncate text-neutral-500">
-            {email || "usuario@etmsac.com"}
+            {email || "usuario@etmperu.com"}
           </span>
         </div>
       </div>

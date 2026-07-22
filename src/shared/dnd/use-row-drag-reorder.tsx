@@ -191,6 +191,7 @@ export function useRowDragReorder<T>({
     if (insertIndex === null || !drag) return 0
 
     const otherRects = rects.current.filter(r => r.id !== drag.id)
+    if (otherRects.length === 0) return 0
 
     if (insertIndex >= otherRects.length) {
       const last = otherRects.at(-1)
@@ -200,18 +201,16 @@ export function useRowDragReorder<T>({
     return otherRects[insertIndex]?.top ?? 0
   })()
 
-  // Verificamos si el cursor está fuera de los límites reales de la lista para ocultar la línea si ya no se puede mover más
+  // Verificamos si el cursor está fuera de los límites reales de la lista para ocultar la línea si ya no se puede mover más o si hay un solo elemento
   const isOutOfBounds = (() => {
-    if (insertIndex === null || rects.current.length === 0) return false
+    if (insertIndex === null || rects.current.length === 0) return true
     const otherRects = rects.current.filter(r => r.id !== drag?.id)
-    if (otherRects.length === 0) return false
+    if (otherRects.length === 0) return true // Si no hay más elementos además del arrastrado, no tiene sentido mostrar línea de inserción
 
     const firstTop = otherRects[0].top
     const lastBottom = (otherRects.at(-1)?.top ?? 0) + (otherRects.at(-1)?.height ?? 0)
     const currentY = labelTop + (drag?.offsetY ?? 0)
 
-    // Si intenta subir más arriba del primer elemento o bajar más abajo del último elemento de forma extrema
-    // También validamos si el índice de inserción es 0 y el raton está por encima del primer elemento, etc.
     return currentY < firstTop - 20 || currentY > lastBottom + 20
   })()
 
@@ -263,7 +262,7 @@ export function useRowDragReorder<T>({
 
   const overlay = drag && (
     <>
-      {/* Línea divisoria (Se oculta si llega al límite absoluto superior/inferior para evitar falsos positivos) */}
+      {/* Línea divisoria (Se oculta si llega al límite absoluto superior/inferior o si hay 1 solo elemento) */}
       {!isOutOfBounds && (
         <div
           style={{

@@ -44,6 +44,7 @@ export function useRowDragReorder<T>({
 }: Props<T>) {
 
   const [drag, setDrag] = useState<DragState<T> | null>(null)
+  const [isActuallyDragging, setIsActuallyDragging] = useState(false)
   const [insertIndex, setInsertIndex] = useState<number | null>(null)
   const [labelTop, setLabelTop] = useState(0)
 
@@ -59,6 +60,7 @@ export function useRowDragReorder<T>({
   const rowEls = useRef<Record<string, HTMLDivElement | null>>({})
   const rects = useRef<RowRect[]>([])
   const raf = useRef<number | null>(null)
+  const startPos = useRef<{ x: number; y: number } | null>(null)
 
   function capture() {
     rects.current = itemsRef.current.map(item => {
@@ -120,6 +122,9 @@ export function useRowDragReorder<T>({
 
     const offsetY = e.clientY - rect.top
 
+    startPos.current = { x: e.clientX, y: e.clientY }
+    setIsActuallyDragging(false)
+
     setDrag({
       item,
       id,
@@ -150,7 +155,9 @@ export function useRowDragReorder<T>({
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         setDrag(null)
+        setIsActuallyDragging(false)
         setInsertIndex(null)
+        startPos.current = null
       })
     })
   }
@@ -162,6 +169,15 @@ export function useRowDragReorder<T>({
     const offsetY = drag.offsetY
 
     function onMove(e: PointerEvent) {
+      if (startPos.current) {
+        const dx = Math.abs(e.clientX - startPos.current.x)
+        const dy = Math.abs(e.clientY - startPos.current.y)
+        // Solo activamos el arrastre real si se mueve más de 4 píxeles (evita falsos positivos al tocar)
+        if (dx > 4 || dy > 4) {
+          setIsActuallyDragging(true)
+        }
+      }
+
       if (raf.current) cancelAnimationFrame(raf.current)
 
       raf.current = requestAnimationFrame(() => {
@@ -188,7 +204,7 @@ export function useRowDragReorder<T>({
   }, [drag])
 
   const lineTop = (() => {
-    if (insertIndex === null || !drag) return 0
+    if (insertIndex === null || !drag || !isActuallyDragging) return 0
 
     const otherRects = rects.current.filter(r => r.id !== drag.id)
     if (otherRects.length === 0) return 0
@@ -201,11 +217,10 @@ export function useRowDragReorder<T>({
     return otherRects[insertIndex]?.top ?? 0
   })()
 
-  // Verificamos si el cursor está fuera de los límites reales de la lista para ocultar la línea si ya no se puede mover más o si hay un solo elemento
   const isOutOfBounds = (() => {
-    if (insertIndex === null || rects.current.length === 0) return true
+    if (!isActuallyDragging || insertIndex === null || rects.current.length === 0) return true
     const otherRects = rects.current.filter(r => r.id !== drag?.id)
-    if (otherRects.length === 0) return true // Si no hay más elementos además del arrastrado, no tiene sentido mostrar línea de inserción
+    if (otherRects.length === 0) return true
 
     const firstTop = otherRects[0].top
     const lastBottom = (otherRects.at(-1)?.top ?? 0) + (otherRects.at(-1)?.height ?? 0)
@@ -220,15 +235,15 @@ export function useRowDragReorder<T>({
     templateColumns: string,
     rowId: string,
   ) {
-    const isDragging = drag?.id === rowId
+    const isDraggingThis = drag?.id === rowId && isActuallyDragging
     const rowDisabled = disabled || isRowDisabled?.(item)
     const isGridMode = templateColumns.length > 0
 
     return (
       <div
         style={{
-          height: isDragging ? 0 : undefined,
-          overflow: isDragging ? "hidden" : undefined,
+          height: isDraggingThis ? 0 : undefined,
+          overflow: isDraggingThis ? "hidden" : undefined,
           transition: "height 180ms cubic-bezier(.2,.8,.2,1)",
         }}
       >
@@ -241,8 +256,8 @@ export function useRowDragReorder<T>({
           }
           style={{
             gridTemplateColumns: isGridMode ? templateColumns : undefined,
-            opacity: isDragging ? 0 : 1,
-            transform: isDragging ? "scale(0.98)" : "scale(1)",
+            opacity: isDraggingThis ? 0 : 1,
+            transform: isDraggingThis ? "scale(0.98)" : "scale(1)",
             transition: "opacity 160ms ease, transform 160ms ease, background-color 150ms ease",
           }}
         >
@@ -260,9 +275,8 @@ export function useRowDragReorder<T>({
     )
   }
 
-  const overlay = drag && (
+  const overlay = drag && isActuallyDragging && (
     <>
-      {/* Línea divisoria (Se oculta si llega al límite absoluto superior/inferior o si hay 1 solo elemento) */}
       {!isOutOfBounds && (
         <div
           style={{
@@ -281,7 +295,6 @@ export function useRowDragReorder<T>({
         </div>
       )}
 
-      {/* Globo flotante */}
       <div
         style={{
           position: "fixed",
@@ -305,6 +318,6 @@ export function useRowDragReorder<T>({
   return {
     renderRow,
     overlay,
-    isDragging: !!drag,
+    isDragging: isActuallyDragging,
   }
 }

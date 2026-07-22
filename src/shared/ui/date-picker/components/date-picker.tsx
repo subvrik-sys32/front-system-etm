@@ -1,4 +1,6 @@
-  import * as Popover from '@radix-ui/react-popover';
+"use client"
+
+import * as Popover from '@radix-ui/react-popover';
 import { useCallback, useRef, useState, useMemo } from 'react';
 import { DateCalendar } from './date-calendar';
 import { DateInput } from './date-input';
@@ -70,11 +72,6 @@ export function DatePicker({
     [onChange, syncFromExternalValue, handleOpenChange],
   );
 
-  const handleFocus = useCallback(() => {
-    if (disabled) return;
-    setOpen(true);
-  }, [disabled]);
-
   const handleKeyDownWithEscape = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       if (event.key === 'Escape') {
@@ -103,7 +100,7 @@ export function DatePicker({
             onChange={handleInputChange}
             onBlur={handleInputBlur}
             onKeyDown={handleKeyDownWithEscape}
-            onFocus={handleFocus}
+            onCalendarClick={() => setOpen((prev) => !prev)}
           />
         </div>
       </Popover.Trigger>
@@ -111,9 +108,6 @@ export function DatePicker({
       <Popover.Portal>
         <Popover.Content
           sideOffset={6}
-          // IMPORTANTE: Evitamos robar el foco para que el teclado de Android/iOS se mantenga abierto
-          onOpenAutoFocus={(event) => event.preventDefault()}
-          onCloseAutoFocus={(event) => event.preventDefault()}
           className="z-50 rounded-xl shadow-xl bg-[#101012] animate-in fade-in-0 zoom-in-95"
         >
           <DateCalendar

@@ -25,31 +25,36 @@ export function BottomNavigation() {
           const Icon = item.icon
 
           const content = (
-            <div className="relative flex flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] font-semibold">
+            <div className="relative flex flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2 text-[10px] font-semibold select-none">
+              {/* Background Chip Animado aislado */}
               {isActive && (
                 <motion.div
                   layoutId="bottom-nav-active-chip"
-                  className="absolute inset-0 rounded-full bg-white/12"
+                  className="pointer-events-none absolute inset-0 rounded-full bg-white/12 will-change-transform"
                   transition={{
                     type: "spring",
-                    stiffness: 500,
-                    damping: 35,
+                    stiffness: 400,
+                    damping: 30,
                   }}
                 />
               )}
 
-              <span
+              {/* Contenido (Ícono + Label) forzado en su propia capa de renderizado */}
+              <div
                 className={cn(
-                  "relative z-10 flex flex-col items-center gap-0.5 transition-colors duration-150",
+                  "relative z-10 flex flex-col items-center gap-0.5 transition-colors duration-150 transform-gpu",
                   isActive ? "text-white" : "text-neutral-500"
                 )}
               >
-                <Icon
-                  size={19}
-                  strokeWidth={isActive ? 2.4 : 2}
-                />
-                {item.label}
-              </span>
+                <div className="flex h-5 w-5 items-center justify-center">
+                  <Icon
+                    size={19}
+                    strokeWidth={isActive ? 2.4 : 2}
+                    className="shrink-0 transition-all"
+                  />
+                </div>
+                <span className="leading-none">{item.label}</span>
+              </div>
             </div>
           )
 

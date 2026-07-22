@@ -152,14 +152,16 @@ export function useRowDragReorder<T>({
       }
     }
 
-    requestAnimationFrame(() => {
+    // Mantenemos un breve retraso sincronizado con la transición de CSS (220ms) 
+    // antes de desmontar el estado de arrastre para que la animación de apertura sea fluida.
+    setTimeout(() => {
       requestAnimationFrame(() => {
         setDrag(null)
         setIsActuallyDragging(false)
         setInsertIndex(null)
         startPos.current = null
       })
-    })
+    }, 200)
   }
 
   useEffect(() => {
@@ -208,8 +210,6 @@ export function useRowDragReorder<T>({
     const otherRects = rects.current.filter(r => r.id !== drag.id)
     if (otherRects.length === 0) return 0
 
-    // Si el índice de inserción sobrepasa o es igual al último elemento de los demás,
-    // la línea debe dibujarse exactamente en el borde inferior del último elemento.
     if (insertIndex >= otherRects.length) {
       const last = otherRects.at(-1)
       return last ? last.top + last.height : 0
@@ -218,9 +218,6 @@ export function useRowDragReorder<T>({
     return otherRects[insertIndex]?.top ?? 0
   })()
 
-  // Corregido: Validamos únicamente si el índice actual es exactamente la posición original.
-  // Quitamos el check de "insertIndex === originalIndex + 1" para que al mover hacia abajo 
-  // la línea sí aparezca de forma correcta en los destinos inferiores.
   const isAtOriginalPosition = (() => {
     if (insertIndex === null || !drag) return true
     const originalIndex = itemsRef.current.findIndex(i => getId(i) === drag.id)
@@ -253,9 +250,10 @@ export function useRowDragReorder<T>({
     return (
       <div
         style={{
+          // Si se está arrastrando de verdad, su altura colapsa a 0; al soltar, vuelve a su tamaño original de forma suave gracias a la transición.
           height: isActuallyMoving ? 0 : undefined,
-          overflow: isActuallyMoving ? "hidden" : undefined,
-          transition: "height 180ms cubic-bezier(.2,.8,.2,1)",
+          overflow: "hidden",
+          transition: "height 220ms cubic-bezier(0.25, 1, 0.5, 1)",
         }}
       >
         <div
@@ -269,7 +267,7 @@ export function useRowDragReorder<T>({
             gridTemplateColumns: isGridMode ? templateColumns : undefined,
             opacity: isThisDragging ? 0 : 1,
             transform: isThisDragging ? "scale(0.98)" : "scale(1)",
-            transition: "opacity 160ms ease, transform 160ms ease, background-color 150ms ease",
+            transition: "opacity 200ms ease, transform 200ms ease, background-color 150ms ease",
           }}
         >
           <DndRowProvider
@@ -299,7 +297,6 @@ export function useRowDragReorder<T>({
             zIndex: 9999,
           }}
         >
-          {/* Línea amarilla brillante exclusiva para los destinos válidos (arriba y abajo) */}
           <div className="h-0.5 w-full rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.7)]" />
         </div>
       )}

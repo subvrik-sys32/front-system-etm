@@ -93,7 +93,6 @@ export function ActionDialog({
       <DialogContent
         className={cn(
           "max-w-[calc(100vw-2rem)] sm:max-w-90 rounded-2xl p-5 text-white shadow-2xl",
-
           "bg-neutral-900 backdrop-blur-xl"
         )}
         onPointerDownOutside={preventNestedDialogClose}
@@ -125,7 +124,7 @@ export function ActionDialog({
             onClick={handleConfirm}
             disabled={submitting}
             className={cn(
-              "flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70",
+              "relative isolate transform-gpu flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70",
               danger
                 ? "bg-red-500 text-white hover:bg-red-400"
                 : "bg-white text-black hover:bg-neutral-200",
@@ -134,10 +133,10 @@ export function ActionDialog({
             {submitting ? (
               <>
                 <Loader2 size={16} className="animate-spin shrink-0" />
-                <span>{loadingText}</span>
+                <span className="relative z-10 block transform-gpu">{loadingText}</span>
               </>
             ) : (
-              <span>{confirmLabel}</span>
+              <span className="relative z-10 block transform-gpu">{confirmLabel}</span>
             )}
           </button>
         </div>

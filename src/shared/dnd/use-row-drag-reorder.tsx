@@ -216,6 +216,14 @@ export function useRowDragReorder<T>({
     return otherRects[insertIndex]?.top ?? 0
   })()
 
+  // Verificamos si la posición actual de inserción coincide exactamente con la posición original de donde salió el elemento
+  const isAtOriginalPosition = (() => {
+    if (insertIndex === null || !drag) return true
+    const originalIndex = itemsRef.current.findIndex(i => getId(i) === drag.id)
+    // Evaluamos tanto el índice original como el adyacente inmediato que equivaldría a no cambiarlo de sitio
+    return insertIndex === originalIndex || insertIndex === originalIndex + 1
+  })()
+
   const isOutOfBounds = (() => {
     if (!isActuallyDragging || insertIndex === null || rects.current.length === 0) return true
     const otherRects = rects.current.filter(r => r.id !== drag?.id)
@@ -277,7 +285,7 @@ export function useRowDragReorder<T>({
 
   const overlay = drag && (
     <>
-      {isActuallyDragging && !isOutOfBounds && (
+      {isActuallyDragging && !isOutOfBounds && !isAtOriginalPosition && (
         <div
           style={{
             position: "fixed",
@@ -288,7 +296,8 @@ export function useRowDragReorder<T>({
             zIndex: 9999,
           }}
         >
-          <div className="h-0.5 w-full rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.7)]" />
+          {/* Línea amarilla brillante exclusiva para el destino real de reordenamiento */}
+          <div className="h-0.5 w-full rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.7)]" />
         </div>
       )}
 

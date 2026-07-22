@@ -27,80 +27,52 @@ import type {
   UserErrors,
 } from "../hooks/validate-user"
 
+const CORPORATE_DOMAIN = "@etmperu.com"
+
 type Props={
-
   name:string
-
   username:string
-
   email:string
-
   password:string
-
   confirmPassword:string
-
   isEditing:boolean
-
   isChangingPassword:boolean
-
   errors?:UserErrors
-
   onChangingPasswordChange:(
     value:boolean
   )=>void
-
   onNameChange:(
     value:string
   )=>void
-
   onUsernameChange:(
     value:string
   )=>void
-
   onEmailChange:(
     value:string
   )=>void
-
   onPasswordChange:(
     value:string
   )=>void
-
   onConfirmPasswordChange:(
     value:string
   )=>void
-
 }
 
 export function UserFormSection({
-
   name,
-
   username,
-
   email,
-
   password,
-
   confirmPassword,
-
   isEditing,
-
   isChangingPassword,
-
   errors,
-
   onChangingPasswordChange,
-
   onNameChange,
-
   onUsernameChange,
-
   onEmailChange,
-
   onPasswordChange,
-
   onConfirmPasswordChange,
-
 }:Props){
 
   const [
@@ -109,10 +81,11 @@ export function UserFormSection({
   ]=useState(false)
 
   const changingPassword=
-
     !isEditing ||
-
     isChangingPassword
+
+  // Extraemos de forma limpia solo el prefijo si viene un correo completo desde la BD (en edición)
+  const emailPrefix = email ? email.split("@")[0] : ""
 
   return(
 
@@ -129,11 +102,9 @@ export function UserFormSection({
             value={name}
             placeholder="Ej. Martin Montes"
             onChange={event=>
-
               onNameChange(
                 event.target.value
               )
-
             }
           />
 
@@ -145,11 +116,9 @@ export function UserFormSection({
             value={username}
             placeholder="Ej. MMontes"
             onChange={event=>
-
               onUsernameChange(
                 event.target.value
               )
-
             }
           />
 
@@ -159,18 +128,21 @@ export function UserFormSection({
 
       <FormField label="Correo" error={errors?.email}>
 
-        <Input
-          type="email"
-          value={email}
-          placeholder="Ej. martinmontes@etmperu.com"
-          onChange={event=>
-
-            onEmailChange(
-              event.target.value
-            )
-
-          }
-        />
+        <div className="relative flex items-center">
+          <Input
+            type="text"
+            value={emailPrefix}
+            placeholder="martinmontes"
+            onChange={event=>{
+              const cleanValue = event.target.value.split("@")[0]
+              onEmailChange(`${cleanValue}${CORPORATE_DOMAIN}`)
+            }}
+            className="pr-32"
+          />
+          <span className="pointer-events-none absolute right-4 text-sm font-medium text-neutral-500 select-none">
+            {CORPORATE_DOMAIN}
+          </span>
+        </div>
 
       </FormField>
 
@@ -179,11 +151,9 @@ export function UserFormSection({
         <button
           type="button"
           onClick={()=>
-
             onChangingPasswordChange(
               !isChangingPassword
             )
-
           }
           className="flex w-full items-center justify-between rounded-xl bg-white/2 px-4 py-3 text-left transition-all hover:border-white/20 hover:bg-white/4"
         >
@@ -251,11 +221,9 @@ export function UserFormSection({
                   value={password}
                   placeholder="Mínimo 8 caracteres"
                   onChange={event=>
-
                     onPasswordChange(
                       event.target.value
                     )
-
                   }
                   className="pr-10"
                 />
@@ -263,12 +231,10 @@ export function UserFormSection({
                 <button
                   type="button"
                   onClick={()=>
-
                     setShowPassword(
                       current=>
                         !current
                     )
-
                   }
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors hover:text-neutral-300"
                 >
@@ -306,11 +272,9 @@ export function UserFormSection({
                 value={confirmPassword}
                 placeholder="Repite la contraseña"
                 onChange={event=>
-
                   onConfirmPasswordChange(
                     event.target.value
                   )
-
                 }
               />
 

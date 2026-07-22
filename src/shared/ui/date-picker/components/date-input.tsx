@@ -33,21 +33,18 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
       <input
         ref={ref}
         type="text"
-        // 'decimal' o 'text' evita que ciertos navegadores bloqueen la entrada táctil cuando el input ya tiene foco
-        inputMode="decimal"
+        inputMode="numeric"
         autoComplete="off"
         spellCheck={false}
         value={value}
         placeholder={placeholder}
         disabled={disabled}
-        // IMPORTANTE: Asegúrate de que readOnly no esté clavado en `true` cuando se quiere editar
         readOnly={readOnly}
         onChange={(event) => onChange(event.target.value)}
         onBlur={onBlur}
         onKeyDown={onKeyDown}
         onFocus={onFocus}
         onClick={(event) => {
-          // Si el input está enfocado pero el teclado no subió en mobile, forzamos la selección/foco
           if (onClick) onClick(event);
         }}
         className={[

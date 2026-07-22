@@ -2,442 +2,191 @@
 
 import { toast } from "sonner"
 
-import {
-  PermissionCode,
-} from "@/shared/core/enums/permission-code.enum"
+import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+import { WorkflowAction } from "@/shared/ui/actions/workflow-action"
+import { usePermissions } from "@/features/permissions/hooks/use-permissions"
+import { useWorkflow } from "@/features/workflow/hooks/use-workflow"
+import { useWorkflowRequirements } from "@/features/workflow/hooks/use-workflow-requirements"
+import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
+import { canCompleteStep } from "@/features/workflow/selectors/can-complete"
+import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
+import type { WorkflowStatus } from "@/features/workflow/types/workflow.types"
 
-import {
-  WorkflowAction,
-} from "@/shared/ui/actions/workflow-action"
-
-import {
-  usePermissions,
-} from "@/features/permissions/hooks/use-permissions"
-
-import {
-  useWorkflow,
-} from "@/features/workflow/hooks/use-workflow"
-
-import {
-  useWorkflowRequirements,
-} from "@/features/workflow/hooks/use-workflow-requirements"
-
-import {
-  isWorkflowCompleted,
-} from "@/features/workflow/selectors/is-completed"
-
-import {
-  canCompleteStep,
-} from "@/features/workflow/selectors/can-complete"
-
-import type{
-  ProcessCode,
-  Task,
-}from"@/features/tasks/types/task.types"
-
-import type{
-  WorkflowStatus,
-}from"@/features/workflow/types/workflow.types"
-
-type Props={
-
-  task:Task
-
-  stepId:string
-
-  status:WorkflowStatus
-
-  processCode:ProcessCode
-
+type ProcessRowActionsProps = {
+  task: Task
+  stepId: string
+  status: WorkflowStatus
+  processCode: ProcessCode
 }
 
-const PROCESS_NAMES:Record<ProcessCode,string>={
-
-  CT:"Corte",
-
-  PL:"Plegado",
-
-  SD:"Soldadura",
-
-  PT:"Pintura",
-
-  EN:"Ensamble",
-
-  DS:"Despacho",
-
+const PROCESS_NAMES: Record<ProcessCode, string> = {
+  CT: "Corte",
+  PL: "Plegado",
+  SD: "Soldadura",
+  PT: "Pintura",
+  EN: "Ensamble",
+  DS: "Despacho",
 }
 
 export function ProcessRowActions({
-
   task,
-
   stepId,
-
   status,
-
   processCode,
+}: ProcessRowActionsProps) {
+  const { startStep, pauseStep, resumeStep, completeStep, reviewStep } = useWorkflow()
+  const { has } = usePermissions()
+  const { data: requirements } = useWorkflowRequirements()
 
-}:Props){
+  const currentStep = task.workflowSteps.find((s) => s.id === stepId)
 
-  const{
+  const canUpdate = has(PermissionCode.WORKFLOW_UPDATE)
+  const canReview = has(PermissionCode.WORKFLOW_REVIEW)
 
-    startStep,
+  const canComplete = canCompleteStep(
+    currentStep,
+    requirements?.[processCode]
+  )
 
-    pauseStep,
-
-    resumeStep,
-
-    completeStep,
-
-    reviewStep,
-
-  }=
-    useWorkflow()
-
-  const{
-    has,
-  }=
-    usePermissions()
-
-  const{
-    data:requirements,
-  }=
-    useWorkflowRequirements()
-
-  const currentStep=
-
-    task.workflowSteps.find(
-
-      s=>s.id===stepId,
-
-    )
-
-  // Iniciar / pausar / reanudar / completar: permiso operativo estándar.
-  const canUpdate=
-    has(
-      PermissionCode.WORKFLOW_UPDATE,
-    )
-
-  // Revisar: acción de validación, reservada a roles con más responsabilidad
-  // (Supervisor, Project Manager, Gerencia, Admin). Operario no la tiene.
-  const canReview=
-    has(
-      PermissionCode.WORKFLOW_REVIEW,
-    )
-
-  // Completar: además del permiso, deben estar presentes los campos
-  // obligatorios que define WORKFLOW_BUSINESS en el backend (piecesOutput,
-  // plRtReal, paintKgReal según el processCode). Esto evita que el usuario
-  // llegue al backend y reciba un 400 por campos faltantes.
-  const canComplete=
-
-    canCompleteStep(
-
-      currentStep,
-
-      requirements?.[processCode],
-
-    )
-
-  const safeRequest=async(
-
-    action:()=>Promise<unknown>,
-
-    successMsg:string,
-
-  )=>{
-
-    try{
-
+  const safeRequest = async (
+    action: () => Promise<unknown>,
+    successMsg: string
+  ) => {
+    try {
       await action()
-
-      toast.success(
-        successMsg,
-      )
-
-    }catch{
-
+      toast.success(successMsg)
+    } catch {
       // El toast de error ya lo muestra el interceptor global de Axios
-      // (api-client.ts), con el mensaje real del backend. No duplicar acá.
-
     }
-
   }
 
-  const handleStart=()=>{
-
-    if(!canUpdate){
-      return
-    }
-
-    return safeRequest(
-
-      ()=>startStep(
-        stepId,
-      ),
-
-      "Proceso iniciado.",
-
-    )
-
+  const handleStart = () => {
+    if (!canUpdate) return
+    return safeRequest(() => startStep(stepId), "Proceso iniciado.")
   }
 
-  const handlePause=()=>{
-
-    if(!canUpdate){
-      return
-    }
-
-    return safeRequest(
-
-      ()=>pauseStep(
-        stepId,
-      ),
-
-      "Proceso pausado.",
-
-    )
-
+  const handlePause = () => {
+    if (!canUpdate) return
+    return safeRequest(() => pauseStep(stepId), "Proceso pausado.")
   }
 
-  const handleResume=()=>{
-
-    if(!canUpdate){
-      return
-    }
-
-    return safeRequest(
-
-      ()=>resumeStep(
-        stepId,
-      ),
-
-      "Proceso reanudado.",
-
-    )
-
+  const handleResume = () => {
+    if (!canUpdate) return
+    return safeRequest(() => resumeStep(stepId), "Proceso reanudado.")
   }
 
-  const handleComplete=async()=>{
-
-    if(!canUpdate||!currentStep||currentStep.status!=="PROGRESS"){
-
+  const handleComplete = async () => {
+    if (!canUpdate || !currentStep || currentStep.status !== "PROGRESS") {
       return
-
     }
 
     await safeRequest(
-
-      ()=>completeStep({
-
-        stepId,
-
-        dto:{
-
-          piecesOutput:
-            currentStep.piecesOutput??undefined,
-
-          plRtReal:
-            currentStep.plRtReal??undefined,
-
-          paintKgReal:
-            currentStep.paintKgReal??undefined,
-
-        },
-
-      }),
-
-      "Proceso completado.",
-
+      () =>
+        completeStep({
+          stepId,
+          dto: {
+            piecesOutput: currentStep.piecesOutput ?? undefined,
+            plRtReal: currentStep.plRtReal ?? undefined,
+            paintKgReal: currentStep.paintKgReal ?? undefined,
+          },
+        }),
+      "Proceso completado."
     )
-
   }
 
-  const handleReview=async()=>{
+  const handleReview = async () => {
+    if (!canReview) return
 
-    if(!canReview){
-      return
-    }
-
-    const currentIndex=
-
-      task.workflowSteps.findIndex(
-
-        s=>s.id===stepId,
-
-      )
-
-    const wasCompleted=
-
-      isWorkflowCompleted(
-
-        task.workflowSteps,
-
-      )
+    const currentIndex = task.workflowSteps.findIndex((s) => s.id === stepId)
+    const wasCompleted = isWorkflowCompleted(task.workflowSteps)
 
     await safeRequest(
-
-      ()=>reviewStep(
-        stepId,
-      ),
-
+      () => reviewStep(stepId),
       !wasCompleted
-
-        ?"Tarea finalizada."
-
-        :`${PROCESS_NAMES[processCode]} revisado.`,
-
+        ? "Tarea finalizada."
+        : `${PROCESS_NAMES[processCode]} revisado.`
     )
 
-    const next=
+    const next = task.workflowSteps[currentIndex + 1]
 
-      task.workflowSteps[
-        currentIndex+1
-      ]
-
-    if(next){
-
+    if (next) {
       toast.success(
-
-        `${PROCESS_NAMES[processCode]} revisado. Enviado a ${PROCESS_NAMES[next.processCode]}`,
-
+        `${PROCESS_NAMES[processCode]} revisado. Enviado a ${PROCESS_NAMES[next.processCode]}`
       )
-
     }
-
   }
 
   if (status === "QUEUE") {
-
     return (
       <div className="flex w-full items-center justify-center">
-
         <div className="flex h-8 w-full min-w-28 items-center justify-center rounded-lg border-2 border-dashed border-neutral-600/40 bg-transparent">
-
           <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
-
         </div>
-
       </div>
-      
     )
-
   }
 
-  if(status==="REVIEWED"){
-
-    return(
-
+  if (status === "REVIEWED") {
+    return (
       <div className="flex w-full items-center justify-center">
-
         <div className="flex h-8 w-full items-center justify-center rounded-lg bg-emerald-500/5 px-4 text-xs font-semibold uppercase text-emerald-300">
-
           Revisado
-
         </div>
-
       </div>
-
     )
-
   }
 
-  return(
-
+  return (
     <div className="flex w-full items-center justify-center gap-2">
-
-      {status==="PENDING"&&(
-
+      {status === "PENDING" && (
         <WorkflowAction
-
           label="Iniciar"
-
           variant="start"
-
           compact
-
           disabled={!canUpdate}
-
           onClick={handleStart}
-
         />
-
       )}
 
-      {status==="PROGRESS"&&(
-
+      {status === "PROGRESS" && (
         <>
-
           <WorkflowAction
-
             label="Pausar"
-
             variant="pause"
-
             iconOnly
-
             disabled={!canUpdate}
-
             onClick={handlePause}
-
           />
 
           <WorkflowAction
-
             label="Completar"
-
             variant="complete"
-
             iconOnly
-
-            disabled={!canUpdate||!canComplete}
-
+            disabled={!canUpdate || !canComplete}
             onClick={handleComplete}
-
           />
-
         </>
-
       )}
 
-      {status==="PAUSED"&&(
-
+      {status === "PAUSED" && (
         <WorkflowAction
-
           label="Reanudar"
-
           variant="start"
-
           compact
-
           disabled={!canUpdate}
-
           onClick={handleResume}
-
         />
-
       )}
 
-      {status==="COMPLETED"&&(
-
+      {status === "COMPLETED" && (
         <WorkflowAction
-
           label="Revisar"
-
           variant="review"
-
           compact
-
           disabled={!canReview}
-
           onClick={handleReview}
-
         />
-
       )}
-
     </div>
-
   )
-
 }

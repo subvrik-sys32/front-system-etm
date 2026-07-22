@@ -2,14 +2,9 @@
 
 import { useState } from "react"
 
-import type {
-  LucideIcon,
-} from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
-import {
-  AlertTriangle,
-  Loader2,
-} from "lucide-react"
+import { AlertTriangle, Loader2 } from "lucide-react"
 
 import {
   Dialog,
@@ -19,9 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
-import {
-  cn,
-} from "@/shared/utils/utils"
+import { cn } from "@/shared/utils/utils"
 
 import { preventNestedDialogClose } from "@/shared/ui/dialogs/prevent-nested-dialog-close"
 
@@ -37,6 +30,12 @@ type Props = {
 
   cancelLabel?: string
 
+  /**
+   * Texto que se muestra mientras se procesa la acción.
+   * Si no se proporciona, usará "Eliminando..." si variant es "danger", o "Guardando..." por defecto.
+   */
+  submittingLabel?: string
+
   variant?: "default" | "danger"
 
   onClose: () => void
@@ -51,18 +50,20 @@ export function ActionDialog({
   icon: Icon = AlertTriangle,
   confirmLabel = "Confirmar",
   cancelLabel = "Cancelar",
+  submittingLabel,
   variant = "default",
   onClose,
   onConfirm,
 }: Props) {
-
   const [submitting, setSubmitting] = useState(false)
 
-  const danger =
-    variant === "danger"
+  const danger = variant === "danger"
+
+  // Determinar automáticamente el texto de carga según la variante
+  const loadingText =
+    submittingLabel ?? (danger ? "Eliminando..." : "Guardando...")
 
   async function handleConfirm() {
-
     if (submitting) {
       return
     }
@@ -70,106 +71,70 @@ export function ActionDialog({
     setSubmitting(true)
 
     try {
-
       await onConfirm()
-
     } catch {
-
       // El error ya se comunica vía toast donde corresponda
-      // (ej. safeRequest de useWorkflowStepActions); acá solo
-      // evitamos que la promesa quede sin manejar y que el
-      // diálogo se rompa o quede en un estado inconsistente.
-
     } finally {
-
       setSubmitting(false)
-
     }
-
   }
 
   return (
-
     <Dialog
       open={open}
       onOpenChange={nextOpen => {
-
         if (nextOpen || submitting) {
           return
         }
 
-        requestAnimationFrame(
-          onClose,
-        )
-
+        requestAnimationFrame(onClose)
       }}
     >
-
       <DialogContent
-        className="max-w-90 rounded-2xl bg-[#101012] p-5 text-white shadow-2xl"
+        className="max-w-[calc(100vw-2rem)] sm:max-w-90 rounded-2xl bg-[#101012] p-5 text-white shadow-2xl"
         onPointerDownOutside={preventNestedDialogClose}
         onInteractOutside={preventNestedDialogClose}
       >
-
         <DialogHeader>
-
           <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-
             <Icon size={20} />
-
           </div>
 
-          <DialogTitle className="text-lg font-bold">
-
-            {title}
-
-          </DialogTitle>
+          <DialogTitle className="text-lg font-bold">{title}</DialogTitle>
 
           <DialogDescription className="pt-3 text-sm leading-relaxed text-neutral-400">
-
             {description}
-
           </DialogDescription>
-
         </DialogHeader>
 
-        <div className="mt-6 flex justify-end gap-2">
-
+        {/* En móviles los botones se ordenan verticalmente (flex-col-reverse) para dar suficiente espacio al spinner */}
+        <div className="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-2">
           <button
             onClick={onClose}
             disabled={submitting}
-            className="rounded-xl bg-white/5 px-4 py-2.5 text-sm font-medium text-neutral-300 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full sm:w-auto rounded-xl bg-white/5 px-4 py-2.5 text-center text-sm font-medium text-neutral-300 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
-
             {cancelLabel}
-
           </button>
 
           <button
             onClick={handleConfirm}
             disabled={submitting}
             className={cn(
-              "flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70",
+              "flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70",
               danger
                 ? "bg-red-500 text-white hover:bg-red-400"
                 : "bg-white text-black hover:bg-neutral-200",
             )}
           >
-
             {submitting && (
-              <Loader2 size={14} className="animate-spin" />
+              <Loader2 size={14} className="animate-spin shrink-0" />
             )}
 
-            {submitting ? "Guardando..." : confirmLabel}
-
+            <span>{submitting ? loadingText : confirmLabel}</span>
           </button>
-
         </div>
-
       </DialogContent>
-
     </Dialog>
-
   )
-
 }

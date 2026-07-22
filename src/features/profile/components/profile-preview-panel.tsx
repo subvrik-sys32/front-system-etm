@@ -9,7 +9,6 @@ import {
   Mail,
   Phone,
   Briefcase,
-  Loader2,
   ChevronRight,
   Copy,
   Check,
@@ -32,7 +31,7 @@ export function ProfilePreviewPanel({
 
   const [removingAvatar] = useState(false)
   const [copied,setCopied] = useState<string | null>(null)
-
+  const [isTouched, setIsTouched] = useState(false)
 
   const copyValue = async(
     value:string,
@@ -51,6 +50,20 @@ export function ProfilePreviewPanel({
 
   }
 
+  const handleAvatarClick = (e: React.MouseEvent) => {
+    // Detectamos si es un dispositivo táctil o pantalla chica
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches
+
+    if (isTouchDevice && !isTouched) {
+      // Primer toque: Evita abrir el modal y solo muestra el estado (cámara/blur)
+      e.preventDefault()
+      setIsTouched(true)
+      return
+    }
+
+    // Si ya está tocado o es escritorio, procede a abrir el modal
+    onEdit()
+  }
 
   return (
 
@@ -63,7 +76,7 @@ export function ProfilePreviewPanel({
 
         <button
           type="button"
-          onClick={onEdit}
+          onClick={handleAvatarClick}
           className="group relative h-16 w-16 outline-none"
         >
 
@@ -87,10 +100,10 @@ export function ProfilePreviewPanel({
 
             </div>
 
-
             <div
               className={cn(
-                "absolute inset-0 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-[2px] opacity-100 transition-opacity duration-200 tablet:opacity-0 tablet:group-hover:opacity-100",
+                "absolute inset-0 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-[2px] opacity-0 transition-opacity duration-200 tablet:group-hover:opacity-100",
+                isTouched && "opacity-100"
               )}
             >
 
@@ -105,7 +118,6 @@ export function ProfilePreviewPanel({
 
         </button>
 
-
         <span className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1 text-[11px] font-medium text-green-400">
 
           <span className="h-2 w-2 rounded-full bg-green-400"/>
@@ -114,9 +126,7 @@ export function ProfilePreviewPanel({
 
         </span>
 
-
       </div>
-
 
       <div className="mt-3 space-y-1">
 
@@ -180,13 +190,11 @@ export function ProfilePreviewPanel({
 
       </div>
 
-
     </div>
 
   )
 
 }
-
 
 function ProfileRow({
   icon,

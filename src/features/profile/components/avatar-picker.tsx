@@ -36,6 +36,8 @@ export function AvatarPicker({
   const [preview, setPreview] =
     useState<string | null>(null)
 
+  const [isTouched, setIsTouched] = useState(false)
+
   const displayUrl = preview ?? avatarUrl
 
   const size = compact ? "h-16 w-16" : "h-24 w-24"
@@ -64,13 +66,27 @@ export function AvatarPicker({
 
   }
 
+  function handleClick(e: React.MouseEvent) {
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches
+
+    if (isTouchDevice && !isTouched) {
+      // Primer toque en celular: Muestra el overlay y la cámara
+      e.preventDefault()
+      setIsTouched(true)
+      return
+    }
+
+    // Segundo toque o click de escritorio: Abre el selector de archivos
+    inputRef.current?.click()
+  }
+
   return (
 
     <div className="flex flex-col items-center gap-2">
 
       <button
         type="button"
-        onClick={() => inputRef.current?.click()}
+        onClick={handleClick}
         className={cn(
           "group relative shrink-0 overflow-hidden rounded-full ring-2 ring-white/10 transition",
           size,
@@ -97,8 +113,8 @@ export function AvatarPicker({
 
         <div
           className={cn(
-            "absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60 opacity-100 transition-opacity duration-150",
-            "tablet:opacity-0 tablet:group-hover:opacity-100",
+            "absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60 opacity-0 transition-opacity duration-150 tablet:group-hover:opacity-100",
+            isTouched && "opacity-100",
           )}
         >
 

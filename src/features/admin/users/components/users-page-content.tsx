@@ -195,45 +195,64 @@ export function UsersPageContent() {
     >
       <div className="shrink-0">
         <EntityToolbar
-          left={<EntityToolbarSearch value={search} onChange={setSearch} />}
-          right={
-            <PrimaryAction
-              label="Nuevo usuario"
-              icon={Plus}
-              disabled={!canCreate}
-              onClick={handleStartCreate}
-            />
+          left={
+            <div className="flex flex-wrap items-center gap-2 py-1">
+              <EntityToolbarSearch value={search} onChange={setSearch} />
+            </div>
           }
         />
       </div>
 
-      {isMobile ? (
-        /* Vista Móvil */
-        <div className="space-y-3 p-4">
-          {loading ? (
-            <UserMobileSkeleton />
-          ) : (
-            filteredUsers.map((u, i) => (
-              <UserMobileCard
-                key={u.id}
-                user={u}
-                index={i}
-                expanded={selectedUserId === u.id}
-                onToggle={() =>
-                  setSelectedUserId(curr => (curr === u.id ? null : u.id))
-                }
-              />
-            ))
-          )}
-        </div>
-      ) : (
-        /* Vista Desktop - Panel Maestro Detalle */
-        <div className="grid flex-1 min-h-0 grid-cols-[320px_1fr] gap-6 overflow-hidden pt-2">
+      <div
+        className={cn(
+          "flex min-h-0 flex-1 gap-4",
+          isMobile ? "flex-col" : "overflow-hidden",
+        )}
+      >
+        {isMobile && (
+          /* Vista Móvil */
+          <div className="space-y-3">
+            {loading ? (
+              <UserMobileSkeleton />
+            ) : (
+              filteredUsers.map((u, i) => (
+                <UserMobileCard
+                  key={u.id}
+                  user={u}
+                  index={i}
+                  expanded={selectedUserId === u.id}
+                  onToggle={() =>
+                    setSelectedUserId(curr => (curr === u.id ? null : u.id))
+                  }
+                />
+              ))
+            )}
+          </div>
+        )}
+
+        {!isMobile && (
+        /* Vista Desktop - Panel Maestro Detalle (mismo aspecto visual que Roles) */
+        <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
           {/* Panel Izquierdo: Selector / Lista de Usuarios */}
-          <div className="flex flex-col min-h-0 rounded-2xl bg-white/2 p-3 border border-white/5">
-            <div className="flex-1 space-y-1 overflow-y-auto pr-1">
+          <aside className="flex h-full w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#101012]">
+            <div className="shrink-0 px-4 py-3">
+              <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                Usuarios
+              </p>
+            </div>
+
+            <div
+              className="erp-scrollbar flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-2"
+              style={{ scrollbarGutter: "stable" }}
+            >
               {loading ? (
                 <UserDesktopRowSkeleton />
+              ) : filteredUsers.length === 0 ? (
+                <p className="px-3 py-6 text-center text-sm text-neutral-500">
+                  {search
+                    ? "Ningún usuario coincide con la búsqueda."
+                    : "No hay usuarios todavía."}
+                </p>
               ) : (
                 filteredUsers.map(u => (
                   <UserDesktopRow
@@ -248,25 +267,33 @@ export function UsersPageContent() {
                 ))
               )}
             </div>
-          </div>
+          </aside>
 
           {/* Panel Derecho: Detalle y Formulario de Usuario */}
-          <div className="flex flex-col min-h-0 overflow-y-auto rounded-2xl bg-white/2 p-6 border border-white/5 space-y-6">
-            <div className="flex items-center justify-between border-b border-white/5 pb-4">
-              <div>
-                <h2 className="text-lg font-bold text-white">
-                  {isCreating
-                    ? "Nuevo usuario"
-                    : selectedUser?.name || "Detalle del usuario"}
-                </h2>
-                <p className="text-xs text-neutral-400">
-                  {isCreating
-                    ? "Asigna credenciales y permisos"
-                    : "Gestiona los accesos y perfil del usuario"}
-                </p>
+          <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#101012]">
+            <header className="flex shrink-0 items-start justify-between gap-4 px-5 py-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                    {isCreating ? "Nuevo usuario" : "Usuario"}
+                  </p>
+                  <div className="mt-1 flex items-center gap-2.5">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: formData.color || "#71717a" }}
+                      />
+                      <span className="truncate text-sm font-medium text-white">
+                        {isCreating
+                          ? "Asigná credenciales y permisos"
+                          : selectedUser?.name || "Detalle del usuario"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex shrink-0 items-center gap-3">
                 {!isCreating && canDelete && selectedUserId && (
                   <button
                     type="button"
@@ -289,8 +316,9 @@ export function UsersPageContent() {
                   onClick={handleSave}
                 />
               </div>
-            </div>
+            </header>
 
+            <div className="erp-scrollbar min-h-0 flex-1 overflow-y-auto p-5">
             <UserForm
               name={formData.name}
               username={formData.username}
@@ -330,9 +358,11 @@ export function UsersPageContent() {
               }
               onColorChange={val => setFormData(c => ({ ...c, color: val }))}
             />
-          </div>
+            </div>
+          </section>
         </div>
-      )}
+        )}
+      </div>
 
       {/* Modal de creación para dispositivos móviles */}
       {isMobile && (

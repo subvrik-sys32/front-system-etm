@@ -1,6 +1,5 @@
 "use client"
 
-import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
 import { cn } from "@/shared/utils/utils"
 
 import type { User } from "@/features/users/types/user.types"
@@ -11,6 +10,10 @@ type Props = {
   onSelect: () => void
 }
 
+// Fila de usuario en DESKTOP -- calco exacto de RoleDesktopRow (punto
+// de color + texto, sin badge), para que Usuarios y Roles luzcan
+// idénticos. El punto usa el color del usuario; un anillo claro
+// indica que está online, en vez de un segundo punto aparte.
 export function UserDesktopRow({ user, selected, onSelect }: Props) {
   return (
     <button
@@ -23,24 +26,18 @@ export function UserDesktopRow({ user, selected, onSelect }: Props) {
           : "hover:bg-white/4 text-neutral-300"
       )}
     >
-      <div className="flex min-w-0 flex-1 items-center gap-2.5">
+      <div className="flex min-w-0 items-center gap-2.5">
         <span
           aria-hidden
           className={cn(
-            "size-2 shrink-0 rounded-full",
-            user.online
-              ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,.8)]"
-              : "bg-neutral-600"
+            "size-2.5 shrink-0 rounded-full",
+            user.online && "ring-2 ring-emerald-400/50"
           )}
+          style={{ backgroundColor: user.color || "#71717a" }}
         />
-        <div className="min-w-0 flex-1">
-          <DynamicBadge
-            label={user.name}
-            icon={user.icon}
-            color={user.color}
-            width="field"
-          />
-        </div>
+        <span className="truncate text-sm font-medium">
+          {user.name}
+        </span>
       </div>
 
       {!user.active && (

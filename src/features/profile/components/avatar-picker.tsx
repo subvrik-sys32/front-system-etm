@@ -1,11 +1,10 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useEffect } from "react"
 
-import { Camera, Loader2, Trash2, Upload, Image as ImageIcon } from "lucide-react"
+import { Camera, Loader2, Trash2, Upload } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
-// Importa tu Popover personalizado aquí (ajusta la ruta según tu estructura)
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 type Props = {
@@ -33,6 +32,13 @@ export function AvatarPicker({
   const displayUrl = preview ?? avatarUrl
   const size = compact ? "h-16 w-16" : "h-24 w-24"
 
+  // Efecto para forzar el cierre del popover y limpiar la cámara/blur si el componente se desmonta o se cierra el sidebar
+  useEffect(() => {
+    return () => {
+      setIsOpen(false)
+    }
+  }, [])
+
   function handleFileChange(
     e: React.ChangeEvent<HTMLInputElement>,
   ) {
@@ -42,13 +48,13 @@ export function AvatarPicker({
     const localUrl = URL.createObjectURL(file)
     setPreview(localUrl)
     onSelect(file)
-    setIsOpen(false) // Cierra el popover al seleccionar
+    setIsOpen(false)
   }
 
   function handleRemove() {
     setPreview(null)
     onRemove?.()
-    setIsOpen(false) // Cierra el popover al eliminar
+    setIsOpen(false)
   }
 
   return (
@@ -75,7 +81,6 @@ export function AvatarPicker({
               </div>
             )}
 
-            {/* Overlay que aparece en hover (desktop) o cuando el popover está abierto */}
             <div
               className={cn(
                 "absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-150 tablet:group-hover:opacity-100",
@@ -94,7 +99,6 @@ export function AvatarPicker({
           </button>
         </PopoverTrigger>
 
-        {/* Contenido del Popover con tus opciones */}
         <PopoverContent className="w-48 p-1.5 bg-neutral-900 border-white/10 text-neutral-200 shadow-xl rounded-xl">
           <div className="flex flex-col gap-1">
             
@@ -133,7 +137,6 @@ export function AvatarPicker({
         onChange={handleFileChange}
       />
 
-      {/* Texto de apoyo opcional abajo */}
       <div className="flex items-center gap-3">
         <button
           type="button"

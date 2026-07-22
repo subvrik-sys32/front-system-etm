@@ -138,7 +138,7 @@ export function DatePicker({
             if (!isMobile) e.preventDefault();
           }}
           onCloseAutoFocus={(e) => e.preventDefault()}
-          className="z-50 rounded-xl shadow-xl bg-[#101012] animate-in fade-in-0 zoom-in-95"
+          className="z-50 rounded-xl shadow-xl bg-popover animate-in fade-in-0 zoom-in-95"
         >
           <DateCalendar
             value={value}

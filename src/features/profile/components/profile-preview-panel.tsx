@@ -2,7 +2,7 @@
 
 import type { RefObject } from "react"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 
 import {
   Camera,
@@ -28,14 +28,36 @@ export function ProfilePreviewPanel({
 }: Props) {
 
   const user = useAuthStore(s => s.user)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const [removingAvatar] = useState(false)
-  const [copied,setCopied] = useState<string | null>(null)
+  const [copied, setCopied] = useState<string | null>(null)
   const [isTouched, setIsTouched] = useState(false)
 
+  // Efecto para resetear el estado si se toca fuera o se cierra/cambia de sección
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsTouched(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("touchstart", handleClickOutside)
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("touchstart", handleClickOutside)
+      setIsTouched(false)
+    }
+  }, [])
+
   const copyValue = async(
-    value:string,
-    key:string,
+    value: string,
+    key: string,
   ) => {
 
     if(!value) return
@@ -51,17 +73,15 @@ export function ProfilePreviewPanel({
   }
 
   const handleAvatarClick = (e: React.MouseEvent) => {
-    // Detectamos si es un dispositivo táctil o pantalla chica
     const isTouchDevice = window.matchMedia("(pointer: coarse)").matches
 
     if (isTouchDevice && !isTouched) {
-      // Primer toque: Evita abrir el modal y solo muestra el estado (cámara/blur)
       e.preventDefault()
       setIsTouched(true)
       return
     }
 
-    // Si ya está tocado o es escritorio, procede a abrir el modal
+    setIsTouched(false)
     onEdit()
   }
 
@@ -72,7 +92,7 @@ export function ProfilePreviewPanel({
       className="px-4 py-4"
     >
 
-      <div className="flex flex-col items-center">
+      <div ref={containerRef} className="flex flex-col items-center">
 
         <button
           type="button"

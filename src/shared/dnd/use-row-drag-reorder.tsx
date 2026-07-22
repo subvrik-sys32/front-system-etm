@@ -42,7 +42,6 @@ export function useRowDragReorder<T>({
   disabled,
   isRowDisabled,
 }: Props<T>) {
-
   const [drag, setDrag] = useState<DragState<T> | null>(null)
   const [isActuallyDragging, setIsActuallyDragging] = useState(false)
   const [insertIndex, setInsertIndex] = useState<number | null>(null)
@@ -97,10 +96,7 @@ export function useRowDragReorder<T>({
     return Math.min(index, otherRects.length)
   }
 
-  function beginDrag(
-    e: ReactPointerEvent<HTMLElement>,
-    item: T,
-  ) {
+  function beginDrag(e: ReactPointerEvent<HTMLElement>, item: T) {
     if (disabled) return
 
     const id = getId(item)
@@ -108,7 +104,6 @@ export function useRowDragReorder<T>({
     if (!rowEl) return
 
     const rect = rowEl.getBoundingClientRect()
-
     capture()
 
     try {
@@ -132,7 +127,7 @@ export function useRowDragReorder<T>({
       width: rect.width,
       offsetY,
     })
-    
+
     setLabelTop(e.clientY - offsetY)
   }
 
@@ -143,7 +138,7 @@ export function useRowDragReorder<T>({
     if (current && finalInsertIndex !== null) {
       const list = itemsRef.current
       const from = list.findIndex(i => getId(i) === current.id)
-      
+
       if (from !== finalInsertIndex) {
         const next = [...list]
         const [moved] = next.splice(from, 1)
@@ -152,16 +147,12 @@ export function useRowDragReorder<T>({
       }
     }
 
-    // Mantenemos un breve retraso sincronizado con la transición de CSS (220ms) 
-    // antes de desmontar el estado de arrastre para que la animación de apertura sea fluida.
-    setTimeout(() => {
-      requestAnimationFrame(() => {
-        setDrag(null)
-        setIsActuallyDragging(false)
-        setInsertIndex(null)
-        startPos.current = null
-      })
-    }, 200)
+    // Limpieza directa y síncrona de los estados de interacción del puntero.
+    // La fluidez visual se confía enteramente a la persistencia del DOM y la inversión de transforms si fuera necesario.
+    setDrag(null)
+    setIsActuallyDragging(false)
+    setInsertIndex(null)
+    startPos.current = null
   }
 
   useEffect(() => {
@@ -243,50 +234,42 @@ export function useRowDragReorder<T>({
     rowId: string,
   ) {
     const isThisDragging = drag?.id === rowId
-    const isActuallyMoving = isThisDragging && isActuallyDragging
     const rowDisabled = disabled || isRowDisabled?.(item)
     const isGridMode = templateColumns.length > 0
 
     return (
       <div
+        ref={el => { rowEls.current[rowId] = el }}
+        className={
+          isGridMode
+            ? "grid min-w-0 items-center rounded-xl border-b border-white/5 px-2 transition-colors hover:bg-white/2"
+            : "min-w-0"
+        }
         style={{
-          // Si se está arrastrando de verdad, su altura colapsa a 0; al soltar, vuelve a su tamaño original de forma suave gracias a la transición.
-          height: isActuallyMoving ? 0 : undefined,
-          overflow: "hidden",
-          transition: "height 220ms cubic-bezier(0.25, 1, 0.5, 1)",
+          gridTemplateColumns: isGridMode ? templateColumns : undefined,
+          // Ocultamos el elemento original limpiamente mediante opacidad y escala sin alterar drásticamente 
+          // el flujo estático del DOM que causaba el salto de los aledaños al soltar.
+          opacity: isThisDragging && isActuallyDragging ? 0 : 1,
+          transform: isThisDragging && isActuallyDragging ? "scale(0.98)" : "scale(1)",
+          pointerEvents: isThisDragging && isActuallyDragging ? "none" : "auto",
         }}
       >
-        <div
-          ref={el => { rowEls.current[rowId] = el }}
-          className={
-            isGridMode
-              ? "grid min-w-0 items-center rounded-xl border-b border-white/5 px-2 transition-colors hover:bg-white/2"
-              : "min-w-0"
+        <DndRowProvider
+          value={
+            rowDisabled
+              ? null
+              : { onPointerDown: e => beginDrag(e, item) }
           }
-          style={{
-            gridTemplateColumns: isGridMode ? templateColumns : undefined,
-            opacity: isThisDragging ? 0 : 1,
-            transform: isThisDragging ? "scale(0.98)" : "scale(1)",
-            transition: "opacity 200ms ease, transform 200ms ease, background-color 150ms ease",
-          }}
         >
-          <DndRowProvider
-            value={
-              rowDisabled
-                ? null
-                : { onPointerDown: e => beginDrag(e, item) }
-            }
-          >
-            {content}
-          </DndRowProvider>
-        </div>
+          {content}
+        </DndRowProvider>
       </div>
     )
   }
 
-  const overlay = drag && (
+  const overlay = drag && isActuallyDragging && (
     <>
-      {isActuallyDragging && !isOutOfBounds && !isAtOriginalPosition && (
+      {!isOutOfBounds && !isAtOriginalPosition && (
         <div
           style={{
             position: "fixed",

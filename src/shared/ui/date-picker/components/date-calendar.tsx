@@ -1,24 +1,70 @@
+import { useRef } from 'react';
 import { CalendarGrid } from './calendar-grid';
 import { CalendarHeader } from './calendar-header';
 import { useCalendar } from '../hooks/use-calendar';
+import { getToday } from '../utils/dates';
 
-/**
- * Composición del calendario: combina header y grid usando `useCalendar`.
- * Única responsabilidad: orquestar navegación + selección de día.
- */
 export interface DateCalendarProps {
   value?: Date | null;
   minDate?: Date;
   maxDate?: Date;
   onSelect: (date: Date) => void;
+  displayDate?: Date | null;
 }
 
-export function DateCalendar({ value, minDate, maxDate, onSelect }: DateCalendarProps): React.JSX.Element {
-  const { weeks, monthYearLabel, goToPreviousMonth, goToNextMonth, goToPreviousYear, goToNextYear } =
-    useCalendar({ value, minDate, maxDate });
+export function DateCalendar({
+  value,
+  minDate,
+  maxDate,
+  onSelect,
+  displayDate,
+}: DateCalendarProps): React.JSX.Element {
+  const {
+    weeks,
+    monthYearLabel,
+    goToPreviousMonth,
+    goToNextMonth,
+    goToPreviousYear,
+    goToNextYear,
+    setViewDate,
+  } = useCalendar({ value: displayDate || value, minDate, maxDate });
+
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const diffX = touchStartX.current - touchEndX;
+
+    if (Math.abs(diffX) > 40) {
+      if (diffX > 0) {
+        goToNextMonth();
+      } else {
+        goToPreviousMonth();
+      }
+    }
+
+    touchStartX.current = null;
+  };
+
+  // Función para ir y seleccionar la fecha de hoy
+  const handleTodayClick = () => {
+    const today = getToday();
+    setViewDate(today);
+    onSelect(today);
+  };
 
   return (
-    <div className="w-60 p-3">
+    <div
+      className="w-60 p-3 select-none touch-pan-y flex flex-col gap-2"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <CalendarHeader
         label={monthYearLabel}
         onPreviousMonth={goToPreviousMonth}
@@ -26,7 +72,19 @@ export function DateCalendar({ value, minDate, maxDate, onSelect }: DateCalendar
         onPreviousYear={goToPreviousYear}
         onNextYear={goToNextYear}
       />
+
       <CalendarGrid weeks={weeks} onSelectDay={onSelect} />
+
+      {/* Botón Hoy */}
+      <div className="pt-2 border-t border-white/10 flex justify-center">
+        <button
+          type="button"
+          onClick={handleTodayClick}
+          className="px-3 py-1 text-xs font-medium text-blue-400 hover:text-blue-300 hover:bg-white/5 rounded-md transition-colors"
+        >
+          Hoy
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,17 +1,36 @@
+// components/date-picker.tsx
 import * as Popover from '@radix-ui/react-popover';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useMemo } from 'react';
 import { DateCalendar } from './date-calendar';
 import { DateInput } from './date-input';
 import { useDateFormat } from '../hooks/use-date-format';
 import type { DatePickerProps } from '../types/types';
 
 /**
- * DatePicker público del Design System.
- * Única responsabilidad: orquestar Popover (Radix) + DateInput + DateCalendar.
- *
- * Uso:
- * <DatePicker value={value} onChange={setValue} />
+ * Función auxiliar para interpretar fechas parciales mientras el usuario escribe.
+ * Retorna un objeto Date si detecta mes y año válidos.
  */
+function parsePartialDate(input: string): Date | null {
+  const clean = input.replace(/[^\d/]/g, '');
+  const parts = clean.split('/');
+
+  if (parts.length >= 2) {
+    const day = parseInt(parts[0], 10) || 1;
+    const month = parseInt(parts[1], 10) - 1; // 0-indexed
+    let year = parts[2] ? parseInt(parts[2], 10) : new Date().getFullYear();
+
+    // Si está escribiendo el año en 4 dígitos (ej. 2028)
+    if (parts[2] && parts[2].length === 4) {
+      year = parseInt(parts[2], 10);
+    }
+
+    if (month >= 0 && month <= 11 && year > 1000 && year < 3000) {
+      return new Date(year, month, Math.min(day, 28));
+    }
+  }
+  return null;
+}
+
 export function DatePicker({
   value = null,
   onChange,
@@ -22,21 +41,8 @@ export function DatePicker({
   className,
 }: DatePickerProps): React.JSX.Element {
   const [open, setOpen] = useState(false);
-
-  // false por default: el primer click/foco solo abre el calendario,
-  // sin habilitar tipeo (readOnly=true en el input de abajo — en
-  // mobile eso además evita que salte el teclado virtual solo por
-  // tocar el campo). Recién un SEGUNDO click, con el calendario ya
-  // abierto, marca esto true y habilita escribir a mano.
   const [editable, setEditable] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // true justo después de que "onFocus" abre el calendario, y se
-  // resetea en el siguiente frame. Sirve para IGNORAR el click que
-  // viene pegado al mismo tap que disparó ese foco (focus y click
-  // se disparan casi juntos para un mismo tap) — sin esto, no hay
-  // forma confiable de distinguir "el click que abrió esto recién"
-  // de "un click aparte, deliberado, con el calendario ya abierto".
   const justFocusedRef = useRef(false);
 
   const handleCommit = useCallback(
@@ -46,22 +52,26 @@ export function DatePicker({
     [onChange],
   );
 
-  const { inputValue, handleInputChange, handleInputBlur, handleInputKeyDown, syncFromExternalValue } =
-    useDateFormat({ value, minDate, maxDate, onCommit: handleCommit });
+  const {
+    inputValue,
+    handleInputChange,
+    handleInputBlur,
+    handleInputKeyDown,
+    syncFromExternalValue,
+  } = useDateFormat({ value, minDate, maxDate, onCommit: handleCommit });
 
-  // Se usa tanto para el propio setOpen del Popover.Root como para
-  // cerrar el calendario manualmente (día seleccionado, Escape) —
-  // en cualquier caso donde se cierra, reseteamos "editable" para
-  // que la PRÓXIMA vez vuelva a arrancar en modo "solo calendario".
-  const handleOpenChange = useCallback(
-    (next: boolean) => {
-      setOpen(next);
-      if (!next) {
-        setEditable(false);
-      }
-    },
-    [],
-  );
+  // Calculamos en tiempo real qué mes debería mostrar el calendario basándonos en lo que hay tipeado
+  const livePreviewDate = useMemo(() => {
+    if (!inputValue) return null;
+    return parsePartialDate(inputValue);
+  }, [inputValue]);
+
+  const handleOpenChange = useCallback((next: boolean) => {
+    setOpen(next);
+    if (!next) {
+      setEditable(false);
+    }
+  }, []);
 
   const handleSelectDay = useCallback(
     (date: Date) => {
@@ -74,36 +84,23 @@ export function DatePicker({
   );
 
   const handleInputFocus = useCallback(() => {
-
     if (disabled) return;
-
     justFocusedRef.current = true;
-
     setOpen(true);
 
-    // Deja pasar el resto de este mismo tap (el "click" que sigue
-    // al "focus" en el mismo gesto) antes de volver a contar un
-    // click como el segundo, deliberado.
     requestAnimationFrame(() => {
       justFocusedRef.current = false;
     });
-
   }, [disabled]);
 
   const handleInputClick = useCallback(() => {
-
     if (disabled) return;
 
-    if (justFocusedRef.current) {
-      // Este click es parte del MISMO tap que acaba de abrir el
-      // calendario — no cuenta como el segundo click deliberado.
-      return;
-    }
+    if (justFocusedRef.current) return;
 
     if (open) {
       setEditable(true);
     }
-
   }, [open, disabled]);
 
   const handleInputKeyDownWithEscape = useCallback(
@@ -125,10 +122,7 @@ export function DatePicker({
   return (
     <Popover.Root open={open} onOpenChange={disabled ? undefined : handleOpenChange}>
       <Popover.Trigger asChild>
-        <div
-          className={className}
-          onClick={event => event.preventDefault()}
-        >
+        <div className={className} onClick={(e) => e.preventDefault()}>
           <DateInput
             ref={inputRef}
             value={inputValue}
@@ -148,14 +142,12 @@ export function DatePicker({
         <Popover.Content
           sideOffset={6}
           onOpenAutoFocus={(event) => event.preventDefault()}
-          className={[
-            'z-50 rounded-xl shadow-xl',
-            'bg-[#101012]',
-            'animate-in fade-in-0 zoom-in-95',
-          ].join(' ')}
+          className="z-50 rounded-xl shadow-xl bg-[#101012] animate-in fade-in-0 zoom-in-95"
         >
           <DateCalendar
             value={value}
+            // Priorizamos la vista dinámica del tipeo si existe
+            displayDate={livePreviewDate} 
             minDate={minDate}
             maxDate={maxDate}
             onSelect={handleSelectDay}

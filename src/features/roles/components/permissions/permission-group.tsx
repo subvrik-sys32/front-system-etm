@@ -45,7 +45,7 @@ export function PermissionGroup({
           className={cn(
             "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide transition-colors",
             allChecked
-              ? "bg-cyan-500/15 text-cyan-400 hover:bg-cyan-500/20"
+              ? "bg-green-500/15 text-green-400 hover:bg-green-500/20"
               : "bg-white/5 text-neutral-500 hover:bg-white/8 hover:text-neutral-300",
           )}
         >

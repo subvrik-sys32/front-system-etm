@@ -35,10 +35,10 @@ export function PermissionToggle({ label, checked, onToggle }: Props) {
     >
       <span
         className={cn(
-          "flex size-4.5 shrink-0 items-center justify-center rounded-md border transition-colors",
+          "flex size-4.5 shrink-0 items-center justify-center rounded-md transition-colors",
           checked
-            ? "border-cyan-500 bg-cyan-500"
-            : "border-white/15 bg-white/4",
+            ? "bg-green-500"
+            : "bg-white/4",
         )}
       >
         {checked && <Check size={11} strokeWidth={3} className="text-black" />}

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { UseCalendarOptions, UseCalendarReturn } from '../types/types';
 import { buildCalendarMatrix } from '../utils/calendar';
 import { addMonths, addYears, getMonthLabel, getToday } from '../utils/dates';
@@ -9,6 +9,13 @@ import { addMonths, addYears, getMonthLabel, getToday } from '../utils/dates';
  */
 export function useCalendar({ value, minDate, maxDate }: UseCalendarOptions): UseCalendarReturn {
   const [viewDate, setViewDateState] = useState<Date>(() => value ?? getToday());
+
+  // Sincroniza la vista cuando cambia el 'value' externo (ej. al seleccionar una fecha o tipiando)
+  useEffect(() => {
+    if (value) {
+      setViewDateState(value);
+    }
+  }, [value]);
 
   const weeks = useMemo(
     () => buildCalendarMatrix(viewDate, value ?? null, minDate, maxDate),

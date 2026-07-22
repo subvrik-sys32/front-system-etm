@@ -30,6 +30,8 @@ export interface CalendarDay {
 
 export interface UseCalendarOptions {
   value?: Date | null;
+  /** Fecha opcional para forzar la vista del mes durante el tipeo */
+  displayDate?: Date | null;
   minDate?: Date;
   maxDate?: Date;
 }
@@ -45,6 +47,7 @@ export interface UseCalendarReturn {
   goToNextMonth: () => void;
   goToPreviousYear: () => void;
   goToNextYear: () => void;
+  /** Cambia la fecha visible activa en el calendario */
   setViewDate: (date: Date) => void;
 }
 

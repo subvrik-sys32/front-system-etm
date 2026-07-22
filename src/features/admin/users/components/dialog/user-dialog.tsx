@@ -79,6 +79,39 @@ const STEP_ERROR_KEYS: Record<
   2: [],
 }
 
+function generateUserDefaultsFromEmail(emailInput: string) {
+  const emailPrefix = emailInput.split("@")[0].trim()
+
+  if (!emailPrefix) {
+    return { name: "", username: "", password: "", confirmPassword: "" }
+  }
+
+  const parts = emailPrefix
+    .toLowerCase()
+    .split(/[\._\-]+/)
+    .filter(Boolean)
+
+  if (parts.length === 0) {
+    return { name: "", username: "", password: "", confirmPassword: "" }
+  }
+
+  const capitalizedParts = parts.map(
+    p => p.charAt(0).toUpperCase() + p.slice(1)
+  )
+
+  const firstName = capitalizedParts[0]
+  const name = capitalizedParts.join(" ")
+  const username = capitalizedParts.join("")
+  const password = `${firstName}123*`
+
+  return {
+    name,
+    username,
+    password,
+    confirmPassword: password,
+  }
+}
+
 function createInitialForm(
   user?: User,
 ): UserFormValue {
@@ -392,9 +425,21 @@ export function UserDialog({
         onUsernameChange={username =>
           update({ username })
         }
-        onEmailChange={email =>
-          update({ email })
-        }
+        onEmailChange={email => {
+          if (!isEditing) {
+            const defaults = generateUserDefaultsFromEmail(email)
+
+            update({
+              email,
+              name: defaults.name,
+              username: defaults.username,
+              password: defaults.password,
+              confirmPassword: defaults.confirmPassword,
+            })
+          } else {
+            update({ email })
+          }
+        }}
         onPasswordChange={password =>
           update({ password })
         }

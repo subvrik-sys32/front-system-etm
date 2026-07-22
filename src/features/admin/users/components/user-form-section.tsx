@@ -29,33 +29,33 @@ import type {
 
 const CORPORATE_DOMAIN = "@etmperu.com"
 
-type Props={
-  name:string
-  username:string
-  email:string
-  password:string
-  confirmPassword:string
-  isEditing:boolean
-  isChangingPassword:boolean
-  errors?:UserErrors
-  onChangingPasswordChange:(
-    value:boolean
-  )=>void
-  onNameChange:(
-    value:string
-  )=>void
-  onUsernameChange:(
-    value:string
-  )=>void
-  onEmailChange:(
-    value:string
-  )=>void
-  onPasswordChange:(
-    value:string
-  )=>void
-  onConfirmPasswordChange:(
-    value:string
-  )=>void
+type Props = {
+  name: string
+  username: string
+  email: string
+  password: string
+  confirmPassword: string
+  isEditing: boolean
+  isChangingPassword: boolean
+  errors?: UserErrors
+  onChangingPasswordChange: (
+    value: boolean
+  ) => void
+  onNameChange: (
+    value: string
+  ) => void
+  onUsernameChange: (
+    value: string
+  ) => void
+  onEmailChange: (
+    value: string
+  ) => void
+  onPasswordChange: (
+    value: string
+  ) => void
+  onConfirmPasswordChange: (
+    value: string
+  ) => void
 }
 
 export function UserFormSection({
@@ -73,21 +73,20 @@ export function UserFormSection({
   onEmailChange,
   onPasswordChange,
   onConfirmPasswordChange,
-}:Props){
+}: Props) {
 
   const [
     showPassword,
     setShowPassword,
-  ]=useState(false)
+  ] = useState(false)
 
-  const changingPassword=
+  const changingPassword =
     !isEditing ||
     isChangingPassword
 
-  // Extraemos de forma limpia solo el prefijo si viene un correo completo desde la BD (en edición)
   const emailPrefix = email ? email.split("@")[0] : ""
 
-  return(
+  return (
 
     <FormSection
       title="Información principal"
@@ -100,8 +99,8 @@ export function UserFormSection({
 
           <Input
             value={name}
-            placeholder="Ej. Martin Montes"
-            onChange={event=>
+            placeholder="Ej. Martin"
+            onChange={event =>
               onNameChange(
                 event.target.value
               )
@@ -114,8 +113,8 @@ export function UserFormSection({
 
           <Input
             value={username}
-            placeholder="Ej. MMontes"
-            onChange={event=>
+            placeholder="Ej. MartinMontes"
+            onChange={event =>
               onUsernameChange(
                 event.target.value
               )
@@ -132,8 +131,8 @@ export function UserFormSection({
           <Input
             type="text"
             value={emailPrefix}
-            placeholder="martinmontes"
-            onChange={event=>{
+            placeholder="martin.montes"
+            onChange={event => {
               const cleanValue = event.target.value.split("@")[0]
               onEmailChange(`${cleanValue}${CORPORATE_DOMAIN}`)
             }}
@@ -150,7 +149,7 @@ export function UserFormSection({
 
         <button
           type="button"
-          onClick={()=>
+          onClick={() =>
             onChangingPasswordChange(
               !isChangingPassword
             )
@@ -220,7 +219,7 @@ export function UserFormSection({
                   autoComplete="new-password"
                   value={password}
                   placeholder="Mínimo 8 caracteres"
-                  onChange={event=>
+                  onChange={event =>
                     onPasswordChange(
                       event.target.value
                     )
@@ -230,9 +229,9 @@ export function UserFormSection({
 
                 <button
                   type="button"
-                  onClick={()=>
+                  onClick={() =>
                     setShowPassword(
-                      current=>
+                      current =>
                         !current
                     )
                   }
@@ -271,7 +270,7 @@ export function UserFormSection({
                 autoComplete="new-password"
                 value={confirmPassword}
                 placeholder="Repite la contraseña"
-                onChange={event=>
+                onChange={event =>
                   onConfirmPasswordChange(
                     event.target.value
                   )

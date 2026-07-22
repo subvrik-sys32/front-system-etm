@@ -223,11 +223,13 @@ export function ProjectExpandedRow({
 
         <div className="mb-2 flex items-center justify-between select-none">
 
-          <span className="text-xs font-semibold tracking-widest text-neutral-500">
-            {activeView === "tasks"
-              ? "TAREAS"
-              : "MENSAJES"}
-          </span>
+          <div className="mb-2 hidden items-center justify-between select-none tablet:flex">
+            <span className="text-xs font-semibold tracking-widest text-neutral-500">
+              {activeView === "tasks"
+                ? "TAREAS OPERATIVAS"
+                : "MENSAJES"}
+            </span>
+          </div>
 
           <EntityExpandedToggle
             value={activeView}

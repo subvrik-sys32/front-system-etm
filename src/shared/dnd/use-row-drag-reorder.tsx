@@ -22,10 +22,7 @@ type DragState<T> = {
   id: string
   left: number
   width: number
-  // NUEVO: necesitamos la altura de la fila arrastrada para poder
-  // correr hacia abajo las filas que quedan por ENCIMA del punto de
-  // inserción cuando se arrastra hacia arriba (ver getRowShift).
-  height: number
+  offsetY: number
 }
 
 type Props<T> = {
@@ -48,6 +45,7 @@ export function useRowDragReorder<T>({
 
   const [drag, setDrag] = useState<DragState<T> | null>(null)
   const [insertIndex, setInsertIndex] = useState<number | null>(null)
+  const [labelTop, setLabelTop] = useState(0)
 
   const itemsRef = useRef(items)
   itemsRef.current = items
@@ -84,14 +82,17 @@ export function useRowDragReorder<T>({
 
   function getInsertIndex(y: number, dragId: string) {
     let index = 0
+    const otherRects = rects.current.filter(r => r.id !== dragId)
 
-    for (const rect of rects.current) {
-      if (rect.id === dragId) continue
-      if (y < rect.center) return index
+    for (let i = 0; i < otherRects.length; i++) {
+      const rect = otherRects[i]
+      if (y < rect.center) {
+        return index
+      }
       index++
     }
 
-    return index
+    return Math.min(index, otherRects.length)
   }
 
   function beginDrag(
@@ -114,15 +115,20 @@ export function useRowDragReorder<T>({
       // noop
     }
 
-    setInsertIndex(itemsRef.current.findIndex(i => getId(i) === id))
+    const initialIndex = itemsRef.current.findIndex(i => getId(i) === id)
+    setInsertIndex(initialIndex)
+
+    const offsetY = e.clientY - rect.top
 
     setDrag({
       item,
       id,
       left: rect.left,
       width: rect.width,
-      height: rect.height,
+      offsetY,
     })
+    
+    setLabelTop(e.clientY - offsetY)
   }
 
   function finishDrag() {
@@ -132,14 +138,14 @@ export function useRowDragReorder<T>({
     if (current && finalInsertIndex !== null) {
       const list = itemsRef.current
       const from = list.findIndex(i => getId(i) === current.id)
-      const next = [...list]
-      const [moved] = next.splice(from, 1)
-      next.splice(finalInsertIndex, 0, moved)
-      onReorder(next)
+      
+      if (from !== finalInsertIndex) {
+        const next = [...list]
+        const [moved] = next.splice(from, 1)
+        next.splice(finalInsertIndex, 0, moved)
+        onReorder(next)
+      }
     }
-
-    // Mantenemos insertIndex fijo mientras el overlay sigue visible,
-    // para que lineTop no salte a 0 durante el fade-out.
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -153,22 +159,16 @@ export function useRowDragReorder<T>({
     if (!drag) return
 
     const dragId = drag.id
+    const offsetY = drag.offsetY
 
     function onMove(e: PointerEvent) {
       if (raf.current) cancelAnimationFrame(raf.current)
 
       raf.current = requestAnimationFrame(() => {
-        // Antes esto usaba rects.current tal como quedó capturado
-        // en beginDrag — una sola vez, al arrancar el drag. La fila
-        // arrastrada colapsa su altura a 0 en una transición de
-        // 180ms, así que las filas de abajo se corren hacia arriba
-        // apenas eso termina — pero el cálculo seguía usando las
-        // posiciones de ANTES del colapso, cada vez más
-        // desactualizadas cuanto más duraba el drag. Re-medir acá
-        // (ya limitado a 1 vez por frame) hace que el cálculo
-        // siempre use las posiciones reales actuales.
         capture()
-        setInsertIndex(getInsertIndex(e.clientY, dragId))
+        const newIndex = getInsertIndex(e.clientY, dragId)
+        setInsertIndex(newIndex)
+        setLabelTop(e.clientY - offsetY)
       })
     }
 
@@ -190,14 +190,6 @@ export function useRowDragReorder<T>({
   const lineTop = (() => {
     if (insertIndex === null || !drag) return 0
 
-    // Mismo criterio que getInsertIndex: la fila arrastrada se
-    // saltea, así que hay que indexar sobre la lista SIN ella, no
-    // sobre rects.current completo (que todavía la incluye). Antes
-    // esto indexaba el array completo — coincidía por casualidad
-    // mientras el destino estaba ANTES de la fila arrastrada
-    // (arrastrar hacia arriba), pero quedaba corrido en 1 apenas el
-    // destino pasaba de ahí (arrastrar hacia abajo), señalando
-    // siempre una fila antes de la que correspondía.
     const otherRects = rects.current.filter(r => r.id !== drag.id)
 
     if (insertIndex >= otherRects.length) {
@@ -208,46 +200,20 @@ export function useRowDragReorder<T>({
     return otherRects[insertIndex]?.top ?? 0
   })()
 
-  // NUEVO: cuánto tiene que correrse verticalmente una fila que NO
-  // es la arrastrada, para que se "abra" el hueco de inserción.
-  //
-  // Cuando arrastrás hacia ABAJO, el hueco se abre solo: la fila
-  // arrastrada colapsa su altura in-place y todo lo que está DEBAJO
-  // de su posición original se corre hacia arriba por el flujo
-  // normal del documento. Eso ya funcionaba.
-  //
-  // Cuando arrastrás hacia ARRIBA, el destino queda ANTES de la
-  // posición original de la fila arrastrada. Esas filas de arriba
-  // nunca se mueven por sí solas (colapsar un elemento no afecta a
-  // lo que está antes de él en el DOM), así que sin este shift no
-  // hay ningún feedback visual de que se está por insertar ahí —
-  // la línea azul aparece en el lugar correcto, pero ninguna fila
-  // se corre para abrirle lugar. Por eso "solo funciona al bajar".
-  //
-  // Regla: una fila necesita correrse hacia abajo (altura de la fila
-  // arrastrada) solo si estaba ANTES que la fila arrastrada en el
-  // orden original, Y en el resultado final queda en o después del
-  // punto de inserción (es decir, la fila arrastrada terminará
-  // ubicada antes que ella).
-  function getRowShift(rowId: string): number {
-    if (!drag || insertIndex === null) return 0
-    if (rowId === drag.id) return 0
+  // Verificamos si el cursor está fuera de los límites reales de la lista para ocultar la línea si ya no se puede mover más
+  const isOutOfBounds = (() => {
+    if (insertIndex === null || rects.current.length === 0) return false
+    const otherRects = rects.current.filter(r => r.id !== drag?.id)
+    if (otherRects.length === 0) return false
 
-    const list = itemsRef.current
-    const rowIdx = list.findIndex(i => getId(i) === rowId)
-    const dragIdx = list.findIndex(i => getId(i) === drag.id)
-    if (rowIdx === -1 || dragIdx === -1) return 0
+    const firstTop = otherRects[0].top
+    const lastBottom = (otherRects.at(-1)?.top ?? 0) + (otherRects.at(-1)?.height ?? 0)
+    const currentY = labelTop + (drag?.offsetY ?? 0)
 
-    // Posición de esta fila en el espacio "reducido" (sin la fila
-    // arrastrada) — mismo criterio que getInsertIndex/lineTop.
-    const reducedIdx = rowIdx < dragIdx ? rowIdx : rowIdx - 1
-
-    if (rowIdx < dragIdx && reducedIdx >= insertIndex) {
-      return drag.height
-    }
-
-    return 0
-  }
+    // Si intenta subir más arriba del primer elemento o bajar más abajo del último elemento de forma extrema
+    // También validamos si el índice de inserción es 0 y el raton está por encima del primer elemento, etc.
+    return currentY < firstTop - 20 || currentY > lastBottom + 20
+  })()
 
   function renderRow(
     item: T,
@@ -257,14 +223,6 @@ export function useRowDragReorder<T>({
   ) {
     const isDragging = drag?.id === rowId
     const rowDisabled = disabled || isRowDisabled?.(item)
-    const shift = getRowShift(rowId)
-
-    // En modo card (EntityTable ya encogido), "templateColumns"
-    // viene vacío — ahí no hay que forzar display:grid, porque el
-    // contenido (EntityTableCardRow) maneja su propio layout. Antes
-    // esto SIEMPRE forzaba gridTemplateColumns, y al usarse en modo
-    // card rompía la card metiéndola en columnas que no tenían nada
-    // que ver — por eso el drag-and-drop no se podía usar ahí.
     const isGridMode = templateColumns.length > 0
 
     return (
@@ -272,9 +230,7 @@ export function useRowDragReorder<T>({
         style={{
           height: isDragging ? 0 : undefined,
           overflow: isDragging ? "hidden" : undefined,
-          transform: shift ? `translateY(${shift}px)` : undefined,
-          transition:
-            "height 180ms cubic-bezier(.2,.8,.2,1), transform 180ms cubic-bezier(.2,.8,.2,1)",
+          transition: "height 180ms cubic-bezier(.2,.8,.2,1)",
         }}
       >
         <div
@@ -306,28 +262,45 @@ export function useRowDragReorder<T>({
   }
 
   const overlay = drag && (
-    <div
-      style={{
-        position: "fixed",
-        left: drag.left,
-        top: lineTop,
-        width: drag.width,
-        pointerEvents: "none",
-        zIndex: 9999,
-      }}
-    >
-      <div className="relative h-0.5">
-        <div className="absolute inset-0 rounded-full bg-linear-to-r from-transparent via-sky-500 to-transparent" />
-        <div className="absolute inset-0 rounded-full bg-linear-to-r from-transparent via-sky-500 to-transparent opacity-70 blur-[3px]" />
-      </div>
+    <>
+      {/* Línea divisoria (Se oculta si llega al límite absoluto superior/inferior para evitar falsos positivos) */}
+      {!isOutOfBounds && (
+        <div
+          style={{
+            position: "fixed",
+            left: drag.left,
+            top: lineTop,
+            width: drag.width,
+            pointerEvents: "none",
+            zIndex: 9999,
+          }}
+        >
+          <div className="relative h-0.5">
+            <div className="absolute inset-0 rounded-full bg-linear-to-r from-transparent via-sky-500 to-transparent" />
+            <div className="absolute inset-0 rounded-full bg-linear-to-r from-transparent via-sky-500 to-transparent opacity-70 blur-[3px]" />
+          </div>
+        </div>
+      )}
 
-      <div className="mt-2 flex w-64 items-center gap-3 rounded-xl bg-neutral-900/95 px-3 py-2 backdrop-blur-xl shadow-[0_28px_70px_rgba(0,0,0,.45)]">
-        <span className="text-white/35 shrink-0">≡</span>
-        <div className="min-w-0 overflow-hidden">
-          {renderDragLabel(drag.item)}
+      {/* Globo flotante */}
+      <div
+        style={{
+          position: "fixed",
+          left: drag.left,
+          width: drag.width,
+          top: labelTop,
+          pointerEvents: "none",
+          zIndex: 10000,
+        }}
+      >
+        <div className="flex w-64 items-center gap-3 rounded-xl bg-neutral-900/95 px-3 py-2 backdrop-blur-xl shadow-[0_28px_70px_rgba(0,0,0,.45)]">
+          <span className="text-white/35 shrink-0">≡</span>
+          <div className="min-w-0 overflow-hidden">
+            {renderDragLabel(drag.item)}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 
   return {

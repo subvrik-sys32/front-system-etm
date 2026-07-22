@@ -21,7 +21,7 @@ export type UserErrors = Partial<
   >
 >
 
-const EMAIL_DOMAIN = "@etmsac.com"
+const EMAIL_DOMAIN = "@etmperu.com"
 
 export function validateUser(
   form: UserFormValues,

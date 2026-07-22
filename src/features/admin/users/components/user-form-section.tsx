@@ -162,7 +162,7 @@ export function UserFormSection({
         <Input
           type="email"
           value={email}
-          placeholder="Ej. martinmontes@etmsac.com"
+          placeholder="Ej. martinmontes@etmperu.com"
           onChange={event=>
 
             onEmailChange(

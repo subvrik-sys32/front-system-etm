@@ -6,6 +6,7 @@ import {
 
 import {
   Search,
+  MessageSquarePlus,
 } from "lucide-react"
 
 import {
@@ -98,12 +99,19 @@ export function ActivityPickerDialog({
     setSubmitAttempted,
   ] = useState(false)
 
+  // Estado para alternar la visibilidad de la nota (detalle opcional) en móviles
+  const [
+    showNoteInput,
+    setShowNoteInput,
+  ] = useState(false)
+
   function handleClose() {
 
     setSelectedTypeId(null)
     setNote("")
     setContext(EMPTY_CONTEXT)
     setSubmitAttempted(false)
+    setShowNoteInput(false)
 
     onOpenChange(false)
 
@@ -176,6 +184,7 @@ export function ActivityPickerDialog({
 
         )}
 
+        {/* 1. Proyectos */}
         <div className="flex flex-col gap-2 rounded-xl bg-white/4 p-3">
 
           <FormField label="Proyecto *" error={errors.projectId}>
@@ -201,6 +210,7 @@ export function ActivityPickerDialog({
 
           </FormField>
 
+          {/* 2. Tareas */}
           <FormField label="Tarea (opcional)">
 
             <ContextPicker
@@ -223,6 +233,49 @@ export function ActivityPickerDialog({
 
         </div>
 
+        {/* 3. Detalles (Input de texto colapsable con icono) */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-neutral-400">Nota u observación</span>
+            
+            <button
+              type="button"
+              onClick={() => setShowNoteInput(prev => !prev)}
+              className={cn(
+                "relative flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-colors",
+                showNoteInput || note.trim()
+                  ? "bg-white/12 text-white"
+                  : "bg-white/4 text-neutral-400 hover:bg-white/8 hover:text-white"
+              )}
+            >
+              <MessageSquarePlus size={15} />
+              <span>{showNoteInput ? "Ocultar detalle" : "Añadir detalle"}</span>
+              {note.trim() && (
+                <span className="absolute -top-1 -right-1 size-2 rounded-full bg-emerald-500" />
+              )}
+            </button>
+          </div>
+
+          <div
+            className={cn(
+              "overflow-hidden transition-all duration-200",
+              showNoteInput || note.trim()
+                ? "max-h-32 opacity-100"
+                : "max-h-0 opacity-0 pointer-events-none"
+            )}
+          >
+            <textarea
+              value={note}
+              onChange={event =>
+                setNote(event.target.value)
+              }
+              placeholder="Detalle opcional..."
+              className="w-full min-h-16 resize-none rounded-xl bg-white/4 p-3 text-sm text-white outline-none placeholder:text-neutral-600"
+            />
+          </div>
+        </div>
+
+        {/* 4. Iconos / Tipos de Actividad */}
         <div className="grid grid-cols-3 gap-2">
 
           {types.map(type => {
@@ -272,15 +325,6 @@ export function ActivityPickerDialog({
           })}
 
         </div>
-
-        <textarea
-          value={note}
-          onChange={event =>
-            setNote(event.target.value)
-          }
-          placeholder="Detalle opcional..."
-          className="min-h-16 resize-none rounded-xl bg-white/4 p-3 text-sm text-white outline-none placeholder:text-neutral-600"
-        />
 
       </div>
 

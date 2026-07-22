@@ -6,17 +6,18 @@ import { authService } from "../services/auth.service"
 import { useAuthStore } from "../store/auth-store"
 import { usePermissionStore } from "@/features/permissions/store/permission-store"
 
-// Mismo criterio que en la página: compactar por ALTO de viewport
-// chico (teléfono acostado), no por "landscape:" (que también
-// matchea cualquier ventana de escritorio normal).
 const SHORT = "[@media(max-height:520px)]"
+const CORPORATE_DOMAIN = "@etmperu.com"
 
 export function LoginForm() {
   const router = useRouter()
   const setUser = useAuthStore(s=>s.setUser)
   const setPermissions = usePermissionStore(s=>s.setPermissions)
   const [loading,setLoading]=useState(false)
-  const [email,setEmail]=useState("")
+  
+  // Guardamos únicamente el alias/prefijo que escribe el usuario
+  const [usernamePrefix,setUsernamePrefix]=useState("")
+  
   const [password,setPassword]=useState("")
   const [showPassword,setShowPassword]=useState(false)
   const [success,setSuccess]=useState(false)
@@ -28,7 +29,6 @@ export function LoginForm() {
   const toggleShowPassword = () => {
     setShowPassword(v => {
       const next = !v
-      // Al alternar, movemos el foco al input que va a quedar visible.
       requestAnimationFrame(() => {
         (next ? passwordTextRef.current : passwordMaskRef.current)?.focus()
       })
@@ -41,8 +41,12 @@ export function LoginForm() {
     if(loading)return
     setError(null)
     setLoading(true)
+
+    // Ensamblamos el correo completo de forma limpia antes de enviarlo al backend
+    const fullEmail = `${usernamePrefix.trim()}${CORPORATE_DOMAIN}`
+
     try{
-      const result=await authService.login(email,password)
+      const result=await authService.login(fullEmail, password)
       setUser(result.user)
       setPermissions(result.permissions)
       setSuccess(true)
@@ -65,17 +69,31 @@ export function LoginForm() {
 
       <div>
         <label className={`mb-1.5 block text-sm font-medium text-neutral-300 ${SHORT}:mb-1 ${SHORT}:text-xs`}>
-          Correo
+          Correo corporativo
         </label>
-        <input
-          value={email}
-          disabled={loading}
-          onChange={e=>setEmail(e.target.value)}
-          placeholder="admin@etmsac.com"
-          type="email"
-          autoComplete="username"
-          className={inputClass}
-        />
+        
+        {/* Contenedor visual que integra el input y el sufijo fijo elegante */}
+        <div className="relative flex items-center">
+          <input
+            value={usernamePrefix}
+            disabled={loading}
+            onChange={e => {
+              // Limpiamos por si el usuario intenta pegar un correo completo por accidente
+              const cleanValue = e.target.value.split("@")[0]
+              setUsernamePrefix(cleanValue)
+            }}
+            placeholder="usuario"
+            type="text"
+            autoComplete="username"
+            // Ajustamos el padding derecho para que el texto no se superponga con el dominio fijo
+            className={`${inputClass} pr-32`}
+          />
+          
+          {/* Sufijo estático incrustado visualmente */}
+          <span className="pointer-events-none absolute right-4 text-sm font-medium text-neutral-500 select-none">
+            {CORPORATE_DOMAIN}
+          </span>
+        </div>
       </div>
 
       <div>
@@ -83,7 +101,6 @@ export function LoginForm() {
           Contraseña
         </label>
         <div className="relative">
-          {/* Input real: enmascarado. Nunca cambia de type. */}
           <input
             ref={passwordMaskRef}
             value={password}
@@ -95,7 +112,6 @@ export function LoginForm() {
             hidden={showPassword}
             className={`${inputClass} pr-12`}
           />
-          {/* Input real: visible en texto plano. Nunca cambia de type. */}
           <input
             ref={passwordTextRef}
             value={password}

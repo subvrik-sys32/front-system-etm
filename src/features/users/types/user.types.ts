@@ -48,4 +48,6 @@ export interface User{
 
   role:UserRole
 
+  level:"GENERAL" | "OPERARIO" | "SUPERVISOR" | null
+
 }

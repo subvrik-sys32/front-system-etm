@@ -179,7 +179,7 @@ export function getFilterOptions({
       return users
         .filter(
           user=>
-            user.role.code==="OPERARIO",
+            user.role.code==="PRODUCCION" && user.level==="OPERARIO",
         )
         .map(
           item=>({
@@ -200,7 +200,7 @@ export function getFilterOptions({
       return users
         .filter(
           user=>
-            user.role.code==="PROJECT_MANAGER",
+            user.role.code==="PROYECTOS",
         )
         .map(
           item=>({

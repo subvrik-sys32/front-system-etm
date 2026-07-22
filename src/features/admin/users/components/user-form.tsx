@@ -46,9 +46,13 @@ type Props = {
   color: string
   roles: Role[]
   selectedRole?: Role
+  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null
   errors?: UserErrors
   step?: number
   onRoleChange: (roleId: string) => void
+  onLevelChange: (
+    level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null,
+  ) => void
   onChangingPasswordChange: (value: boolean) => void
   onNameChange: (value: string) => void
   onUsernameChange: (value: string) => void
@@ -70,9 +74,11 @@ export function UserForm({
   color,
   roles,
   selectedRole,
+  level,
   errors,
   step = 0,
   onRoleChange,
+  onLevelChange,
   onChangingPasswordChange,
   onNameChange,
   onUsernameChange,
@@ -92,8 +98,10 @@ export function UserForm({
       color={color}
       roles={roles}
       selectedRole={selectedRole}
+      level={level}
       error={errors?.roleId}
       onRoleChange={onRoleChange}
+      onLevelChange={onLevelChange}
     />
   )
 

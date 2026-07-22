@@ -58,6 +58,7 @@ type UserFormValue = {
   confirmPassword: string
   isChangingPassword: boolean
   roleId: string
+  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null
   icon: EntityIcon
   color: string
   active: boolean
@@ -89,6 +90,7 @@ function createInitialForm(
     confirmPassword: "",
     isChangingPassword: false,
     roleId: user?.role.id ?? "",
+    level: user?.level ?? null,
     icon: user?.icon ?? "user",
     color: user?.color ?? "#7C3AED",
     active: user?.active ?? true,
@@ -361,10 +363,22 @@ export function UserDialog({
         color={form.color}
         roles={roles}
         selectedRole={selectedRole}
+        level={form.level}
         errors={visibleErrors}
         step={step}
-        onRoleChange={roleId =>
-          update({ roleId })
+        onRoleChange={roleId => {
+          const nextRole =
+            roles.find(role => role.id === roleId)
+
+          update({
+            roleId,
+            ...(nextRole?.code !== "PRODUCCION" && {
+              level: null,
+            }),
+          })
+        }}
+        onLevelChange={level =>
+          update({ level })
         }
         onChangingPasswordChange={
           isChangingPassword =>

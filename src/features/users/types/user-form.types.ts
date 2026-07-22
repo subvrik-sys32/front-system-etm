@@ -12,6 +12,8 @@ export interface UserForm{
 
   roleId:string
 
+  level?:"GENERAL" | "OPERARIO" | "SUPERVISOR" | null
+
   icon:EntityIcon
 
   color:string

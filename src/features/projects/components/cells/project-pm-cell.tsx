@@ -54,7 +54,7 @@ export function ProjectPmCell({
 
   const pms=
     users.filter(
-      user=>user.role?.code==="PROJECT_MANAGER",
+      user=>user.role?.code==="PROYECTOS",
     )
 
   return(

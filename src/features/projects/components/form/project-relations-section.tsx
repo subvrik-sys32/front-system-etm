@@ -23,7 +23,7 @@ export function ProjectRelationsSection({
   const { users } = useUsers()
 
   const pms = users.filter(
-    (u) => u.role?.code === "PROJECT_MANAGER"
+    (u) => u.role?.code === "PROYECTOS"
   )
 
   const selectedClient = clients.find((i) => i.id === form.clientId)

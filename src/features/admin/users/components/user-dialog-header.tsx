@@ -24,9 +24,13 @@ type Props = {
   icon: EntityIcon
   roles: Role[]
   selectedRole?: Role
+  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null
   error?: string
   onRoleChange: (
     roleId: string,
+  ) => void
+  onLevelChange: (
+    level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null,
   ) => void
 }
 
@@ -38,9 +42,19 @@ export function UserDialogHeader({
   icon,
   roles,
   selectedRole,
+  level,
   error,
   onRoleChange,
+  onLevelChange,
 }: Props) {
+  const isProduccion =
+    selectedRole?.code === "PRODUCCION"
+
+  const LEVEL_OPTIONS = [
+    { value: "OPERARIO" as const, label: "Operario" },
+    { value: "SUPERVISOR" as const, label: "Supervisor" },
+  ]
+
   return (
     <div className="rounded-2xl bg-white/2 p-4 tablet:p-5">
       <div className="space-y-4">
@@ -71,6 +85,40 @@ export function UserDialogHeader({
             )}
           </div>
         </div>
+
+        {isProduccion && (
+          <div className="rounded-xl bg-white/2 p-3">
+            <div className="mb-2 text-xs font-medium text-neutral-500">
+              Sub-nivel en Producción
+            </div>
+
+            <div className="flex gap-2">
+              {LEVEL_OPTIONS.map(option => {
+                const selected =
+                  level === option.value
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() =>
+                      onLevelChange(
+                        selected ? null : option.value,
+                      )
+                    }
+                    className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+                      selected
+                        ? "bg-violet-500/20 text-violet-300"
+                        : "bg-white/3 text-neutral-400 hover:bg-white/5"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="font-semibold text-white">

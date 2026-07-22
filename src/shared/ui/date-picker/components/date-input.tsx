@@ -11,7 +11,7 @@ export interface DateInputProps {
   onBlur: () => void;
   onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
-  onPointerDown?: (event: React.PointerEvent<HTMLInputElement>) => void;
+  onClick?: (event: React.MouseEvent<HTMLInputElement>) => void;
   onCalendarClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
@@ -27,7 +27,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
       onBlur,
       onKeyDown,
       onFocus,
-      onPointerDown,
+      onClick,
       onCalendarClick,
     },
     ref,
@@ -48,9 +48,9 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
           onBlur={onBlur}
           onKeyDown={onKeyDown}
           onFocus={onFocus}
-          onPointerDown={onPointerDown}
+          onClick={onClick}
           className={[
-            'w-full h-10 pl-3 pr-9 rounded-xl text-sm font-medium outline-none transition-colors',
+            'w-full h-10 pl-3 pr-9 rounded-xl text-sm font-medium text-center uppercase outline-none transition-colors',
             'bg-white/6 text-neutral-200 placeholder:text-neutral-600',
             'border border-transparent',
             'focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0',
@@ -64,10 +64,6 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
           tabIndex={-1}
           disabled={disabled}
           onMouseDown={(e) => e.preventDefault()}
-          onTouchEnd={(e) => {
-            // Previene que en móvil el tap del botón se transmita al input
-            e.stopPropagation();
-          }}
           onClick={onCalendarClick}
           className="absolute right-2 flex h-7 w-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50"
           aria-label="Abrir calendario"

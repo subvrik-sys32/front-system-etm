@@ -1,7 +1,7 @@
 "use client"
 
 import * as Popover from '@radix-ui/react-popover';
-import { useCallback, useRef, useState, useMemo } from 'react';
+import { useCallback, useRef, useState, useMemo, useEffect } from 'react';
 import { DateCalendar } from './date-calendar';
 import { DateInput } from './date-input';
 import { useDateFormat } from '../hooks/use-date-format';
@@ -37,7 +37,18 @@ export function DatePicker({
   className,
 }: DatePickerProps): React.JSX.Element {
   const [open, setOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Detección limpia de entorno móvil/touch
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleCommit = useCallback(
     (date: Date | null) => {
@@ -88,14 +99,14 @@ export function DatePicker({
     [handleInputKeyDown, handleOpenChange],
   );
 
-  // Detección precisa de click/tap
-  const handleInputPointerDown = useCallback((event: React.PointerEvent<HTMLInputElement>) => {
-    // Solo si es MOUSE (Desktop) abrimos el popover al presionar el input
-    if (event.pointerType === 'mouse') {
+  // FLUXO DESKTOP: Clic en el input abre popover y mantiene el foco para escribir
+  const handleInputClickDesktop = useCallback(() => {
+    if (!isMobile) {
       setOpen(true);
     }
-  }, []);
+  }, [isMobile]);
 
+  // BARRERA O BOTÓN DE CALENDARIO: Funciona en ambas plataformas
   const handleCalendarIconClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     setOpen((prev) => !prev);
@@ -113,7 +124,7 @@ export function DatePicker({
             onChange={handleInputChange}
             onBlur={handleInputBlur}
             onKeyDown={handleKeyDownWithEscape}
-            onPointerDown={handleInputPointerDown}
+            onClick={handleInputClickDesktop}
             onCalendarClick={handleCalendarIconClick}
           />
         </div>
@@ -122,7 +133,10 @@ export function DatePicker({
       <Popover.Portal>
         <Popover.Content
           sideOffset={6}
-          onOpenAutoFocus={(e) => e.preventDefault()}
+          // En Desktop no permitimos que el popover robe el foco del input
+          onOpenAutoFocus={(e) => {
+            if (!isMobile) e.preventDefault();
+          }}
           onCloseAutoFocus={(e) => e.preventDefault()}
           className="z-50 rounded-xl shadow-xl bg-[#101012] animate-in fade-in-0 zoom-in-95"
         >

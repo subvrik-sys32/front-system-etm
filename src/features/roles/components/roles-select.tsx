@@ -162,9 +162,10 @@ export function RoleSelect({
             value?.name ??
             placeholder
           }
+          icon={value?.icon}
           color={
             value?.color ??
-            placeholder
+            "#64748B"
           }
           placeholder={!value}
           width="field"
@@ -224,6 +225,7 @@ export function RoleSelect({
                 <SelectOption
                   key={role.id}
                   label={role.name}
+                  icon={role.icon}
                   color={role.color}
                   selected={
                     value?.id===role.id

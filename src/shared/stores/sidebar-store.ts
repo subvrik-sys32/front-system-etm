@@ -77,9 +77,9 @@ function nextVisualState(
 }
 
 export const useSidebarStore = create<SidebarStore>()((set) => ({
-  mode: "closed",
+  mode: "open",
   lastVisibleMode: "open",
-  visualState: "hidden",
+  visualState: "visible",
 
   toggleCollapsed: () =>
     set(state => {

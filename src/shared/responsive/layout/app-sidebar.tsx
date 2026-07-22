@@ -95,12 +95,15 @@ export function AppSidebar({
           "absolute left-0 top-0 h-full",
 
           "isolate z-0 flex flex-col bg-[#1d1c1c] select-none",
-          "overflow-hidden",
-          "transition-[width,transform] duration-300 ease-out",
+          "overflow-hidden shrink-0",
 
+          // 💡 Transición fluida con curva Bézier de Material 3 / Gemini (450ms):
+          "transition-[width,transform] duration-450 ease-[cubic-bezier(0.2,0,0,1)]",
+
+          // Anchos explícitos arbitrarios en px para evitar inconsistencias de versión en Tailwind
           collapsed
-            ? "w-18"
-            : "w-62",
+            ? "w-[72px]"
+            : "w-[248px]",
 
           isVisible
             ? "translate-x-0"

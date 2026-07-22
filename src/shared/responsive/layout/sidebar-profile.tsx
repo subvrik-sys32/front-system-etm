@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, type RefObject } from "react"
-
+import { useEffect, useState, type RefObject } from "react"
 import { useRouter } from "next/navigation"
 import { LogOut } from "lucide-react"
 
@@ -15,7 +14,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
-
 import { cn } from "@/shared/utils/utils"
 
 type SidebarProfileProps = {
@@ -52,6 +50,13 @@ export function SidebarProfile({
   const logout = useAuthStore((s) => s.logout)
   const [logoutOpen, setLogoutOpen] = useState(false)
 
+  const [isMounting, setIsMounting] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsMounting(false), 700)
+    return () => clearTimeout(timer)
+  }, [])
+
   const confirmLogout = () => {
     logout()
     router.replace("/login")
@@ -83,15 +88,14 @@ export function SidebarProfile({
   if (collapsed) {
     return (
       <>
-        <div ref={containerRef} className="flex flex-col items-center gap-2">
-          {/*
-            modal={false}: este popover es solo una vista previa, no
-            debe capturar foco ni pointer-events globales. Si fuera
-            modal (default de Radix), su unmount deja el body con
-            pointer-events bloqueados durante su animación de salida,
-            lo que impide abrir el ProfileDialog inmediatamente
-            después desde onEdit.
-          */}
+        <div
+          ref={containerRef}
+          className={cn(
+            "flex flex-col items-center gap-2",
+            isMounting && "animate-gemini-in opacity-0"
+          )}
+          style={isMounting ? { animationDelay: "320ms" } : undefined}
+        >
           <Popover open={profileOpen} onOpenChange={setProfileOpen} modal={false}>
             <PopoverTrigger asChild>
               <button
@@ -147,7 +151,14 @@ export function SidebarProfile({
 
   return (
     <>
-      <div ref={containerRef} className="relative">
+      <div
+        ref={containerRef}
+        className={cn(
+          "relative",
+          isMounting && "animate-gemini-in opacity-0"
+        )}
+        style={isMounting ? { animationDelay: "320ms" } : undefined}
+      >
         <div
           aria-hidden={!profileOpen}
           className={cn(

@@ -280,3 +280,26 @@ input:focus-visible {
     font-size: 16px !important;
   }
 }
+
+@keyframes geminiItemEntrance {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-gemini-in {
+  animation: geminiItemEntrance 0.4s cubic-bezier(0.2, 0, 0, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-gemini-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

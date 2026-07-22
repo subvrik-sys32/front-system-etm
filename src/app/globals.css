@@ -177,6 +177,20 @@ textarea {
   touch-action: manipulation;
 }
 
+/* Evita que el texto de botones se seleccione al tocar, lo que en
+   mobile se ve como un recuadro gris/blanco superpuesto sobre el
+   texto (muy notorio en fondos oscuros, ej. dialogs de confirmación).
+   También quitamos el tap-highlight nativo de WebKit/Chrome, que es
+   ese mismo flash gris pero a nivel de todo el elemento.
+   Los inputs quedan fuera a propósito: ahí sí queremos que el
+   usuario pueda seleccionar/copiar texto. */
+button,
+[role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Chrome, Edge, Safari */
 
 input[type="number"]::-webkit-outer-spin-button,
@@ -257,10 +271,6 @@ input:focus-visible {
 
 .animate-comment-in {
   animation: comment-in 0.2s ease-out;
-}
-
-button {
-  -webkit-tap-highlight-color: transparent;
 }
 
 @media (max-width: 767px) {

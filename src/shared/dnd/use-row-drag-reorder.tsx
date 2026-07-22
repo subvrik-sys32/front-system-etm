@@ -172,7 +172,6 @@ export function useRowDragReorder<T>({
       if (startPos.current) {
         const dx = Math.abs(e.clientX - startPos.current.x)
         const dy = Math.abs(e.clientY - startPos.current.y)
-        // Solo activamos el arrastre real si se mueve más de 4 píxeles (evita falsos positivos al tocar)
         if (dx > 4 || dy > 4) {
           setIsActuallyDragging(true)
         }
@@ -235,15 +234,17 @@ export function useRowDragReorder<T>({
     templateColumns: string,
     rowId: string,
   ) {
-    const isDraggingThis = drag?.id === rowId && isActuallyDragging
+    const isThisDragging = drag?.id === rowId
+    // El espacio solo se colapsa (height 0) cuando se mueve de verdad, pero visualmente ya se ocultaba con opacity/scale o se mantiene intacto hasta el movimiento
+    const isActuallyMoving = isThisDragging && isActuallyDragging
     const rowDisabled = disabled || isRowDisabled?.(item)
     const isGridMode = templateColumns.length > 0
 
     return (
       <div
         style={{
-          height: isDraggingThis ? 0 : undefined,
-          overflow: isDraggingThis ? "hidden" : undefined,
+          height: isActuallyMoving ? 0 : undefined,
+          overflow: isActuallyMoving ? "hidden" : undefined,
           transition: "height 180ms cubic-bezier(.2,.8,.2,1)",
         }}
       >
@@ -256,8 +257,8 @@ export function useRowDragReorder<T>({
           }
           style={{
             gridTemplateColumns: isGridMode ? templateColumns : undefined,
-            opacity: isDraggingThis ? 0 : 1,
-            transform: isDraggingThis ? "scale(0.98)" : "scale(1)",
+            opacity: isThisDragging ? 0 : 1,
+            transform: isThisDragging ? "scale(0.98)" : "scale(1)",
             transition: "opacity 160ms ease, transform 160ms ease, background-color 150ms ease",
           }}
         >
@@ -275,9 +276,9 @@ export function useRowDragReorder<T>({
     )
   }
 
-  const overlay = drag && isActuallyDragging && (
+  const overlay = drag && (
     <>
-      {!isOutOfBounds && (
+      {isActuallyDragging && !isOutOfBounds && (
         <div
           style={{
             position: "fixed",

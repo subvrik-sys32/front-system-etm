@@ -235,7 +235,6 @@ export function useRowDragReorder<T>({
     rowId: string,
   ) {
     const isThisDragging = drag?.id === rowId
-    // El espacio solo se colapsa (height 0) cuando se mueve de verdad, pero visualmente ya se ocultaba con opacity/scale o se mantiene intacto hasta el movimiento
     const isActuallyMoving = isThisDragging && isActuallyDragging
     const rowDisabled = disabled || isRowDisabled?.(item)
     const isGridMode = templateColumns.length > 0
@@ -289,10 +288,7 @@ export function useRowDragReorder<T>({
             zIndex: 9999,
           }}
         >
-          <div className="relative h-0.5">
-            <div className="absolute inset-0 rounded-full bg-linear-to-r from-transparent via-sky-500 to-transparent" />
-            <div className="absolute inset-0 rounded-full bg-linear-to-r from-transparent via-sky-500 to-transparent opacity-70 blur-[3px]" />
-          </div>
+          <div className="h-0.5 w-full rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.7)]" />
         </div>
       )}
 

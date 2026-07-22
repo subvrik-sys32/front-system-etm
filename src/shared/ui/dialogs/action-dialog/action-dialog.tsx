@@ -127,11 +127,14 @@ export function ActionDialog({
                 : "bg-white text-black hover:bg-neutral-200",
             )}
           >
-            {submitting && (
-              <Loader2 size={14} className="animate-spin shrink-0" />
+            {submitting ? (
+              <>
+                <Loader2 size={16} className="animate-spin shrink-0" />
+                <span>{loadingText}</span>
+              </>
+            ) : (
+              <span>{confirmLabel}</span>
             )}
-
-            <span>{submitting ? loadingText : confirmLabel}</span>
           </button>
         </div>
       </DialogContent>

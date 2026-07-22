@@ -88,7 +88,9 @@ export function DatePicker({
     [handleInputKeyDown, handleOpenChange],
   );
 
-  const handleInputClick = useCallback((event: React.PointerEvent<HTMLInputElement>) => {
+  // Detección precisa de click/tap
+  const handleInputPointerDown = useCallback((event: React.PointerEvent<HTMLInputElement>) => {
+    // Solo si es MOUSE (Desktop) abrimos el popover al presionar el input
     if (event.pointerType === 'mouse') {
       setOpen(true);
     }
@@ -111,7 +113,7 @@ export function DatePicker({
             onChange={handleInputChange}
             onBlur={handleInputBlur}
             onKeyDown={handleKeyDownWithEscape}
-            onClick={handleInputClick}
+            onPointerDown={handleInputPointerDown}
             onCalendarClick={handleCalendarIconClick}
           />
         </div>
@@ -120,7 +122,6 @@ export function DatePicker({
       <Popover.Portal>
         <Popover.Content
           sideOffset={6}
-          // PreventAutofocus evita que Radix robe o fuerce el foco al abrir el popup
           onOpenAutoFocus={(e) => e.preventDefault()}
           onCloseAutoFocus={(e) => e.preventDefault()}
           className="z-50 rounded-xl shadow-xl bg-[#101012] animate-in fade-in-0 zoom-in-95"

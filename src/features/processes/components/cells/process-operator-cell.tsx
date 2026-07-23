@@ -32,6 +32,12 @@ type Props={
   // terminara, permitiendo iniciar el step con el operario todavía
   // sin confirmarse en el backend.
   onSavingChange?:(saving:boolean)=>void
+  // Mismo patrón que TaskPriorityCell/ProjectPmCell: "row" para la
+  // fila compacta dentro del panel de campos expandido de la card
+  // mobile (ProcessMobileCard). Sin esto, no había forma de pedirle
+  // a UserSelect el trigger de fila — siempre caía en "badge".
+  triggerVariant?:"badge"|"row"
+  rowLabel?:string
 }
 
 // Mismo criterio que WorkflowService.update() en el backend
@@ -45,6 +51,8 @@ const NON_EDITABLE_STATUSES=[
 export function ProcessOperatorCell({
   processTask,
   onSavingChange,
+  triggerVariant,
+  rowLabel,
 }:Props){
 
   const queryClient = useQueryClient()
@@ -118,6 +126,8 @@ export function ProcessOperatorCell({
       items={operators}
       placeholder="Operario"
       disabled={!isEditable}
+      triggerVariant={triggerVariant}
+      rowLabel={rowLabel}
       onChange={async user=>{
 
         if(!currentStepId||!isEditable){

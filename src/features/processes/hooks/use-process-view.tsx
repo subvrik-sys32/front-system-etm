@@ -1,57 +1,33 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback } from "react"
+import { useRouter, usePathname, useSearchParams } from "next/navigation"
 
 import type { ProcessView } from "../components/actions/process-view-toggle"
 
-const STORAGE_KEY = "processes:view"
+const DEFAULT_VIEW: ProcessView = "tabla"
 
-function getStoredView(): ProcessView {
-
-  if (typeof window === "undefined") {
-    return "tabla"
-  }
-
-  try {
-
-    const stored =
-      window.localStorage.getItem(STORAGE_KEY)
-
-    return stored === "card"
-      ? "card"
-      : "tabla"
-
-  } catch {
-    return "tabla"
-  }
-
+function isValidView(value: string | null): value is ProcessView {
+  return value === "card" || value === "tabla"
 }
 
-// A diferencia de useTaskView/useProjectView, acá no hace falta
-// forzar nada en mobile: ProcessTable ya resuelve su propio caso
-// mobile internamente (TaskProcessColumn), sin importar este
-// estado — este hook solo decide entre CARD y TABLA en desktop.
 export function useProcessView() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
-  const [view, setViewState] =
-    useState<ProcessView>(getStoredView)
+  const rawView = searchParams.get("view")
+  const view: ProcessView = isValidView(rawView) ? rawView : DEFAULT_VIEW
 
-  function setView(next: ProcessView) {
-
-    setViewState(next)
-
-    try {
-      window.localStorage.setItem(STORAGE_KEY, next)
-    } catch {
-      // Si no se puede persistir, al menos queda el cambio en
-      // memoria para esta sesión.
-    }
-
-  }
+  const setView = useCallback((next: ProcessView) => {
+    if (!next) return
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("view", next)
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+  }, [router, pathname, searchParams])
 
   return {
     view,
     setView,
   }
-
 }

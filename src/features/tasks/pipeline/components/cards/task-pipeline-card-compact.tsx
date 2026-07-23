@@ -41,14 +41,10 @@ export function TaskPipelineCardCompact({
 
     <div
       className={cn(
-        "flex h-12 items-center gap-2.5 rounded-xl bg-white/2 pl-3 transition hover:bg-white/4",
+        "flex h-12 items-center gap-2.5 rounded-xl bg-white/6 pl-3 transition hover:bg-white/10",
         reserveActionsSpace ? "pr-12" : "pr-3",
       )}
     >
-
-      <span className="shrink-0 text-sm font-semibold text-neutral-100">
-        #{String(task.taskNumber).padStart(3, "0")}
-      </span>
 
       <span
         className="size-1.5 shrink-0 rounded-full"

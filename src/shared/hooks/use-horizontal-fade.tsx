@@ -7,8 +7,8 @@ import {
   useState,
 } from "react"
 
-const FADE_MIN = 24
-const FADE_MAX = 80
+const FADE_MIN = 12
+const FADE_MAX = 40
 
 type Props = {
   containerRef: RefObject<HTMLDivElement | null>
@@ -57,9 +57,9 @@ export function useHorizontalFade({
       }
 
       // Fade proporcional al ancho del contenedor:
-      // 8% del ancho visible, entre FADE_MIN y FADE_MAX.
+      // 4% del ancho visible, entre FADE_MIN y FADE_MAX.
       const fadeSize = Math.min(
-        Math.max(Math.round(clientWidth * 0.08), FADE_MIN),
+        Math.max(Math.round(clientWidth * 0.04), FADE_MIN),
         FADE_MAX,
       )
 

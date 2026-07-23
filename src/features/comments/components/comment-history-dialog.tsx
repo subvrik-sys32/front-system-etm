@@ -53,7 +53,7 @@ export function CommentHistoryDialog({
   // acá.
   const [editingComment, setEditingComment] = useState<Comment | null>(null)
 
-  const { comments, loading } = useComments(target)
+  const { comments, loading } = useComments(target, open)
   const { deleteComment } = useDeleteComment(target)
 
   const targetId = getTargetId(target)

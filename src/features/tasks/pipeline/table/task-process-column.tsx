@@ -167,90 +167,66 @@ function ColumnContent({
 
                 <div
                   key={key}
-                  className="flex h-12 shrink-0 items-center gap-2.5 rounded-xl bg-white/2 px-3"
+                  className="flex h-12 shrink-0 items-center justify-end rounded-xl bg-white/4 px-3"
                 >
 
-                  <span className="shrink-0 text-sm font-semibold text-neutral-600">
-                    #{String(task.taskNumber).padStart(3, "0")}
-                  </span>
+                  {/*
+                    Slot de ancho fijo para la flecha — SIEMPRE
+                    ocupa este espacio, tenga o no ícono adentro.
+                    Sin esto, el chip/badge que sigue arranca en una
+                    posición distinta según haya o no próximo
+                    proceso (con flecha se corre a la izquierda, sin
+                    ella queda solo, "desplazado" respecto a las
+                    demás filas). Reservando el ancho, el badge
+                    siempre empieza en el mismo punto.
+                  */}
+                  <span className="flex w-4 shrink-0 items-center justify-center">
 
-                  <span
-                    className="size-1.5 shrink-0 rounded-full opacity-40"
-                    style={{ backgroundColor: task.priority.color }}
-                  />
+                    {nextDefinition && (
 
-                  <span
-                    title={task.reference}
-                    className="min-w-0 flex-1 truncate text-sm font-medium text-neutral-600"
-                  >
-                    {task.reference}
-                  </span>
-
-                  <div className="ml-auto flex shrink-0 items-center gap-1.5">
-
-                    {/*
-                      Slot de ancho fijo para la flecha — SIEMPRE
-                      ocupa este espacio, tenga o no ícono adentro.
-                      Sin esto, el chip/badge que sigue arranca en una
-                      posición distinta según haya o no próximo
-                      proceso (con flecha se corre a la izquierda, sin
-                      ella queda solo, "desplazado" respecto a las
-                      demás filas). Reservando el ancho, el badge
-                      siempre empieza en el mismo punto.
-                    */}
-                    <span className="flex w-4 shrink-0 items-center justify-center">
-
-                      {nextDefinition && (
-
-                        <ArrowRight
-                          size={13}
-                          strokeWidth={2.75}
-                          className="text-neutral-600"
-                        />
-
-                      )}
-
-                    </span>
-
-                    {nextDefinition && nextBadge ? (
-
-                      <>
-
-                        <span
-                          className="inline-flex shrink-0 items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-bold opacity-60"
-                          style={{
-                            color: nextBadge.text,
-                            backgroundColor: nextBadge.background,
-                          }}
-                        >
-
-                          {NextIcon && <NextIcon size={15} />}
-
-                          <span>{nextProcess}</span>
-
-                        </span>
-
-                      </>
-
-                    ) : (
-
-                      // Mismo estilo exacto que el badge de estado
-                      // "En cola" de TaskPipelineCardCompact (h-5,
-                      // rounded-md, texto gris #64748B) — no un
-                      // simple guion suelto sin contexto.
-                      <span
-                        className="flex h-5 shrink-0 items-center whitespace-nowrap rounded-md px-2 text-xs font-semibold leading-none"
-                        style={{
-                          color: noApplyBadge.text,
-                          backgroundColor: noApplyBadge.background,
-                        }}
-                      >
-                        No aplica
-                      </span>
+                      <ArrowRight
+                        size={13}
+                        strokeWidth={2.75}
+                        className="text-neutral-600"
+                      />
 
                     )}
 
-                  </div>
+                  </span>
+
+                  {nextDefinition && nextBadge ? (
+
+                    <span
+                      className="ml-1.5 inline-flex shrink-0 items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-bold opacity-60"
+                      style={{
+                        color: nextBadge.text,
+                        backgroundColor: nextBadge.background,
+                      }}
+                    >
+
+                      {NextIcon && <NextIcon size={15} />}
+
+                      <span>{nextProcess}</span>
+
+                    </span>
+
+                  ) : (
+
+                    // Mismo estilo exacto que el badge de estado
+                    // "En cola" de TaskPipelineCardCompact (h-5,
+                    // rounded-md, texto gris #64748B) — no un
+                    // simple guion suelto sin contexto.
+                    <span
+                      className="ml-1.5 flex h-5 shrink-0 items-center whitespace-nowrap rounded-md px-2 text-xs font-semibold leading-none opacity-60"
+                      style={{
+                        color: noApplyBadge.text,
+                        backgroundColor: noApplyBadge.background,
+                      }}
+                    >
+                      No aplica
+                    </span>
+
+                  )}
 
                 </div>
 
@@ -276,7 +252,7 @@ function ColumnContent({
 
           {rows.length === 0 && (
 
-            <div className="flex h-12 items-center justify-center rounded-xl bg-white/2 px-3 text-sm font-medium text-neutral-500">
+            <div className="flex h-12 items-center justify-center rounded-xl bg-white/4 px-3 text-sm font-medium text-neutral-500">
               Sin tareas
             </div>
 

@@ -202,6 +202,7 @@ export function TaskPipelineCard({
           se posiciona encima, en el hueco vacío de abajo a la
           derecha que ya existía en esa card. */}
       {expanded &&
+        !overlayOpen &&
         processTask.workflowStep && (
 
           <button

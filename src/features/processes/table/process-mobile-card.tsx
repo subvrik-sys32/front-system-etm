@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-import { ChevronDown, MoreHorizontal } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
 import { formatDate } from "@/shared/utils/date-format"
@@ -16,7 +16,6 @@ import { processAccess } from "../access/process-access"
 import { ProcessOperatorCell } from "../components/cells/process-operator-cell"
 import { ProcessRowActions } from "../components/actions/process-row-actions"
 import { ProcessExpandedRow } from "../components/expanded-row/process-expanded-row"
-import { IconAction } from "@/shared/ui/actions/icon-action"
 
 type Props = {
   processTask: ProcessTask
@@ -24,28 +23,37 @@ type Props = {
   onToggle: () => void
 }
 
-// Espeja ProjectMobileCard/TaskMobileCard, con una diferencia
-// deliberada: acá ProcessRowActions (Iniciar/Pausar/Completar/
-// Revisar) vive en el row siempre visible, igual que su propia
-// columna dedicada en la vista TABLA (ver buildProcessColumns) —
-// no dentro del panel expandido. El usuario necesita accionar el
-// workflow sin tener que abrir la card cada vez, tal como en la
-// tabla. Por eso el header deja de ser un único <button> — el
-// toggle de expansión vive en un div clickeable + el chevron, y
-// las acciones tienen su propio wrapper con stopPropagation para
-// no disparar el expand al togglear el workflow.
+// Espeja ProjectMobileCard/TaskMobileCard, con dos diferencias
+// deliberadas, ambas para minimizar clicks hasta los campos
+// editables (a diferencia de Task/Project, acá el contenido
+// expandido no es solo informativo — es donde se cargan datos de
+// producción):
+//
+// 1. ProcessRowActions (Iniciar/Pausar/Completar/Revisar) vive en
+//    el row siempre visible, igual que su propia columna dedicada
+//    en la vista TABLA (ver buildProcessColumns) — no dentro del
+//    panel expandido. Por eso el header deja de ser un único
+//    <button>: el toggle de expansión vive en un div clickeable +
+//    el chevron, y las acciones tienen su propio wrapper con
+//    stopPropagation para no disparar el expand al togglear el
+//    workflow.
+//
+// 2. ProcessExpandedRow (Producción/Material/Jornada/Progreso +
+//    comentarios) se muestra directo al expandir la card, SIN el
+//    toggle intermedio "···" que sí tienen Task/Project para su
+//    panel de detalle. Eso bajaba a 3 clicks el camino hasta un
+//    valor editable (expandir → "···" → campo). Con esto quedan 2
+//    (expandir → campo).
 export function ProcessMobileCard({
   processTask,
   expanded,
   onToggle,
 }: Props) {
   const [showFields, setShowFields] = useState(false)
-  const [showPipeline, setShowPipeline] = useState(false)
 
   useEffect(() => {
     if (!expanded) {
       setShowFields(false)
-      setShowPipeline(false)
     }
   }, [expanded])
 
@@ -200,20 +208,10 @@ export function ProcessMobileCard({
             </button>
           )}
 
-          {/* Solo el toggle de KPIs/producción/comentarios queda
-              acá — ProcessRowActions ya se movió al row de arriba. */}
-          <div className="flex items-center">
-            <IconAction
-              icon={MoreHorizontal}
-              onClick={() =>
-                setShowPipeline(current => !current)
-              }
-            />
-          </div>
-
-          {showPipeline && (
-            <ProcessExpandedRow processTask={processTask} />
-          )}
+          {/* Sin gate intermedio: al expandir la card, esto ya
+              queda visible — acá vive lo que realmente hay que
+              tocar (Entrada/Salida, Material, Espesor). */}
+          <ProcessExpandedRow processTask={processTask} />
         </div>
       )}
     </div>

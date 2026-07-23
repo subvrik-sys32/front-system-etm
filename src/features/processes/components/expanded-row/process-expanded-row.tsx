@@ -153,6 +153,7 @@ export function ProcessExpandedRow({
 
       <KpiCarousel
         cards={cards}
+        defaultExpanded
         summary={{
           icon: Activity,
           color: PROGRESS_COLOR,

@@ -43,9 +43,13 @@ type Summary = {
 type Props = {
   cards: React.ReactNode[]
   summary: Summary
+  // Solo Procesos lo necesita abierto desde el primer render — en
+  // Tareas/Proyectos sigue arrancando colapsado (comportamiento
+  // sin cambios).
+  defaultExpanded?: boolean
 }
 
-export function KpiCarousel({ cards, summary }: Props) {
+export function KpiCarousel({ cards, summary, defaultExpanded = false }: Props) {
 
   const { isMobile } = useResponsive()
 
@@ -54,7 +58,7 @@ export function KpiCarousel({ cards, summary }: Props) {
   // a las cards completas. Colapsar/expandir no toca ni desmonta
   // la lógica de scroll de abajo — esa sigue existiendo tal cual,
   // solo se oculta.
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(defaultExpanded)
 
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)

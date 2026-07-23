@@ -204,8 +204,15 @@ export function ActivityPickerDialog({
   }
 
   function handleSelectType(typeId: string) {
-    setSelectedTypeId(typeId)
-    setOtherTypesOpen(false)
+
+    const isDeselecting = selectedTypeId === typeId
+
+    setSelectedTypeId(isDeselecting ? null : typeId)
+
+    if (!isDeselecting) {
+      setOtherTypesOpen(false)
+    }
+
   }
 
   function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -442,7 +449,9 @@ export function ActivityPickerDialog({
                 key={type.id}
                 type="button"
                 onClick={() =>
-                  setSelectedTypeId(type.id)
+                  setSelectedTypeId(prev =>
+                    prev === type.id ? null : type.id,
+                  )
                 }
                 className={cn(
                   "flex flex-col items-center gap-1.5 rounded-xl p-3 text-center transition-colors",

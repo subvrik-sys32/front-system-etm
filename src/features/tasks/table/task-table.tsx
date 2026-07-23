@@ -13,11 +13,8 @@ import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus"
 import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
 
-import { EntityTable } from "@/shared/ui/entity-table"
-import { EntityTableSkeleton } from "@/shared/ui/entity-table"
-
-import { buildTaskColumns } from "../table/build-task-columns"
-import { TaskExpandedRow } from "../components/expanded-row/task-expanded-row"
+import { TaskMobileCard } from "./task-mobile-card"
+import { TaskMobileSkeleton } from "./task-mobile-skeleton"
 
 import { useTaskSearch } from "../hooks/use-task-search"
 
@@ -102,16 +99,16 @@ export function TaskTable({
       return
     }
 
-    const existsAnywhere = sortedTasks.some(
+    const exists = displayedTasks.some(
       task => task.id === expand.expandedRowId,
     )
 
-    if (!existsAnywhere) {
+    if (!exists) {
       expand.setExpandedRowId(null)
     }
 
   }, [
-    sortedTasks,
+    displayedTasks,
     expand.expandedRowId,
     expand.setExpandedRowId,
   ])
@@ -143,6 +140,9 @@ export function TaskTable({
           <span className="rounded-md bg-white/8 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white/50">
             {String(task.taskNumber).padStart(3, "0")}
           </span>
+          <span className="text-[11px] font-medium tracking-wide text-white/50">
+            {task.project.projectCode}
+          </span>
         </div>
         <div className="mt-1 truncate text-sm font-semibold text-white">
           {task.reference}
@@ -151,36 +151,61 @@ export function TaskTable({
     ),
   })
 
-  const columns = useMemo(
-    () => buildTaskColumns(),
-    [],
-  )
-
   if (loading) {
-    return (
-      <EntityTableSkeleton
-        columns={columns}
-      />
-    )
+    return <TaskMobileSkeleton />
   }
 
   return (
+
     <>
-      <EntityTable
-        data={displayedTasks}
-        columns={columns}
-        rowId={task => task.id}
-        expandedRowId={expand.expandedRowId}
-        onExpandedRowChange={expand.setExpandedRowId}
-        renderRow={dragApi.renderRow}
-        renderExpandedRow={task => (
-          <TaskExpandedRow
-            task={task}
-          />
+
+      <div className="flex flex-col gap-2 pb-2">
+
+        {displayedTasks.map(task => {
+
+          const card = (
+
+            <TaskMobileCard
+              task={task}
+              expanded={expand.expandedRowId === task.id}
+              onToggle={() =>
+                expand.setExpandedRowId(
+                  expand.expandedRowId === task.id
+                    ? null
+                    : task.id,
+                )
+              }
+            />
+
+          )
+
+          return (
+
+            <div key={task.id}>
+
+              {/* templateColumns vacío porque la card maneja su
+                  propio layout, no un grid de columnas. */}
+              {dragApi.renderRow(task, card, "", task.id)}
+
+            </div>
+
+          )
+
+        })}
+
+        {displayedTasks.length === 0 && (
+
+          <div className="flex h-24 items-center justify-center rounded-xl bg-white/2 text-sm text-neutral-500">
+            Sin tareas
+          </div>
+
         )}
-      />
+
+      </div>
 
       {isManualMode && dragApi.overlay}
+
     </>
+
   )
 }

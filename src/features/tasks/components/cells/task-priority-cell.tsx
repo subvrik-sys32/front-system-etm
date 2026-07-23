@@ -26,10 +26,14 @@ import type {
 
 type Props={
   task:Task
+  triggerVariant?:"badge"|"row"
+  rowLabel?:string
 }
 
 export function TaskPriorityCell({
   task,
+  triggerVariant,
+  rowLabel,
 }:Props){
 
   const{
@@ -69,6 +73,10 @@ export function TaskPriorityCell({
       placeholder="Prioridad"
 
       disabled={!canUpdate}
+
+      triggerVariant={triggerVariant}
+
+      rowLabel={rowLabel}
 
       onChange={priority=>{
 

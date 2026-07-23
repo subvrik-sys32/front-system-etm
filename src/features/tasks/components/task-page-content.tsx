@@ -136,16 +136,17 @@ export function TaskPageContent({
 
   return(
 
-    // Desktop: h-full/min-h-0/overflow-hidden — una sola pantalla,
-    // solo la tabla/pipeline internos scrollean (patrón app fija).
-    // Mobile: SIN esas restricciones — el contenido fluye con su
-    // alto real y el <main overflow-y-auto> del AppShell lo scrollea
-    // como una página normal. Forzar overflow-hidden acá bloqueaba
-    // ese scroll del padre, cortando el contenido sin dar forma
-    // de alcanzarlo (el bug que viste en la captura).
+    // Desktop + vista "pipeline": h-full/min-h-0/overflow-hidden —
+    // una sola pantalla, el board interno scrollea (patrón app fija).
+    // Desktop + vista "table": SIN esas restricciones — TaskTable ya
+    // no usa EntityTable (ahora son tarjetas apiladas, igual que
+    // ProjectTable), así que fluye con su alto real como el resto
+    // de la página, sin necesitar scroll clip propio.
+    // Mobile: idem, sin restricciones en ningún caso — el <main
+    // overflow-y-auto> del AppShell scrollea la página completa.
     <div className={cn(
       "relative mx-auto flex w-full max-w-400 flex-col",
-      isMobile ? "" : "h-full min-h-0 overflow-hidden",
+      !isMobile && view === "pipeline" ? "h-full min-h-0 overflow-hidden" : "",
     )}>
 
       <div className="shrink-0">
@@ -204,9 +205,7 @@ export function TaskPageContent({
 
       {view==="table"?(
 
-        <div className={cn(
-          isMobile ? "" : "min-h-0 flex-1 overflow-hidden",
-        )}>
+        <div>
 
           <EntityExpandProvider>
 

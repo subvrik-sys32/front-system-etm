@@ -33,6 +33,14 @@ export function DragCell({
 
       disabled={hidden}
 
+      // Refuerzo por inline style: un inline style le gana a
+      // CUALQUIER regla de stylesheet (esté en capa o no), así que
+      // esto queda garantizado sin depender del orden de @layer en
+      // globals.css. La clase touch-none de abajo queda igual, ya
+      // no compite con nada ahora que la regla global vive en
+      // @layer base, pero el inline es la garantía real.
+      style={{ touchAction: "none" }}
+
       className="
         flex
         h-9

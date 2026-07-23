@@ -167,14 +167,21 @@ html, body {
 /* Elimina el delay clásico de ~300ms que algunos navegadores mobile
    aplican a cada tap (esperando ver si es un doble-tap para hacer
    zoom) — sin esto, TODA la app se siente con lag al tocar,
-   independientemente de cuánto se optimice cada componente. */
-button,
-a,
-[role="button"],
-input,
-select,
-textarea {
-  touch-action: manipulation;
+   independientemente de cuánto se optimice cada componente.
+   Va dentro de @layer base: así cualquier utility de Tailwind
+   (ej. touch-none en un handle de drag) puede pisarla cuando hace
+   falta — código sin capa le gana a TODO layer sin importar
+   especificidad, y esta regla se estaba comiendo el touch-none del
+   DragCell por eso mismo. */
+@layer base {
+  button,
+  a,
+  [role="button"],
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
 }
 
 /* Evita que el texto de botones se seleccione al tocar, lo que en

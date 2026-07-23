@@ -37,6 +37,7 @@ export function DragCell({
         flex
         h-9
         w-9
+        touch-none
         items-center
         justify-center
         rounded-lg

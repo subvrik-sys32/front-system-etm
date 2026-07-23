@@ -103,6 +103,11 @@ export function useRowDragReorder<T>({
     const rowEl = rowEls.current[id]
     if (!rowEl) return
 
+    // Evita que el navegador interprete el toque como scroll nativo del
+    // contenedor (Radix ScrollArea usa overflow nativo), lo que en mobile
+    // le robaba el gesto al drag antes de que llegue el primer pointermove.
+    e.preventDefault()
+
     const rect = rowEl.getBoundingClientRect()
     capture()
 

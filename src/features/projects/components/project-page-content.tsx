@@ -2,9 +2,6 @@
 
 import { useMemo, useState } from "react"
 
-import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
-import { cn } from "@/shared/utils/utils"
-
 import { AdaptiveActionBar } from "@/shared/responsive/adaptative/adaptive-action-bar"
 
 import { EntityExpandProvider } from "@/shared/ui/entity-table/features/expansion"
@@ -35,8 +32,6 @@ export function ProjectPageContent({
   focusToken,
   initialShowHistory=false,
 }:Props){
-
-  const { isMobile } = useResponsive()
 
   const[
     search,
@@ -70,15 +65,15 @@ export function ProjectPageContent({
 
   return(
 
-    // Mismo patrón que TaskPageContent: en desktop, contenedor fijo
-    // con scroll interno acotado (h-full/min-h-0/overflow-hidden).
-    // En mobile, sin esas restricciones — el contenido fluye con su
-    // alto real y el <main overflow-y-auto> del AppShell lo scrollea
-    // como página normal, igual que ya hicimos para Tareas.
-    <div className={cn(
-      "mx-auto flex w-full max-w-400 flex-col",
-      isMobile ? "" : "h-full min-h-0 overflow-hidden",
-    )}>
+    // Mismo patrón que TaskPageContent en su versión mobile: sin
+    // restricciones de alto acá — el contenido fluye con su alto
+    // real y el <main overflow-y-auto> del AppShell lo scrollea como
+    // página normal. Antes esto se alternaba con un modo "desktop"
+    // (h-full/min-h-0/overflow-hidden) pensado para el scroll interno
+    // propio de EntityTable — pero ProjectTable ya no usa EntityTable
+    // en ningún caso, así que ese modo quedaría scrolleando un
+    // contenedor recortado sin necesidad.
+    <div className="mx-auto flex w-full max-w-400 flex-col">
 
       <div className="shrink-0">
 
@@ -109,9 +104,7 @@ export function ProjectPageContent({
 
       </div>
 
-      <div className={cn(
-        isMobile ? "" : "min-h-0 flex-1 overflow-hidden",
-      )}>
+      <div>
 
         <EntityExpandProvider>
 

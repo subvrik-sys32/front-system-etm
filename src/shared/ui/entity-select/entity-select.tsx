@@ -54,10 +54,13 @@ type Props<T extends EntityBase> = {
 
   // "badge" (default): el trigger actual, badge coloreado a todo
   // el ancho — pensado para celdas de tabla. "row": fila compacta
-  // (label chico a la izquierda, valor+ícono a la derecha, fondo
-  // neutro) — pensada para listas apiladas (ej. tarjeta mobile de
-  // Proyectos), donde 4 badges coloreados de ancho completo uno
-  // debajo del otro se sienten pesados.
+  // (label chico + valor con ícono, fondo neutro) — pensada para
+  // listas apiladas (ej. tarjeta de Proyectos, que ahora se usa
+  // tanto en mobile como en desktop). En mobile el orden es label
+  // primero (izquierda) y valor después (derecha); en desktop se
+  // invierte (valor primero/izquierda, label después/derecha) y el
+  // popover abre alineado a "start" en vez de centrado, para que no
+  // quede descentrado en filas anchas.
   triggerVariant?: "badge" | "row"
   rowLabel?: string
 }
@@ -108,7 +111,7 @@ export function EntitySelect<T extends EntityBase>({
 
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const { isCompact } = useResponsive()
+  const { isCompact, isMobile } = useResponsive()
 
   const definition = collectionRegistry[collection]
 
@@ -163,19 +166,28 @@ export function EntitySelect<T extends EntityBase>({
       >
         <PopoverTrigger asChild>
 
-          {triggerVariant === "row" ? (
+          {triggerVariant === "row" ? (() => {
 
-            <button
-              type="button"
-              disabled={disabled}
-              className="flex w-full min-w-0 items-center justify-between gap-2 rounded-lg bg-white/3 px-3 py-2.5 text-left transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-
+            const labelEl = (
               <span className="shrink-0 text-xs font-medium text-neutral-500">
                 {rowLabel}
               </span>
+            )
 
+            const valueEl = (
               <span className="flex min-w-0 items-center gap-1.5">
+
+                {!disabled && (
+
+                  <ChevronDown
+                    size={14}
+                    className={cn(
+                      "shrink-0 text-neutral-500 transition-transform duration-200",
+                      open && "rotate-180",
+                    )}
+                  />
+
+                )}
 
                 {RowIcon && (
                   <RowIcon
@@ -192,23 +204,37 @@ export function EntitySelect<T extends EntityBase>({
                   {value?.name ?? placeholder}
                 </span>
 
-                {!disabled && (
+              </span>
+            )
 
-                  <ChevronDown
-                    size={14}
-                    className={cn(
-                      "shrink-0 text-neutral-500 transition-transform duration-200",
-                      open && "rotate-180",
-                    )}
-                  />
+            return (
 
+              <button
+                type="button"
+                disabled={disabled}
+                className="flex w-full min-w-0 items-center justify-between gap-2 rounded-lg bg-white/3 px-3 py-2.5 text-left transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+
+                {/* Mobile: label a la izquierda, valor a la derecha
+                    (layout original). Desktop: invertido — valor
+                    primero (izquierda), label después (derecha). */}
+                {isMobile ? (
+                  <>
+                    {labelEl}
+                    {valueEl}
+                  </>
+                ) : (
+                  <>
+                    {valueEl}
+                    {labelEl}
+                  </>
                 )}
 
-              </span>
+              </button>
 
-            </button>
+            )
 
-          ) : (
+          })() : (
 
             <button
               type="button"
@@ -233,7 +259,10 @@ export function EntitySelect<T extends EntityBase>({
 
         </PopoverTrigger>
 
-        <PopoverContent className="w-72 p-2">
+        <PopoverContent
+          className="w-72 p-2"
+          align={triggerVariant === "row" && !isMobile ? "start" : "center"}
+        >
           <Command>
             <div className="sticky top-0 z-20 mb-2 flex items-center gap-2 px-2 pb-2">
               <Search size={14} className="text-white/35" />

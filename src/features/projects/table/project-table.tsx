@@ -13,15 +13,8 @@ import { useFocusedRow } from "@/shared/hooks/use-focused-row"
 import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
 
-import { EntityTable } from "@/shared/ui/entity-table"
-import { EntityTableSkeleton } from "@/shared/ui/entity-table"
-
-import { buildProjectColumns } from "./build-project-columns"
-import { ProjectExpandedRow } from "../components/expanded-row/project-expanded-row"
 import { ProjectMobileCard } from "./project-mobile-card"
 import { ProjectMobileSkeleton } from "./project-mobile-skeleton"
-
-import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 import { useProjectSearch } from "../hooks/use-project-search"
 
@@ -56,8 +49,6 @@ export function ProjectTable({
 }: Props) {
 
   const expand = useEntityExpand()
-
-  const { isMobile } = useResponsive()
 
   const projectSortMode = useSortStore(
     s => s.projectSortMode,
@@ -147,109 +138,62 @@ export function ProjectTable({
     ),
   })
 
-  const columns = useMemo(
-    () => buildProjectColumns(),
-    [],
-  )
-
   if (loading) {
-
-    if (isMobile) {
-      return <ProjectMobileSkeleton />
-    }
-
-    return (
-      <EntityTableSkeleton
-        columns={columns}
-      />
-    )
-  }
-
-  if (isMobile) {
-
-    return (
-
-      <>
-
-        <div className="flex flex-col gap-2 pb-2">
-
-          {displayedProjects.map(project => {
-
-            const card = (
-
-              <ProjectMobileCard
-                project={project}
-                tasks={tasks}
-                expanded={expand.expandedRowId === project.id}
-                onToggle={() =>
-                  expand.setExpandedRowId(
-                    expand.expandedRowId === project.id
-                      ? null
-                      : project.id,
-                  )
-                }
-              />
-
-            )
-
-            return (
-
-              <div key={project.id}>
-
-                {/* Mismo dragApi que ya usa la grilla de desktop —
-                    templateColumns vacío porque la card mobile maneja
-                    su propio layout, no un grid de columnas. */}
-                {dragApi.renderRow(project, card, "", project.id)}
-
-              </div>
-
-            )
-
-          })}
-
-          {displayedProjects.length === 0 && (
-
-            <div className="flex h-24 items-center justify-center rounded-xl bg-white/2 text-sm text-neutral-500">
-              Sin proyectos
-            </div>
-
-          )}
-
-        </div>
-
-        {/* Antes esto solo estaba en el return de desktop, más
-            abajo en el archivo — como el branch de mobile hace
-            return ACÁ arriba, ese código nunca se alcanzaba. El
-            globito flotante y la línea de inserción no aparecían
-            nunca al arrastrar en mobile; lo que se veía era la
-            propia card a mitad de su animación de desaparecer
-            (opacity+scale), no el overlay real. */}
-        {isManualMode && dragApi.overlay}
-
-      </>
-
-    )
-
+    return <ProjectMobileSkeleton />
   }
 
   return (
+
     <>
-      <EntityTable
-        data={displayedProjects}
-        columns={columns}
-        rowId={p => p.id}
-        expandedRowId={expand.expandedRowId}
-        onExpandedRowChange={expand.setExpandedRowId}
-        renderRow={dragApi.renderRow}
-        renderExpandedRow={project => (
-          <ProjectExpandedRow
-            project={project}
-            tasks={tasks}
-          />
+
+      <div className="flex flex-col gap-2 pb-2">
+
+        {displayedProjects.map(project => {
+
+          const card = (
+
+            <ProjectMobileCard
+              project={project}
+              tasks={tasks}
+              expanded={expand.expandedRowId === project.id}
+              onToggle={() =>
+                expand.setExpandedRowId(
+                  expand.expandedRowId === project.id
+                    ? null
+                    : project.id,
+                )
+              }
+            />
+
+          )
+
+          return (
+
+            <div key={project.id}>
+
+              {/* templateColumns vacío porque la card maneja su
+                  propio layout, no un grid de columnas. */}
+              {dragApi.renderRow(project, card, "", project.id)}
+
+            </div>
+
+          )
+
+        })}
+
+        {displayedProjects.length === 0 && (
+
+          <div className="flex h-24 items-center justify-center rounded-xl bg-white/2 text-sm text-neutral-500">
+            Sin proyectos
+          </div>
+
         )}
-      />
+
+      </div>
 
       {isManualMode && dragApi.overlay}
+
     </>
+
   )
 }

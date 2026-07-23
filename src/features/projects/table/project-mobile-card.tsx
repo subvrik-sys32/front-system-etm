@@ -26,47 +26,25 @@ type Props = {
   onToggle: () => void
 }
 
-// Equivalente mobile de una fila de EntityTable + su expand-row,
-// pero como tarjeta apilada en vez de columnas — mismo patrón que
-// TaskPipelineCard para tareas. Reutiliza las mismas celdas
-// editables (EntitySelect/UserSelect) y el mismo ProjectExpandedRow
-// que ya existen para desktop, sin duplicar lógica de negocio.
 export function ProjectMobileCard({
   project,
   tasks,
   expanded,
   onToggle,
 }: Props) {
-
-  // Igual que Pipeline Operativo: los 4 campos editables (Cliente/
-  // Etapa/Estado/PM) arrancan colapsados en un único resumen — se
-  // expanden a la lista completa de Selects recién si el usuario
-  // toca ese resumen. Antes se mostraban siempre los 4 juntos,
-  // sumando mucho alto a la tarjeta solo para un vistazo rápido.
   const [showFields, setShowFields] = useState(false)
-
   const [showPipeline, setShowPipeline] = useState(false)
 
   useEffect(() => {
-
     if (!expanded) {
       setShowFields(false)
       setShowPipeline(false)
     }
-
   }, [expanded])
 
   return (
-
     <div className="overflow-hidden rounded-xl bg-white/2">
-
       <div className="flex items-center gap-1 px-1">
-
-        {/* Mismo componente que ya usa desktop (DragCell) — mismo
-            orden que la grilla ahí (drag primero, afuera de
-            cualquier botón de expandir), para que agarrar los
-            puntitos arrastre y tocar el resto de la fila expanda,
-            sin que se pisen los dos gestos. */}
         <DragCell />
 
         <button
@@ -74,13 +52,18 @@ export function ProjectMobileCard({
           onClick={onToggle}
           className="flex min-w-0 flex-1 items-center gap-2.5 py-3 pr-2 text-left"
         >
-
-          <span className="shrink-0 rounded-md bg-white/8 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white/50">
+          {/* ID con el color del cliente aplicado dinámicamente */}
+          <span 
+            className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-semibold tracking-wide"
+            style={{ 
+              backgroundColor: `${project.client.color}15`, 
+              color: project.client.color 
+            }}
+          >
             {String(project.sequence).padStart(3, "0")}
           </span>
 
           <div className="min-w-0 flex-1">
-
             <p className="truncate text-sm font-semibold text-white">
               {project.name}
             </p>
@@ -88,7 +71,6 @@ export function ProjectMobileCard({
             <p className="mt-0.5 truncate text-xs text-neutral-500">
               {project.projectCode}
             </p>
-
           </div>
 
           <span className="shrink-0 text-xs text-neutral-500">
@@ -102,26 +84,13 @@ export function ProjectMobileCard({
               expanded && "rotate-180",
             )}
           />
-
         </button>
-
       </div>
 
       {expanded && (
-
         <div className="space-y-3 px-3 pb-3 pt-3">
-
-          {/*
-            Columna única a propósito: los triggers de EntitySelect/
-            UserSelect no están garantizados a encogerse bien en una
-            grilla de 2 columnas angosta (mismo tipo de desborde que
-            ya vimos con DynamicBadge en otros lugares) — una sola
-            columna es la opción segura por ahora.
-          */}
           {showFields ? (
-
             <div className="flex flex-col gap-2">
-
               <button
                 type="button"
                 onClick={() => setShowFields(false)}
@@ -135,25 +104,17 @@ export function ProjectMobileCard({
               </button>
 
               <ProjectClientCell project={project} triggerVariant="row" rowLabel="Cliente" />
-
               <ProjectStageCell project={project} triggerVariant="row" rowLabel="Etapa" />
-
               <ProjectStatusCell project={project} triggerVariant="row" rowLabel="Estado" />
-
               <ProjectPmCell project={project} triggerVariant="row" rowLabel="PM" />
-
             </div>
-
           ) : (
-
             <button
               type="button"
               onClick={() => setShowFields(true)}
               className="flex w-full items-center gap-2 rounded-lg bg-white/3 px-3 py-2.5 transition hover:bg-white/5"
             >
-
               <span className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-sm text-neutral-300">
-
                 <span
                   className="size-1.5 shrink-0 rounded-full"
                   style={{ backgroundColor: project.client.color }}
@@ -181,20 +142,16 @@ export function ProjectMobileCard({
                 <span className="shrink-0 text-neutral-600">·</span>
 
                 <span className="min-w-0 truncate text-neutral-400">{project.pm.name}</span>
-
               </span>
 
               <ChevronDown
                 size={14}
                 className="shrink-0 text-neutral-500"
               />
-
             </button>
-
           )}
 
           <div className="flex items-center justify-between">
-
             <IconAction
               icon={MoreHorizontal}
               onClick={() =>
@@ -203,21 +160,13 @@ export function ProjectMobileCard({
             />
 
             <ProjectRowActions project={project} />
-
           </div>
 
           {showPipeline && (
-
             <ProjectExpandedRow project={project} tasks={tasks} />
-
           )}
-
         </div>
-
       )}
-
     </div>
-
   )
-
 }

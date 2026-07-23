@@ -67,9 +67,9 @@ type Props = {
   disabled?:boolean
 
   // "badge" (default): sin cambios. "row": fila compacta — mismo
-  // patrón que EntitySelect, para listas apiladas (ej. PM en la
-  // tarjeta mobile de Proyectos) en vez de un badge coloreado a
-  // todo el ancho.
+  // patrón que EntitySelect: en mobile label a la izquierda / valor
+  // a la derecha; en desktop se invierte (valor primero) y el
+  // popover abre alineado a "start".
   triggerVariant?:"badge"|"row"
   rowLabel?:string
 
@@ -101,7 +101,7 @@ export function UserSelect({
   const inputRef=
     useRef<HTMLInputElement>(null)
 
-  const { isCompact } = useResponsive()
+  const { isCompact, isMobile } = useResponsive()
 
   const RowIcon = value?.icon
     ? ENTITY_ICONS[value.icon]
@@ -190,19 +190,28 @@ export function UserSelect({
 
       <PopoverTrigger asChild>
 
-        {triggerVariant === "row" ? (
+        {triggerVariant === "row" ? (() => {
 
-          <button
-            type="button"
-            disabled={disabled}
-            className="flex w-full min-w-0 items-center justify-between gap-2 rounded-lg bg-white/3 px-3 py-2.5 text-left transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-
+          const labelEl = (
             <span className="shrink-0 text-xs font-medium text-neutral-500">
               {rowLabel}
             </span>
+          )
 
+          const valueEl = (
             <span className="flex min-w-0 items-center gap-1.5">
+
+              {!disabled && (
+
+                <ChevronDown
+                  size={14}
+                  className={cn(
+                    "shrink-0 text-neutral-500 transition-transform duration-200",
+                    open && "rotate-180",
+                  )}
+                />
+
+              )}
 
               {RowIcon && (
                 <RowIcon
@@ -219,23 +228,37 @@ export function UserSelect({
                 {value?.name ?? placeholder}
               </span>
 
-              {!disabled && (
+            </span>
+          )
 
-                <ChevronDown
-                  size={14}
-                  className={cn(
-                    "shrink-0 text-neutral-500 transition-transform duration-200",
-                    open && "rotate-180",
-                  )}
-                />
+          return (
 
+            <button
+              type="button"
+              disabled={disabled}
+              className="flex w-full min-w-0 items-center justify-between gap-2 rounded-lg bg-white/3 px-3 py-2.5 text-left transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+
+              {/* Mismo criterio que EntitySelect: mobile mantiene
+                  label a la izquierda / valor a la derecha; desktop
+                  lo invierte (valor primero). */}
+              {isMobile ? (
+                <>
+                  {labelEl}
+                  {valueEl}
+                </>
+              ) : (
+                <>
+                  {valueEl}
+                  {labelEl}
+                </>
               )}
 
-            </span>
+            </button>
 
-          </button>
+          )
 
-        ) : (
+        })() : (
 
           <button
             type="button"
@@ -269,6 +292,7 @@ export function UserSelect({
       <PopoverContent
         sideOffset={8}
         className="w-72 p-2"
+        align={triggerVariant === "row" && !isMobile ? "start" : "center"}
       >
 
         <Command

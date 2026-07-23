@@ -2,6 +2,9 @@
 
 import { useState } from "react"
 
+import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+import { usePermissions } from "@/features/permissions/hooks/use-permissions"
+
 import { useMyActivityLog } from "../hooks/use-my-activity-log"
 import { useDeleteActivityLog } from "../hooks/use-delete-activity-log"
 import { SHIFT_GROUPS } from "../constants/shift-definitions"
@@ -21,16 +24,23 @@ export function ActivityLogPageContent() {
   const { logs, loading } = useMyActivityLog()
   const { deleteLog } = useDeleteActivityLog()
 
+  const { has } = usePermissions()
+  const canCreate = has(PermissionCode.ACTIVITY_LOG_CREATE)
+  const canDelete = has(PermissionCode.ACTIVITY_LOG_DELETE)
+
   const [pickerOpen, setPickerOpen] = useState(false)
   const [activeSlot, setActiveSlot] = useState<ShiftSlotDefinition | null>(null)
   const [deletingLogId, setDeletingLogId] = useState<string | null>(null)
 
   function handleOpenPicker(slot: ShiftSlotDefinition) {
+    if (!canCreate) return
     setActiveSlot(slot)
     setPickerOpen(true)
   }
 
   async function handleDeleteLog(id: string) {
+
+    if (!canDelete) return
 
     setDeletingLogId(id)
 
@@ -81,6 +91,8 @@ export function ActivityLogPageContent() {
                 onLogClick={handleOpenPicker}
                 onDeleteLog={handleDeleteLog}
                 deletingLogId={deletingLogId}
+                canCreate={canCreate}
+                canDelete={canDelete}
               />
 
             )
@@ -92,7 +104,7 @@ export function ActivityLogPageContent() {
       </div>
 
       <ActivityPickerDialog
-        open={pickerOpen}
+        open={canCreate && pickerOpen}
         activeSlot={activeSlot}
         onOpenChange={(open) => {
           setPickerOpen(open)

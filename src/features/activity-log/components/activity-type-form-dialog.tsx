@@ -126,30 +126,41 @@ export function ActivityTypeFormDialog({
       return
     }
 
-    if (isEditing) {
+    try {
 
-      await updateType({
-        id: editingType.id,
-        dto: {
+      if (isEditing) {
+
+        await updateType({
+          id: editingType.id,
+          dto: {
+            label: value.name.trim(),
+            icon: value.icon,
+            color: value.color,
+            pinned,
+          },
+        })
+
+      } else {
+
+        await createType({
           label: value.name.trim(),
           icon: value.icon,
           color: value.color,
           pinned,
-        },
-      })
+        })
 
-    } else {
+      }
 
-      await createType({
-        label: value.name.trim(),
-        icon: value.icon,
-        color: value.color,
-        pinned,
-      })
+      onOpenChange(false)
+
+    } catch (error) {
+
+      // Mismo criterio que ProfileDialog: el toast lo muestra el
+      // interceptor global, acá solo evitamos que la excepción
+      // quede sin capturar y no cerramos el dialog en error.
+      console.error("ACTIVITY TYPE SAVE ERROR", error)
 
     }
-
-    onOpenChange(false)
 
   }
 

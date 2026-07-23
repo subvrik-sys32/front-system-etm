@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Check, Loader2 } from "lucide-react"
+import { Check } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 
 import { cn } from "@/shared/utils/utils"
 
@@ -165,7 +166,7 @@ export function WorkflowNumericField({
         >
 
           {saving
-            ? <Loader2 size={14} className="animate-spin" />
+            ? <Spinner size={14} />
             : <Check size={14} />
           }
 

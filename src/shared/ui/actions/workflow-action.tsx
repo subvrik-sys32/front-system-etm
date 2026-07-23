@@ -2,11 +2,14 @@
 
 import {
   Check,
-  Loader2,
   Pause,
   Play,
   Search,
 } from "lucide-react"
+
+import {
+  Spinner,
+} from "@/shared/ui/spinner/spinner"
 
 import {
   cn,
@@ -107,10 +110,7 @@ export function WorkflowAction({
 
             }
 
-  const Icon=
-    loading
-      ?Loader2
-      :config.icon
+  const Icon=config.icon
 
   const isDisabled=
     disabled||loading
@@ -143,7 +143,7 @@ export function WorkflowAction({
 
         loading
 
-          ?label
+          ?(loadingLabel??label)
 
           :disabled
 
@@ -183,33 +183,37 @@ export function WorkflowAction({
 
     >
 
-      <Icon
+      {loading ? (
 
-        size={14}
+        <Spinner size={14} />
 
-        strokeWidth={2.4}
+      ) : (
 
-        className={cn(
+        <Icon
 
-          loading
+          size={14}
 
-            ?"text-neutral-300 animate-spin"
+          strokeWidth={2.4}
 
-            :config.iconClass,
+          className={cn(
 
-          isDisabled&&!loading&&"opacity-40",
+            config.iconClass,
 
-          "shrink-0",
+            isDisabled&&"opacity-40",
 
-        )}
+            "shrink-0",
 
-      />
+          )}
 
-      {!iconOnly&&(
+        />
+
+      )}
+
+      {!iconOnly&&!loading&&(
 
         <span className="min-w-0 truncate select-none">
 
-          {loading?(loadingLabel??"Procesando..."):label}
+          {label}
 
         </span>
 

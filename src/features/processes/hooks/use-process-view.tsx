@@ -5,7 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation"
 
 import type { ProcessView } from "../components/actions/process-view-toggle"
 
-const DEFAULT_VIEW: ProcessView = "tabla"
+const DEFAULT_VIEW: ProcessView = "card"
 
 function isValidView(value: string | null): value is ProcessView {
   return value === "card" || value === "tabla"

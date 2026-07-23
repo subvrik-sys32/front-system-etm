@@ -47,9 +47,21 @@ export function ProfileDialog({ open, onClose }: Props) {
 
   async function handleSave() {
 
-    await save({ name, phone, position })
+    try {
 
-    onClose()
+      await save({ name, phone, position })
+
+      onClose()
+
+    } catch (error) {
+
+      // El toast de error lo muestra el interceptor global en
+      // api-client.ts — acá solo evitamos que la excepción quede
+      // sin capturar y evitamos cerrar el dialog para no perder lo
+      // que el usuario escribió.
+      console.error("PROFILE SAVE ERROR", error)
+
+    }
 
   }
 

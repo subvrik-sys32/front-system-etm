@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
-import { Eraser, Bell, History, Loader2 } from "lucide-react"
+import { Eraser, Bell, History } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 
 import { cn } from "@/shared/utils/utils"
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
@@ -331,7 +332,7 @@ export function NotificationBell({ collapsed, variant = "sidebar" }: Props) {
                   >
 
                     {loadingMore
-                      ? <Loader2 size={12} className="animate-spin" />
+                      ? <Spinner size={12} />
                       : "Cargar más"}
 
                   </button>

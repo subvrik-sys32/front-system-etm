@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 
 import {
   cn,
@@ -17,7 +17,7 @@ export function EntitySaveButton({
   disabled,
   saving = false,
   saveLabel = "Guardar",
-  savingLabel = "Guardando...",
+  savingLabel,
   onClick,
   className,
 }: Props){  
@@ -29,6 +29,7 @@ export function EntitySaveButton({
     <button
       disabled={isDisabled}
       onClick={onClick}
+      aria-label={saving ? (savingLabel ?? saveLabel) : undefined}
       className={cn(
         "flex min-w-38 items-center justify-center gap-2 rounded-xl px-7 py-3 text-sm font-semibold transition",
         saving
@@ -40,11 +41,11 @@ export function EntitySaveButton({
       )}
     >
 
-      {saving && (
-        <Loader2 size={16} className="animate-spin" />
+      {saving ? (
+        <Spinner size={16} />
+      ) : (
+        saveLabel
       )}
-
-      {saving ? savingLabel : saveLabel}
 
     </button>
 

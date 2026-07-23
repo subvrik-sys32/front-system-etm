@@ -1,5 +1,6 @@
 // src/shared/components/primary-action.tsx
-import { LucideIcon, Loader2 } from "lucide-react";
+import { LucideIcon } from "lucide-react";
+import { Spinner } from "@/shared/ui/spinner/spinner";
 import { cn } from "@/shared/utils/utils";
 
 type Props = {
@@ -23,11 +24,13 @@ export function PrimaryAction({ label, icon: Icon, disabled = false, isLoading =
       )}
     >
       {isLoading ? (
-        <Loader2 size={16} className="animate-spin" />
-      ) : Icon ? (
-        <Icon size={16} strokeWidth={2.5} />
-      ) : null}
-      {isLoading ? "Procesando..." : label}
+        <Spinner size={16} />
+      ) : (
+        <>
+          {Icon ? <Icon size={16} strokeWidth={2.5} /> : null}
+          {label}
+        </>
+      )}
     </button>
   );
 }

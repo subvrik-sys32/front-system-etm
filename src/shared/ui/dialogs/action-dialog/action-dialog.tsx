@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import type { LucideIcon } from "lucide-react"
 
-import { AlertTriangle, Loader2 } from "lucide-react"
+import { AlertTriangle } from "lucide-react"
 
 import {
   Dialog,
@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog"
 
 import { cn } from "@/shared/utils/utils"
+
+import { Spinner } from "@/shared/ui/spinner/spinner"
 
 import { preventNestedDialogClose } from "@/shared/ui/dialogs/prevent-nested-dialog-close"
 
@@ -31,8 +33,11 @@ type Props = {
   cancelLabel?: string
 
   /**
-   * Texto que se muestra mientras se procesa la acción.
-   * Si no se proporciona, usará "Eliminando..." si variant es "danger", o "Guardando..." por defecto.
+   * Texto accesible (aria-label/title) mientras se procesa la acción.
+   * Ya no se muestra como texto visible en el botón — solo el
+   * spinner — pero sigue disponible para lectores de pantalla.
+   * Si no se proporciona, usa "Eliminando..." si variant es
+   * "danger", o "Guardando..." por defecto.
    */
   submittingLabel?: string
 
@@ -59,7 +64,7 @@ export function ActionDialog({
 
   const danger = variant === "danger"
 
-  // Determinar automáticamente el texto de carga según la variante
+  // Determinar automáticamente el texto accesible según la variante
   const loadingText =
     submittingLabel ?? (danger ? "Eliminando..." : "Guardando...")
 
@@ -123,6 +128,7 @@ export function ActionDialog({
           <button
             onClick={handleConfirm}
             disabled={submitting}
+            aria-label={submitting ? loadingText : undefined}
             className={cn(
               "relative isolate transform-gpu flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70",
               danger
@@ -131,10 +137,7 @@ export function ActionDialog({
             )}
           >
             {submitting ? (
-              <>
-                <Loader2 size={16} className="animate-spin shrink-0" />
-                <span className="relative z-10 block transform-gpu">{loadingText}</span>
-              </>
+              <Spinner size={16} />
             ) : (
               <span className="relative z-10 block transform-gpu">{confirmLabel}</span>
             )}

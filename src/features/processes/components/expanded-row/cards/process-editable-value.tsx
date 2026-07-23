@@ -6,7 +6,7 @@ import {
   useState,
 } from "react"
 
-import { Loader2 } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 
 type Props = {
   value: string | number | null
@@ -133,9 +133,9 @@ export function ProcessEditableValue({
 
         {saving && (
 
-          <Loader2
+          <Spinner
             size={13}
-            className="absolute right-0 animate-spin text-neutral-400"
+            className="absolute right-0 text-neutral-400"
           />
 
         )}

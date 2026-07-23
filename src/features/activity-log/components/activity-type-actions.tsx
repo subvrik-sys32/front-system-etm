@@ -7,6 +7,9 @@ import { PrimaryAction } from "@/shared/ui/actions/primary-action"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { cn } from "@/shared/utils/utils"
 
+import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+import { usePermissions } from "@/features/permissions/hooks/use-permissions"
+
 import { ActivityTypeFormDialog } from "./activity-type-form-dialog"
 
 // Mismo patrón que ProjectActions/TaskActions/UserActions: vive en
@@ -23,6 +26,9 @@ export function ActivityTypeActions() {
 
   const { isMobile } = useResponsive()
 
+  const { has } = usePermissions()
+  const canManage = has(PermissionCode.ACTIVITY_TYPE_MANAGE)
+
   return (
 
     <>
@@ -31,11 +37,17 @@ export function ActivityTypeActions() {
 
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          disabled={!canManage}
+          onClick={() => {
+            if (!canManage) return
+            setOpen(true)
+          }}
           aria-label="Nueva actividad"
           className={cn(
             "fixed bottom-20 right-4 z-30 flex size-12 items-center justify-center rounded-full transition-all duration-200",
-            "bg-white text-black hover:scale-105 hover:bg-neutral-100 active:scale-95",
+            canManage
+              ? "bg-white text-black hover:scale-105 hover:bg-neutral-100 active:scale-95"
+              : "cursor-not-allowed bg-white/20 text-white/40",
             "shadow-[0_12px_32px_rgba(0,0,0,0.55),0_4px_10px_rgba(255,255,255,0.08)]",
           )}
         >
@@ -47,13 +59,14 @@ export function ActivityTypeActions() {
         <PrimaryAction
           label="Nueva actividad"
           icon={Plus}
+          disabled={!canManage}
           onClick={() => setOpen(true)}
         />
 
       )}
 
       <ActivityTypeFormDialog
-        open={open}
+        open={canManage && open}
         onOpenChange={setOpen}
         editingType={null}
       />

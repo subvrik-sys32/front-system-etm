@@ -3,10 +3,11 @@
 import {
   AtSign,
   Check,
-  Loader2,
   MessageSquare,
   Trash2,
 } from "lucide-react"
+
+import { Spinner } from "@/shared/ui/spinner/spinner"
 
 import { cn } from "@/shared/utils/utils"
 import { formatNotificationDate } from "../utils/format-notification-date"
@@ -322,9 +323,9 @@ export function NotificationItem({
 
             {isSelecting ? (
 
-              <Loader2
+              <Spinner
                 size={13}
-                className="animate-spin text-cyan-400"
+                className="text-cyan-400"
               />
 
             ) : (

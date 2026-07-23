@@ -7,6 +7,9 @@ import { PrimaryAction } from "@/shared/ui/actions/primary-action"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { cn } from "@/shared/utils/utils"
 
+import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+import { usePermissions } from "@/features/permissions/hooks/use-permissions"
+
 import { ActivityPickerDialog } from "./activity-picker-dialog"
 
 // Mismo patrón que ProjectActions/TaskActions/UserActions/
@@ -21,6 +24,9 @@ export function ActivityLogActions() {
 
   const { isMobile } = useResponsive()
 
+  const { has } = usePermissions()
+  const canCreate = has(PermissionCode.ACTIVITY_LOG_CREATE)
+
   return (
 
     <>
@@ -29,11 +35,17 @@ export function ActivityLogActions() {
 
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          disabled={!canCreate}
+          onClick={() => {
+            if (!canCreate) return
+            setOpen(true)
+          }}
           aria-label="Registrar actividad"
           className={cn(
             "fixed bottom-20 right-4 z-30 flex size-12 items-center justify-center rounded-full transition-all duration-200",
-            "bg-white text-black hover:scale-105 hover:bg-neutral-100 active:scale-95",
+            canCreate
+              ? "bg-white text-black hover:scale-105 hover:bg-neutral-100 active:scale-95"
+              : "cursor-not-allowed bg-white/20 text-white/40",
             "shadow-[0_12px_32px_rgba(0,0,0,0.55),0_4px_10px_rgba(255,255,255,0.08)]",
           )}
         >
@@ -45,13 +57,14 @@ export function ActivityLogActions() {
         <PrimaryAction
           label="Registrar"
           icon={Plus}
+          disabled={!canCreate}
           onClick={() => setOpen(true)}
         />
 
       )}
 
       <ActivityPickerDialog
-        open={open}
+        open={canCreate && open}
         onOpenChange={setOpen}
       />
 

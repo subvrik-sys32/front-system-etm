@@ -1,7 +1,8 @@
 "use client"
 
 import { Toaster } from "sonner"
-import { CheckCircle2, XCircle, AlertTriangle, Info, Loader2 } from "lucide-react"
+import { CheckCircle2, XCircle, AlertTriangle, Info } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 
 export function Sonner(){
 
@@ -16,7 +17,7 @@ export function Sonner(){
         error: <XCircle className="h-4 w-4 text-red-500" />,
         warning: <AlertTriangle className="h-4 w-4 text-yellow-500" />,
         info: <Info className="h-4 w-4 text-blue-500" />,
-        loading: <Loader2 className="h-4 w-4 animate-spin text-white" />,
+        loading: <Spinner size={16} className="text-white" />,
       }}
       toastOptions={{
         duration: 4000,

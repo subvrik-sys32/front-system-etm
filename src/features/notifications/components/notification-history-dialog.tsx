@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Eraser, History, Loader2, Search, Trash2 } from "lucide-react"
+import { Eraser, History, Search, Trash2 } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 
 import {
   Dialog,
@@ -223,7 +224,7 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
                     className="flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-medium text-neutral-400 transition-colors hover:bg-white/5 hover:text-neutral-200 disabled:opacity-50"
                   >
                     {loadingMore
-                      ? <Loader2 size={12} className="animate-spin" />
+                      ? <Spinner size={12} />
                       : "Cargar más"}
                   </button>
                 )}

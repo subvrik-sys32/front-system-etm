@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react"
 
-import { Camera, Loader2, Trash2, Upload, Image as ImageIcon } from "lucide-react"
+import { Camera, Trash2, Upload, Image as ImageIcon } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 
 import { cn } from "@/shared/utils/utils"
 // Importa tu Popover personalizado aquí (ajusta la ruta según tu estructura)
@@ -83,9 +84,9 @@ export function AvatarPicker({
               )}
             >
               {uploading ? (
-                <Loader2
+                <Spinner
                   size={18}
-                  className="animate-spin text-white"
+                  className="text-white"
                 />
               ) : (
                 <Camera size={16} className="text-white" />

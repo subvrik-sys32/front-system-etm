@@ -5,6 +5,8 @@ import { Camera, SendHorizontal, X } from "lucide-react"
 import { PrimaryAction } from "@/shared/ui/actions/primary-action"
 import { IconAction } from "@/shared/ui/actions/icon-action"
 import { Popover, PopoverAnchor } from "@/components/ui/popover"
+import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { useCreateComment } from "../hooks/use-create-comment"
 import { useUpdateComment } from "../hooks/use-update-comment"
 import { useMentionableUsers } from "../hooks/use-mentionable-users"
@@ -35,6 +37,12 @@ export function CommentComposer({
   const { users } = useMentionableUsers()
 
   const isEditing = !!editingComment
+
+  const { has } = usePermissions()
+  // Editar un comentario propio no exige un permiso aparte (ver
+  // CommentItem: canEdit depende solo de isOwner) — COMMENT_CREATE
+  // solo aplica al flujo de publicar uno nuevo.
+  const canCreate = isEditing || has(PermissionCode.COMMENT_CREATE)
 
   const busy = updating
 
@@ -115,7 +123,7 @@ export function CommentComposer({
 
     const trimmed = message.trim()
 
-    if ((!trimmed && !selectedImage) || busy) return
+    if ((!trimmed && !selectedImage) || busy || !canCreate) return
 
     if (isEditing && editingComment) {
 
@@ -230,8 +238,12 @@ export function CommentComposer({
               value={message}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              disabled={busy}
-              placeholder="Escribe y usa @ para mencionar"
+              disabled={busy || !canCreate}
+              placeholder={
+                canCreate
+                  ? "Escribe y usa @ para mencionar"
+                  : "No tienes permisos para comentar"
+              }
               className="text-sm font-medium min-h-9 min-w-0 flex-1 resize-none bg-transparent text-white outline-none placeholder:text-neutral-600"
             />
 
@@ -251,20 +263,18 @@ export function CommentComposer({
 
           <IconAction
             icon={Camera}
+            disabled={!canCreate}
             onClick={() => fileInputRef.current?.click()}
           />
 
         )}
 
         <PrimaryAction
-          label={
-            isEditing
-              ? (busy ? "Guardando..." : "Guardar")
-              : "Publicar"
-          }
+          label={isEditing ? "Guardar" : "Publicar"}
           icon={SendHorizontal}
+          isLoading={busy}
           onClick={handleSubmit}
-          disabled={(!message.trim() && !selectedImage) || busy}
+          disabled={(!message.trim() && !selectedImage) || busy || !canCreate}
         />
 
       </div>

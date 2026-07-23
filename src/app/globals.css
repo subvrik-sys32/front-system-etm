@@ -320,3 +320,28 @@ input:focus-visible {
 [data-radix-scroll-area-viewport]::-webkit-scrollbar {
   display: none !important;
 }
+
+/* Spinner de rayitas radiales (ver shared/ui/spinner) — cada rayita
+   se atenúa en secuencia vía animation-delay negativo, dando el
+   efecto de "chase" característico del activity indicator estilo
+   iOS/Gemini/Claude, en vez de un círculo girando rígido. */
+@keyframes spinnerBladeFade {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.15;
+  }
+}
+
+.spinner-blade {
+  opacity: 0.15;
+  animation: spinnerBladeFade 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner-blade {
+    animation: none !important;
+    opacity: 0.6 !important;
+  }
+}

@@ -1,15 +1,7 @@
 // Cada columna de contenido usa minmax(piso, fr) — no un px fijo —
-// para que TODAS puedan achicarse/crecer juntas y proporcionalmente
-// con el ancho real disponible. El contenedor de la tabla
-// (TableScrollContainer) tiene "min-w-full" en el grid interno, así
-// que el "fr" tiene de dónde repartir espacio real: si sobra ancho,
-// las columnas crecen proporcional en vez de dejar un hueco vacío.
-//
-// Esto solo aplica al modo grilla normal (ancho del contenedor por
-// encima de COMPACT_BREAKPOINT_PX en entity-table.tsx). Por debajo
-// de ese punto, la fila entera cambia a modo card — no se oculta
-// ninguna columna ni se depende de scroll horizontal (ver
-// entity-table-card-row.tsx).
+// para que el ancho quede repartido de forma proporcional dentro
+// del grid interno de cada card (ver entity-table-card-row.tsx,
+// que es el único modo de fila que usa EntityTable hoy).
 //
 // Las únicas en px fijo son las de solo-ícono (drag, expand,
 // actions): su contenido nunca cambia de tamaño, no tiene sentido

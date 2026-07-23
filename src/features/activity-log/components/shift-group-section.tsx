@@ -16,6 +16,8 @@ type Props = {
   onLogClick: (slot: ShiftSlotDefinition) => void
   onDeleteLog: (id: string) => void
   deletingLogId?: string | null
+  canCreate: boolean
+  canDelete: boolean
 }
 
 export function ShiftGroupSection({
@@ -24,6 +26,8 @@ export function ShiftGroupSection({
   onLogClick,
   onDeleteLog,
   deletingLogId,
+  canCreate,
+  canDelete,
 }: Props) {
 
   const now = new Date()
@@ -160,9 +164,9 @@ export function ShiftGroupSection({
                         <button
                           type="button"
                           onClick={() => onDeleteLog(log.id)}
-                          disabled={deletingLogId === log.id}
+                          disabled={!canDelete || deletingLogId === log.id}
                           aria-label="Eliminar entrada"
-                          className="rounded-md p-1 text-neutral-600 opacity-100 transition-opacity hover:bg-red-500/10 hover:text-red-400 focus-visible:opacity-100 disabled:opacity-50 tablet:opacity-0 tablet:group-hover:opacity-100"
+                          className="rounded-md p-1 text-neutral-600 opacity-100 transition-opacity hover:bg-red-500/10 hover:text-red-400 focus-visible:opacity-100 disabled:opacity-35 disabled:cursor-not-allowed tablet:opacity-0 tablet:group-hover:opacity-100"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -179,9 +183,13 @@ export function ShiftGroupSection({
 
                   <button
                     type="button"
+                    disabled={!canCreate}
                     onClick={() => onLogClick(slot)}
                     className={cn(
-                      "flex items-center justify-center rounded-xl border border-dashed py-3 text-sm font-medium transition-colors hover:bg-white/4 hover:text-neutral-300",
+                      "flex items-center justify-center rounded-xl border border-dashed py-3 text-sm font-medium transition-colors",
+                      canCreate
+                        ? "hover:bg-white/4 hover:text-neutral-300"
+                        : "cursor-not-allowed opacity-50",
                       slot.required
                         ? "border-white/10 text-neutral-500"
                         : "border-white/6 text-neutral-600",

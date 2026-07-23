@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useRef, useState } from "react"
-import { Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react"
+import { Eye, EyeOff, CheckCircle2 } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 import { useRouter } from "next/navigation"
 import { authService } from "../services/auth.service"
 import { useAuthStore } from "../store/auth-store"
@@ -152,7 +153,7 @@ export function LoginForm() {
         {success
           ? <><CheckCircle2 size={17}/>Acceso concedido</>
           : loading
-            ? <><Loader2 size={17} className="animate-spin"/>Verificando...</>
+            ? <Spinner size={17}/>
             : "Entrar"}
       </button>
 

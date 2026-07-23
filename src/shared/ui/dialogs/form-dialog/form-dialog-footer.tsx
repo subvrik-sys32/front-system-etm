@@ -1,6 +1,6 @@
 "use client"
 
-import { Loader2 } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 
 import {
   cn,
@@ -20,7 +20,7 @@ export function FormDialogFooter({
   canSave,
   saving = false,
   saveLabel = "Guardar",
-  savingLabel = "Guardando...",
+  savingLabel,
   cancelLabel = "Cancelar",
   onCancel,
   onSave,
@@ -45,6 +45,7 @@ export function FormDialogFooter({
         type="button"
         disabled={saving}
         onClick={onSave}
+        aria-label={saving ? (savingLabel ?? saveLabel) : undefined}
         className={cn(
           "flex min-w-38 items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition",
 
@@ -56,16 +57,11 @@ export function FormDialogFooter({
         )}
       >
 
-        {saving && (
-
-          <Loader2
-            size={16}
-            className="animate-spin"
-          />
-
+        {saving ? (
+          <Spinner size={16} />
+        ) : (
+          saveLabel
         )}
-
-        {saving ? savingLabel : saveLabel}
 
       </button>
 

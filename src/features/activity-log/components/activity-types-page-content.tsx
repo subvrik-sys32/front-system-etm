@@ -10,6 +10,9 @@ import { EntityToolbarSearch } from "@/shared/ui/entity-toolbar/entity-toolbar-s
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { cn } from "@/shared/utils/utils"
 
+import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+import { usePermissions } from "@/features/permissions/hooks/use-permissions"
+
 import { useActivityTypes } from "../hooks/use-activity-types"
 import { useActivityTypeMutations } from "../hooks/use-activity-type-mutations"
 import { getActivityIcon } from "../constants/activity-icons"
@@ -20,11 +23,13 @@ import type { ActivityType } from "../types/activity-log.types"
 
 function ActivityTypeRow({
   type,
+  canManage,
   onEdit,
   onToggleActive,
   onDelete,
 }: {
   type: ActivityType
+  canManage: boolean
   onEdit: (type: ActivityType) => void
   onToggleActive: (type: ActivityType) => void
   onDelete: (type: ActivityType) => void
@@ -61,17 +66,20 @@ function ActivityTypeRow({
 
         <IconAction
           icon={Power}
+          disabled={!canManage}
           onClick={() => onToggleActive(type)}
         />
 
         <IconAction
           icon={Pencil}
+          disabled={!canManage}
           onClick={() => onEdit(type)}
         />
 
         <IconAction
           icon={Trash2}
           variant="danger"
+          disabled={!canManage}
           onClick={() => onDelete(type)}
         />
 
@@ -91,6 +99,9 @@ export function ActivityTypesPageContent() {
   // true: trae también los desactivados, para poder reactivarlos.
   const { types, loading } = useActivityTypes(true)
   const { updateType, removeType } = useActivityTypeMutations()
+
+  const { has } = usePermissions()
+  const canManage = has(PermissionCode.ACTIVITY_TYPE_MANAGE)
 
   const [formOpen, setFormOpen] = useState(false)
   const [editingType, setEditingType] = useState<ActivityType | null>(null)
@@ -117,17 +128,24 @@ export function ActivityTypesPageContent() {
   }, [types, search])
 
   const handleEdit = (type: ActivityType) => {
+    if (!canManage) return
     setEditingType(type)
     setFormOpen(true)
   }
 
   const handleToggleActive = (type: ActivityType) => {
+    if (!canManage) return
     updateType({ id: type.id, dto: { active: !type.active } })
+  }
+
+  const handleDeleteRequest = (type: ActivityType) => {
+    if (!canManage) return
+    setPendingDelete(type)
   }
 
   const handleConfirmDelete = async () => {
 
-    if (!pendingDelete) {
+    if (!pendingDelete || !canManage) {
       return
     }
 
@@ -191,9 +209,10 @@ export function ActivityTypesPageContent() {
                 <ActivityTypeRow
                   key={type.id}
                   type={type}
+                  canManage={canManage}
                   onEdit={handleEdit}
                   onToggleActive={handleToggleActive}
-                  onDelete={setPendingDelete}
+                  onDelete={handleDeleteRequest}
                 />
               ))}
 
@@ -217,9 +236,10 @@ export function ActivityTypesPageContent() {
                 <ActivityTypeRow
                   key={type.id}
                   type={type}
+                  canManage={canManage}
                   onEdit={handleEdit}
                   onToggleActive={handleToggleActive}
-                  onDelete={setPendingDelete}
+                  onDelete={handleDeleteRequest}
                 />
               ))}
 
@@ -246,13 +266,13 @@ export function ActivityTypesPageContent() {
       </div>
 
       <ActivityTypeFormDialog
-        open={formOpen}
+        open={canManage && formOpen}
         onOpenChange={setFormOpen}
         editingType={editingType}
       />
 
       <ActionDialog
-        open={!!pendingDelete}
+        open={canManage && !!pendingDelete}
         title="Eliminar actividad"
         description={
           pendingDelete

@@ -19,7 +19,7 @@ import {
 
 import { BackToProjectButton } from "@/features/projects/components/actions/back-to-project-button"
 
-import { TaskTable } from "@/features/tasks/table"
+import { TaskTable, TaskTableColumns } from "@/features/tasks/table"
 
 import {
   TaskPipelineBoard,
@@ -133,20 +133,21 @@ export function TaskPageContent({
     )
 
   }
-
+  console.log("DEBUG view:", JSON.stringify(view), typeof view, "isMobile:", isMobile)
   return(
 
-    // Desktop + vista "pipeline": h-full/min-h-0/overflow-hidden —
-    // una sola pantalla, el board interno scrollea (patrón app fija).
-    // Desktop + vista "table": SIN esas restricciones — TaskTable ya
-    // no usa EntityTable (ahora son tarjetas apiladas, igual que
-    // ProjectTable), así que fluye con su alto real como el resto
-    // de la página, sin necesitar scroll clip propio.
+    // Desktop + vistas "kanban"/"tabla": h-full/min-h-0/overflow-hidden
+    // — una sola pantalla, el contenido interno scrollea dentro de su
+    // propio contenedor (patrón app fija, no scroll de página).
+    // Desktop + vista "card": SIN esas restricciones — fluye con su
+    // alto real como el resto de la página.
     // Mobile: idem, sin restricciones en ningún caso — el <main
     // overflow-y-auto> del AppShell scrollea la página completa.
     <div className={cn(
       "relative mx-auto flex w-full max-w-400 flex-col",
-      !isMobile && view === "pipeline" ? "h-full min-h-0 overflow-hidden" : "",
+      !isMobile && (view === "kanban" || view === "tabla")
+        ? "h-full min-h-0 overflow-hidden"
+        : "",
     )}>
 
       <div className="shrink-0">
@@ -203,7 +204,7 @@ export function TaskPageContent({
 
       </div>
 
-      {view==="table"?(
+      {view==="card"&&(
 
         <div>
 
@@ -224,7 +225,32 @@ export function TaskPageContent({
 
         </div>
 
-      ):(
+      )}
+
+      {view==="tabla"&&(
+
+        <div className="min-h-0 flex-1 overflow-hidden">
+
+          <EntityExpandProvider>
+
+            <TaskTableColumns
+              tasks={tasks}
+              loading={loading}
+              focusedTaskId={focusedTaskId}
+              focusToken={focusToken}
+              search={search}
+              showHistory={showHistory}
+              reorderTasks={reorderTasks}
+              onHistoryRequired={()=>setShowHistory(true)}
+            />
+
+          </EntityExpandProvider>
+
+        </div>
+
+      )}
+
+      {view==="kanban"&&(
 
         <div className={cn(
           isMobile ? "" : "min-h-0 flex-1 overflow-hidden",

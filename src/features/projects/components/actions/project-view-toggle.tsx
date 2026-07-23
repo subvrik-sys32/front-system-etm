@@ -2,14 +2,14 @@
 
 import { cn } from "@/shared/utils/utils"
 
-export type TaskView = "card" | "tabla" | "kanban"
+export type ProjectView = "card" | "tabla"
 
 type Props = {
-  value: TaskView
-  onChange: (view: TaskView) => void
+  value: ProjectView
+  onChange: (view: ProjectView) => void
 }
 
-export function TaskViewToggle({
+export function ProjectViewToggle({
   value,
   onChange,
 }: Props) {
@@ -21,7 +21,6 @@ export function TaskViewToggle({
       {(
         [
           { key: "card", label: "Card" },
-          { key: "kanban", label: "Kanban" },
           { key: "tabla", label: "Tabla" },
         ] as const
       ).map(

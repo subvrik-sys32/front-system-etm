@@ -13,6 +13,7 @@ import { EntityToolbar } from "@/shared/ui/entity-toolbar/entity-toolbar"
 import { EntityToolbarSearch } from "@/shared/ui/entity-toolbar/entity-toolbar-search"
 import { cn } from "@/shared/utils/utils"
 import type { EntityIcon } from "@/shared/constants/entity-icons"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 import { useUserMutations } from "@/features/users/hooks/use-user-mutations"
 import { useUsers } from "@/features/users/hooks/use-users"
@@ -24,7 +25,6 @@ import { UserDesktopRowSkeleton } from "./user-desktop-row-skeleton"
 import { UserForm } from "./form/user-form"
 import { UserDialog } from "./dialog/user-dialog"
 
-// Reutilizamos los mismos componentes de fila/skeleton que usa la pantalla de Roles
 import {
   RoleDesktopRow,
   RoleDesktopRowSkeleton,
@@ -60,7 +60,6 @@ export function UsersPageContent() {
 
   const [search, setSearch] = useState("")
 
-  // Navegación en dos niveles dentro del aside: primero Roles, luego Usuarios de ese rol
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
@@ -88,13 +87,11 @@ export function UsersPageContent() {
     [roles, selectedRoleId],
   )
 
-  // Nivel 1: lista de roles (cuando todavía no se eligió ninguno)
   const filteredRoles = useMemo(() => {
     const q = search.trim().toLowerCase()
     return roles.filter(r => !q || r.name.toLowerCase().includes(q))
   }, [roles, search])
 
-  // Nivel 2: usuarios pertenecientes al rol elegido
   const usersInSelectedRole = useMemo(() => {
     if (!selectedRoleId) return []
     return users.filter(u => u.role.id === selectedRoleId)
@@ -116,7 +113,6 @@ export function UsersPageContent() {
     [users, selectedUserId],
   )
 
-  // Sincronización del formulario SOLO cuando hay un usuario elegido explícitamente
   useEffect(() => {
     if (isCreating || !selectedUser) return
 
@@ -256,7 +252,6 @@ export function UsersPageContent() {
         )}
       >
         {isMobile && (
-          /* Vista Móvil: primero Roles (misma vista que Roles/Permisos), luego Usuarios del rol elegido */
           <div className="flex min-h-0 flex-1 flex-col gap-4">
             {!selectedRole && (
               <div className="space-y-3">
@@ -314,244 +309,256 @@ export function UsersPageContent() {
                   )}
                 </header>
 
-                <div className="space-y-3">
-                  {loading ? (
-                    <UserMobileSkeleton />
-                  ) : filteredUsersInRole.length === 0 ? (
-                    <p className="px-3 py-6 text-center text-sm text-neutral-500">
-                      {search
-                        ? "Ningún usuario coincide con la búsqueda."
-                        : "Este rol todavía no tiene usuarios."}
-                    </p>
-                  ) : (
-                    filteredUsersInRole.map((u, i) => (
-                      <UserMobileCard
-                        key={u.id}
-                        user={u}
-                        index={i}
-                        expanded={selectedUserId === u.id}
-                        onToggle={() =>
-                          setSelectedUserId(curr => (curr === u.id ? null : u.id))
-                        }
-                      />
-                    ))
-                  )}
-                </div>
+                <ScrollArea
+                  data-entity-table-scroll
+                  className="min-h-0 flex-1 p-1.5"
+                >
+                  <div className="space-y-3">
+                    {loading ? (
+                      <UserMobileSkeleton />
+                    ) : filteredUsersInRole.length === 0 ? (
+                      <p className="px-3 py-6 text-center text-sm text-neutral-500">
+                        {search
+                          ? "Ningún usuario coincide con la búsqueda."
+                          : "Este rol todavía no tiene usuarios."}
+                      </p>
+                    ) : (
+                      filteredUsersInRole.map((u, i) => (
+                        <UserMobileCard
+                          key={u.id}
+                          user={u}
+                          index={i}
+                          expanded={selectedUserId === u.id}
+                          onToggle={() =>
+                            setSelectedUserId(curr => (curr === u.id ? null : u.id))
+                          }
+                        />
+                      ))
+                    )}
+                  </div>
+                  <ScrollBar className="w-1.5 bg-transparent hover:bg-white/5" />
+                </ScrollArea>
               </>
             )}
           </div>
         )}
 
         {!isMobile && (
-        /* Vista Desktop - Panel Maestro Detalle */
-        <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
-          {/* Panel Izquierdo: Roles -> Usuarios del rol */}
-          <aside className="flex h-full w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#101012]">
-            {!selectedRole ? (
-              <>
-                <div className="shrink-0 px-4 py-3">
-                  <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-                    Roles
-                  </p>
-                </div>
-
-                <div
-                  className="erp-scrollbar flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-2"
-                  style={{ scrollbarGutter: "stable" }}
-                >
-                  {loadingRoles ? (
-                    <RoleDesktopRowSkeleton />
-                  ) : filteredRoles.length === 0 ? (
-                    <p className="px-3 py-6 text-center text-sm text-neutral-500">
-                      {search ? "Ningún rol coincide con la búsqueda." : "No hay roles todavía."}
-                    </p>
-                  ) : (
-                    filteredRoles.map(role => (
-                      <RoleDesktopRow
-                        key={role.id}
-                        role={role}
-                        selected={false}
-                        onSelect={() => handleSelectRole(role)}
-                      />
-                    ))
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex shrink-0 items-center gap-2 px-3 py-3">
-                  <button
-                    type="button"
-                    onClick={handleBackToRoles}
-                    className="flex size-8 shrink-0 items-center justify-center rounded-xl text-neutral-400 transition-colors hover:bg-white/8 hover:text-white"
-                  >
-                    <ArrowLeft size={16} />
-                  </button>
-                  <div className="min-w-0">
+          <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
+            <aside className="flex h-full w-72 shrink-0 flex-col overflow-hidden rounded-2xl bg-white/3">
+              {!selectedRole ? (
+                <>
+                  <div className="shrink-0 px-4 py-3">
                     <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-                      Usuarios
+                      Roles
                     </p>
-                    <div className="mt-0.5 flex items-center gap-2">
-                      <span
-                        className="size-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: selectedRole.color || "#71717a" }}
-                      />
-                      <span className="truncate text-xs font-medium text-neutral-300">
-                        {selectedRole.name}
-                      </span>
-                    </div>
                   </div>
-                  {canCreate && (
+
+                  <ScrollArea
+                    data-entity-table-scroll
+                    className="min-h-0 flex-1 p-1.5"
+                  >
+                    <div className="flex flex-col gap-2.5">
+                      {loadingRoles ? (
+                        <RoleDesktopRowSkeleton />
+                      ) : filteredRoles.length === 0 ? (
+                        <p className="px-3 py-6 text-center text-sm text-neutral-500">
+                          {search ? "Ningún rol coincide con la búsqueda." : "No hay roles todavía."}
+                        </p>
+                      ) : (
+                        filteredRoles.map(role => (
+                          <RoleDesktopRow
+                            key={role.id}
+                            role={role}
+                            selected={false}
+                            onSelect={() => handleSelectRole(role)}
+                          />
+                        ))
+                      )}
+                    </div>
+                    <ScrollBar className="w-1.5 bg-transparent hover:bg-white/5" />
+                  </ScrollArea>
+                </>
+              ) : (
+                <>
+                  <div className="flex shrink-0 items-center gap-2 px-3 py-3">
                     <button
                       type="button"
-                      onClick={handleStartCreate}
-                      className="ml-auto flex size-8 shrink-0 items-center justify-center rounded-xl bg-white/8 text-white transition-colors hover:bg-white/14"
+                      onClick={handleBackToRoles}
+                      className="flex size-8 shrink-0 items-center justify-center rounded-xl text-neutral-400 transition-colors hover:bg-white/8 hover:text-white"
                     >
-                      <Plus size={16} />
+                      <ArrowLeft size={16} />
                     </button>
-                  )}
-                </div>
-
-                <div
-                  className="erp-scrollbar flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-2"
-                  style={{ scrollbarGutter: "stable" }}
-                >
-                  {loading ? (
-                    <UserDesktopRowSkeleton />
-                  ) : filteredUsersInRole.length === 0 ? (
-                    <p className="px-3 py-6 text-center text-sm text-neutral-500">
-                      {search
-                        ? "Ningún usuario coincide con la búsqueda."
-                        : "Este rol todavía no tiene usuarios."}
-                    </p>
-                  ) : (
-                    filteredUsersInRole.map(u => (
-                      <UserDesktopRow
-                        key={u.id}
-                        user={u}
-                        selected={!isCreating && selectedUserId === u.id}
-                        onSelect={() => handleSelectUser(u.id)}
-                      />
-                    ))
-                  )}
-                </div>
-              </>
-            )}
-          </aside>
-
-          {/* Panel Derecho: Detalle y Formulario de Usuario */}
-          <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#101012]">
-            {!showRightPanel ? (
-              <div className="m-5 flex h-full min-h-52 items-center justify-center rounded-2xl bg-white/2">
-                <div className="text-center">
-                  <p className="text-base font-medium text-neutral-300">
-                    {selectedRole ? "Ningún usuario seleccionado" : "Ningún rol seleccionado"}
-                  </p>
-                  <p className="mt-2 text-sm text-neutral-500">
-                    {selectedRole
-                      ? "Elegí un usuario desde el panel izquierdo para ver o editar sus datos."
-                      : "Elegí un rol desde el panel izquierdo para ver sus usuarios."}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <>
-                <header className="flex shrink-0 items-start justify-between gap-4 px-5 py-4">
-                  <div className="flex min-w-0 items-center gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-                        {isCreating ? "Nuevo usuario" : "Usuario"}
+                        Usuarios
                       </p>
-                      <div className="mt-1 flex items-center gap-2.5">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="size-2.5 shrink-0 rounded-full"
-                            style={{ backgroundColor: formData.color || "#71717a" }}
+                      <div className="mt-0.5 flex items-center gap-2">
+                        <span
+                          className="size-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: selectedRole.color || "#71717a" }}
+                        />
+                        <span className="truncate text-xs font-medium text-neutral-300">
+                          {selectedRole.name}
+                        </span>
+                      </div>
+                    </div>
+                    {canCreate && (
+                      <button
+                        type="button"
+                        onClick={handleStartCreate}
+                        className="ml-auto flex size-8 shrink-0 items-center justify-center rounded-xl bg-white/8 text-white transition-colors hover:bg-white/14"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    )}
+                  </div>
+
+                  <ScrollArea
+                    data-entity-table-scroll
+                    className="min-h-0 flex-1 p-1.5"
+                  >
+                    <div className="flex flex-col gap-2.5">
+                      {loading ? (
+                        <UserDesktopRowSkeleton />
+                      ) : filteredUsersInRole.length === 0 ? (
+                        <p className="px-3 py-6 text-center text-sm text-neutral-500">
+                          {search
+                            ? "Ningún usuario coincide con la búsqueda."
+                            : "Este rol todavía no tiene usuarios."}
+                        </p>
+                      ) : (
+                        filteredUsersInRole.map(u => (
+                          <UserDesktopRow
+                            key={u.id}
+                            user={u}
+                            selected={!isCreating && selectedUserId === u.id}
+                            onSelect={() => handleSelectUser(u.id)}
                           />
-                          <span className="truncate text-sm font-medium text-white">
-                            {isCreating
-                              ? "Asigná credenciales y permisos"
-                              : selectedUser?.name || "Detalle del usuario"}
-                          </span>
+                        ))
+                      )}
+                    </div>
+                    <ScrollBar className="w-1.5 bg-transparent hover:bg-white/5" />
+                  </ScrollArea>
+                </>
+              )}
+            </aside>
+
+            <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white/3">
+              {!showRightPanel ? (
+                <div className="flex h-full w-full items-center justify-center bg-transparent">
+                  <div className="text-center">
+                    <p className="text-base font-medium text-neutral-300">
+                      {selectedRole ? "Ningún usuario seleccionado" : "Ningún rol seleccionado"}
+                    </p>
+                    <p className="mt-2 text-sm text-neutral-500">
+                      {selectedRole
+                        ? "Elegí un usuario desde el panel izquierdo para ver o editar sus datos."
+                        : "Elegí un rol desde el panel izquierdo para ver sus usuarios."}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <header className="flex shrink-0 items-start justify-between gap-4 px-5 py-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                          {isCreating ? "Nuevo usuario" : "Usuario"}
+                        </p>
+                        <div className="mt-1 flex items-center gap-2.5">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="size-2.5 shrink-0 rounded-full"
+                              style={{ backgroundColor: formData.color || "#71717a" }}
+                            />
+                            <span className="truncate text-sm font-medium text-white">
+                              {isCreating
+                                ? "Asigná credenciales y permisos"
+                                : selectedUser?.name || "Detalle del usuario"}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex shrink-0 items-center gap-3">
-                    {!isCreating && canDelete && selectedUserId && (
-                      <button
-                        type="button"
-                        onClick={() => setDeleteOpen(true)}
-                        className="flex size-9 items-center justify-center rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
+                    <div className="flex shrink-0 items-center gap-3">
+                      {!isCreating && canDelete && selectedUserId && (
+                        <button
+                          type="button"
+                          onClick={() => setDeleteOpen(true)}
+                          className="flex size-9 items-center justify-center rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
 
-                    <PrimaryAction
-                      label={
-                        isSaving
-                          ? "Guardando..."
-                          : isCreating
-                            ? "Crear usuario"
-                            : "Guardar cambios"
+                      <PrimaryAction
+                        label={
+                          isSaving
+                            ? "Guardando..."
+                            : isCreating
+                              ? "Crear usuario"
+                              : "Guardar cambios"
+                        }
+                        disabled={!canUpdate || isSaving}
+                        onClick={handleSave}
+                      />
+                    </div>
+                  </header>
+
+                  <ScrollArea
+                    data-entity-table-scroll
+                    className="min-h-0 flex-1 p-5"
+                  >
+                    <UserForm
+                      name={formData.name}
+                      username={formData.username}
+                      email={formData.email}
+                      password={formData.password}
+                      confirmPassword={formData.confirmPassword}
+                      isEditing={!isCreating}
+                      isChangingPassword={formData.isChangingPassword}
+                      icon={formData.icon}
+                      color={formData.color}
+                      roles={roles}
+                      selectedRole={selectedFormRole}
+                      level={formData.level}
+                      errors={attempted ? errors : undefined}
+                      onRoleChange={roleId => {
+                        const nextRole = roles.find(r => r.id === roleId)
+                        setFormData(c => ({
+                          ...c,
+                          roleId,
+                          ...(nextRole?.code !== "PRODUCCION" && { level: null }),
+                        }))
+                      }}
+                      onLevelChange={level => setFormData(c => ({ ...c, level }))}
+                      onChangingPasswordChange={val =>
+                        setFormData(c => ({ ...c, isChangingPassword: val }))
                       }
-                      disabled={!canUpdate || isSaving}
-                      onClick={handleSave}
+                      onNameChange={val => setFormData(c => ({ ...c, name: val }))}
+                      onUsernameChange={val =>
+                        setFormData(c => ({ ...c, username: val }))
+                      }
+                      onEmailChange={val => setFormData(c => ({ ...c, email: val }))}
+                      onPasswordChange={val =>
+                        setFormData(c => ({ ...c, password: val }))
+                      }
+                      onConfirmPasswordChange={val =>
+                        setFormData(c => ({ ...c, confirmPassword: val }))
+                      }
+                      onColorChange={val => setFormData(c => ({ ...c, color: val }))}
                     />
-                  </div>
-                </header>
-
-                <div className="erp-scrollbar min-h-0 flex-1 overflow-y-auto p-5">
-                <UserForm
-                  name={formData.name}
-                  username={formData.username}
-                  email={formData.email}
-                  password={formData.password}
-                  confirmPassword={formData.confirmPassword}
-                  isEditing={!isCreating}
-                  isChangingPassword={formData.isChangingPassword}
-                  icon={formData.icon}
-                  color={formData.color}
-                  roles={roles}
-                  selectedRole={selectedFormRole}
-                  level={formData.level}
-                  errors={attempted ? errors : undefined}
-                  onRoleChange={roleId => {
-                    const nextRole = roles.find(r => r.id === roleId)
-                    setFormData(c => ({
-                      ...c,
-                      roleId,
-                      ...(nextRole?.code !== "PRODUCCION" && { level: null }),
-                    }))
-                  }}
-                  onLevelChange={level => setFormData(c => ({ ...c, level }))}
-                  onChangingPasswordChange={val =>
-                    setFormData(c => ({ ...c, isChangingPassword: val }))
-                  }
-                  onNameChange={val => setFormData(c => ({ ...c, name: val }))}
-                  onUsernameChange={val =>
-                    setFormData(c => ({ ...c, username: val }))
-                  }
-                  onEmailChange={val => setFormData(c => ({ ...c, email: val }))}
-                  onPasswordChange={val =>
-                    setFormData(c => ({ ...c, password: val }))
-                  }
-                  onConfirmPasswordChange={val =>
-                    setFormData(c => ({ ...c, confirmPassword: val }))
-                  }
-                  onColorChange={val => setFormData(c => ({ ...c, color: val }))}
-                />
-                </div>
-              </>
-            )}
-          </section>
-        </div>
+                    <ScrollBar className="w-1.5 bg-transparent hover:bg-white/5" />
+                  </ScrollArea>
+                </>
+              )}
+            </section>
+          </div>
         )}
       </div>
 
-      {/* Modal de creación para dispositivos móviles */}
       {isMobile && (
         <UserDialog
           open={mobileCreateOpen}
@@ -559,7 +566,6 @@ export function UsersPageContent() {
         />
       )}
 
-      {/* Modal de confirmación de borrado */}
       <ActionDialog
         open={deleteOpen}
         title="Eliminar usuario"

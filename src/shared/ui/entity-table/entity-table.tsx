@@ -26,7 +26,7 @@ export function EntityTable<T>({
 
   return (
 
-    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#101012]">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl bg-white/3">
 
       <ScrollArea
         data-entity-table-scroll

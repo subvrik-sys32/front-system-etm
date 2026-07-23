@@ -25,10 +25,6 @@ import {
 } from "@/shared/utils/utils"
 
 import {
-  PrimaryAction,
-} from "@/shared/ui/actions/primary-action"
-
-import {
   UserDialog,
 } from "../dialog/user-dialog"
 
@@ -96,17 +92,7 @@ export function UserActions(){
 
       ) : (
 
-        <PrimaryAction
-
-          label="Nuevo usuario"
-
-          icon={Plus}
-
-          disabled={!canCreate}
-
-          onClick={handleOpen}
-
-        />
+        <div className="h-10 w-38" aria-hidden />
 
       )}
 

@@ -105,16 +105,12 @@ function CardSkeletonRow<T>({
   )
 }
 
-// Modo tabla/grid eliminado, igual que en EntityTable. Mismo fix de
-// "border" en vez de "ring" que el archivo real (ver comentario en
-// entity-table.tsx) — el skeleton usa el mismo panel exterior, así
-// que sufre el mismo corte si no se corrige acá también.
 export function EntityTableSkeleton<T>({
   columns,
   rows = 6,
 }: Props<T>) {
   return (
-    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#101012]">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl bg-white/3">
       <div className="flex min-h-0 flex-1">
         <div
           data-entity-table-scroll
@@ -124,9 +120,6 @@ export function EntityTableSkeleton<T>({
             <CardSkeletonRow key={i} columns={columns} opacity={opacity} />
           ))}
         </div>
-
-        {/* Espacio reservado para el scrollbar */}
-        <div className="w-3 shrink-0" />
       </div>
     </div>
   )

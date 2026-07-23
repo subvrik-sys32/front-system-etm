@@ -42,7 +42,7 @@ function ScrollBar({
         "flex touch-none p-px transition-colors select-none",
         // Agregamos py-2.5 para que el thumb no toque las esquinas curvas en vertical,
         // y px-2.5 para el scrollbar horizontal.
-        "data-vertical:h-full data-vertical:w-2.5 data-vertical:border-l data-vertical:border-l-transparent data-vertical:py-2.5",
+        "data-vertical:h-full data-vertical:w-1.5 data-vertical:border-l data-vertical:border-l-transparent data-vertical:py-4.5",
         "data-horizontal:h-2.5 data-horizontal:flex-col data-horizontal:border-t data-horizontal:border-t-transparent data-horizontal:px-2.5",
         className
       )}

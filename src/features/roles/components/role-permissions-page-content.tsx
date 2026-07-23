@@ -29,6 +29,7 @@ import { EntityToolbar } from "@/shared/ui/entity-toolbar/entity-toolbar"
 import { EntityToolbarSearch } from "@/shared/ui/entity-toolbar/entity-toolbar-search"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { cn } from "@/shared/utils/utils"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 import type { Role } from "../types/role.types"
 
@@ -131,12 +132,11 @@ export function RolePermissionsPageContent() {
       >
         {/* PANEL ROLES */}
         {showRolesPanel && isMobile && (
-
           <div className="space-y-3">
             {loadingRoles && <RoleMobileSkeleton />}
 
             {!loadingRoles && filteredRoles.length === 0 && (
-              <div className="rounded-2xl bg-[#101012] px-4 py-8 text-center text-sm text-neutral-500">
+              <div className="rounded-2xl bg-white/3 px-4 py-8 text-center text-sm text-neutral-500">
                 {search ? "Ningún rol coincide con la búsqueda." : "No hay roles todavía."}
               </div>
             )}
@@ -154,41 +154,44 @@ export function RolePermissionsPageContent() {
         )}
 
         {showRolesPanel && !isMobile && (
-          <aside className="flex h-full w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#101012]">
+          <aside className="flex h-full w-72 shrink-0 flex-col overflow-hidden rounded-2xl bg-white/3">
             <div className="shrink-0 px-4 py-3">
               <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
                 Roles
               </p>
             </div>
 
-            <div
-              className="erp-scrollbar flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-2"
-              style={{ scrollbarGutter: "stable" }}
+            <ScrollArea
+              data-entity-table-scroll
+              className="min-h-0 flex-1 p-1.5"
             >
-              {loadingRoles && <RoleDesktopRowSkeleton />}
+              <div className="flex flex-col gap-2.5">
+                {loadingRoles && <RoleDesktopRowSkeleton />}
 
-              {!loadingRoles && filteredRoles.length === 0 && (
-                <p className="px-3 py-6 text-center text-sm text-neutral-500">
-                  {search ? "Ningún rol coincide con la búsqueda." : "No hay roles todavía."}
-                </p>
-              )}
+                {!loadingRoles && filteredRoles.length === 0 && (
+                  <p className="px-3 py-6 text-center text-sm text-neutral-500">
+                    {search ? "Ningún rol coincide con la búsqueda." : "No hay roles todavía."}
+                  </p>
+                )}
 
-              {!loadingRoles &&
-                filteredRoles.map((role) => (
-                  <RoleDesktopRow
-                    key={role.id}
-                    role={role}
-                    selected={selectedRole?.id === role.id}
-                    onSelect={() => setSelectedRole(role)}
-                  />
-                ))}
-            </div>
+                {!loadingRoles &&
+                  filteredRoles.map((role) => (
+                    <RoleDesktopRow
+                      key={role.id}
+                      role={role}
+                      selected={selectedRole?.id === role.id}
+                      onSelect={() => setSelectedRole(role)}
+                    />
+                  ))}
+              </div>
+
+              <ScrollBar className="w-1.5 bg-transparent hover:bg-white/5" />
+            </ScrollArea>
           </aside>
         )}
 
         {/* PANEL PERMISOS */}
         {showPermissionsPanel && isMobile && (
-
           <div className="flex min-h-0 flex-1 flex-col gap-4">
             <header className="flex shrink-0 items-start justify-between gap-4">
               <div className="flex min-w-0 items-center gap-3">
@@ -235,7 +238,10 @@ export function RolePermissionsPageContent() {
               />
             </header>
 
-            <div className="erp-scrollbar min-h-0 flex-1 overflow-y-auto">
+            <ScrollArea
+              data-entity-table-scroll
+              className="min-h-0 flex-1 p-1.5"
+            >
               {selectedRole && permissionsLoading && <RolePermissionsSkeleton />}
 
               {selectedRole && !permissionsLoading && (
@@ -255,24 +261,26 @@ export function RolePermissionsPageContent() {
                   ))}
                 </div>
               )}
-            </div>
+
+              <ScrollBar className="w-1.5 bg-transparent hover:bg-white/5" />
+            </ScrollArea>
           </div>
         )}
 
         {showPermissionsPanel && !isMobile && (
-          <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#101012]">
-            <header className="flex shrink-0 items-start justify-between gap-4 px-5 py-4">
-              <div className="flex min-w-0 items-center gap-3">
-                {!selectedRole && (
-                  <div className="min-w-0">
-                    <h2 className="truncate text-sm font-semibold text-neutral-300">Permisos</h2>
-                    <p className="mt-1 truncate text-sm text-neutral-500">
-                      Seleccioná un rol para visualizar y editar sus permisos.
-                    </p>
-                  </div>
-                )}
-
-                {selectedRole && (
+          <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white/3">
+            {!selectedRole ? (
+              <div className="flex h-full w-full items-center justify-center bg-transparent">
+                <div className="text-center">
+                  <p className="text-base font-medium text-neutral-300">Ningún rol seleccionado</p>
+                  <p className="mt-2 text-sm text-neutral-500">
+                    Elegí un rol desde el panel izquierdo para comenzar.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <header className="flex shrink-0 items-start justify-between gap-4 px-5 py-4">
                   <div className="min-w-0">
                     <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
                       Permisos
@@ -294,49 +302,43 @@ export function RolePermissionsPageContent() {
                       )}
                     </div>
                   </div>
-                )}
-              </div>
 
-              <PrimaryAction
-                label={saving ? "Guardando..." : "Guardar cambios"}
-                icon={Save}
-                onClick={handleSave}
-                disabled={!selectedRole || !dirty || saving}
-              />
-            </header>
+                  <PrimaryAction
+                    label={saving ? "Guardando..." : "Guardar cambios"}
+                    icon={Save}
+                    onClick={handleSave}
+                    disabled={!dirty || saving}
+                  />
+                </header>
 
-            <div className="erp-scrollbar min-h-0 flex-1 overflow-y-auto p-5">
-              {!selectedRole && (
-                <div className="flex h-full min-h-52 items-center justify-center rounded-2xl bg-white/2">
-                  <div className="text-center">
-                    <p className="text-base font-medium text-neutral-300">Ningún rol seleccionado</p>
-                    <p className="mt-2 text-sm text-neutral-500">
-                      Elegí un rol desde el panel izquierdo para comenzar.
-                    </p>
-                  </div>
-                </div>
-              )}
+                <ScrollArea
+                  data-entity-table-scroll
+                  className="min-h-0 flex-1 p-1.5"
+                >
+                  {permissionsLoading && <RolePermissionsSkeleton />}
 
-              {selectedRole && permissionsLoading && <RolePermissionsSkeleton />}
+                  {!permissionsLoading && (
+                    <div className="flex flex-col gap-4">
+                      {grouped.map(([groupKey, groupPermissions]) => (
+                        <PermissionGroup
+                          key={groupKey}
+                          title={getPermissionGroupLabel(groupKey)}
+                          permissions={groupPermissions}
+                          checkedIds={checkedIds}
+                          onToggle={handleToggle}
+                          onToggleAll={handleToggleAll}
+                          getLabel={(permission) =>
+                            getPermissionActionLabel(permission.code, groupKey)
+                          }
+                        />
+                      ))}
+                    </div>
+                  )}
 
-              {selectedRole && !permissionsLoading && (
-                <div className="flex flex-col gap-4">
-                  {grouped.map(([groupKey, groupPermissions]) => (
-                    <PermissionGroup
-                      key={groupKey}
-                      title={getPermissionGroupLabel(groupKey)}
-                      permissions={groupPermissions}
-                      checkedIds={checkedIds}
-                      onToggle={handleToggle}
-                      onToggleAll={handleToggleAll}
-                      getLabel={(permission) =>
-                        getPermissionActionLabel(permission.code, groupKey)
-                      }
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+                  <ScrollBar className="w-1.5 bg-transparent hover:bg-white/5" />
+                </ScrollArea>
+              </>
+            )}
           </section>
         )}
       </div>

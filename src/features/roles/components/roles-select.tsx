@@ -232,7 +232,14 @@ export function RoleSelect({
                   }
                   onSelect={()=>{
 
-                    onChange(role)
+                    const isDeselecting =
+                      value?.id===role.id
+
+                    onChange(
+                      isDeselecting
+                        ?undefined
+                        :role
+                    )
 
                     close()
 

@@ -70,7 +70,11 @@ export function useEntitySelect<T extends EntityBase>({
   }
 
   function handleSelect(item: T) {
-    onChange(item)
+
+    const isDeselecting = value?.id === item.id
+
+    onChange(isDeselecting ? undefined : item)
+
     closePopover()
   }
 

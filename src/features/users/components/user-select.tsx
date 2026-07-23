@@ -347,7 +347,14 @@ export function UserSelect({
                   }
                   onSelect={()=>{
 
-                    onChange(user)
+                    const isDeselecting =
+                      value?.id===user.id
+
+                    onChange(
+                      isDeselecting
+                        ?undefined
+                        :user
+                    )
 
                     close()
 

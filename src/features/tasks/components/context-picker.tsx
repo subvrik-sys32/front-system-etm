@@ -295,6 +295,21 @@ export function ContextPicker({
 
   function selectProject(projectId: string) {
 
+    if (value.projectId === projectId) {
+
+      onChange({
+        projectId: "",
+        taskId: "",
+      })
+
+      setOpen(false)
+
+      setQuery("")
+
+      return
+
+    }
+
     onChange({
 
       projectId,
@@ -318,7 +333,10 @@ export function ContextPicker({
 
     onChange({
       projectId,
-      taskId,
+      taskId:
+        value.taskId === taskId
+          ? ""
+          : taskId,
     })
 
     setOpen(false)

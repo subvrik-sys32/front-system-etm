@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
@@ -63,6 +63,54 @@ export function MobilePipelineCarousel({
 
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
+
+  // El fade solo tiene sentido mientras la tarjeta está realmente
+  // en movimiento saliendo/entrando de pantalla — acá cada página
+  // ocupa el 100% del contenedor (snap-center de a una), así que en
+  // reposo la tarjeta centrada ya se ve completa, sin ningún borde
+  // de la siguiente/anterior asomando. Aplicar el mask todo el
+  // tiempo solo recorta sus propios bordes sin motivo. Se activa en
+  // el primer scroll y se apaga solo tras un breve respiro sin
+  // eventos (fin de la inercia/snap).
+  const [isScrolling, setIsScrolling] = useState(false)
+  const scrollEndTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleScroll = useCallback(() => {
+
+    setIsScrolling(true)
+
+    if (scrollEndTimeoutRef.current !== null) {
+      clearTimeout(scrollEndTimeoutRef.current)
+    }
+
+    scrollEndTimeoutRef.current = setTimeout(() => {
+      setIsScrolling(false)
+      scrollEndTimeoutRef.current = null
+    }, 150)
+
+  }, [])
+
+  useEffect(() => {
+
+    const el = containerRef.current
+
+    if (!el) {
+      return
+    }
+
+    el.addEventListener("scroll", handleScroll, { passive: true })
+
+    return () => {
+
+      el.removeEventListener("scroll", handleScroll)
+
+      if (scrollEndTimeoutRef.current !== null) {
+        clearTimeout(scrollEndTimeoutRef.current)
+      }
+
+    }
+
+  }, [handleScroll, containerRef])
 
   const updateArrows = useCallback(() => {
 
@@ -156,14 +204,18 @@ export function MobilePipelineCarousel({
       </button>
 
       <div
-        style={{
-          WebkitMaskImage: `linear-gradient(to right, transparent 0, black ${leftFade}px, black calc(100% - ${rightFade}px), transparent 100%)`,
-          maskImage: `linear-gradient(to right, transparent 0, black ${leftFade}px, black calc(100% - ${rightFade}px), transparent 100%)`,
-          WebkitMaskRepeat: "no-repeat",
-          maskRepeat: "no-repeat",
-          WebkitMaskSize: "100% 100%",
-          maskSize: "100% 100%",
-        }}
+        style={
+          isScrolling
+            ? {
+                WebkitMaskImage: `linear-gradient(to right, transparent 0, black ${leftFade}px, black calc(100% - ${rightFade}px), transparent 100%)`,
+                maskImage: `linear-gradient(to right, transparent 0, black ${leftFade}px, black calc(100% - ${rightFade}px), transparent 100%)`,
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskSize: "100% 100%",
+                maskSize: "100% 100%",
+              }
+            : undefined
+        }
         className="overflow-hidden"
       >
 

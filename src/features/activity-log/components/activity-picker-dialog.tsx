@@ -1,12 +1,17 @@
 "use client"
 
 import {
+  useEffect,
+  useRef,
   useState,
 } from "react"
 
 import {
   Search,
   MessageSquarePlus,
+  MoreHorizontal,
+  Camera,
+  X,
 } from "lucide-react"
 
 import {
@@ -20,6 +25,12 @@ import {
 import {
   cn,
 } from "@/shared/utils/utils"
+
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover"
 
 import {
   ContextPicker,
@@ -61,6 +72,17 @@ const EMPTY_CONTEXT: ContextPickerValue = {
   taskId: "",
 }
 
+// Convierte un File a data URI (base64) — mismo mecanismo que usa
+// CommentComposer para adjuntar fotos.
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(new Error("No se pudo leer la imagen"))
+    reader.readAsDataURL(file)
+  })
+}
+
 export function ActivityPickerDialog({
   open,
   onOpenChange,
@@ -99,11 +121,58 @@ export function ActivityPickerDialog({
     setSubmitAttempted,
   ] = useState(false)
 
-  // Estado para alternar la visibilidad de la nota (detalle opcional) en móviles
+  // Estado para alternar la visibilidad de la caja de detalle
+  // (nota + foto juntas) en móviles
   const [
-    showNoteInput,
-    setShowNoteInput,
+    showDetail,
+    setShowDetail,
   ] = useState(false)
+
+  // Foto adjunta opcional (detalle) — mismo patrón que CommentComposer:
+  // se guarda el File para la preview local y se convierte a base64
+  // recién al enviar.
+  const [
+    photo,
+    setPhoto,
+  ] = useState<File | null>(null)
+
+  const [
+    photoPreviewUrl,
+    setPhotoPreviewUrl,
+  ] = useState<string | null>(null)
+
+  const photoInputRef = useRef<HTMLInputElement>(null)
+
+  // Popover de "Otros" tipos de actividad (los que no son `pinned`)
+  const [
+    otherTypesOpen,
+    setOtherTypesOpen,
+  ] = useState(false)
+
+  // 100% data-driven: qué va fijo y qué va dentro de "Otros" lo
+  // decide el campo `pinned` de cada tipo (administrable desde la
+  // pantalla de Tipos de Actividad) — nada de códigos hardcodeados
+  // acá, así que un tipo nuevo cae automáticamente en "Otros" salvo
+  // que se lo marque como fijo desde el admin.
+  const primaryTypes = types.filter(type => type.pinned)
+  const otherTypes = types.filter(type => !type.pinned)
+
+  const selectedOtherType = otherTypes.find(
+    type => type.id === selectedTypeId,
+  )
+
+  // Genera/limpia la preview local de la foto
+  useEffect(() => {
+    if (!photo) {
+      setPhotoPreviewUrl(null)
+      return
+    }
+
+    const url = URL.createObjectURL(photo)
+    setPhotoPreviewUrl(url)
+
+    return () => URL.revokeObjectURL(url)
+  }, [photo])
 
   function handleClose() {
 
@@ -111,7 +180,9 @@ export function ActivityPickerDialog({
     setNote("")
     setContext(EMPTY_CONTEXT)
     setSubmitAttempted(false)
-    setShowNoteInput(false)
+    setShowDetail(false)
+    setPhoto(null)
+    setOtherTypesOpen(false)
 
     onOpenChange(false)
 
@@ -132,6 +203,18 @@ export function ActivityPickerDialog({
 
   }
 
+  function handleSelectType(typeId: string) {
+    setSelectedTypeId(typeId)
+    setOtherTypesOpen(false)
+  }
+
+  function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    setPhoto(file ?? null)
+    // Permite volver a elegir el mismo archivo si lo saca y lo vuelve a poner
+    event.target.value = ""
+  }
+
   async function handleSubmit() {
 
     if (!canSave) {
@@ -142,6 +225,10 @@ export function ActivityPickerDialog({
 
     }
 
+    const photoBase64 = photo
+      ? await fileToBase64(photo).catch(() => undefined)
+      : undefined
+
     await createLog({
       activityTypeId: selectedTypeId!,
       projectId: context.projectId,
@@ -149,6 +236,7 @@ export function ActivityPickerDialog({
         context.taskId || undefined,
       note:
         note.trim() || undefined,
+      photoBase64,
     }).catch(() => {
       // El rollback (si falla de verdad)
       // ya lo maneja useCreateActivityLog.
@@ -233,52 +321,114 @@ export function ActivityPickerDialog({
 
         </div>
 
-        {/* 3. Detalles (Input de texto colapsable con icono) */}
+        {/* 3. Detalle (nota + foto, igual que CommentComposer: viven
+            dentro de la misma caja, la cámara está adentro del
+            input, no es un botón aparte) */}
         <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-neutral-400">Nota u observación</span>
-            
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-medium text-neutral-400">Detalle</span>
+
             <button
               type="button"
-              onClick={() => setShowNoteInput(prev => !prev)}
+              onClick={() => setShowDetail(prev => !prev)}
               className={cn(
                 "relative flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-colors",
-                showNoteInput || note.trim()
+                showDetail || note.trim() || photo
                   ? "bg-white/12 text-white"
                   : "bg-white/4 text-neutral-400 hover:bg-white/8 hover:text-white"
               )}
             >
               <MessageSquarePlus size={15} />
-              <span>{showNoteInput ? "Ocultar detalle" : "Añadir detalle"}</span>
-              {note.trim() && (
+              <span>{showDetail || note.trim() || photo ? "Ocultar detalle" : "Añadir detalle"}</span>
+              {(note.trim() || photo) && (
                 <span className="absolute -top-1 -right-1 size-2 rounded-full bg-emerald-500" />
               )}
             </button>
+
           </div>
 
           <div
             className={cn(
               "overflow-hidden transition-all duration-200",
-              showNoteInput || note.trim()
-                ? "max-h-32 opacity-100"
+              showDetail || note.trim() || photo
+                ? "max-h-40 opacity-100"
                 : "max-h-0 opacity-0 pointer-events-none"
             )}
           >
-            <textarea
-              value={note}
-              onChange={event =>
-                setNote(event.target.value)
-              }
-              placeholder="Detalle opcional..."
-              className="w-full min-h-16 resize-none rounded-xl bg-white/4 p-3 text-sm text-white outline-none placeholder:text-neutral-600"
-            />
+
+            {/* Misma caja para nota y foto — igual que
+                comment-composer.tsx: la foto aparece al costado del
+                textarea, y el botón de cámara vive en el pie de esta
+                misma caja. */}
+            <div className="flex flex-col gap-2 rounded-xl bg-white/4 p-2.5">
+
+              <div className="flex min-h-0 flex-1 gap-3">
+
+                {photoPreviewUrl && (
+
+                  <div className="relative shrink-0">
+
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photoPreviewUrl}
+                      alt="Foto adjunta"
+                      className="h-16 w-16 rounded-lg object-cover"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setPhoto(null)}
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+                    >
+                      <X size={12} />
+                    </button>
+
+                  </div>
+
+                )}
+
+                <textarea
+                  value={note}
+                  onChange={event =>
+                    setNote(event.target.value)
+                  }
+                  placeholder="Detalle opcional..."
+                  className="min-h-16 min-w-0 flex-1 resize-none bg-transparent text-sm text-white outline-none placeholder:text-neutral-600"
+                />
+
+              </div>
+
+              <div className="flex items-center">
+
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-500 transition hover:bg-white/10 hover:text-white"
+                >
+                  <Camera size={16} strokeWidth={2.4} />
+                </button>
+
+              </div>
+
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handlePhotoChange}
+                className="hidden"
+              />
+
+            </div>
+
           </div>
+
         </div>
 
         {/* 4. Iconos / Tipos de Actividad */}
         <div className="grid grid-cols-3 gap-2">
 
-          {types.map(type => {
+          {primaryTypes.map(type => {
 
             const Icon =
               getActivityIcon(type.icon)
@@ -323,6 +473,105 @@ export function ActivityPickerDialog({
             )
 
           })}
+
+          {/* Botón "Otros" con popover para el resto de los tipos (los que no son pinned) */}
+          {otherTypes.length > 0 && (
+
+            <Popover open={otherTypesOpen} onOpenChange={setOtherTypesOpen}>
+
+              <PopoverTrigger asChild>
+
+                <button
+                  type="button"
+                  className={cn(
+                    "flex w-full flex-col items-center gap-1.5 rounded-xl p-3 text-center transition-colors",
+                    selectedOtherType || otherTypesOpen
+                      ? "bg-white/12"
+                      : "bg-white/4 hover:bg-white/8",
+                  )}
+                >
+
+                  <div
+                    className="flex size-9 items-center justify-center rounded-full"
+                    style={
+                      selectedOtherType
+                        ? {
+                            backgroundColor: `${selectedOtherType.color}22`,
+                            color: selectedOtherType.color,
+                          }
+                        : { backgroundColor: "rgba(255,255,255,0.08)", color: "#a3a3a3" }
+                    }
+                  >
+                    {selectedOtherType ? (
+                      (() => {
+                        const SelectedIcon = getActivityIcon(selectedOtherType.icon)
+                        return <SelectedIcon size={17} />
+                      })()
+                    ) : (
+                      <MoreHorizontal size={17} />
+                    )}
+                  </div>
+
+                  <span className="truncate text-[11px] font-medium leading-tight text-neutral-300">
+                    {selectedOtherType ? selectedOtherType.label : "Otros"}
+                  </span>
+
+                </button>
+
+              </PopoverTrigger>
+
+              {/* align="end" en vez de "center": el botón vive en la
+                  última columna de la grilla (borde derecho del
+                  dialog) — centrado se salía del dialog en desktop.
+                  Alineado al borde derecho del trigger, y
+                  avoidCollisions (default del componente) lo
+                  reacomoda solo si ni así entra en pantalla. */}
+              <PopoverContent
+                side="top"
+                align="end"
+                sideOffset={8}
+                className="w-64"
+              >
+
+                <div className="grid grid-cols-3 gap-2">
+                  {otherTypes.map(type => {
+                    const Icon = getActivityIcon(type.icon)
+                    const isSelected = selectedTypeId === type.id
+
+                    return (
+                      <button
+                        key={type.id}
+                        type="button"
+                        onClick={() => handleSelectType(type.id)}
+                        className={cn(
+                          "flex flex-col items-center gap-1.5 rounded-xl p-2 text-center transition-colors",
+                          isSelected
+                            ? "bg-white/12"
+                            : "bg-white/4 hover:bg-white/8",
+                        )}
+                      >
+                        <div
+                          className="flex size-8 items-center justify-center rounded-full"
+                          style={{
+                            backgroundColor: `${type.color}22`,
+                            color: type.color,
+                          }}
+                        >
+                          <Icon size={15} />
+                        </div>
+                        <span className="text-[10px] font-medium leading-tight text-neutral-300">
+                          {type.label}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+
+              </PopoverContent>
+
+            </Popover>
+
+          )}
 
         </div>
 

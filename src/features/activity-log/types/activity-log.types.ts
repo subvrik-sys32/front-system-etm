@@ -8,12 +8,17 @@ export type DayShift =
 
 export interface ActivityType {
   id: string
-  code: string
+  code: string | null
   label: string
   icon: string
   color: string
   order: number
   active: boolean
+  // Data-driven: true = siempre visible como botón directo en el
+  // picker. false = agrupado dentro de "Otros". Se administra desde
+  // la pantalla de tipos de actividad, nada de esto vive hardcodeado
+  // en el componente del picker.
+  pinned: boolean
 }
 
 export interface ActivityLogProjectRef {
@@ -42,6 +47,7 @@ export interface ActivityLog {
   projectId: string | null
   taskId: string | null
   note: string | null
+  photoUrl: string | null
   shift: DayShift
   loggedAt: string
   activityType: ActivityType
@@ -57,6 +63,9 @@ export interface CreateActivityLogDto {
   projectId?: string
   taskId?: string
   note?: string
+  // Data URI (resultado de FileReader.readAsDataURL) — mismo
+  // mecanismo que CommentComposer.
+  photoBase64?: string
 }
 
 export interface CreateActivityTypeDto {
@@ -64,6 +73,7 @@ export interface CreateActivityTypeDto {
   icon: string
   color: string
   order?: number
+  pinned?: boolean
 }
 
 export interface UpdateActivityTypeDto {
@@ -72,4 +82,5 @@ export interface UpdateActivityTypeDto {
   color?: string
   order?: number
   active?: boolean
+  pinned?: boolean
 }

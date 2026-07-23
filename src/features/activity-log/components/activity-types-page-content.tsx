@@ -51,6 +51,8 @@ function ActivityTypeRow({
 
         <p className="text-xs text-neutral-500">
           {type.active ? "Activa" : "Desactivada"}
+          {" · "}
+          {type.pinned ? "Predeterminada" : "Dentro de \u201cOtros\u201d"}
         </p>
 
       </div>

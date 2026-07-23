@@ -7,11 +7,17 @@ import {
 
 import {
   ListChecks,
+  Pin,
+  MoreHorizontal,
 } from "lucide-react"
 
 import {
   FormDialog,
 } from "@/shared/ui/dialogs/form-dialog/form-dialog"
+
+import {
+  cn,
+} from "@/shared/utils/utils"
 
 import {
   EntityColorPicker,
@@ -72,6 +78,15 @@ export function ActivityTypeFormDialog({
     setValue,
   ] = useState<EntityForm>(DEFAULT_VALUE)
 
+  // Separado de EntityForm a propósito: ese tipo es compartido con
+  // Usuarios, Clientes, etc. — pinned es específico de Actividad, no
+  // corresponde meterlo ahí. Se decide acá mismo, al crear o editar,
+  // si el tipo va fijo en el picker o agrupado dentro de "Otros".
+  const [
+    pinned,
+    setPinned,
+  ] = useState(true)
+
   const isEditing =
     !!editingType
 
@@ -92,6 +107,8 @@ export function ActivityTypeFormDialog({
             }
           : DEFAULT_VALUE,
       )
+
+      setPinned(editingType?.pinned ?? true)
 
     }
 
@@ -117,6 +134,7 @@ export function ActivityTypeFormDialog({
           label: value.name.trim(),
           icon: value.icon,
           color: value.color,
+          pinned,
         },
       })
 
@@ -126,6 +144,7 @@ export function ActivityTypeFormDialog({
         label: value.name.trim(),
         icon: value.icon,
         color: value.color,
+        pinned,
       })
 
     }
@@ -181,6 +200,52 @@ export function ActivityTypeFormDialog({
           value={value}
           onChange={setValue}
         />
+
+        <div className="flex flex-col gap-2">
+
+          <span className="text-xs font-medium text-neutral-400">
+            ¿Dónde aparece al registrar?
+          </span>
+
+          <div className="grid grid-cols-2 gap-2">
+
+            <button
+              type="button"
+              onClick={() => setPinned(true)}
+              className={cn(
+                "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                pinned
+                  ? "bg-white/12 text-white"
+                  : "bg-white/4 text-neutral-400 hover:bg-white/8 hover:text-white",
+              )}
+            >
+              <Pin size={15} />
+              Predeterminada
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPinned(false)}
+              className={cn(
+                "flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                !pinned
+                  ? "bg-white/12 text-white"
+                  : "bg-white/4 text-neutral-400 hover:bg-white/8 hover:text-white",
+              )}
+            >
+              <MoreHorizontal size={15} />
+              Dentro de &ldquo;Otros&rdquo;
+            </button>
+
+          </div>
+
+          <p className="text-xs text-neutral-500">
+            {pinned
+              ? "Va a salir como botón directo en la pantalla del picker."
+              : "Va a salir agrupada dentro del botón \u201cOtros\u201d del picker."}
+          </p>
+
+        </div>
 
       </div>
 

@@ -1,9 +1,11 @@
 "use client"
 
-import { Trash2 } from "lucide-react"
+import { useState } from "react"
+import { Trash2, Image as ImageIcon } from "lucide-react"
 import { getActivityIcon } from "../constants/activity-icons"
 import { getSlotState } from "../constants/shift-definitions"
 import { cn } from "@/shared/utils/utils"
+import { CommentImageDialog } from "@/features/comments/components/comment-image-dialog"
 
 import type { ShiftGroupDefinition, ShiftSlotDefinition } from "../constants/shift-definitions"
 import type { ActivityLog } from "../types/activity-log.types"
@@ -25,6 +27,10 @@ export function ShiftGroupSection({
 }: Props) {
 
   const now = new Date()
+
+  // Un solo dialog compartido por todo el grupo — CommentImageDialog
+  // es genérico (solo necesita una URL), no depende de comentarios.
+  const [openPhotoUrl, setOpenPhotoUrl] = useState<string | null>(null)
 
   // El grupo entero se ve "apagado" solo si TODAS sus sub-franjas
   // todavía no llegan (ej. es de mañana y falta para las 8:30) —
@@ -127,6 +133,19 @@ export function ShiftGroupSection({
                           </p>
                         )}
 
+                        {log.photoUrl && (
+
+                          <button
+                            type="button"
+                            onClick={() => setOpenPhotoUrl(log.photoUrl)}
+                            className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-white/5 px-2.5 py-1.5 text-xs font-medium text-neutral-300 transition-colors hover:bg-white/10 hover:text-white"
+                          >
+                            <ImageIcon size={13} />
+                            Ver foto adjunta
+                          </button>
+
+                        )}
+
                       </div>
 
                       <div className="flex shrink-0 items-center gap-2">
@@ -190,6 +209,11 @@ export function ShiftGroupSection({
         })}
 
       </div>
+
+      <CommentImageDialog
+        imageUrl={openPhotoUrl}
+        onClose={() => setOpenPhotoUrl(null)}
+      />
 
     </div>
 

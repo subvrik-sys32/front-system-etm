@@ -22,8 +22,8 @@ const MIN_REFRESH_MS = 900
 const INDICATOR_GAP_PX = 10
 /** Umbral para armar el gesto (no pelear scroll nativo cerca del top). */
 const ARM_DY_PX = 10
-/** Snap-back corto; sin CSS transition 0.45s sobre toda la lista. */
-const SNAP_MS = 180
+/** Snap-back: ~360ms ease-out (no “golpe” a 0). */
+const SNAP_MS = 360
 
 type Props = {
   children: ReactNode
@@ -94,10 +94,10 @@ export function PullToRefresh({ children, onRefresh, scrollRef }: Props) {
     const t0 = performance.now()
     const tick = (now: number) => {
       const t = Math.min(1, (now - t0) / SNAP_MS)
-      // ease-out cubic — corto, no “viscoso”
-      const eased = 1 - (1 - t) ** 3
+      // ease-out quint — desacelera al final, no se corta
+      const eased = 1 - (1 - t) ** 5
       const next = from * (1 - eased)
-      if (t >= 1 || next < 0.5) {
+      if (t >= 1 || next < 0.35) {
         setPullOffset(0)
         snapRaf.current = 0
         return
@@ -113,9 +113,14 @@ export function PullToRefresh({ children, onRefresh, scrollRef }: Props) {
   const abortGesture = useCallback(() => {
     pending.current = false
     pulling.current = false
-    cancelSnap()
-    setPullOffset(0)
-  }, [cancelSnap, setPullOffset])
+    // Si había offset, bajar con snap; si no, no hacer nada.
+    if (offsetRef.current > 0.5) {
+      snapToZero()
+    } else {
+      cancelSnap()
+      setPullOffset(0)
+    }
+  }, [cancelSnap, setPullOffset, snapToZero])
 
   const onTouchStart = useCallback(
     (e: TouchEvent) => {
@@ -186,11 +191,11 @@ export function PullToRefresh({ children, onRefresh, scrollRef }: Props) {
         return
       }
 
-      // Subir = scroll nativo; soltar candidatura PTR.
+      // Subir = soltar PTR con snap suave (no salto a 0).
       if (dy <= 0) {
         if (pulling.current) {
           pulling.current = false
-          setPullOffset(0)
+          snapToZero()
         }
         return
       }
@@ -204,7 +209,7 @@ export function PullToRefresh({ children, onRefresh, scrollRef }: Props) {
 
       setPullOffset(damp(dy, MAX_PULL_PX))
     },
-    [abortGesture, refreshing, scrollRef, setPullOffset],
+    [abortGesture, refreshing, scrollRef, setPullOffset, snapToZero],
   )
 
   const runRefresh = useCallback(async () => {

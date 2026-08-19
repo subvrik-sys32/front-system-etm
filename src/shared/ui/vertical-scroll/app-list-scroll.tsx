@@ -86,8 +86,10 @@ export function AppListScroll({
         <PullToRefresh
           scrollRef={scrollRef}
           onRefresh={async () => {
-            // Página completa: evita refrescar solo un listado.
-            window.location.reload()
+            // Hang hasta unload: el HOLD del PTR no hace snap antes del reload.
+            await new Promise<void>(() => {
+              window.location.reload()
+            })
           }}
         >
           {content}

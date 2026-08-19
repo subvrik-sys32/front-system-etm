@@ -2,9 +2,6 @@
 
 import { AtSign, MessageSquare, X } from "lucide-react"
 
-import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
-import { WORKFLOW_STATUS_DEFINITIONS } from "@/features/workflow/constants/workflow-status-definitions"
-
 import type { Notification } from "../types/notification.types"
 import {
   getNotificationActionLabel,
@@ -22,7 +19,7 @@ export function NotificationToast({
   onNavigate,
   onDismiss,
 }: Props) {
-  const { actor, task, project, workflowStep } = notification
+  const { actor, task, project } = notification
 
   const isMention = isMentionNotification(notification.type)
   const actionLabel = getNotificationActionLabel(notification.type)
@@ -33,33 +30,31 @@ export function NotificationToast({
       ? `${project.projectCode} · ${project.name}`
       : ""
 
-  const status = workflowStep
-    ? WORKFLOW_STATUS_DEFINITIONS[workflowStep.status]
-    : undefined
-
   return (
-    <div className="relative flex w-[min(100vw-2rem,22rem)] items-center gap-3 rounded-xl border border-border bg-card p-3.5 pr-9 text-left text-foreground shadow-toast">
+    <div className="relative w-[min(100vw-2rem,22rem)] rounded-xl border border-border bg-card text-left text-foreground shadow-toast overflow-hidden">
+      {/* Botón de cierre único */}
       {onDismiss && (
         <button
           type="button"
-          aria-label="Cerrar"
+          aria-label="Cerrar notificación"
           onClick={e => {
             e.stopPropagation()
             onDismiss()
           }}
-          className="absolute right-2.5 top-2.5 z-10 flex size-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
+          className="absolute right-2.5 top-2.5 z-20 flex size-5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
         >
           <X size={13} strokeWidth={2} />
         </button>
       )}
 
+      {/* Disposición en Grid centrada verticalmente */}
       <button
         type="button"
         onClick={onNavigate}
-        className="flex min-w-0 flex-1 items-center gap-3 text-left outline-none cursor-pointer my-auto"
+        className="grid w-full grid-cols-[auto_1fr] items-center gap-3 p-3.5 pr-8 text-left outline-none cursor-pointer"
       >
-        {/* Avatar centrado verticalmente */}
-        <div className="relative shrink-0 my-auto self-center">
+        {/* Avatar / Indicador de tipo */}
+        <div className="relative shrink-0">
           <div className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-semibold text-muted-foreground ring-1 ring-border">
             {actor.avatarUrl ? (
               <img
@@ -84,16 +79,14 @@ export function NotificationToast({
           </span>
         </div>
 
-        {/* Bloque central de texto */}
-        <div className="min-w-0 flex-1 my-auto flex flex-col justify-center gap-0.5">
-          <div className="flex items-center justify-between gap-1.5 pr-1">
-            <p className="min-w-0 truncate text-xs leading-4">
-              <span className="font-semibold text-foreground">
-                {actor.name}
-              </span>
-              <span className="ml-1 text-muted-foreground">{actionLabel}</span>
-            </p>
-          </div>
+        {/* Información textual */}
+        <div className="min-w-0 space-y-0.5">
+          <p className="truncate text-xs leading-4">
+            <span className="font-semibold text-foreground">
+              {actor.name}
+            </span>
+            <span className="ml-1 text-muted-foreground">{actionLabel}</span>
+          </p>
 
           {contextLabel && (
             <p className="truncate text-[11px] font-medium leading-4 text-muted-foreground">
@@ -107,18 +100,6 @@ export function NotificationToast({
             </p>
           )}
         </div>
-
-        {/* DynamicBadge centrado verticalmente en el eje secundario */}
-        {status && (
-          <div className="shrink-0 my-auto self-center origin-right scale-90">
-            <DynamicBadge
-              compact
-              label={status.label}
-              color={status.color}
-              icon={status.icon}
-            />
-          </div>
-        )}
       </button>
     </div>
   )

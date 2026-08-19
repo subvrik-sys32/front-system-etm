@@ -29,7 +29,6 @@ export function EntitySelectActionMenu({
     return null
   }
 
-  // Cierra el menú al instante y luego abre el modal de edición
   const handleEdit = () => {
     setOpen(false)
     requestAnimationFrame(() => {
@@ -37,7 +36,6 @@ export function EntitySelectActionMenu({
     })
   }
 
-  // Cierra el menú al instante y luego invoca la eliminación
   const handleDelete = () => {
     setOpen(false)
     requestAnimationFrame(() => {
@@ -46,7 +44,6 @@ export function EntitySelectActionMenu({
   }
 
   return (
-    /* modal={false} es clave: evita conflicto de foco con el Popover padre */
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <button
@@ -68,12 +65,11 @@ export function EntitySelectActionMenu({
         side="bottom"
         align="end"
         sideOffset={4}
-        /* Evita que cerrar este sub-menú transmita un evento de cierre al Popover contenedor */
+        onClick={(e) => e.stopPropagation()}
         onPointerDownOutside={(e) => {
           e.preventDefault()
           setOpen(false)
         }}
-        /* Evita que el foco salte de forma agresiva rompiendo el Popover padre */
         onCloseAutoFocus={(e) => {
           e.preventDefault()
         }}
@@ -84,7 +80,7 @@ export function EntitySelectActionMenu({
             onSelect={handleEdit}
             className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-foreground/10 hover:text-foreground focus:bg-foreground/10 focus:text-foreground"
           >
-            <Pencil size={13} className="text-muted-foreground" />
+            <Pencil size={13} className="shrink-0 text-muted-foreground" />
             <span>Editar</span>
           </DropdownMenuItem>
         )}
@@ -95,11 +91,10 @@ export function EntitySelectActionMenu({
 
         {onDelete && (
           <DropdownMenuItem
-            variant="destructive"
             onSelect={handleDelete}
-            className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-red-400 hover:bg-red-500/10 hover:text-red-300 focus:bg-red-500/10 focus:text-red-300"
+            className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-500/10 hover:text-red-600 focus:bg-red-500/10 focus:text-red-600 dark:text-red-400 dark:hover:bg-red-500/20 dark:hover:text-red-400 dark:focus:bg-red-500/20 dark:focus:text-red-400"
           >
-            <Trash2 size={13} />
+            <Trash2 size={13} className="shrink-0" />
             <span>Eliminar</span>
           </DropdownMenuItem>
         )}

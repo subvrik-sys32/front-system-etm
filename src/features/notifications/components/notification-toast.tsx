@@ -38,7 +38,7 @@ export function NotificationToast({
     : undefined
 
   return (
-    <div className="relative flex w-[min(100vw-2rem,22rem)] items-start gap-3 rounded-xl border border-border bg-card p-3.5 pr-10 text-left text-foreground shadow-lg shadow-black/10 dark:shadow-black/40">
+    <div className="relative flex w-[min(100vw-2rem,22rem)] items-center gap-3 rounded-xl border border-border bg-card p-3.5 pr-9 text-left text-foreground shadow-toast">
       {onDismiss && (
         <button
           type="button"
@@ -56,9 +56,10 @@ export function NotificationToast({
       <button
         type="button"
         onClick={onNavigate}
-        className="flex min-w-0 flex-1 items-start gap-3 text-left outline-none cursor-pointer"
+        className="flex min-w-0 flex-1 items-center gap-3 text-left outline-none cursor-pointer my-auto"
       >
-        <div className="relative shrink-0">
+        {/* Avatar centrado verticalmente */}
+        <div className="relative shrink-0 my-auto self-center">
           <div className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-semibold text-muted-foreground ring-1 ring-border">
             {actor.avatarUrl ? (
               <img
@@ -83,25 +84,15 @@ export function NotificationToast({
           </span>
         </div>
 
-        <div className="min-w-0 flex-1 space-y-0.5">
-          <div className="flex items-center justify-between gap-1.5 pr-2">
+        {/* Bloque central de texto */}
+        <div className="min-w-0 flex-1 my-auto flex flex-col justify-center gap-0.5">
+          <div className="flex items-center justify-between gap-1.5 pr-1">
             <p className="min-w-0 truncate text-xs leading-4">
               <span className="font-semibold text-foreground">
                 {actor.name}
               </span>
               <span className="ml-1 text-muted-foreground">{actionLabel}</span>
             </p>
-
-            {status && (
-              <div className="shrink-0 scale-90 origin-right">
-                <DynamicBadge
-                  compact
-                  label={status.label}
-                  color={status.color}
-                  icon={status.icon}
-                />
-              </div>
-            )}
           </div>
 
           {contextLabel && (
@@ -116,6 +107,18 @@ export function NotificationToast({
             </p>
           )}
         </div>
+
+        {/* DynamicBadge centrado verticalmente en el eje secundario */}
+        {status && (
+          <div className="shrink-0 my-auto self-center origin-right scale-90">
+            <DynamicBadge
+              compact
+              label={status.label}
+              color={status.color}
+              icon={status.icon}
+            />
+          </div>
+        )}
       </button>
     </div>
   )

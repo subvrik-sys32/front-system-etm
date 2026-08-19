@@ -98,14 +98,27 @@ export function SpeedDialFab({ actions, className }: Props) {
       const target = e.target as HTMLElement
       if (rootRef.current?.contains(target)) return
       if (isInsideSheetOrPopover(target)) return
+      // Solo cierra el dial; no dejes que el mismo gesto active lo de detrás.
+      e.preventDefault()
+      e.stopPropagation()
+      const block = (ev: Event) => {
+        ev.preventDefault()
+        ev.stopPropagation()
+      }
+      document.addEventListener("click", block, true)
+      document.addEventListener("pointerup", block, true)
+      window.setTimeout(() => {
+        document.removeEventListener("click", block, true)
+        document.removeEventListener("pointerup", block, true)
+      }, 320)
       setDialOpen(false)
     }
 
     window.addEventListener("keydown", onKey)
-    document.addEventListener("pointerdown", onPointerDown)
+    document.addEventListener("pointerdown", onPointerDown, true)
     return () => {
       window.removeEventListener("keydown", onKey)
-      document.removeEventListener("pointerdown", onPointerDown)
+      document.removeEventListener("pointerdown", onPointerDown, true)
     }
   }, [dialOpen])
 

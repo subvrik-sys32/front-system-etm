@@ -24,9 +24,16 @@ type Props = {
   step: WorkflowStep
   onUnsummon: (stepId: string) => void
   unsummoning?: boolean
+  /** Solo icono + chevron (cabecera de asignado ya muestra el nombre). */
+  iconOnly?: boolean
 }
 
-export function TaskAssignmentBadge({ step, onUnsummon, unsummoning }: Props) {
+export function TaskAssignmentBadge({
+  step,
+  onUnsummon,
+  unsummoning,
+  iconOnly = false,
+}: Props) {
   const { users } = useUsersDirectory()
   const operators = useAreaOperators(step.processCode)
   const { reassign, reassigning } = useWorkflowSummon()
@@ -70,7 +77,8 @@ export function TaskAssignmentBadge({ step, onUnsummon, unsummoning }: Props) {
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center gap-0.5 rounded-full py-1 pl-2.5 pr-1 text-xs font-medium transition-opacity",
+        "flex shrink-0 items-center gap-0.5 rounded-full text-xs font-medium transition-opacity",
+        iconOnly ? "p-1" : "py-1 pl-2.5 pr-1",
         invited
           ? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
           : "bg-emerald-500/22 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300",
@@ -83,7 +91,9 @@ export function TaskAssignmentBadge({ step, onUnsummon, unsummoning }: Props) {
         <UserCheck size={12} className="shrink-0" />
       )}
 
-      <span className="max-w-18 truncate px-1">{person.name}</span>
+      {!iconOnly && (
+        <span className="max-w-18 truncate px-1">{person.name}</span>
+      )}
 
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>

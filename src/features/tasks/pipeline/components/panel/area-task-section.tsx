@@ -6,6 +6,7 @@ import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
 import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
 import { TaskProcessColumn } from "@/features/tasks/pipeline/table/task-process-column"
 import { SummonOperatorButton } from "./summon-operator-button"
+import { TaskAssignmentBadge } from "./task-assignment-badge"
 import { cn } from "@/shared/utils/utils"
 import { useBadgeColors } from "@/shared/utils/use-badge-colors"
 import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
@@ -113,30 +114,51 @@ export function AreaTaskSection({
             {groupedTasks.map(group => {
               const isUnassigned = group.id === "unassigned"
 
+              // Primer step del grupo → menú de reasignar/desconvocar en cabecera
+              const headerStep = !isUnassigned
+                ? group.tasks
+                    .map(t =>
+                      t.workflowSteps?.find(s => s.processCode === code),
+                    )
+                    .find(Boolean)
+                : undefined
+
               return (
                 <div key={group.id} className="space-y-2">
-                  {/* Encabezado con el nombre del Convocado / Operador */}
-                  <div className="flex items-center justify-between px-1 text-xs font-semibold">
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                  {/* Encabezado: nombre + badge icon-only (sin nombre duplicado) */}
+                  <div className="flex items-center justify-between gap-2 px-1 text-xs font-semibold">
+                    <div className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
                       {isUnassigned ? (
-                        <UserX className="size-3.5 text-muted-foreground/70" />
+                        <UserX className="size-3.5 shrink-0 text-muted-foreground/70" />
                       ) : (
-                        <User className="size-3.5 text-emerald-400" />
+                        <User className="size-3.5 shrink-0 text-emerald-400" />
                       )}
                       <span
                         className={cn(
+                          "truncate",
                           !isUnassigned && "font-bold text-foreground",
                         )}
                       >
                         {group.name}
                       </span>
+                      {!isUnassigned &&
+                        headerStep &&
+                        state.canChooseAreas &&
+                        actions.handleUnsummon && (
+                          <TaskAssignmentBadge
+                            step={headerStep}
+                            onUnsummon={actions.handleUnsummon}
+                            unsummoning={state.unsummoning}
+                            iconOnly
+                          />
+                        )}
                     </div>
-                    <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+                    <span className="shrink-0 rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
                       {group.tasks.length}
                     </span>
                   </div>
 
-                  {/* Grupo de tarjetas del operador */}
+                  {/* Filas sin badge de asignación (ya está en cabecera) */}
                   <TaskProcessColumn
                     processCode={code}
                     tasks={group.tasks}
@@ -149,9 +171,6 @@ export function AreaTaskSection({
                     selectionMode={isSummoningThis}
                     selectedStepIds={state.selectedStepIds}
                     onToggleStepSelection={actions.handleToggleStepSelection}
-                    onUnsummon={
-                      state.canChooseAreas ? actions.handleUnsummon : undefined
-                    }
                     unsummoning={state.unsummoning}
                   />
                 </div>

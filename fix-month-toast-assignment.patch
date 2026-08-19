@@ -1,0 +1,200 @@
+diff --git a/src/features/activity-log/components/agenda/agenda-month-view.tsx b/src/features/activity-log/components/agenda/agenda-month-view.tsx
+index a689e28..5f9028f 100644
+--- a/src/features/activity-log/components/agenda/agenda-month-view.tsx
++++ b/src/features/activity-log/components/agenda/agenda-month-view.tsx
+@@ -5,6 +5,7 @@ import { useMemo } from "react"
+ import { toISODateString } from "@/shared/ui/date-picker/utils/date-format"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ import { cn } from "@/shared/utils/utils"
++import { useBadgeColors } from "@/shared/utils/use-badge-colors"
+ 
+ import { getActivityIcon } from "../../constants/activity-icons"
+ import type { ActivityLog } from "../../types/activity-log.types"
+@@ -57,32 +58,29 @@ function formatTime(iso: string): string {
+ 
+ function MonthEventCard({ log }: { log: ActivityLog }) {
+   const Icon = getActivityIcon(log.activityType.icon)
+-  const color = log.activityType.color
++  const badge = useBadgeColors(log.activityType.color, "solid")
+   const subtitle = log.project
+     ? `${log.project.projectCode} · ${log.project.name}`
+     : log.note ?? null
+ 
+   return (
+     <div
+-      className="flex min-h-9 min-w-0 shrink-0 items-center gap-1.5 rounded-md px-1.5 py-1"
+-      style={{ backgroundColor: `${color}18` }}
++      className="flex min-h-7 min-w-0 shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5"
++      style={{ backgroundColor: badge.background, color: badge.text }}
+       title={`${formatTime(log.loggedAt)} ${log.activityType.label}${
+         subtitle ? ` — ${subtitle}` : ""
+       }`}
+     >
+-      <div
+-        className="flex size-4 shrink-0 items-center justify-center rounded-full"
+-        style={{ backgroundColor: `${color}33`, color }}
+-      >
+-        <Icon size={10} />
+-      </div>
++      <Icon size={11} strokeWidth={2.5} className="block shrink-0" style={{ color: badge.text }} />
+       <div className="min-w-0 flex-1 leading-tight">
+-        <p className="truncate text-[10px] font-semibold text-foreground">
+-          <span className="text-muted-foreground">{formatTime(log.loggedAt)}</span>{" "}
++        <p className="truncate text-[10px] font-semibold" style={{ color: badge.text }}>
++          <span style={{ opacity: 0.85 }}>{formatTime(log.loggedAt)}</span>{" "}
+           {log.activityType.label}
+         </p>
+         {subtitle && (
+-          <p className="truncate text-[9px] text-muted-foreground">{subtitle}</p>
++          <p className="truncate text-[9px]" style={{ color: badge.text, opacity: 0.75 }}>
++            {subtitle}
++          </p>
+         )}
+       </div>
+     </div>
+diff --git a/src/features/notifications/components/notification-toast.tsx b/src/features/notifications/components/notification-toast.tsx
+index df61863..8a09665 100644
+--- a/src/features/notifications/components/notification-toast.tsx
++++ b/src/features/notifications/components/notification-toast.tsx
+@@ -44,7 +44,7 @@ export function NotificationToast({
+     <div
+       className={cn(
+         "relative flex w-[min(100vw-2rem,22rem)] items-start gap-3 rounded-xl border border-border",
+-        "bg-card p-3.5 text-left text-foreground shadow-sm shadow-black/15 dark:shadow-black/40",
++        "bg-card p-3.5 pr-10 text-left text-foreground shadow-sm shadow-black/15 dark:shadow-black/40",
+       )}
+     >
+       {onDismiss ? (
+@@ -55,7 +55,7 @@ export function NotificationToast({
+             e.stopPropagation()
+             onDismiss()
+           }}
+-          className="absolute -right-1.5 -top-1.5 z-10 flex size-6 items-center justify-center rounded-full border border-border bg-muted text-foreground transition-colors hover:bg-muted/80"
++          className="absolute right-2 top-2 z-10 flex size-6 items-center justify-center rounded-full border border-border bg-muted text-foreground transition-colors hover:bg-muted/80"
+         >
+           <X size={12} strokeWidth={2.5} />
+         </button>
+diff --git a/src/features/tasks/pipeline/components/panel/area-task-section.tsx b/src/features/tasks/pipeline/components/panel/area-task-section.tsx
+index 7b41bee..38f982c 100644
+--- a/src/features/tasks/pipeline/components/panel/area-task-section.tsx
++++ b/src/features/tasks/pipeline/components/panel/area-task-section.tsx
+@@ -6,6 +6,7 @@ import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
+ import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
+ import { TaskProcessColumn } from "@/features/tasks/pipeline/table/task-process-column"
+ import { SummonOperatorButton } from "./summon-operator-button"
++import { TaskAssignmentBadge } from "./task-assignment-badge"
+ import { cn } from "@/shared/utils/utils"
+ import { useBadgeColors } from "@/shared/utils/use-badge-colors"
+ import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
+@@ -113,30 +114,51 @@ export function AreaTaskSection({
+             {groupedTasks.map(group => {
+               const isUnassigned = group.id === "unassigned"
+ 
++              // Primer step del grupo → menú de reasignar/desconvocar en cabecera
++              const headerStep = !isUnassigned
++                ? group.tasks
++                    .map(t =>
++                      t.workflowSteps?.find(s => s.processCode === code),
++                    )
++                    .find(Boolean)
++                : undefined
++
+               return (
+                 <div key={group.id} className="space-y-2">
+-                  {/* Encabezado con el nombre del Convocado / Operador */}
+-                  <div className="flex items-center justify-between px-1 text-xs font-semibold">
+-                    <div className="flex items-center gap-1.5 text-muted-foreground">
++                  {/* Encabezado: nombre + badge icon-only (sin nombre duplicado) */}
++                  <div className="flex items-center justify-between gap-2 px-1 text-xs font-semibold">
++                    <div className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
+                       {isUnassigned ? (
+-                        <UserX className="size-3.5 text-muted-foreground/70" />
++                        <UserX className="size-3.5 shrink-0 text-muted-foreground/70" />
+                       ) : (
+-                        <User className="size-3.5 text-emerald-400" />
++                        <User className="size-3.5 shrink-0 text-emerald-400" />
+                       )}
+                       <span
+                         className={cn(
++                          "truncate",
+                           !isUnassigned && "font-bold text-foreground",
+                         )}
+                       >
+                         {group.name}
+                       </span>
++                      {!isUnassigned &&
++                        headerStep &&
++                        state.canChooseAreas &&
++                        actions.handleUnsummon && (
++                          <TaskAssignmentBadge
++                            step={headerStep}
++                            onUnsummon={actions.handleUnsummon}
++                            unsummoning={state.unsummoning}
++                            iconOnly
++                          />
++                        )}
+                     </div>
+-                    <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
++                    <span className="shrink-0 rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+                       {group.tasks.length}
+                     </span>
+                   </div>
+ 
+-                  {/* Grupo de tarjetas del operador */}
++                  {/* Filas sin badge de asignación (ya está en cabecera) */}
+                   <TaskProcessColumn
+                     processCode={code}
+                     tasks={group.tasks}
+@@ -149,9 +171,6 @@ export function AreaTaskSection({
+                     selectionMode={isSummoningThis}
+                     selectedStepIds={state.selectedStepIds}
+                     onToggleStepSelection={actions.handleToggleStepSelection}
+-                    onUnsummon={
+-                      state.canChooseAreas ? actions.handleUnsummon : undefined
+-                    }
+                     unsummoning={state.unsummoning}
+                   />
+                 </div>
+diff --git a/src/features/tasks/pipeline/components/panel/task-assignment-badge.tsx b/src/features/tasks/pipeline/components/panel/task-assignment-badge.tsx
+index bc9bd07..16127db 100644
+--- a/src/features/tasks/pipeline/components/panel/task-assignment-badge.tsx
++++ b/src/features/tasks/pipeline/components/panel/task-assignment-badge.tsx
+@@ -24,9 +24,16 @@ type Props = {
+   step: WorkflowStep
+   onUnsummon: (stepId: string) => void
+   unsummoning?: boolean
++  /** Solo icono + chevron (cabecera de asignado ya muestra el nombre). */
++  iconOnly?: boolean
+ }
+ 
+-export function TaskAssignmentBadge({ step, onUnsummon, unsummoning }: Props) {
++export function TaskAssignmentBadge({
++  step,
++  onUnsummon,
++  unsummoning,
++  iconOnly = false,
++}: Props) {
+   const { users } = useUsersDirectory()
+   const operators = useAreaOperators(step.processCode)
+   const { reassign, reassigning } = useWorkflowSummon()
+@@ -70,7 +77,8 @@ export function TaskAssignmentBadge({ step, onUnsummon, unsummoning }: Props) {
+   return (
+     <div
+       className={cn(
+-        "flex shrink-0 items-center gap-0.5 rounded-full py-1 pl-2.5 pr-1 text-xs font-medium transition-opacity",
++        "flex shrink-0 items-center gap-0.5 rounded-full text-xs font-medium transition-opacity",
++        iconOnly ? "p-1" : "py-1 pl-2.5 pr-1",
+         invited
+           ? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
+           : "bg-emerald-500/22 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300",
+@@ -83,7 +91,9 @@ export function TaskAssignmentBadge({ step, onUnsummon, unsummoning }: Props) {
+         <UserCheck size={12} className="shrink-0" />
+       )}
+ 
+-      <span className="max-w-18 truncate px-1">{person.name}</span>
++      {!iconOnly && (
++        <span className="max-w-18 truncate px-1">{person.name}</span>
++      )}
+ 
+       <DropdownMenu open={open} onOpenChange={setOpen}>
+         <DropdownMenuTrigger asChild>

@@ -5,6 +5,7 @@ import { useMemo } from "react"
 import { toISODateString } from "@/shared/ui/date-picker/utils/date-format"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { cn } from "@/shared/utils/utils"
+import { useBadgeColors } from "@/shared/utils/use-badge-colors"
 
 import { getActivityIcon } from "../../constants/activity-icons"
 import type { ActivityLog } from "../../types/activity-log.types"
@@ -57,32 +58,29 @@ function formatTime(iso: string): string {
 
 function MonthEventCard({ log }: { log: ActivityLog }) {
   const Icon = getActivityIcon(log.activityType.icon)
-  const color = log.activityType.color
+  const badge = useBadgeColors(log.activityType.color, "solid")
   const subtitle = log.project
     ? `${log.project.projectCode} · ${log.project.name}`
     : log.note ?? null
 
   return (
     <div
-      className="flex min-h-9 min-w-0 shrink-0 items-center gap-1.5 rounded-md px-1.5 py-1"
-      style={{ backgroundColor: `${color}18` }}
+      className="flex min-h-7 min-w-0 shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5"
+      style={{ backgroundColor: badge.background, color: badge.text }}
       title={`${formatTime(log.loggedAt)} ${log.activityType.label}${
         subtitle ? ` — ${subtitle}` : ""
       }`}
     >
-      <div
-        className="flex size-4 shrink-0 items-center justify-center rounded-full"
-        style={{ backgroundColor: `${color}33`, color }}
-      >
-        <Icon size={10} />
-      </div>
+      <Icon size={11} strokeWidth={2.5} className="block shrink-0" style={{ color: badge.text }} />
       <div className="min-w-0 flex-1 leading-tight">
-        <p className="truncate text-[10px] font-semibold text-foreground">
-          <span className="text-muted-foreground">{formatTime(log.loggedAt)}</span>{" "}
+        <p className="truncate text-[10px] font-semibold" style={{ color: badge.text }}>
+          <span style={{ opacity: 0.85 }}>{formatTime(log.loggedAt)}</span>{" "}
           {log.activityType.label}
         </p>
         {subtitle && (
-          <p className="truncate text-[9px] text-muted-foreground">{subtitle}</p>
+          <p className="truncate text-[9px]" style={{ color: badge.text, opacity: 0.75 }}>
+            {subtitle}
+          </p>
         )}
       </div>
     </div>

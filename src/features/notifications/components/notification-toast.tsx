@@ -31,8 +31,7 @@ export function NotificationToast({
       : ""
 
   return (
-    <div className="relative w-[min(100vw-2rem,22rem)] rounded-xl border border-border bg-card text-left text-foreground shadow-toast overflow-hidden">
-      {/* Botón de cierre único */}
+    <div className="relative grid w-[min(100vw-2rem,22rem)] grid-cols-[auto_1fr] items-center gap-3 rounded-xl border border-border bg-card p-3.5 pr-8 text-left text-foreground shadow-toast overflow-hidden">
       {onDismiss && (
         <button
           type="button"
@@ -47,13 +46,11 @@ export function NotificationToast({
         </button>
       )}
 
-      {/* Disposición en Grid centrada verticalmente */}
       <button
         type="button"
         onClick={onNavigate}
-        className="grid w-full grid-cols-[auto_1fr] items-center gap-3 p-3.5 pr-8 text-left outline-none cursor-pointer"
+        className="contents cursor-pointer outline-none"
       >
-        {/* Avatar / Indicador de tipo */}
         <div className="relative shrink-0">
           <div className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-semibold text-muted-foreground ring-1 ring-border">
             {actor.avatarUrl ? (
@@ -79,7 +76,6 @@ export function NotificationToast({
           </span>
         </div>
 
-        {/* Información textual */}
         <div className="min-w-0 space-y-0.5">
           <p className="truncate text-xs leading-4">
             <span className="font-semibold text-foreground">

@@ -347,12 +347,6 @@ export function TaskMobileCard({
           >
             {/* Datos colapsados ADENTRO (CON ICONO/INICIAL DE PRIORIDAD en lugar de nombre) */}
             <span className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-sm text-muted-foreground">
-              <span className="shrink-0 rounded-md bg-foreground/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-muted-foreground">
-                {String(task.taskNumber).padStart(3, "0")}
-              </span>
-
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-
               <span
                 className="size-1.5 shrink-0 rounded-full"
                 style={{ backgroundColor: task.project.client.color }}

@@ -79,79 +79,76 @@ export function RealtimeProvider({
           return
         }
 
-          if (response.status === 401) {
-            authSession.set(null)
-            useAuthStore.getState().logout()
+        if (response.status === 401) {
+          authSession.set(null)
+          useAuthStore.getState().logout()
 
-            if (typeof window !== "undefined") {
-              window.location.href = "/login"
-            }
+          if (typeof window !== "undefined") {
+            window.location.href = "/login"
           }
+        }
 
-          throw new Error(`Realtime ${response.status}`)
-        },
+        throw new Error(`Realtime ${response.status}`)
+      },
 
-        onmessage(message) {
-          if (stale) return
+      onmessage(message) {
+        if (stale) return
 
-          if (!message.data || message.data.trim() === "") {
-            return
+        if (!message.data || message.data.trim() === "") {
+          return
+        }
+
+        const event = JSON.parse(message.data)
+
+        if (event.type === "PING") {
+          return
+        }
+
+        realtimeRegistry(event)
+
+        if (
+          event.entity === "NOTIFICATION" &&
+          event.action === "CREATED"
+        ) {
+          const notification = event.payload as Notification
+
+          const alreadyViewing = isViewingNotificationTarget({
+            taskId: notification.taskId,
+            projectId: notification.projectId,
+            workflowStepId: notification.workflowStepId,
+          })
+
+          if (!alreadyViewing) {
+            toast.custom(
+              id => (
+                <NotificationToast
+                  notification={notification}
+                  onDismiss={() => {
+                    toast.dismiss(id)
+                  }}
+                  onNavigate={async () => {
+                    if (!notification.read) {
+                      await markAsRead(notification.id)
+                    }
+
+                    router.push(
+                      resolveNotificationHref(notification),
+                    )
+
+                    toast.dismiss(id)
+                  }}
+                />
+              ),
+              {
+                id: `notification:${notification.id}`,
+                duration: Infinity,
+              },
+            )
+          } else if (!notification.read) {
+            markAsRead(notification.id)
           }
-
-          const event = JSON.parse(message.data)
-
-          if (event.type === "PING") {
-            return
-          }
-
-          realtimeRegistry(event)
-
-          if (
-            event.entity === "NOTIFICATION" &&
-            event.action === "CREATED"
-          ) {
-            const notification = event.payload as Notification
-
-            const alreadyViewing = isViewingNotificationTarget({
-              taskId: notification.taskId,
-              projectId: notification.projectId,
-              workflowStepId: notification.workflowStepId,
-            })
-
-            if (!alreadyViewing) {
-              toast.custom(
-                id => (
-                  <NotificationToast
-                    notification={notification}
-                    onDismiss={() => {
-                      toast.dismiss(id)
-                    }}
-                    onNavigate={async () => {
-                      if (!notification.read) {
-                        await markAsRead(notification.id)
-                      }
-
-                      router.push(
-                        resolveNotificationHref(notification),
-                      )
-
-                      toast.dismiss(id)
-                    }}
-                  />
-                ),
-                {
-                  id: `notification:${notification.id}`,
-                  duration: Infinity,
-                  unstyled: true,
-                  className:
-                    "!w-[min(100vw-2rem,22rem)] !max-w-[min(100vw-2rem,22rem)] !bg-transparent !border-0 !p-0 !shadow-none !ring-0 !outline-none",
-                },
-              )
-            } else if (!notification.read) {
-              markAsRead(notification.id)
-            }
-          }
-        },
+        }
+      },
 
       onclose() {
         if (disconnectedAt === null) {

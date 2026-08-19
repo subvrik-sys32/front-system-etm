@@ -13,6 +13,7 @@ import {
   FAB_RIGHT_OFFSET_PX,
   FAB_Z_CLASS,
 } from "./fab-layout"
+import { suppressDismissClickThrough } from "@/components/ui/popover/suppress-dismiss-click-through"
 
 type Props = {
   actions: ReactNode[]
@@ -98,19 +99,9 @@ export function SpeedDialFab({ actions, className }: Props) {
       const target = e.target as HTMLElement
       if (rootRef.current?.contains(target)) return
       if (isInsideSheetOrPopover(target)) return
-      // Solo cierra el dial; no dejes que el mismo gesto active lo de detrás.
       e.preventDefault()
       e.stopPropagation()
-      const block = (ev: Event) => {
-        ev.preventDefault()
-        ev.stopPropagation()
-      }
-      document.addEventListener("click", block, true)
-      document.addEventListener("pointerup", block, true)
-      window.setTimeout(() => {
-        document.removeEventListener("click", block, true)
-        document.removeEventListener("pointerup", block, true)
-      }, 320)
+      suppressDismissClickThrough(400)
       setDialOpen(false)
     }
 

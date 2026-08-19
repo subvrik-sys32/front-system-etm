@@ -13,6 +13,7 @@ import {
   PopoverOpenContext,
 } from "./contexts"
 import { SHEET_CONFIG } from "./sheet-config"
+import { suppressDismissClickThrough } from "./suppress-dismiss-click-through"
 import { useSmoothResize } from "./use-smooth-resize"
 import { useVirtualKeyboardOpen } from "./use-virtual-keyboard-open"
 
@@ -92,21 +93,9 @@ export function PopoverContent({
             "data-[state=closed]:pointer-events-none data-[state=closed]:opacity-0",
           )}
           onPointerDown={event => {
-            // Cerrar el sheet y bloquear el click que sigue: al pasar a
-            // closed el overlay pierde pointer-events y el evento cae
-            // en el FAB / lista / botones de detrás.
             event.preventDefault()
             event.stopPropagation()
-            const block = (e: Event) => {
-              e.preventDefault()
-              e.stopPropagation()
-            }
-            document.addEventListener("click", block, true)
-            document.addEventListener("pointerup", block, true)
-            window.setTimeout(() => {
-              document.removeEventListener("click", block, true)
-              document.removeEventListener("pointerup", block, true)
-            }, 320)
+            suppressDismissClickThrough(400)
             close()
           }}
           onClick={event => {

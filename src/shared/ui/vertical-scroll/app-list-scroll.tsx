@@ -18,7 +18,10 @@ type Props = {
   children: React.ReactNode
   resetKey?: string
   className?: string
-  /** Pull-to-refresh (móvil). Si no se pasa, no hay PTR. */
+  /**
+   * Pull-to-refresh (móvil). Si se pasa (aunque sea no-op), se activa PTR
+   * y recarga la página completa — no solo un área/query.
+   */
   onRefresh?: () => void | Promise<void>
 }
 
@@ -80,7 +83,13 @@ export function AppListScroll({
   return (
     <ScrollArea ref={scrollRef} className="h-full min-h-0 min-w-0 flex-1">
       {onRefresh && isMobile ? (
-        <PullToRefresh scrollRef={scrollRef} onRefresh={onRefresh}>
+        <PullToRefresh
+          scrollRef={scrollRef}
+          onRefresh={async () => {
+            // Página completa: evita refrescar solo un listado.
+            window.location.reload()
+          }}
+        >
           {content}
         </PullToRefresh>
       ) : (

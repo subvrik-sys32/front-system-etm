@@ -19,22 +19,14 @@ type Props = {
   resetKey?: string
   className?: string
   /**
-   * Pull-to-refresh (móvil). Si se pasa (aunque sea no-op), se activa PTR
-   * y recarga la página completa — no solo un área/query.
+   * Pull-to-refresh (móvil). Si se pasa, se activa PTR
+   * y recarga la página completa o ejecuta la acción deseada.
    */
   onRefresh?: () => void | Promise<void>
 }
 
 /**
- * Un scroller por superficie de lista.
- * Contenido: `h-full` (NO min-h-full) — le da al flex column una
- * altura DEFINIDA, así flex-1 en un hijo puntual (ej. Agenda/Mes en
- * Bitácora) tiene presupuesto real para repartir y puede llenar el
- * espacio disponible. Con min-h-full esto no funciona: min-height
- * no cuenta como altura definida para el algoritmo de flexbox, y
- * el flex-1 del hijo no hace nada. Si el contenido total supera esa
- * altura, igual desborda hacia el ScrollArea (que es quien de
- * verdad scrollea) porque este div no tiene overflow propio.
+ * Scroller centralizado por superficie de lista con soporte nativo de PTR.
  */
 export function AppListScroll({
   children,
@@ -44,9 +36,9 @@ export function AppListScroll({
 }: Props) {
   const pathname = usePathname()
   const key = resetKey ?? pathname
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement | null>(null)
   const { isMobile, isLandscape } = useResponsive()
-  const searchOpen = usePageSearchStore(s => s.open && s.enabled)
+  const searchOpen = usePageSearchStore((s) => s.open && s.enabled)
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0
@@ -59,15 +51,10 @@ export function AppListScroll({
         isMobile
           ? isLandscape
             ? {
-                // Landscape phone: viewport bajo; el chrome ya come altura.
-                // Solo search + safe-area — sin reservar TOP_BAR/BOTTOM_NAV
-                // otra vez (era el hueco vacío entre topbar y contenido).
                 paddingTop: searchOpen ? PAGE_SEARCH_BAR_HEIGHT_PX : 4,
                 paddingBottom: "env(safe-area-inset-bottom, 0px)",
               }
             : {
-                // Portrait: panel es inset-0 bajo TopBar flotante → hay que
-                // reservar top + bottom chrome (como antes).
                 paddingTop:
                   TOP_BAR_HEIGHT_PX +
                   (searchOpen ? PAGE_SEARCH_BAR_HEIGHT_PX : 0),
@@ -81,15 +68,19 @@ export function AppListScroll({
   )
 
   return (
-    <ScrollArea ref={scrollRef} className="h-full min-h-0 min-w-0 flex-1">
+    <ScrollArea ref={scrollRef} orientation="vertical" className="h-full min-h-0 min-w-0 flex-1">
       {onRefresh && isMobile ? (
         <PullToRefresh
           scrollRef={scrollRef}
           onRefresh={async () => {
-            // Hang hasta unload: el HOLD del PTR no hace snap antes del reload.
-            await new Promise<void>(() => {
-              window.location.reload()
-            })
+            if (onRefresh) {
+              await onRefresh()
+            } else {
+              // Comportamiento por defecto: recarga de página completa
+              await new Promise<void>(() => {
+                window.location.reload()
+              })
+            }
           }}
         >
           {content}

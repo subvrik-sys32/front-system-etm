@@ -1,285 +1,102 @@
 "use client"
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-  type RefObject,
-  type TouchEvent,
-} from "react"
-
+import * as React from "react"
 import { Spinner } from "@/shared/ui/spinner/spinner"
 import { TOP_BAR_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
 import { cn } from "@/shared/utils/utils"
-import { usePullToRefreshStore } from "./pull-to-refresh-store"
 
-const THRESHOLD_PX = 64
-const MAX_PULL_PX = 120
-const HOLD_PX = 48
-const MIN_REFRESH_MS = 900
-const INDICATOR_GAP_PX = 10
-/** Umbral para armar el gesto (no pelear scroll nativo cerca del top). */
-const ARM_DY_PX = 10
-/** Snap-back: ~360ms ease-out (no “golpe” a 0). */
-const SNAP_MS = 360
+const THRESHOLD_PX = 70
+const MAX_PULL_PX = 110
 
-type Props = {
-  children: ReactNode
+interface PullToRefreshProps {
+  children: React.ReactNode
   onRefresh: () => void | Promise<void>
-  scrollRef: RefObject<HTMLElement | null>
+  scrollRef: React.RefObject<HTMLElement | null>
+  disabled?: boolean
 }
 
-function damp(raw: number, max: number): number {
-  if (raw <= 0) return 0
-  return max * (1 - Math.exp(-raw / max))
-}
+export function PullToRefresh({
+  children,
+  onRefresh,
+  scrollRef,
+  disabled = false,
+}: PullToRefreshProps) {
+  const [refreshing, setRefreshing] = React.useState(false)
+  const [pullDistance, setPullDistance] = React.useState(0)
 
-function isInsideSheetOrPopover(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false
-  return Boolean(
-    target.closest(
-      '[data-slot="popover-content"],[data-slot="popover-sheet"],[data-slot="dialog-overlay"],[data-radix-dialog-overlay]',
-    ),
-  )
-}
+  const startY = React.useRef(0)
+  const isDragging = React.useRef(false)
 
-function isDragGestureTarget(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false
-  return Boolean(
-    target.closest(
-      "[data-drag-handle],[data-activity-drag],[data-dnd-row-handle]",
-    ),
-  )
-}
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (disabled || refreshing) return
+    const el = scrollRef.current
+    
+    // Si no estamos arriba del todo, permitimos scroll nativo puro sin interferencias
+    if (!el || el.scrollTop > 0) return
 
-function isToolbarChromeTarget(target: EventTarget | null) {
-  if (!(target instanceof Element)) return false
-  return Boolean(target.closest("[data-toolbar-search]"))
-}
+    startY.current = e.touches[0].clientY
+    isDragging.current = true
+  }
 
-export function PullToRefresh({ children, onRefresh, scrollRef }: Props) {
-  const startY = useRef(0)
-  const startX = useRef(0)
-  /** Touch en top, aún sin dy suficiente. */
-  const pending = useRef(false)
-  /** Gesto PTR confirmado (pull down). */
-  const pulling = useRef(false)
-  const offsetRef = useRef(0)
-  const [offset, setOffset] = useState(0)
-  const [refreshing, setRefreshing] = useState(false)
-  const snapRaf = useRef(0)
-
-  const setPullOffset = useCallback((value: number) => {
-    offsetRef.current = value
-    setOffset(value)
-  }, [])
-
-  const cancelSnap = useCallback(() => {
-    if (snapRaf.current) {
-      cancelAnimationFrame(snapRaf.current)
-      snapRaf.current = 0
-    }
-  }, [])
-
-  /** Baja offset a 0 en ~SNAP_MS con rAF (no CSS transition en el árbol). */
-  const snapToZero = useCallback(() => {
-    cancelSnap()
-    const from = offsetRef.current
-    if (from <= 0) {
-      setPullOffset(0)
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging.current || refreshing) return
+    const el = scrollRef.current
+    
+    if (!el || el.scrollTop > 0) {
+      isDragging.current = false
+      setPullDistance(0)
       return
     }
-    const t0 = performance.now()
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - t0) / SNAP_MS)
-      // ease-out quint — desacelera al final, no se corta
-      const eased = 1 - (1 - t) ** 5
-      const next = from * (1 - eased)
-      if (t >= 1 || next < 0.35) {
-        setPullOffset(0)
-        snapRaf.current = 0
-        return
-      }
-      setPullOffset(next)
-      snapRaf.current = requestAnimationFrame(tick)
+
+    const currentY = e.touches[0].clientY
+    const diff = currentY - startY.current
+
+    if (diff <= 0) {
+      setPullDistance(0)
+      return
     }
-    snapRaf.current = requestAnimationFrame(tick)
-  }, [cancelSnap, setPullOffset])
 
-  useEffect(() => () => cancelSnap(), [cancelSnap])
+    // Amortiguación elástica suave
+    const damped = Math.min(MAX_PULL_PX, diff * 0.45)
+    setPullDistance(damped)
+  }
 
-  const abortGesture = useCallback(() => {
-    pending.current = false
-    pulling.current = false
-    // Si había offset, bajar con snap; si no, no hacer nada.
-    if (offsetRef.current > 0.5) {
-      snapToZero()
+  const handleTouchEnd = async () => {
+    if (!isDragging.current) return
+    isDragging.current = false
+
+    if (pullDistance >= THRESHOLD_PX && !refreshing) {
+      setRefreshing(true)
+      setPullDistance(THRESHOLD_PX)
+      try {
+        await onRefresh()
+      } finally {
+        setRefreshing(false)
+        setPullDistance(0)
+      }
     } else {
-      cancelSnap()
-      setPullOffset(0)
+      setPullDistance(0)
     }
-  }, [cancelSnap, setPullOffset, snapToZero])
+  }
 
-  const onTouchStart = useCallback(
-    (e: TouchEvent) => {
-      if (refreshing) return
-      if (usePullToRefreshStore.getState().dragLocked) {
-        abortGesture()
-        return
-      }
-      if (isDragGestureTarget(e.target)) {
-        abortGesture()
-        return
-      }
-      if (isToolbarChromeTarget(e.target)) {
-        abortGesture()
-        return
-      }
-      if (isInsideSheetOrPopover(e.target)) {
-        abortGesture()
-        return
-      }
-      const el = scrollRef.current
-      if (!el || el.scrollTop > 1) {
-        abortGesture()
-        return
-      }
-      // No armar pull todavía: solo candidatura. El scroll nativo sigue libre.
-      startY.current = e.touches[0].clientY
-      startX.current = e.touches[0].clientX
-      pending.current = true
-      pulling.current = false
-      cancelSnap()
-    },
-    [abortGesture, cancelSnap, refreshing, scrollRef],
-  )
-
-  const onTouchMove = useCallback(
-    (e: TouchEvent) => {
-      if (refreshing) return
-      if (!pending.current && !pulling.current) return
-
-      if (usePullToRefreshStore.getState().dragLocked) {
-        abortGesture()
-        return
-      }
-      if (isDragGestureTarget(e.target)) {
-        abortGesture()
-        return
-      }
-      if (isToolbarChromeTarget(e.target)) {
-        abortGesture()
-        return
-      }
-      if (isInsideSheetOrPopover(e.target)) {
-        abortGesture()
-        return
-      }
-      const el = scrollRef.current
-      if (!el || el.scrollTop > 1) {
-        abortGesture()
-        return
-      }
-
-      const dy = e.touches[0].clientY - startY.current
-      const dx = e.touches[0].clientX - startX.current
-
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) {
-        abortGesture()
-        return
-      }
-
-      // Subir = soltar PTR con snap suave (no salto a 0).
-      if (dy <= 0) {
-        if (pulling.current) {
-          pulling.current = false
-          snapToZero()
-        }
-        return
-      }
-
-      // Armar solo con pull down claro desde el top.
-      if (!pulling.current) {
-        if (dy < ARM_DY_PX) return
-        pulling.current = true
-        pending.current = false
-      }
-
-      setPullOffset(damp(dy, MAX_PULL_PX))
-    },
-    [abortGesture, refreshing, scrollRef, setPullOffset, snapToZero],
-  )
-
-  const runRefresh = useCallback(async () => {
-    cancelSnap()
-    setRefreshing(true)
-    setPullOffset(HOLD_PX)
-
-    const started = Date.now()
-    try {
-      await onRefresh()
-    } finally {
-      const wait = Math.max(0, MIN_REFRESH_MS - (Date.now() - started))
-      if (wait > 0) {
-        await new Promise(r => setTimeout(r, wait))
-      }
-      setRefreshing(false)
-      snapToZero()
-    }
-  }, [cancelSnap, onRefresh, setPullOffset, snapToZero])
-
-  const onTouchEnd = useCallback(() => {
-    if (!pending.current && !pulling.current) return
-    pending.current = false
-
-    if (!pulling.current) return
-    pulling.current = false
-    if (refreshing) return
-
-    if (offsetRef.current >= THRESHOLD_PX) {
-      void runRefresh()
-    } else {
-      snapToZero()
-    }
-  }, [refreshing, runRefresh, snapToZero])
-
-  const setPtrActive = usePullToRefreshStore(s => s.setActive)
-  const dragLocked = usePullToRefreshStore(s => s.dragLocked)
-
-  useEffect(() => {
-    const active = offset > 4 || refreshing
-    setPtrActive(active)
-    return () => {
-      setPtrActive(false)
-    }
-  }, [offset, refreshing, setPtrActive])
-
-  useEffect(() => {
-    if (!dragLocked) return
-    abortGesture()
-  }, [dragLocked, abortGesture])
-
-  const progress = Math.min(1, offset / THRESHOLD_PX)
-  const showIndicator = offset > 4 || refreshing
-  const contentOffset = offset > 0.5 ? offset : 0
+  const progress = Math.min(1, pullDistance / THRESHOLD_PX)
+  const showIndicator = pullDistance > 0 || refreshing
 
   return (
     <div
-      className="relative"
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-      onTouchCancel={onTouchEnd}
+      className="relative w-full h-full"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
     >
+      {/* Indicador superior flotante con sombra de token y sin bordes */}
       <div
         className={cn(
-          "pointer-events-none fixed left-0 right-0 z-50 flex justify-center",
-          "transition-opacity duration-150",
+          "pointer-events-none absolute left-0 right-0 z-50 flex justify-center transition-opacity duration-200",
           showIndicator ? "opacity-100" : "opacity-0",
         )}
-        style={{ top: TOP_BAR_HEIGHT_PX + INDICATOR_GAP_PX }}
+        style={{ top: TOP_BAR_HEIGHT_PX }}
         aria-hidden
       >
         <div
@@ -290,21 +107,20 @@ export function PullToRefresh({ children, onRefresh, scrollRef }: Props) {
           style={{
             transform: refreshing
               ? "scale(1)"
-              : `scale(${0.5 + progress * 0.5})`,
-            opacity: refreshing ? 1 : 0.25 + progress * 0.75,
+              : `scale(${0.6 + progress * 0.4}) translateY(${pullDistance * 0.25}px)`,
           }}
         >
-          <Spinner size={16} className="text-foreground" />
+          <Spinner size={16} className={cn("text-foreground", refreshing && "animate-spin")} />
         </div>
       </div>
 
-      {/* Sin transition CSS en transform: el snap es rAF (~180ms). */}
+      {/* Contenedor con traslación elástica */}
       <div
-        style={
-          contentOffset > 0
-            ? { transform: `translateY(${contentOffset}px)` }
-            : undefined
-        }
+        style={{
+          transform: pullDistance > 0 ? `translateY(${pullDistance}px)` : undefined,
+          transition: isDragging.current ? "none" : "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
+        className="w-full h-full"
       >
         {children}
       </div>

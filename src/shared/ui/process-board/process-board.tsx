@@ -120,8 +120,7 @@ export function ProcessBoard<TId extends string = string>({
         <ScrollArea
           ref={containerRef}
           orientation="horizontal"
-          mapVerticalWheel
-          className="h-full min-h-0 min-w-0 flex-1"
+className="h-full min-h-0 min-w-0 flex-1"
         >
           <div className="flex h-full min-h-0 snap-x snap-mandatory gap-3">
             {columns.map(col => (

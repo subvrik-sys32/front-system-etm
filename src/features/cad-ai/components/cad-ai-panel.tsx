@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useCallback, useRef } from "react"
-import { Loader2, Layers, MessageSquare, Box, Sparkles, FolderKanban } from "lucide-react"
+import { Loader2, Layers, MessageSquare, Box } from "lucide-react"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { cn } from "@/shared/utils/utils"
+import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
 import type { PlanGeometry, Entity, ChatMessage, Skill } from "../types"
 import { cadErrorMessage } from "../utils/cad-error-message"
 import { cadAiApi, downloadDxf } from "../api/cad-ai.api"
@@ -29,7 +30,6 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
   const [skillParams, setSkillParams] = useState<Record<string, number | string> | null>(null)
   const [skillGenerator, setSkillGenerator] = useState<Skill | null>(null)
   const [mobilePane, setMobilePane] = useState<"viewer" | "chat">("viewer")
-  const [activeTab, setActiveTab] = useState<"ai" | "templates">("ai")
 
   const { isMobile } = useResponsive()
   const geometryRef = useRef<PlanGeometry | null>(null)
@@ -137,41 +137,25 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
           </div>
         )}
 
-        {/* Barra superior de navegación estilo chips sin bordes pesados */}
-        <div className="flex shrink-0 items-center justify-between px-4 py-2">
-          <div role="group" className="rounded-xl bg-muted/60 p-1.5 shadow-2xs dark:bg-muted/80">
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => { setActiveTab("ai"); setShowSkillLibrary(false); }}
-                className={cn(
-                  "inline-flex select-none items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-150",
-                  activeTab === "ai" && !showSkillLibrary
-                    ? "bg-foreground/15 text-foreground shadow-2xs"
-                    : "bg-background/80 text-muted-foreground hover:bg-background hover:text-foreground dark:bg-foreground/5 dark:hover:bg-foreground/10"
-                )}
-              >
-                <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>IA</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => { setActiveTab("templates"); setShowSkillLibrary(true); }}
-                className={cn(
-                  "inline-flex select-none items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-150",
-                  showSkillLibrary
-                    ? "bg-foreground/15 text-foreground shadow-2xs"
-                    : "bg-background/80 text-muted-foreground hover:bg-background hover:text-foreground dark:bg-foreground/5 dark:hover:bg-foreground/10"
-                )}
-              >
-                <Layers className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>Skills</span>
-              </button>
-            </div>
-          </div>
+        {/* Botón de Skills con icono y texto, sin contenedor de fondo adicional */}
+        <div className="flex shrink-0 px-4 py-3">
+          <button
+            type="button"
+            aria-label="Skills"
+            title="Skills"
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowSkillLibrary(true)
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            className={cn(CHROME_ICON_BTN, "h-9 w-auto gap-2 px-3 text-xs font-semibold")}
+          >
+            <Layers size={14} strokeWidth={2.25} />
+            <span>Skills</span>
+          </button>
         </div>
 
-        {/* Contenido dinámico principal */}
+        {/* Contenido principal */}
         <div className="flex w-full flex-col">
           <UploadZone onAnalyze={handleAnalyze} onGenerate={handleGenerate} loading={loading} messages={messages} />
         </div>
@@ -179,7 +163,7 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
         {showSkillLibrary && (
           <SkillLibrary 
             onOpenSkill={(s) => { setShowSkillLibrary(false); setSkillGenerator(s); }} 
-            onClose={() => { setShowSkillLibrary(false); setActiveTab("ai"); }} 
+            onClose={() => setShowSkillLibrary(false)} 
           />
         )}
         {skillGenerator && (

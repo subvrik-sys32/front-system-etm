@@ -158,7 +158,7 @@ export function UploadZone({
             {/* Steps */}
             <div className="grid grid-cols-3 gap-2">
               {[
-                { n: "1", label: "Sube tu plano", icon: FileImage },
+                { n: "1", label: "Importa", icon: FileImage },
                 { n: "2", label: "Mide y edita", icon: PencilRuler },
                 { n: "3", label: "Exporta DXF", icon: FileDown },
               ].map(s => (

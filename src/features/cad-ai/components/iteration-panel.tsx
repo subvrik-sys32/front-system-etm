@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useRef, useEffect } from "react"
 import { Send, Loader2, User, Bot, Save, Download, RotateCcw, X, MousePointerClick } from "lucide-react"
 import type { PlanGeometry, ChatMessage, Entity, Skill } from "../types"
@@ -188,11 +190,16 @@ export function IterationPanel({
             onClick={handleSend}
             disabled={loading || !input.trim()}
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-primary text-primary-foreground shadow-xs transition-opacity hover:opacity-85 disabled:opacity-30",
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-foreground text-background shadow-xs transition-all",
+              "hover:opacity-85 active:scale-95 disabled:opacity-30 disabled:pointer-events-none",
               EASE
             )}
           >
-            <Send className="size-4" />
+            {loading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Send className="size-4" />
+            )}
           </button>
         </div>
       </div>

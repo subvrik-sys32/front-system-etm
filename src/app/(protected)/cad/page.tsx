@@ -5,13 +5,22 @@ import { Sparkles, Boxes } from "lucide-react"
 
 import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
-import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
+import {
+  TOP_BAR_HEIGHT_PX,
+  BOTTOM_NAV_HEIGHT_PX,
+} from "@/shared/responsive/layout/chrome-constants"
 import { CadWorkspacePanel } from "@/features/cad/components/cad-workspace-panel"
 import { CadAiPanel } from "@/features/cad-ai/components/cad-ai-panel"
 import { cn } from "@/shared/utils/utils"
 
 type Tab = "ai" | "templates"
 
+/**
+ * CAD = superficie fill-height (lienzo + panel), no lista.
+ * Mismo contrato que engineering en vista procesos:
+ * NO AppListScroll — el panel es dueño del alto y del scroll interno.
+ * Mobile: padding TopBar + BottomNav en el shell del panel.
+ */
 export default function CadPage() {
   usePageTitle("CAD")
   const { isMobile } = useResponsive()
@@ -55,7 +64,8 @@ export default function CadPage() {
   }
 
   return (
-    <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
+    <main className="flex h-full min-h-0 flex-col overflow-hidden bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
+      {/* Desktop header */}
       <header className="mb-1 hidden min-h-10 shrink-0 flex-wrap items-center justify-between gap-2 desktop:flex">
         <div className="flex min-h-10 min-w-0 flex-1 items-center gap-2">
           <h1 className="shrink-0 text-2xl font-bold tracking-widest">CAD</h1>
@@ -69,19 +79,26 @@ export default function CadPage() {
         </div>
       </header>
 
-      <section className="flex min-h-0 w-full flex-1 flex-col">
-        <AppListScroll>
-          <div className="mt-2 mb-2 shrink-0 desktop:hidden">
-            <TabsNav compact />
-          </div>
-          <div className="flex min-h-0 w-full flex-1 flex-col">
-            {tab === "ai" ? (
-              <CadAiPanel embedded />
-            ) : (
-              <CadWorkspacePanel embedded />
-            )}
-          </div>
-        </AppListScroll>
+      {/* Shell fill-height — chrome mobile como engineering board */}
+      <section
+        className="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+        style={
+          isMobile
+            ? {
+                paddingTop: TOP_BAR_HEIGHT_PX,
+                paddingBottom: `calc(${BOTTOM_NAV_HEIGHT_PX}px + env(safe-area-inset-bottom, 0px))`,
+              }
+            : undefined
+        }
+      >
+        {/* Tabs mobile */}
+        <div className="mb-2 shrink-0 desktop:hidden">
+          <TabsNav compact />
+        </div>
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          {tab === "ai" ? <CadAiPanel embedded /> : <CadWorkspacePanel embedded />}
+        </div>
       </section>
     </main>
   )

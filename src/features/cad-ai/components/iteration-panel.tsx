@@ -54,8 +54,8 @@ export function IterationPanel({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-card overflow-hidden">
-      <div className="p-3.5  flex-shrink-0 bg-card">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-card">
+      <div className="shrink-0 px-4 py-3">
         <h2 className="font-semibold text-foreground text-sm">Iteración</h2>
         <p className="text-[11px] text-muted-foreground mt-0.5">Describe cambios en lenguaje natural</p>
       </div>
@@ -68,12 +68,12 @@ export function IterationPanel({
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
             <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-              msg.role === "user" ? "bg-primary text-primary-foreground dark:bg-foreground dark:text-background" : "bg-secondary text-foreground"
+              msg.role === "user" ? "bg-foreground text-background" : "bg-foreground/5 text-foreground"
             }`}>
               {msg.role === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
             </div>
             <div className={`flex-1 min-w-0 rounded-lg p-3 text-sm ${
-              msg.role === "user" ? "bg-primary text-primary-foreground dark:bg-foreground dark:text-background" : "bg-secondary text-foreground"
+              msg.role === "user" ? "bg-foreground text-background" : "bg-foreground/5 text-foreground"
             }`}>
               <p className="whitespace-pre-wrap break-words">{msg.content}</p>
               {msg.geometry && (
@@ -123,7 +123,7 @@ export function IterationPanel({
         <div className="flex gap-2">
           <button
             onClick={onDownload}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded-md bg-primary text-primary-foreground dark:bg-foreground dark:text-background px-3 py-2 text-xs font-medium hover:bg-primary/90"
+            className="flex-1 flex items-center justify-center gap-1.5 rounded-md bg-foreground text-background px-3 py-2 text-xs font-medium hover:bg-primary/90"
           >
             <Download className="w-4 h-4 shrink-0" />
             <span>DXF</span>
@@ -158,7 +158,7 @@ export function IterationPanel({
           <button
             onClick={handleSend}
             disabled={loading || !input.trim()}
-            className="self-end rounded-md bg-primary text-primary-foreground dark:bg-foreground dark:text-background p-2 hover:bg-primary/90 disabled:opacity-50"
+            className="self-end rounded-md bg-foreground text-background p-2 hover:bg-primary/90 disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
           </button>

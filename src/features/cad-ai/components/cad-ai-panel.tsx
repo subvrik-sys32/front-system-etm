@@ -129,7 +129,7 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
 
   if (!geometry) {
     return (
-      <div className="flex min-h-0 w-full flex-col bg-background">
+      <div className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto bg-background [scrollbar-width:none]">
         {error && (
           <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive">
             <span className="truncate">{error}</span>
@@ -194,7 +194,7 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
   }
 
   return (
-    <div className="flex min-h-0 w-full flex-col bg-background">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-background">
       {error && (
         <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive">
           <span className="truncate">{error}</span>
@@ -203,7 +203,7 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
       )}
 
       {isMobile && (
-        <div className="flex shrink-0 items-center gap-1.5 bg-card/80 p-1.5 backdrop-blur-md">
+        <div className="mb-2 flex shrink-0 items-center gap-1 rounded-xl bg-muted/60 p-1 dark:bg-muted/80">
           <button
             type="button"
             onClick={() => setMobilePane("viewer")}
@@ -229,8 +229,8 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
         </div>
       )}
 
-      <div className="flex min-h-0 flex-1 flex-col desktop:flex-row overflow-hidden relative">
-        <div className={cn("relative min-h-0 min-w-0 flex-1 flex-col", isMobile && mobilePane !== "viewer" && "hidden")}>
+      <div className="relative flex min-h-0 flex-1 flex-col gap-0 overflow-hidden desktop:flex-row desktop:gap-3">
+        <div className={cn("relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-muted/30", isMobile && mobilePane !== "viewer" && "hidden")}>
           {loading && (
             <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -240,11 +240,18 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
             geometry={geometry}
             onGeometryChange={handleGeometryChange}
             onSendToAI={(ent) => setSelectedForAI(ent)}
-            className="h-full w-full"
+            className="absolute inset-0 h-full w-full"
           />
         </div>
 
-        <div className={cn("min-h-0 shrink-0 bg-card", isMobile ? (mobilePane === "chat" ? "flex h-full w-full flex-col" : "hidden") : "flex w-80 flex-col desktop:w-96")}>
+        <div className={cn(
+            "min-h-0 overflow-hidden rounded-xl bg-card",
+            isMobile
+              ? mobilePane === "chat"
+                ? "flex h-full w-full flex-1 flex-col"
+                : "hidden"
+              : "flex w-full max-w-sm shrink-0 flex-col desktop:w-96",
+          )}>
           <IterationPanel
             geometry={geometry}
             dxf={dxf}

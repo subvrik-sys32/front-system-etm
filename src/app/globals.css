@@ -458,10 +458,10 @@ input:focus-visible {
 }
 
 @media (max-width: 767px) {
-  input,
-  select,
-  textarea {
-    font-size: 16px !important;
+  input:not(.input-compact),
+  select:not(.input-compact),
+  textarea:not(.input-compact) {
+    font-size: 13px !important;
   }
 }
 

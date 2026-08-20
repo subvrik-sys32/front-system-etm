@@ -12,6 +12,8 @@ import {
   PencilRuler,
   Send,
   Bot,
+  User,
+  Sparkles,
 } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
@@ -24,9 +26,7 @@ interface UploadZoneProps {
   messages: ChatMessage[]
 }
 
-/** CTA primario: primary en light, blanco (foreground) en dark — mismo criterio FormDialog. */
-const primaryBtn =
-  "bg-primary text-primary-foreground dark:bg-foreground dark:text-background hover:opacity-90"
+const EASE = "duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
 
 export function UploadZone({
   onAnalyze,
@@ -38,7 +38,7 @@ export function UploadZone({
   const [mode, setMode] = useState<"upload" | "chat">("upload")
   const [input, setInput] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -102,14 +102,14 @@ export function UploadZone({
 
         {/* Toggle de modo responsivo */}
         <div className="mb-4 flex shrink-0 justify-center sm:mb-5">
-          <div className="inline-flex rounded-xl bg-background/40 backdrop-blur-md p-1 border border-border/20 shadow-sm">
+          <div className="inline-flex rounded-xl bg-card p-1 shadow-xs">
             <button
               type="button"
               onClick={() => setMode("upload")}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors",
                 mode === "upload"
-                  ? "bg-foreground/15 text-foreground shadow-2xs"
+                  ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -122,7 +122,7 @@ export function UploadZone({
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors",
                 mode === "chat"
-                  ? "bg-foreground/15 text-foreground shadow-2xs"
+                  ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -137,8 +137,8 @@ export function UploadZone({
             <div
               {...getRootProps()}
               className={cn(
-                "flex min-h-[180px] sm:min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl bg-background/30 backdrop-blur-md px-4 py-8 transition-colors border border-dashed border-border/40 hover:border-primary/50 shadow-sm",
-                isDragActive && "bg-background/50 border-primary",
+                "flex min-h-[180px] sm:min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl bg-card px-4 py-8 transition-colors border border-dashed border-border/40 hover:border-primary/50 shadow-xs",
+                isDragActive && "bg-card/80 border-primary",
                 loading && "pointer-events-none opacity-60",
               )}
             >
@@ -147,7 +147,7 @@ export function UploadZone({
                 <Loader2 className="size-8 animate-spin text-muted-foreground" />
               ) : (
                 <>
-                  <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-foreground/5 sm:size-14">
+                  <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-secondary/30 sm:size-14">
                     <ImageIcon className="size-6 text-muted-foreground sm:size-7" />
                   </div>
                   <p className="text-sm font-semibold text-foreground sm:text-base">
@@ -162,7 +162,7 @@ export function UploadZone({
               )}
             </div>
 
-            {/* Steps grid optimizado */}
+            {/* Steps grid */}
             <div className="grid grid-cols-3 gap-2">
               {[
                 { n: "1", label: "Importa", fullLabel: "Importa tu plano o imagen" },
@@ -171,9 +171,9 @@ export function UploadZone({
               ].map(s => (
                 <div
                   key={s.n}
-                  className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 rounded-xl bg-background/30 backdrop-blur-md border border-border/20 p-2.5 sm:px-3 text-center sm:text-left shadow-2xs"
+                  className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 rounded-xl bg-card p-2.5 sm:px-3 text-center sm:text-left shadow-xs"
                 >
-                  <span className="flex size-5 sm:size-6 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-[10px] sm:text-xs font-bold text-foreground">
+                  <span className="flex size-5 sm:size-6 shrink-0 items-center justify-center rounded-full bg-secondary/40 text-[10px] sm:text-xs font-bold text-foreground">
                     {s.n}
                   </span>
                   <span className="text-[11px] sm:text-xs font-medium text-muted-foreground leading-tight">
@@ -208,7 +208,7 @@ export function UploadZone({
               ].map(c => (
                 <div
                   key={c.title}
-                  className="rounded-xl sm:rounded-2xl bg-background/30 backdrop-blur-md border border-border/20 p-3 sm:p-4 transition hover:bg-background/40 flex flex-col justify-between shadow-2xs"
+                  className="rounded-xl sm:rounded-2xl bg-card p-3 sm:p-4 transition hover:bg-card/80 flex flex-col justify-between shadow-xs"
                 >
                   <div>
                     <c.icon className="mb-1.5 sm:mb-2 size-4 sm:size-5 text-muted-foreground" />
@@ -225,88 +225,124 @@ export function UploadZone({
             </div>
           </div>
         ) : (
-          <div className="flex min-h-[300px] sm:min-h-[360px] w-full flex-col overflow-hidden rounded-2xl bg-background/30 backdrop-blur-md border border-border/30 shadow-md">
+          <div className="flex min-h-[380px] sm:min-h-[440px] w-full flex-col overflow-hidden rounded-2xl bg-card shadow-xs">
+            
+            {/* Contenedor del chat estilizado */}
             <div
               ref={scrollRef}
-              className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 [scrollbar-width:none]"
+              className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5 sm:p-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden overscroll-contain [-webkit-overflow-scrolling:touch]"
             >
-              {messages.length === 0 && (
-                <div className="flex flex-col items-center justify-center gap-2.5 py-12 text-center">
-                  <Bot className="size-9 text-muted-foreground/50" />
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Describe la pieza que necesitas fabricar
-                  </p>
-                  <div className="mt-2 flex flex-wrap justify-center gap-2">
+              {messages.length === 0 && !loading && (
+                <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+                  <div className="flex size-12 items-center justify-center rounded-2xl bg-secondary/40 text-foreground">
+                    <Sparkles className="size-6" />
+                  </div>
+                  <div className="space-y-1 max-w-sm">
+                    <p className="text-sm font-semibold text-foreground">
+                      ¿Qué pieza diseñamos hoy?
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Describe las medidas o la forma geométrica en lenguaje natural.
+                    </p>
+                  </div>
+                  
+                  {/* Grid responsive para los chips */}
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 w-full max-w-lg">
                     {chips.map(c => (
                       <button
                         key={c.text}
                         type="button"
                         onClick={() => {
                           setInput(c.text)
-                          textareaRef.current?.focus()
+                          inputRef.current?.focus()
                         }}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-background/50 backdrop-blur-xs border border-border/20 px-3 py-2 text-xs text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+                        className="flex flex-col items-center sm:items-start text-center sm:text-left gap-1.5 rounded-xl bg-background/50 p-3 text-xs text-muted-foreground transition-all hover:bg-background hover:text-foreground shadow-xs active:scale-95"
                       >
-                        <c.icon className="size-3.5" />
-                        {c.text}
+                        <c.icon className="size-4 text-foreground/70" />
+                        <span className="line-clamp-2">{c.text}</span>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
-              {messages.map((m, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    "rounded-xl px-3.5 py-2.5 text-sm leading-relaxed backdrop-blur-xs",
-                    m.role === "user"
-                      ? "ml-8 bg-primary/15 text-foreground border border-primary/20"
-                      : "mr-8 bg-background/60 text-foreground border border-border/20",
-                  )}
-                >
-                  {m.content}
+
+              {messages.map((msg, i) => (
+                <div key={i} className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+                  <div className={cn(
+                    "flex size-7 shrink-0 items-center justify-center rounded-full shadow-xs",
+                    msg.role === "user" ? "bg-foreground text-background" : "bg-foreground/[0.06] text-foreground"
+                  )}>
+                    {msg.role === "user" ? <User className="size-3.5" /> : <Bot className="size-3.5" />}
+                  </div>
+                  <div className={cn(
+                    "max-w-[85%] min-w-0 rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed shadow-xs",
+                    msg.role === "user" ? "bg-foreground text-background" : "bg-foreground/[0.05] text-foreground"
+                  )}>
+                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                    {msg.geometry && (
+                      <p className={`mt-1.5 text-[11px] ${msg.role === "user" ? "text-background/60" : "text-muted-foreground"}`}>
+                        {msg.geometry.entities.length} entidades · {msg.geometry.dimensions.width}×{msg.geometry.dimensions.height} {msg.geometry.units}
+                      </p>
+                    )}
+                  </div>
                 </div>
               ))}
+
               {loading && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground px-2">
-                  <Loader2 className="size-3.5 animate-spin" />
-                  Generando geometría con IA...
+                <div className="flex gap-2.5">
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] shadow-xs">
+                    <Loader2 className="size-3.5 animate-spin" />
+                  </div>
+                  <div className="rounded-2xl bg-foreground/[0.05] px-3.5 py-2.5 text-[13px] text-muted-foreground shadow-xs">
+                    Procesando…
+                  </div>
                 </div>
               )}
             </div>
 
-            <div className="flex shrink-0 items-end gap-2.5 p-3.5 border-t border-border/20 bg-background/20 backdrop-blur-md">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSend()
-                  }
-                }}
-                rows={1}
-                placeholder="Ej: Plato circular de 120mm con 6 perforaciones..."
-                disabled={loading}
-                className="min-h-[42px] max-h-[120px] w-full resize-none rounded-xl bg-background/50 backdrop-blur-xs border border-border/20 px-3.5 py-2.5 text-sm outline-none focus:bg-background/80 disabled:opacity-50"
-              />
-              <button
-                type="button"
-                onClick={handleSend}
-                disabled={!input.trim() || loading}
-                className={cn(
-                  "flex size-10 shrink-0 items-center justify-center rounded-xl transition disabled:opacity-40 shadow-sm",
-                  primaryBtn,
-                )}
-              >
-                {loading ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Send className="size-4" />
-                )}
-              </button>
+            {/* Input inferior con botón de enviar actualizado a shadow-xs */}
+            <div className="shrink-0 bg-card p-3 sm:p-4">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault()
+                        handleSend()
+                      }
+                    }}
+                    placeholder="Ej: Plato circular de 120mm con 6 perforaciones..."
+                    disabled={loading}
+                    style={{ fontSize: "12px" }}
+                    className={cn(
+                      "input-compact h-9 w-full rounded-xl bg-background px-3.5 py-2 text-xs text-foreground placeholder:text-muted-foreground/70 outline-none transition-all shadow-xs",
+                      "disabled:opacity-50"
+                    )}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={!input.trim() || loading}
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-xl bg-foreground text-background transition-all shadow-xs",
+                    "hover:opacity-85 active:scale-95 disabled:opacity-30 disabled:pointer-events-none",
+                    EASE
+                  )}
+                >
+                  {loading ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Send className="size-3.5" />
+                  )}
+                </button>
+              </div>
             </div>
+
           </div>
         )}
       </div>

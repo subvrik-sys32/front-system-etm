@@ -1,5 +1,8 @@
+"use client"
+
 import { useState } from "react"
-import { SlidersHorizontal, ChevronDown, ChevronUp, RefreshCw } from "lucide-react"
+import { SlidersHorizontal, ChevronDown, ChevronUp, Loader2, RefreshCw } from "lucide-react"
+import { cn } from "@/shared/utils/utils"
 import type { Skill } from "../types"
 
 interface SkillParametersProps {
@@ -9,6 +12,11 @@ interface SkillParametersProps {
   onRegenerate: () => void
   loading: boolean
 }
+
+const EASE = "duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+const CARD =
+  `rounded-xl border border-foreground/[0.06] bg-foreground/[0.02] transition-colors ${EASE}`
+const FIELD_WRAP = "flex items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2"
 
 export function SkillParameters({ skill, params, onParamsChange, onRegenerate, loading }: SkillParametersProps) {
   const [expanded, setExpanded] = useState(true)
@@ -21,10 +29,10 @@ export function SkillParameters({ skill, params, onParamsChange, onRegenerate, l
   if (skill.parameters.length === 0) return null
 
   return (
-    <div className="rounded-md border border-border bg-secondary/30 overflow-hidden">
+    <div className={cn("overflow-hidden", CARD)}>
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-foreground hover:bg-secondary/50 transition-colors"
+        className={`flex w-full items-center justify-between px-3 py-2.5 text-xs font-semibold text-foreground transition-colors ${EASE} hover:bg-foreground/[0.04]`}
       >
         <span className="flex items-center gap-1.5">
           <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -41,21 +49,23 @@ export function SkillParameters({ skill, params, onParamsChange, onRegenerate, l
                 {param.label}
                 {param.unit && <span className="ml-0.5 opacity-60">({param.unit})</span>}
               </label>
-              <input
-                type="number"
-                value={params[param.name] ?? ""}
-                onChange={e => handleChange(param.name, e.target.value)}
-                className="w-20 rounded border border-input bg-background px-2 py-1 text-xs text-right focus:outline-none focus:ring-1 focus:ring-ring"
-              />
+              <div className={cn(FIELD_WRAP, "w-24 py-1.5")}>
+                <input
+                  type="number"
+                  value={params[param.name] ?? ""}
+                  onChange={e => handleChange(param.name, e.target.value)}
+                  className="w-full bg-transparent text-xs text-right outline-none"
+                />
+              </div>
             </div>
           ))}
           <button
             onClick={onRegenerate}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-1.5 rounded-md bg-primary/10 text-primary px-3 py-1.5 text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
+            className={`w-full flex items-center justify-center gap-1.5 rounded-lg bg-primary/10 text-primary px-3 py-1.5 text-xs font-medium transition-colors ${EASE} hover:bg-primary/20 disabled:opacity-50`}
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-            Regenerar
+            {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+            {loading ? "Regenerando..." : "Regenerar"}
           </button>
         </div>
       )}

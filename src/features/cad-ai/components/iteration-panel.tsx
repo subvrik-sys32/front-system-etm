@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react"
 import { Send, Loader2, User, Bot, Save, Download, RotateCcw, X, MousePointerClick } from "lucide-react"
 import type { PlanGeometry, ChatMessage, Entity, Skill } from "../types"
 import { SkillParameters } from "./skill-parameters"
+import { cn } from "@/shared/utils/utils"
 
 interface IterationPanelProps {
   geometry: PlanGeometry
@@ -20,6 +21,8 @@ interface IterationPanelProps {
   onSkillParamsChange?: (params: Record<string, number | string>) => void
   onSkillRegenerate?: () => void
 }
+
+const EASE = "duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
 
 export function IterationPanel({
   geometry,
@@ -55,48 +58,62 @@ export function IterationPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-card">
-      <div className="shrink-0 px-4 py-3">
-        <h2 className="font-semibold text-foreground text-sm">Iteración</h2>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Describe cambios en lenguaje natural</p>
+      {/* Header: misma altura (h-14) que la toolbar del canvas para que ambos paneles respiren igual */}
+      <div className="flex h-14 shrink-0 flex-col justify-center px-5">
+        <h2 className="text-[15px] font-semibold tracking-tight text-foreground">Conversación</h2>
+        <p className="text-[12px] text-muted-foreground">Brinda instrucciones y conversa con tu asistente IA</p>
       </div>
 
-      {/* Scroll oculto sin barras nativas */}
-      <div 
-        ref={scrollRef} 
-        className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden overscroll-contain [-webkit-overflow-scrolling:touch]"
+      <div className="h-px shrink-0 bg-foreground/[0.06]" />
+
+      <div
+        ref={scrollRef}
+        className="flex-1 min-h-0 overflow-y-auto px-5 py-5 space-y-5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden overscroll-contain [-webkit-overflow-scrolling:touch]"
       >
+        {messages.length === 0 && !loading && (
+          <div className="flex h-full flex-col items-center justify-center gap-2 py-12 text-center">
+            <Bot className="size-7 text-muted-foreground/40" />
+            <p className="text-[13px] text-muted-foreground">Los cambios que pidas aparecerán aquí</p>
+          </div>
+        )}
+
         {messages.map((msg, i) => (
-          <div key={i} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-            <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-              msg.role === "user" ? "bg-foreground text-background" : "bg-foreground/5 text-foreground"
-            }`}>
-              {msg.role === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+          <div key={i} className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+            <div className={cn(
+              "flex size-7 shrink-0 items-center justify-center rounded-full shadow-xs",
+              msg.role === "user" ? "bg-foreground text-background" : "bg-foreground/[0.06] text-foreground"
+            )}>
+              {msg.role === "user" ? <User className="size-3.5" /> : <Bot className="size-3.5" />}
             </div>
-            <div className={`flex-1 min-w-0 rounded-lg p-3 text-sm ${
-              msg.role === "user" ? "bg-foreground text-background" : "bg-foreground/5 text-foreground"
-            }`}>
+            <div className={cn(
+              "max-w-[85%] min-w-0 rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed shadow-xs",
+              msg.role === "user" ? "bg-foreground text-background" : "bg-foreground/[0.05] text-foreground"
+            )}>
               <p className="whitespace-pre-wrap break-words">{msg.content}</p>
               {msg.geometry && (
-                <p className="text-xs mt-2 opacity-70">
+                <p className={`mt-1.5 text-[11px] ${msg.role === "user" ? "text-background/60" : "text-muted-foreground"}`}>
                   {msg.geometry.entities.length} entidades · {msg.geometry.dimensions.width}×{msg.geometry.dimensions.height} {msg.geometry.units}
                 </p>
               )}
             </div>
           </div>
         ))}
+
         {loading && (
-          <div className="flex gap-3">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-              <Loader2 className="w-4 h-4 animate-spin" />
+          <div className="flex gap-2.5">
+            <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] shadow-xs">
+              <Loader2 className="size-3.5 animate-spin" />
             </div>
-            <div className="bg-secondary rounded-lg p-3 text-sm text-muted-foreground">
-              Procesando...
+            <div className="rounded-2xl bg-foreground/[0.05] px-3.5 py-2.5 text-[13px] text-muted-foreground shadow-xs">
+              Procesando…
             </div>
           </div>
         )}
       </div>
 
-      <div className="p-3  space-y-2.5 flex-shrink-0 bg-card">
+      <div className="h-px shrink-0 bg-foreground/[0.06]" />
+
+      <div className="shrink-0 space-y-3 bg-card p-4">
         {activeSkill && skillParams && onSkillParamsChange && onSkillRegenerate && (
           <SkillParameters
             skill={activeSkill}
@@ -108,59 +125,74 @@ export function IterationPanel({
         )}
 
         {selectedForAI && selectedForAI.length > 0 && (
-          <div className="rounded-md bg-orange-50 border border-orange-200 px-3 py-1.5 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-xs text-orange-700">
-              <MousePointerClick className="w-3.5 h-3.5 flex-shrink-0" />
+          <div className="flex items-center justify-between gap-2 rounded-[10px] bg-orange-50 px-3 py-2 dark:bg-orange-500/10 shadow-xs">
+            <div className="flex items-center gap-2 text-[12px] text-orange-700 dark:text-orange-400">
+              <MousePointerClick className="size-3.5 shrink-0" />
               <span>{selectedForAI.length} seleccionada(s)</span>
             </div>
-            <button onClick={onClearAISelection} className="text-orange-500 hover:text-orange-700">
-              <X className="w-3.5 h-3.5" />
+            <button onClick={onClearAISelection} className="text-orange-500 hover:text-orange-700 dark:text-orange-400">
+              <X className="size-3.5" />
             </button>
           </div>
         )}
 
-        {/* Botones de acción compactos: Guardar Skill muestra solo icono en móvil/tablet pequeño */}
+        {/* Acciones secundarias */}
         <div className="flex gap-2">
           <button
             onClick={onDownload}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded-md bg-foreground text-background px-3 py-2 text-xs font-medium hover:bg-primary/90"
+            className={cn(
+              "flex h-10 flex-1 items-center justify-center gap-1.5 rounded-[10px] bg-foreground px-3 text-[13px] font-medium text-background shadow-xs transition-opacity hover:opacity-85",
+              EASE
+            )}
           >
-            <Download className="w-4 h-4 shrink-0" />
+            <Download className="size-4 shrink-0" />
             <span>DXF</span>
           </button>
           <button
             onClick={onSaveSkill}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded-md bg-foreground/5 bg-card px-3 py-2 text-xs font-medium hover:bg-foreground/5"
             title="Guardar Skill"
+            className={cn(
+              "flex h-10 flex-1 items-center justify-center gap-1.5 rounded-[10px] bg-foreground/[0.05] px-3 text-[13px] font-medium text-foreground shadow-xs transition-colors hover:bg-foreground/[0.08]",
+              EASE
+            )}
           >
-            <Save className="w-4 h-4 shrink-0" />
+            <Save className="size-4 shrink-0" />
             <span className="hidden desktop:inline">Guardar Skill</span>
           </button>
           <button
             onClick={onReset}
-            className="flex items-center justify-center rounded-md bg-foreground/5 bg-card px-3 py-2 text-sm font-medium hover:bg-foreground/5"
             title="Empezar de nuevo"
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-foreground/[0.05] text-foreground shadow-xs transition-colors hover:bg-foreground/[0.08]",
+              EASE
+            )}
           >
-            <RotateCcw className="w-4 h-4 shrink-0" />
+            <RotateCcw className="size-4 shrink-0" />
           </button>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex items-end gap-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            placeholder="Describe qué cambiar..."
+            placeholder="Describe qué cambiar…"
             rows={1}
-            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-xs md:text-sm resize-none max-h-20 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] focus:outline-none focus:ring-1 focus:ring-ring"
+            className={cn(
+              "min-h-10 max-h-24 flex-1 resize-none rounded-[10px] bg-foreground/[0.05] px-3.5 py-2.5 text-[13px] outline-none [scrollbar-width:none] [-webkit-overflow-scrolling:touch] shadow-xs transition-colors focus:bg-foreground/[0.08] disabled:opacity-50",
+              EASE
+            )}
             disabled={loading}
           />
           <button
             onClick={handleSend}
             disabled={loading || !input.trim()}
-            className="self-end rounded-md bg-foreground text-background p-2 hover:bg-primary/90 disabled:opacity-50"
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-primary text-primary-foreground shadow-xs transition-opacity hover:opacity-85 disabled:opacity-30",
+              EASE
+            )}
           >
-            <Send className="w-4 h-4" />
+            <Send className="size-4" />
           </button>
         </div>
       </div>

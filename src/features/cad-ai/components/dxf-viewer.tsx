@@ -918,7 +918,7 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
   }, [tool])
 
   return (
-    <div className={`relative overflow-hidden bg-[#fafafa] flex flex-col h-full min-h-0 ${className || ""}`}>
+    <div className={`relative overflow-hidden flex flex-col h-full min-h-0 ${className || ""}`}>
       <Toolbar
         tool={tool}
         onToolChange={setTool}

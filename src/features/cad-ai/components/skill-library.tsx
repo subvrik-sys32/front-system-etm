@@ -64,7 +64,7 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
         size="large"
         className={cn(
           "flex flex-col gap-0 overflow-hidden rounded-2xl p-0 text-foreground shadow-2xl",
-          "h-[75vh] max-h-[600px] w-full max-w-2xl bg-popover",
+          "h-[75vh] max-h-[600px] w-full max-w-2xl bg-background",
         )}
       >
         <div className="shrink-0">
@@ -75,25 +75,25 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
           />
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 px-5 pb-3">
+        <div className="flex shrink-0 items-center gap-2 px-5 py-3">
           <div className="flex flex-1 items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2">
             <Search size={15} className="shrink-0 text-muted-foreground" />
             <input
-              type="search"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar skills..."
-              className="w-full bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground/80"
+              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/80"
             />
           </div>
-          {/* Botones estilo Windows para alternar Vista de Cuadrícula / Lista */}
-          <div className="flex items-center rounded-xl bg-muted/40 p-0.5">
+
+          {/* Toggle de vistas corregido a shadow-xs */}
+          <div className="flex items-center rounded-lg bg-card p-0.5 shadow-xs">
             <button
               type="button"
               onClick={() => setViewMode("grid")}
               className={cn(
-                "rounded-lg p-1.5 text-muted-foreground transition",
-                viewMode === "grid" && "bg-background text-foreground shadow-2xs"
+                "rounded-md p-1.5 text-muted-foreground transition",
+                viewMode === "grid" && "bg-muted text-foreground shadow-xs"
               )}
               title="Vista de cuadrícula"
             >
@@ -103,8 +103,8 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
               type="button"
               onClick={() => setViewMode("list")}
               className={cn(
-                "rounded-lg p-1.5 text-muted-foreground transition",
-                viewMode === "list" && "bg-background text-foreground shadow-2xs"
+                "rounded-md p-1.5 text-muted-foreground transition",
+                viewMode === "list" && "bg-muted text-foreground shadow-xs"
               )}
               title="Vista de lista"
             >
@@ -123,7 +123,7 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
                 </div>
               ) : filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-foreground/5 text-primary">
+                  <div className="flex size-10 items-center justify-center rounded-full bg-card text-primary shadow-xs">
                     <Layers className="size-5" />
                   </div>
                   <p className="text-xs font-semibold text-foreground">
@@ -140,9 +140,9 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
                       key={skill.id}
                       type="button"
                       onClick={() => onOpenSkill(skill)}
-                      className="group relative flex flex-col rounded-xl bg-card p-2.5 text-left transition hover:border-primary/40 hover:shadow-sm"
+                      className="group relative flex flex-col rounded-xl bg-card p-2.5 text-left transition hover:border-border hover:shadow-md"
                     >
-                      <div className="mb-2 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-lg bg-secondary/30">
+                      <div className="mb-2 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-lg bg-muted/50">
                         {skill.thumbnail && !skill.thumbnail.startsWith("blob:") ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -151,10 +151,10 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
                             className="h-full w-full object-contain p-1.5"
                           />
                         ) : (
-                          <Layers className="size-6 text-muted-foreground/40" />
+                          <Layers className="size-6 text-muted-foreground" />
                         )}
                       </div>
-                      <h3 className="truncate text-xs font-semibold">
+                      <h3 className="truncate text-xs font-semibold text-foreground">
                         {skill.name}
                       </h3>
                       <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
@@ -174,7 +174,7 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
                             void handleDelete(skill.id, e as unknown as React.MouseEvent)
                           }
                         }}
-                        className="absolute right-2 top-2 rounded-lg bg-background/80 p-1.5 text-muted-foreground shadow-xs backdrop-blur-xs transition hover:bg-destructive/10 hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
+                        className="absolute right-2 top-2 rounded-lg bg-background/90 p-1.5 text-muted-foreground shadow-xs backdrop-blur-xs transition hover:bg-destructive/10 hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
                         title="Eliminar skill"
                       >
                         <Trash2 className="size-3.5" />
@@ -189,10 +189,10 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
                       key={skill.id}
                       type="button"
                       onClick={() => onOpenSkill(skill)}
-                      className="group flex items-center justify-between rounded-xl bg-card px-3 py-2 text-left transition hover:border-primary/40 hover:shadow-sm"
+                      className="group flex items-center justify-between rounded-xl bg-card px-3 py-2 text-left transition hover:border-border hover:shadow-md"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-secondary/30">
+                        <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted/50">
                           {skill.thumbnail && !skill.thumbnail.startsWith("blob:") ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -201,11 +201,11 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
                               className="h-full w-full object-contain p-1"
                             />
                           ) : (
-                            <Layers className="size-4 text-muted-foreground/40" />
+                            <Layers className="size-4 text-muted-foreground" />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <h3 className="truncate text-xs font-semibold">
+                          <h3 className="truncate text-xs font-semibold text-foreground">
                             {skill.name}
                           </h3>
                           <p className="truncate text-[11px] text-muted-foreground">
@@ -245,7 +245,7 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl bg-foreground/5 px-3.5 py-2 text-xs font-medium text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+              className="rounded-xl bg-muted/60 px-3.5 py-2 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
             >
               Cerrar
             </button>

@@ -19,6 +19,10 @@ interface SkillGeneratorProps {
   onLoadToWorkspace?: (geometry: PlanGeometry, dxf: string) => void
 }
 
+const EASE = "duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+const CARD = `rounded-xl border border-foreground/[0.06] bg-foreground/[0.02] transition-colors ${EASE}`
+const FIELD_WRAP = "flex items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2"
+
 export function SkillGenerator({
   skill,
   onClose,
@@ -100,18 +104,20 @@ export function SkillGenerator({
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden desktop:flex-row">
-          <div className="max-h-[40%] shrink-0 space-y-3 overflow-y-auto border-b border-border/40 px-5 py-3 desktop:max-h-none desktop:w-72 desktop:border-b-0 desktop:border-r">
+          <div className="max-h-[40%] shrink-0 space-y-3 overflow-y-auto border-b border-foreground/[0.06] px-5 py-3 desktop:max-h-none desktop:w-72 desktop:border-b-0 desktop:border-r">
             {skill.parameters.map(p => (
               <label key={p.name} className="flex flex-col gap-1">
                 <span className="text-xs font-medium text-muted-foreground">
                   {p.label ?? p.name}
                 </span>
-                <input
-                  type="number"
-                  value={params[p.name] ?? ""}
-                  onChange={e => handleParamChange(p.name, e.target.value)}
-                  className="h-10 rounded-xl border border-input bg-background px-3 text-sm tabular-nums outline-none focus:ring-2 focus:ring-ring"
-                />
+                <div className={FIELD_WRAP}>
+                  <input
+                    type="number"
+                    value={params[p.name] ?? ""}
+                    onChange={e => handleParamChange(p.name, e.target.value)}
+                    className="w-full bg-transparent text-sm tabular-nums outline-none"
+                  />
+                </div>
               </label>
             ))}
             {error && (
@@ -121,8 +127,9 @@ export function SkillGenerator({
 
           <div className="relative min-h-0 flex-1">
             {loading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/70 backdrop-blur-sm">
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-background/70 backdrop-blur-sm">
                 <Loader2 className="size-7 animate-spin text-primary" />
+                <p className="text-xs text-muted-foreground">Generando vista previa…</p>
               </div>
             )}
             {geometry ? (
@@ -133,20 +140,20 @@ export function SkillGenerator({
                 }}
                 className="h-full w-full"
               />
-            ) : (
+            ) : !loading ? (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                 Generando vista previa...
               </div>
-            )}
+            ) : null}
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-border/40 px-5 py-4">
+        <div className="shrink-0 border-t border-foreground/[0.06] px-5 py-4">
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl bg-foreground/5 px-4 py-2.5 text-sm font-medium text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+              className={cn("px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground", CARD)}
             >
               Cerrar
             </button>
@@ -154,7 +161,7 @@ export function SkillGenerator({
               type="button"
               onClick={handleDownload}
               disabled={!geometry || loading}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-foreground/5 px-4 py-2.5 text-sm font-medium disabled:opacity-50"
+              className={cn("inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-foreground disabled:opacity-50", CARD)}
             >
               <Download className="size-4" />
               DXF
@@ -163,7 +170,7 @@ export function SkillGenerator({
               type="button"
               onClick={handleLoadToWorkspace}
               disabled={!geometry || loading}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition hover:bg-foreground/90 disabled:opacity-50"
+              className={`inline-flex items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-opacity ${EASE} hover:opacity-90 disabled:opacity-50`}
             >
               Usar en workspace
               <ArrowRight className="size-4" />

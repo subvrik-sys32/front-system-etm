@@ -83,7 +83,7 @@ export function SheetTabs({
 
   return (
     <div className="w-full overflow-hidden rounded-lg bg-foreground/5">
-      <ScrollArea orientation="horizontal" dragToScroll className="w-full p-1 pb-2">
+      <ScrollArea orientation="horizontal" mapVerticalWheel className="w-full p-1 pb-2">
         <div className="flex w-max items-center gap-1">
           {groups.map((group) => {
             const multi = group.members.length > 1

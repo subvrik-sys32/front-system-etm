@@ -2,51 +2,86 @@
 
 import { useState } from "react"
 import { Sparkles, Boxes } from "lucide-react"
+
 import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
 import { CadWorkspacePanel } from "@/features/cad/components/cad-workspace-panel"
 import { CadAiPanel } from "@/features/cad-ai/components/cad-ai-panel"
+import { cn } from "@/shared/utils/utils"
 
 type Tab = "ai" | "templates"
 
 export default function CadPage() {
   usePageTitle("CAD")
+  const { isMobile } = useResponsive()
   const [tab, setTab] = useState<Tab>("ai")
+
+  function TabsNav({ compact }: { compact: boolean }) {
+    return (
+      <nav
+        className={cn(
+          "flex items-center gap-1 rounded-xl bg-muted/60 p-1 dark:bg-muted/80",
+          compact && "w-full",
+        )}
+      >
+        {(
+          [
+            { id: "ai" as const, label: "IA", icon: Sparkles },
+            { id: "templates" as const, label: "Plantillas", icon: Boxes },
+          ] as const
+        ).map(({ id, label, icon: Icon }) => {
+          const active = tab === id
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              className={cn(
+                "inline-flex items-center justify-center gap-1.5 rounded-lg text-xs font-semibold transition-colors",
+                compact ? "flex-1 px-3 py-2" : "shrink-0 px-3 py-1.5",
+                active
+                  ? "bg-foreground/15 text-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Icon className="size-4 shrink-0" />
+              <span>{label}</span>
+            </button>
+          )
+        })}
+      </nav>
+    )
+  }
 
   return (
     <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
-      <header className="mb-2 hidden shrink-0 flex-wrap items-center gap-2 desktop:flex">
-        <h1 className="shrink-0 text-2xl font-bold tracking-widest">CAD</h1>
-        <span className="h-1 w-1 shrink-0 rounded-full bg-neutral-700" />
-        <p className="min-w-0 truncate text-sm text-muted-foreground">
-          IA · Plantillas paramétricas · DXF · Nesting
-        </p>
+      <header className="mb-1 hidden min-h-10 shrink-0 flex-wrap items-center justify-between gap-2 desktop:flex">
+        <div className="flex min-h-10 min-w-0 flex-1 items-center gap-2">
+          <h1 className="shrink-0 text-2xl font-bold tracking-widest">CAD</h1>
+          <span className="h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
+          <p className="min-w-0 truncate text-sm text-muted-foreground">
+            IA · Plantillas paramétricas · DXF · Nesting
+          </p>
+        </div>
+        <div className="shrink-0">
+          <TabsNav compact={false} />
+        </div>
       </header>
 
-      <div className="mb-2 flex shrink-0 items-center gap-1 rounded-lg border border-border bg-card p-1">
-        <button
-          type="button"
-          onClick={() => setTab("ai")}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors desktop:flex-none ${
-            tab === "ai" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"
-          }`}
-        >
-          <Sparkles className="h-4 w-4" />
-          IA
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("templates")}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors desktop:flex-none ${
-            tab === "templates" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"
-          }`}
-        >
-          <Boxes className="h-4 w-4" />
-          Plantillas
-        </button>
-      </div>
-
       <section className="flex min-h-0 w-full flex-1 flex-col">
-        {tab === "ai" ? <CadAiPanel /> : <CadWorkspacePanel />}
+        <AppListScroll>
+          <div className="mt-2 mb-2 shrink-0 desktop:hidden">
+            <TabsNav compact />
+          </div>
+          <div className="flex min-h-0 w-full flex-1 flex-col">
+            {tab === "ai" ? (
+              <CadAiPanel embedded />
+            ) : (
+              <CadWorkspacePanel embedded />
+            )}
+          </div>
+        </AppListScroll>
       </section>
     </main>
   )

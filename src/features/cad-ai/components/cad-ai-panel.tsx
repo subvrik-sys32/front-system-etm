@@ -14,7 +14,8 @@ import { SaveSkillModal } from "./save-skill-modal"
 import { SkillLibrary } from "./skill-library"
 import { SkillGenerator } from "./skill-generator"
 
-export function CadAiPanel() {
+export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
+  void embedded
   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
   const [dxf, setDxf] = useState<string>("")
   const [imagePath, setImagePath] = useState<string | null>(null)
@@ -128,9 +129,9 @@ export function CadAiPanel() {
 
   if (!geometry) {
     return (
-      <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
+      <div className="flex min-h-0 w-full flex-col bg-background">
         {error && (
-          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-destructive/20 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive">
             <span className="truncate">{error}</span>
             <button type="button" onClick={() => setError(null)} className="hover:opacity-70">×</button>
           </div>
@@ -150,7 +151,7 @@ export function CadAiPanel() {
                     : "bg-background/80 text-muted-foreground hover:bg-background hover:text-foreground dark:bg-foreground/5 dark:hover:bg-foreground/10"
                 )}
               >
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>IA</span>
               </button>
               <button
@@ -163,7 +164,7 @@ export function CadAiPanel() {
                     : "bg-background/80 text-muted-foreground hover:bg-background hover:text-foreground dark:bg-foreground/5 dark:hover:bg-foreground/10"
                 )}
               >
-                <Layers className="h-3.5 w-3.5 text-primary" />
+                <Layers className="h-3.5 w-3.5 text-muted-foreground" />
                 <span>Skills</span>
               </button>
             </div>
@@ -171,7 +172,7 @@ export function CadAiPanel() {
         </div>
 
         {/* Contenido dinámico principal */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="flex w-full flex-col">
           <UploadZone onAnalyze={handleAnalyze} onGenerate={handleGenerate} loading={loading} messages={messages} />
         </div>
 
@@ -193,9 +194,9 @@ export function CadAiPanel() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
+    <div className="flex min-h-0 w-full flex-col bg-background">
       {error && (
-        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-destructive/20 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+        <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive">
           <span className="truncate">{error}</span>
           <button type="button" onClick={() => setError(null)} className="hover:opacity-70">×</button>
         </div>
@@ -208,7 +209,7 @@ export function CadAiPanel() {
             onClick={() => setMobilePane("viewer")}
             className={cn(
               "flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-semibold transition-all",
-              mobilePane === "viewer" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              mobilePane === "viewer" ? "bg-foreground/15 text-foreground shadow-2xs" : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
             )}
           >
             <Box className="h-4 w-4" />
@@ -219,7 +220,7 @@ export function CadAiPanel() {
             onClick={() => setMobilePane("chat")}
             className={cn(
               "flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-semibold transition-all",
-              mobilePane === "chat" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              mobilePane === "chat" ? "bg-foreground/15 text-foreground shadow-2xs" : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
             )}
           >
             <MessageSquare className="h-4 w-4" />
@@ -232,7 +233,7 @@ export function CadAiPanel() {
         <div className={cn("relative min-h-0 min-w-0 flex-1 flex-col", isMobile && mobilePane !== "viewer" && "hidden")}>
           {loading && (
             <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           )}
           <DxfViewer
@@ -243,7 +244,7 @@ export function CadAiPanel() {
           />
         </div>
 
-        <div className={cn("min-h-0 shrink-0 bg-card", isMobile ? (mobilePane === "chat" ? "flex h-full w-full flex-col border-t" : "hidden") : "flex w-80 flex-col border-l desktop:w-96")}>
+        <div className={cn("min-h-0 shrink-0 bg-card", isMobile ? (mobilePane === "chat" ? "flex h-full w-full flex-col" : "hidden") : "flex w-80 flex-col desktop:w-96")}>
           <IterationPanel
             geometry={geometry}
             dxf={dxf}

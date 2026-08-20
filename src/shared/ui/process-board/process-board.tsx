@@ -120,7 +120,6 @@ export function ProcessBoard<TId extends string = string>({
         <ScrollArea
           ref={containerRef}
           orientation="horizontal"
-          dragToScroll
           mapVerticalWheel
           className="h-full min-h-0 min-w-0 flex-1"
         >

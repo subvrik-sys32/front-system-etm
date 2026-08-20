@@ -114,7 +114,9 @@ function Field({
   )
 }
 
-export function CadWorkspacePanel() {
+export function CadWorkspacePanel({ embedded = false }: { embedded?: boolean } = {}) {
+  void embedded
+
   const router = useRouter()
   const [mode, setMode] = useState<CadTemplate>("tira")
   const [body, setBody] = useState<CreatePieceBody>(DEFAULT_TIRA)

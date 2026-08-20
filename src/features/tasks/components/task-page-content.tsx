@@ -95,9 +95,6 @@ export function TaskPageContent({
   return (
     <div className="relative flex h-full min-h-0 w-full flex-col">
       <AppListScroll
-        onRefresh={async () => {
-          await queryClient.invalidateQueries({ queryKey: ["tasks"] })
-        }}
       >
         {toolbar}
         <EntityExpandProvider>

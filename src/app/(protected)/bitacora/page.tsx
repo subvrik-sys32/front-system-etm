@@ -152,10 +152,6 @@ export default function BitacoraPage() {
       */}
       <section className="flex min-h-0 w-full flex-1 flex-col">
         <AppListScroll
-          onRefresh={async () => {
-            // Prefijo compartido de bitácora (día, rango, equipo).
-            await queryClient.invalidateQueries({ queryKey: ["activity-log"] })
-          }}
         >
           <div className="mt-2 mb-2 shrink-0 desktop:hidden">
             <TabsNav compact />

@@ -184,11 +184,6 @@ export function EngineeringPageContent() {
     <div className="relative flex h-full min-h-0 w-full flex-col select-none overflow-hidden">
       {useListScroll ? (
         <AppListScroll
-          onRefresh={async () => {
-            await queryClient.invalidateQueries({
-              queryKey: ["engineering-tasks"],
-            })
-          }}
         >
           {body}
         </AppListScroll>

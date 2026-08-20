@@ -74,9 +74,6 @@ export function TaskAreaSidebar({ className }: { className?: string }) {
         )}
       >
         <AppListScroll
-          onRefresh={async () => {
-            await queryClient.invalidateQueries({ queryKey: ["tasks"] })
-          }}
         >
           <div className="shrink-0 px-1 py-2.5" aria-hidden />
           {areaChips && <div className="mb-3 px-3">{areaChips}</div>}

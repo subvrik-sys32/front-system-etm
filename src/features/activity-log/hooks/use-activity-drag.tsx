@@ -11,7 +11,6 @@ import { createPortal } from "react-dom"
 
 import { getActivityIcon } from "../constants/activity-icons"
 import type { ActivityLog, DayShift } from "../types/activity-log.types"
-import { usePullToRefreshStore } from "@/shared/ui/pull-to-refresh/pull-to-refresh-store"
 import {
   autoScrollAtPointer,
   findVerticalScrollParent,
@@ -131,7 +130,6 @@ export function useActivityDrag({ onDrop, isShiftAvailable }: Props) {
         }
 
         updateCachedRects(isDuplicate ? null : log.shift)
-        usePullToRefreshStore.getState().setDragLocked(true)
         setDraggingLog(log)
         setPointerPos({ x: clientX, y: clientY })
         lastClientY.current = clientY
@@ -194,7 +192,6 @@ export function useActivityDrag({ onDrop, isShiftAvailable }: Props) {
         scrollRaf.current = null
       }
 
-      usePullToRefreshStore.getState().setDragLocked(false)
       setDraggingLog(null)
       setHoverShift(null)
       setIsDuplicateMode(false)

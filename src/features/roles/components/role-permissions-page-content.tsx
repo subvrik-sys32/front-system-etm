@@ -264,9 +264,6 @@ export function RolePermissionsPageContent() {
         {/* PANEL IZQUIERDO: ROLES o USUARIOS */}
         {showLeftPanel && isMobile && (
           <AppListScroll
-            onRefresh={async () => {
-              await queryClient.invalidateQueries({ queryKey: ["roles"] })
-            }}
           >
             {searchToolbar}
             <div className="mt-2 space-y-3 pb-4">
@@ -379,9 +376,6 @@ export function RolePermissionsPageContent() {
         {showPermissionsPanel && isMobile && (
           <AppListScroll
             className="p-1.5"
-            onRefresh={async () => {
-              await queryClient.invalidateQueries({ queryKey: ["roles"] })
-            }}
           >
             <header className="mb-1 flex shrink-0 items-start justify-between gap-4">
               <div className="flex min-w-0 items-center gap-3">

@@ -424,9 +424,6 @@ export function ActivityLogPageContent({
     >
       {embedded ? body : (
         <AppListScroll
-          onRefresh={async () => {
-            await queryClient.invalidateQueries({ queryKey: ["activity-log"] })
-          }}
         >
           {body}
         </AppListScroll>

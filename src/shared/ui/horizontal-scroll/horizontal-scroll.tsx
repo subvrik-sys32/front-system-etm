@@ -7,12 +7,11 @@ import { cn } from "@/shared/utils/utils"
 
 type Props = PropsWithChildren<{ className?: string }>
 
-/** Fila horizontal — scroll nativo + drag mouse/touch. */
+/** Fila horizontal — scroll nativo (touch/trackpad); wheel vertical → horizontal en desktop. */
 export function HorizontalScroll({ children, className }: Props) {
   return (
     <ScrollArea
       orientation="horizontal"
-      dragToScroll
       mapVerticalWheel
       className="h-full min-h-0 w-full"
     >

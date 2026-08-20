@@ -112,9 +112,6 @@ export function ProcessPageContent({
   return (
     <div className="relative flex h-full min-h-0 w-full flex-col">
       <AppListScroll
-        onRefresh={async () => {
-          await queryClient.invalidateQueries({ queryKey: ["tasks"] })
-        }}
       >
         <div className="mb-1">
           <EntityToolbar

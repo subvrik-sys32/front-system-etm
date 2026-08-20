@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation"
 import { SlidersHorizontal, X } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
-import { usePullToRefreshStore } from "@/shared/ui/pull-to-refresh/pull-to-refresh-store"
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
 import {
   FAB_CHROME_FADE_MS,
@@ -33,7 +32,7 @@ function isInsideSheetOrPopover(target: EventTarget | null) {
  * FAB mobile.
  * - Acciones: montar/desmontar sin animación de salida (evita el
  *   "desvanecido lag" al cambiar de página por bottom-nav).
- * - Cierre inmediato en pathname / drawer / PTR.
+ * - Cierre inmediato en pathname / drawer.
  */
 export function SpeedDialFab({ actions, className }: Props) {
   const [dialOpen, setDialOpen] = useState(false)
@@ -43,9 +42,8 @@ export function SpeedDialFab({ actions, className }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
 
-  const ptrActive = usePullToRefreshStore(s => s.active)
   const drawerOpen = useMobileNavStore(s => s.mode === "open")
-  const chromeHidden = ptrActive || drawerOpen
+  const chromeHidden = drawerOpen
 
   useEffect(() => {
     setMounted(true)

@@ -10,7 +10,6 @@ import {
 import { createPortal } from "react-dom"
 
 import { DndRowProvider } from "@/shared/ui/entity-table-common/dnd-row-context"
-import { usePullToRefreshStore } from "@/shared/ui/pull-to-refresh/pull-to-refresh-store"
 
 import {
   autoScrollAtPointer,
@@ -177,7 +176,6 @@ export function useRowDragReorder<T>({
       scrollRaf.current = null
     }
 
-    usePullToRefreshStore.getState().setDragLocked(false)
     setDrag(null)
     setIsActuallyDragging(false)
     setInsertIndex(null)
@@ -211,7 +209,6 @@ export function useRowDragReorder<T>({
         const dy = Math.abs(e.clientY - startPos.current.y)
         if (dx > 4 || dy > 4) {
           setIsActuallyDragging(true)
-          usePullToRefreshStore.getState().setDragLocked(true)
           if (!scrollRaf.current) {
             scrollRaf.current = requestAnimationFrame(tickAutoScroll)
           }

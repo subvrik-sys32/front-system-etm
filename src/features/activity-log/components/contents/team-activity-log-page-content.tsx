@@ -497,9 +497,6 @@ export function TeamActivityLogPageContent({ embedded = false }: { embedded?: bo
   return (
     <div className="relative flex min-h-0 w-full flex-1 flex-col">
       <AppListScroll
-        onRefresh={async () => {
-          await queryClient.invalidateQueries({ queryKey: ["activity-log"] })
-        }}
       >{body}</AppListScroll>
     </div>
   )

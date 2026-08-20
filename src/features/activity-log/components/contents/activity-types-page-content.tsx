@@ -163,9 +163,6 @@ export function ActivityTypesPageContent() {
   return (
     <div className="relative flex h-full min-h-0 w-full flex-col">
       <AppListScroll
-        onRefresh={async () => {
-          await queryClient.invalidateQueries({ queryKey: ["activity-types"] })
-        }}
       >
         <div className="mb-1 shrink-0 max-md:mt-2">
           <EntityToolbar

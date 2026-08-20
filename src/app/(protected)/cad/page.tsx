@@ -24,21 +24,23 @@ export default function CadPage() {
 
       <div className="mb-2 flex shrink-0 items-center gap-1 rounded-lg border border-border bg-card p-1">
         <button
+          type="button"
           onClick={() => setTab("ai")}
-          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors desktop:flex-none ${
             tab === "ai" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"
           }`}
         >
-          <Sparkles className="w-4 h-4" />
+          <Sparkles className="h-4 w-4" />
           IA
         </button>
         <button
+          type="button"
           onClick={() => setTab("templates")}
-          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors desktop:flex-none ${
             tab === "templates" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"
           }`}
         >
-          <Boxes className="w-4 h-4" />
+          <Boxes className="h-4 w-4" />
           Plantillas
         </button>
       </div>

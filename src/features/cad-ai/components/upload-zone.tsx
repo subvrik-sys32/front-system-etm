@@ -1,10 +1,19 @@
+"use client"
+
 import { useCallback, useState, useRef, useEffect } from "react"
 import { useDropzone } from "react-dropzone"
 import {
-  Upload, ImageIcon, Loader2, ScanSearch, MessageSquareText,
-  Layers, FileImage, PencilRuler, FileDown, Send, User, Bot,
+  ImageIcon,
+  Loader2,
+  ScanSearch,
+  MessageSquareText,
+  Layers,
+  FileImage,
+  PencilRuler,
+  FileDown,
+  Send,
+  Bot,
 } from "lucide-react"
-import { OceanDither } from "./ocean-dither"
 import type { ChatMessage } from "../types"
 
 interface UploadZoneProps {
@@ -14,20 +23,28 @@ interface UploadZoneProps {
   messages: ChatMessage[]
 }
 
-export function UploadZone({ onAnalyze, onGenerate, loading, messages }: UploadZoneProps) {
+export function UploadZone({
+  onAnalyze,
+  onGenerate,
+  loading,
+  messages,
+}: UploadZoneProps) {
   const [preview, setPreview] = useState<string | null>(null)
   const [mode, setMode] = useState<"upload" | "chat">("upload")
   const [input, setInput] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const file = acceptedFiles[0]
-      setPreview(URL.createObjectURL(file))
-      onAnalyze(file)
-    }
-  }, [onAnalyze])
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      if (acceptedFiles.length > 0) {
+        const file = acceptedFiles[0]
+        setPreview(URL.createObjectURL(file))
+        onAnalyze(file)
+      }
+    },
+    [onAnalyze],
+  )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -46,289 +63,215 @@ export function UploadZone({ onAnalyze, onGenerate, loading, messages }: UploadZ
     if (!input.trim() || loading) return
     onGenerate(input.trim())
     setInput("")
-    requestAnimationFrame(() => {
-      if (textareaRef.current) textareaRef.current.style.height = "auto"
-    })
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
-    }
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value)
-    const ta = e.target
-    ta.style.height = "auto"
-    ta.style.height = `${Math.min(ta.scrollHeight, 120)}px`
-  }
+  const chips = [
+    { icon: PencilRuler, text: "Rectángulo 100×50 con 4 agujeros Ø5" },
+    { icon: Layers, text: "L-bracket con pliegue a 90°" },
+    { icon: ScanSearch, text: "Círculo Ø80 con agujero central Ø20" },
+  ]
 
   return (
-    <div className="flex-1 min-h-0 flex overflow-hidden bg-gradient-to-b from-background via-background to-secondary/30 relative">
-      <OceanDither />
-      <div className={`flex-1 min-h-0 flex flex-col items-center justify-center px-6 relative transition-[padding] duration-300 ${mode === "chat" ? "py-4" : "py-10"}`}>
-        <div className="max-w-2xl w-full h-full relative z-10 flex flex-col">
-          <div className={`text-center flex-shrink-0 transition-[margin] duration-300 ${mode === "chat" ? "mb-2" : "mb-6"}`}>
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-medium text-primary mb-3 transition-all duration-300 ${
-                mode === "upload" ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 h-0 mb-0 overflow-hidden border-transparent py-0"
-              }`}
-            >
-              <ScanSearch className="w-3.5 h-3.5" />
-              Corte láser · DXF · IA
-            </span>
-            <h1 className={`font-bold tracking-tight text-foreground transition-all duration-300 ${mode === "chat" ? "text-xl mb-0" : "text-3xl mb-2"}`}>
-              De la idea al <span className="text-primary">corte</span>
-            </h1>
-            <p
-              className={`text-sm text-muted-foreground max-w-lg mx-auto transition-all duration-300 ${
-                mode === "upload" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 h-0 overflow-hidden"
-              }`}
-            >
-              Sube un plano o describe tu pieza — la IA genera el DXF listo para corte láser
-            </p>
-          </div>
+    <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background">
+      <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col px-3 py-2">
+        {/* Cabecera optimizada para no robar espacio vertical en móviles */}
+        <div className="mb-2 shrink-0 text-center">
+          <h2 className="text-base font-bold tracking-tight text-foreground tablet:text-lg">
+            De la idea al <span className="text-primary">corte</span>
+          </h2>
+          <p className="mx-auto text-[11px] text-muted-foreground tablet:text-xs">
+            Sube un plano o describe la pieza — genera DXF listo para corte
+          </p>
+        </div>
 
-          <div className={`relative flex items-center gap-1 rounded-lg border border-border bg-card/80 p-1 w-fit mx-auto flex-shrink-0 transition-[margin] duration-300 ${mode === "chat" ? "mb-3" : "mb-4"}`}>
-            <span
-              aria-hidden
-              className="absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-md bg-primary shadow-sm transition-transform duration-300 ease-out"
-              style={{ transform: mode === "chat" ? "translateX(100%)" : "translateX(0)" }}
-            />
-            <button
-              onClick={() => setMode("upload")}
-              className={`relative z-10 flex items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-                mode === "upload" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <ImageIcon className="w-4 h-4" />
-              Subir plano
-            </button>
-            <button
-              onClick={() => setMode("chat")}
-              className={`relative z-10 flex items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-                mode === "chat" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <MessageSquareText className="w-4 h-4" />
-              Crear con chat
-            </button>
-          </div>
+        {/* Toggle modo compacto */}
+        <div className="relative mx-auto mb-2 flex w-full shrink-0 items-center gap-1 rounded-lg border border-border bg-card p-1 tablet:w-fit">
+          <button
+            type="button"
+            onClick={() => setMode("upload")}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors tablet:flex-none ${
+              mode === "upload"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
+          >
+            <ImageIcon className="h-3.5 w-3.5" />
+            Subir plano
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("chat")}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors tablet:flex-none ${
+              mode === "chat"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+            }`}
+          >
+            <MessageSquareText className="h-3.5 w-3.5" />
+            Crear con chat
+          </button>
+        </div>
 
-          <div className="relative flex-1 min-h-0">
-            <div
-              aria-hidden={mode !== "upload"}
-              className={`absolute inset-0 overflow-y-auto flex flex-col transition-all duration-300 ease-out ${
-                mode === "upload"
-                  ? "opacity-100 translate-y-0 scale-100"
-                  : "opacity-0 translate-y-2 scale-[0.99] invisible pointer-events-none"
-              }`}
-            >
-              <div className="m-auto w-full flex flex-col py-2">
-                <div
-                  {...getRootProps()}
-                  className={`relative border-2 border-dashed rounded-2xl p-10 cursor-pointer transition-all bg-card/60 backdrop-blur-sm ${
-                    isDragActive
-                      ? "border-primary bg-primary/5 scale-[1.01] shadow-lg"
-                      : "border-border hover:border-primary/50 hover:bg-card hover:shadow-md"
-                  } ${loading ? "opacity-60 cursor-wait" : ""}`}
-                >
-                  <input {...getInputProps()} />
-                  {loading ? (
-                    <div className="flex flex-col items-center gap-3">
-                      <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                      <p className="text-base font-medium text-foreground">Analizando plano...</p>
-                      <p className="text-xs text-muted-foreground">La IA está detectando geometrías</p>
+        {/* Cuerpo */}
+        <div className="flex min-h-0 flex-1 flex-col">
+          {mode === "upload" ? (
+            <div className="flex min-h-0 flex-1 flex-col gap-2">
+              <div
+                {...getRootProps()}
+                className={`flex min-h-[120px] flex-1 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed px-3 py-4 transition-colors ${
+                  isDragActive
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-card hover:border-primary/40 hover:bg-secondary/40"
+                } ${loading ? "pointer-events-none opacity-60" : ""}`}
+              >
+                <input {...getInputProps()} />
+                {loading ? (
+                  <div className="flex flex-col items-center gap-1.5">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <p className="text-xs text-muted-foreground">Analizando plano…</p>
+                  </div>
+                ) : preview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={preview}
+                    alt="Vista previa"
+                    className="max-h-32 rounded-lg object-contain"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center gap-1.5 text-center">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+                      <ImageIcon className="h-5 w-5 text-muted-foreground" />
                     </div>
-                  ) : preview ? (
-                    <div className="flex flex-col items-center gap-3">
-                      <img src={preview} alt="Preview" className="max-h-48 rounded-lg shadow-md object-contain" />
-                      <p className="text-xs text-muted-foreground">Click o arrastra otra imagen para reemplazar</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-3">
-                      <div className={`p-3.5 rounded-full transition-colors ${isDragActive ? "bg-primary/10" : "bg-secondary"}`}>
-                        {isDragActive ? (
-                          <Upload className="w-8 h-8 text-primary" />
-                        ) : (
-                          <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div className="text-center">
-                        <p className="text-base font-medium text-foreground">
-                          {isDragActive ? "Suelta la imagen aquí" : "Arrastra tu plano o haz click"}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          PNG, JPG, WEBP, BMP · máx 20MB
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                    <p className="text-xs font-medium text-foreground">
+                      {isDragActive ? "Suelta la imagen aquí" : "Arrastra tu plano o haz click"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      PNG, JPG, WEBP, BMP · máx 20MB
+                    </p>
+                  </div>
+                )}
+              </div>
 
-                <div className="mt-5 grid grid-cols-3 gap-3">
-                  <Step icon={FileImage} step="1" label="Sube tu plano" />
-                  <Step icon={PencilRuler} step="2" label="Mide y edita" />
-                  <Step icon={FileDown} step="3" label="Exporta DXF" />
-                </div>
+              {/* Pasos */}
+              <div className="grid shrink-0 grid-cols-1 gap-1.5 tablet:grid-cols-3">
+                <Step icon={FileImage} step="1" label="Sube tu plano" />
+                <Step icon={PencilRuler} step="2" label="Mide y edita" />
+                <Step icon={FileDown} step="3" label="Exporta DXF" />
+              </div>
 
-                <div className="mt-4 grid grid-cols-3 gap-3">
-                  <FeatureCard icon={ScanSearch} title="Detección IA" description="Detecta líneas, círculos, arcos y agujeros" />
-                  <FeatureCard icon={MessageSquareText} title="Iteración" description="Refina con lenguaje natural" />
-                  <FeatureCard icon={Layers} title="Skills" description="Guarda y reutiliza piezas paramétricas" />
-                </div>
+              <div className="grid shrink-0 grid-cols-1 gap-1.5 pb-1 tablet:grid-cols-3">
+                <FeatureCard icon={ScanSearch} title="Detección IA" description="Líneas, círculos y agujeros" />
+                <FeatureCard icon={MessageSquareText} title="Iteración" description="Refina con lenguaje natural" />
+                <FeatureCard icon={Layers} title="Skills" description="Piezas paramétricas" />
               </div>
             </div>
+          ) : (
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
+              <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">Asistente de diseño</span>
+                </div>
+              </div>
 
-            <div
-              aria-hidden={mode !== "chat"}
-              className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-out ${
-                mode === "chat"
-                  ? "opacity-100 translate-y-0 scale-100"
-                  : "opacity-0 -translate-y-2 scale-[0.99] invisible pointer-events-none"
-              }`}
-            >
-              <div className="relative flex flex-col w-full max-h-full rounded-2xl border border-border bg-card/80 backdrop-blur-sm overflow-hidden shadow-sm">
-                <CornerMarks />
-
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-dashed border-border/70 flex-shrink-0">
-                  <div className="flex items-center gap-2">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
-                    </span>
-                    <span className="text-xs font-medium text-muted-foreground">Asistente de diseño</span>
+              <div
+                ref={scrollRef}
+                className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3 [scrollbar-width:none] [-webkit-overflow-scrolling:touch]"
+              >
+                {messages.length === 0 && !loading && (
+                  <div className="flex flex-col items-center gap-2.5 py-2 text-center">
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <Bot className="h-4 w-4 text-primary/60" />
+                      <p className="text-xs">Describe la pieza que necesitas</p>
+                    </div>
+                    <div className="flex max-w-md flex-wrap items-center justify-center gap-1">
+                      {chips.map(({ icon: Icon, text }) => (
+                        <button
+                          key={text}
+                          type="button"
+                          onClick={() => {
+                            setInput(text)
+                            textareaRef.current?.focus()
+                          }}
+                          className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-2.5 py-1 text-[11px] text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                        >
+                          <Icon className="h-3 w-3 shrink-0" />
+                          <span className="line-clamp-1">{text}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <span className="font-mono text-[10px] tracking-wider text-muted-foreground/60 uppercase">DXF · IA</span>
-                </div>
+                )}
+                {messages.map((m, i) => (
+                  <div key={i} className={`flex gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                      m.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
+                    }`}>
+                      {m.content}
+                    </div>
+                  </div>
+                ))}
+                {loading && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generando…
+                  </div>
+                )}
+              </div>
 
-                <div ref={scrollRef} className="min-h-[112px] max-h-[300px] overflow-y-auto p-3 space-y-3">
-                  {messages.length === 0 && !loading && (
-                    <div className="flex flex-col items-center justify-center min-h-[88px] text-center gap-2">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Bot className="w-4 h-4 text-primary/60" />
-                        <p className="text-sm">Describe la pieza que necesitas</p>
-                      </div>
-                      <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-md">
-                        {[
-                          { icon: PencilRuler, text: "Rectángulo 100x50 con 4 agujeros Ø5" },
-                          { icon: Layers, text: "L-bracket con pliegue a 90°" },
-                          { icon: ScanSearch, text: "Círculo Ø80 con agujero central Ø20" },
-                        ].map(({ icon: Icon, text }) => (
-                          <button
-                            key={text}
-                            onClick={() => setInput(text)}
-                            className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[11px] text-muted-foreground transition-colors hover:border-primary/40 hover:bg-secondary hover:text-foreground"
-                          >
-                            <Icon className="w-3 h-3 flex-shrink-0 text-primary/70" />
-                            {text}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {messages.map((msg, i) => (
-                    <div key={i} className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-                      <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center ring-1 ${
-                        msg.role === "user" ? "bg-primary text-primary-foreground ring-primary/30" : "bg-secondary text-foreground ring-border"
-                      }`}>
-                        {msg.role === "user" ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
-                      </div>
-                      <div className={`flex-1 min-w-0 rounded-lg p-2.5 text-sm ${
-                        msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
-                      }`}>
-                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                        {msg.geometry && (
-                          <div className={`mt-2 flex items-center gap-1.5 rounded-md border px-2 py-1 font-mono text-[11px] ${
-                            msg.role === "user" ? "border-primary-foreground/25 text-primary-foreground/80" : "border-border text-muted-foreground"
-                          }`}>
-                            <Layers className="w-3 h-3 flex-shrink-0" />
-                            {msg.geometry.entities.length} entidades · {msg.geometry.dimensions.width}×{msg.geometry.dimensions.height} {msg.geometry.units}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  {loading && (
-                    <div className="flex gap-2.5">
-                      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-secondary flex items-center justify-center ring-1 ring-border">
-                        <Bot className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2.5 text-sm text-muted-foreground">
-                        <span className="flex gap-1">
-                          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/50 [animation-delay:-0.3s]" />
-                          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/50 [animation-delay:-0.15s]" />
-                          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/50" />
-                        </span>
-                        Generando geometría
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-shrink-0 gap-2 border-t border-dashed border-border/70 bg-card/40 p-3">
+              <div className="shrink-0 border-t border-border p-2">
+                <div className="flex items-end gap-2">
                   <textarea
                     ref={textareaRef}
-                    value={input}
-                    onChange={handleInputChange}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Describe tu pieza: forma, dimensiones, agujeros, pliegues..."
                     rows={1}
-                    className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm resize-none overflow-y-auto transition-shadow focus:outline-none focus:ring-2 focus:ring-ring"
-                    style={{ maxHeight: 120 }}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                    placeholder="Ej: placa 200×100 con 4 agujeros…"
                     disabled={loading}
+                    className="min-h-[36px] max-h-[100px] w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-xs md:text-sm outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 [scrollbar-width:none]"
                   />
                   <button
+                    type="button"
                     onClick={handleSend}
                     disabled={loading || !input.trim()}
-                    className="self-end rounded-md bg-primary p-2.5 text-primary-foreground transition-all hover:bg-primary/90 active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground disabled:opacity-40"
                   >
-                    <Send className="w-4 h-4" />
+                    <Send className="h-3.5 w-3.5" />
                   </button>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-function CornerMarks() {
-  const base = "pointer-events-none absolute w-3 h-3 border-primary/25"
+function Step({ icon: Icon, step, label }: { icon: React.ComponentType<{ className?: string }>; step: string; label: string }) {
   return (
-    <>
-      <span className={`${base} top-2 left-2 border-l-2 border-t-2 rounded-tl-[2px]`} />
-      <span className={`${base} top-2 right-2 border-r-2 border-t-2 rounded-tr-[2px]`} />
-      <span className={`${base} bottom-2 left-2 border-l-2 border-b-2 rounded-bl-[2px]`} />
-      <span className={`${base} bottom-2 right-2 border-r-2 border-b-2 rounded-br-[2px]`} />
-    </>
-  )
-}
-
-function Step({ icon: Icon, step, label }: { icon: typeof FileImage; step: string; label: string }) {
-  return (
-    <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/70 px-3 py-2.5">
-      <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+    <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-2.5 py-2">
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
         {step}
-      </div>
-      <div className="flex items-center gap-1.5 min-w-0">
-        <Icon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-        <span className="text-xs font-medium text-foreground truncate">{label}</span>
-      </div>
+      </span>
+      <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+      <span className="truncate text-xs font-medium text-foreground">{label}</span>
     </div>
   )
 }
 
-function FeatureCard({ icon: Icon, title, description }: { icon: typeof ScanSearch; title: string; description: string }) {
+function FeatureCard({ icon: Icon, title, description }: { icon: React.ComponentType<{ className?: string }>; title: string; description: string }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4 hover:shadow-sm transition-shadow">
-      <Icon className="w-5 h-5 text-primary mb-2" />
-      <h3 className="font-semibold text-sm text-foreground mb-1">{title}</h3>
-      <p className="text-xs text-muted-foreground">{description}</p>
+    <div className="rounded-lg border border-border bg-card px-2.5 py-2">
+      <div className="mb-0.5 flex items-center gap-1.5">
+        <Icon className="h-3 w-3 text-primary shrink-0" />
+        <span className="text-xs font-semibold text-foreground truncate">{title}</span>
+      </div>
+      <p className="text-[10px] leading-snug text-muted-foreground line-clamp-1">{description}</p>
     </div>
   )
 }

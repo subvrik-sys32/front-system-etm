@@ -44,42 +44,27 @@ export function IterationPanel({
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 160
-    if (nearBottom) el.scrollTop = el.scrollHeight
+    el.scrollTop = el.scrollHeight
   }, [messages, loading])
 
   const handleSend = () => {
     if (!input.trim() || loading) return
     onIterate(input.trim())
     setInput("")
-    requestAnimationFrame(() => {
-      const ta = document.getElementById("iteration-input") as HTMLTextAreaElement | null
-      if (ta) ta.style.height = "auto"
-    })
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
-    }
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value)
-    const ta = e.target
-    ta.style.height = "auto"
-    ta.style.height = `${Math.min(ta.scrollHeight, 140)}px`
   }
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-card border-l border-border">
-      <div className="p-4 border-b border-border flex-shrink-0">
-        <h2 className="font-semibold text-foreground">Iteración</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">Describe cambios en lenguaje natural</p>
+    <div className="flex h-full min-h-0 flex-col bg-card overflow-hidden">
+      <div className="p-3.5 border-b border-border flex-shrink-0 bg-card">
+        <h2 className="font-semibold text-foreground text-sm">Iteración</h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Describe cambios en lenguaje natural</p>
       </div>
 
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+      {/* Scroll oculto sin barras nativas */}
+      <div 
+        ref={scrollRef} 
+        className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden overscroll-contain [-webkit-overflow-scrolling:touch]"
+      >
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
             <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
@@ -111,7 +96,7 @@ export function IterationPanel({
         )}
       </div>
 
-      <div className="p-4 border-t border-border space-y-3 flex-shrink-0 overflow-y-auto">
+      <div className="p-3 border-t border-border space-y-2.5 flex-shrink-0 bg-card">
         {activeSkill && skillParams && onSkillParamsChange && onSkillRegenerate && (
           <SkillParameters
             skill={activeSkill}
@@ -123,61 +108,57 @@ export function IterationPanel({
         )}
 
         {selectedForAI && selectedForAI.length > 0 && (
-          <div className="rounded-md bg-orange-50 border border-orange-200 px-3 py-2 flex items-center justify-between gap-2">
+          <div className="rounded-md bg-orange-50 border border-orange-200 px-3 py-1.5 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs text-orange-700">
               <MousePointerClick className="w-3.5 h-3.5 flex-shrink-0" />
-              <span>{selectedForAI.length} entidad(es) seleccionada(s) para IA</span>
+              <span>{selectedForAI.length} seleccionada(s)</span>
             </div>
-            <button
-              onClick={onClearAISelection}
-              className="text-orange-500 hover:text-orange-700 flex-shrink-0"
-            >
+            <button onClick={onClearAISelection} className="text-orange-500 hover:text-orange-700">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
 
+        {/* Botones de acción compactos: Guardar Skill muestra solo icono en móvil/tablet pequeño */}
         <div className="flex gap-2">
           <button
             onClick={onDownload}
-            className="flex-1 flex items-center justify-center gap-2 rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 rounded-md bg-primary text-primary-foreground px-3 py-2 text-xs font-medium hover:bg-primary/90"
           >
-            <Download className="w-4 h-4" />
-            DXF
+            <Download className="w-4 h-4 shrink-0" />
+            <span>DXF</span>
           </button>
           <button
             onClick={onSaveSkill}
-            className="flex-1 flex items-center justify-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 rounded-md border border-border bg-card px-3 py-2 text-xs font-medium hover:bg-secondary"
+            title="Guardar Skill"
           >
-            <Save className="w-4 h-4" />
-            Guardar Skill
+            <Save className="w-4 h-4 shrink-0" />
+            <span className="hidden desktop:inline">Guardar Skill</span>
           </button>
           <button
             onClick={onReset}
-            className="flex items-center justify-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-secondary transition-colors"
+            className="flex items-center justify-center rounded-md border border-border bg-card px-3 py-2 text-sm font-medium hover:bg-secondary"
             title="Empezar de nuevo"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-4 h-4 shrink-0" />
           </button>
         </div>
 
         <div className="flex gap-2">
           <textarea
-            id="iteration-input"
             value={input}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder={selectedForAI && selectedForAI.length > 0
-              ? `Describe qué cambiar en las ${selectedForAI.length} entidades seleccionadas...`
-              : "Ej: el agujero debe ser de 10mm, añade un chaflán de 2mm en la esquina superior derecha..."}
-            rows={2}
-            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm resize-none overflow-y-auto focus:outline-none focus:ring-2 focus:ring-ring"
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+            placeholder="Describe qué cambiar..."
+            rows={1}
+            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-xs md:text-sm resize-none max-h-20 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] focus:outline-none focus:ring-1 focus:ring-ring"
             disabled={loading}
           />
           <button
             onClick={handleSend}
             disabled={loading || !input.trim()}
-            className="self-end rounded-md bg-primary text-primary-foreground p-2.5 hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="self-end rounded-md bg-primary text-primary-foreground p-2 hover:bg-primary/90 disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
           </button>

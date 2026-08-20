@@ -1,13 +1,16 @@
 "use client"
 
 import { useMemo } from "react"
+import { User, UserX } from "lucide-react"
 import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
 import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
 import { TaskProcessColumn } from "@/features/tasks/pipeline/table/task-process-column"
 import { SummonOperatorButton } from "./summon-operator-button"
+import { TaskAssignmentBadge } from "./task-assignment-badge"
 import { cn } from "@/shared/utils/utils"
 import { useBadgeColors } from "@/shared/utils/use-badge-colors"
-import type { ProcessCode } from "@/features/tasks/types/task.types"
+import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
+import type { WorkflowStep } from "@/features/workflow/types/workflow.types"
 import type { TaskAreaPanelReturn } from "../../hooks/use-task-area-panel"
 
 type AreaTaskSectionProps = {
@@ -15,6 +18,12 @@ type AreaTaskSectionProps = {
   panel: TaskAreaPanelReturn
   /** Columna fija en layout horizontal (sidebar / board). */
   column?: boolean
+}
+
+type TaskGroup = {
+  id: string
+  name: string
+  tasks: Task[]
 }
 
 export function AreaTaskSection({
@@ -27,7 +36,28 @@ export function AreaTaskSection({
   const Icon = ENTITY_ICONS[definition.icon]
   const badge = useBadgeColors(definition.color, "subtle")
   const isSummoningThis = state.summonTarget?.processCode === code
-  const allTasksForCode = state.columns.get(code) ?? []
+  const allTasksForCode: Task[] = state.columns.get(code) ?? []
+
+  // Agrupa las tareas por convocado/operador según el paso actual de la tarea
+  const groupedTasks = useMemo<TaskGroup[]>(() => {
+    const groupsMap = new Map<string, TaskGroup>()
+
+    allTasksForCode.forEach(task => {
+      const step = task.workflowSteps?.find(
+        (s: WorkflowStep) => s.processCode === code,
+      )
+
+      const id = step?.operator?.id ?? step?.operatorId ?? "unassigned"
+      const name = step?.operator?.name ?? "Sin convocar"
+
+      if (!groupsMap.has(id)) {
+        groupsMap.set(id, { id, name, tasks: [] })
+      }
+      groupsMap.get(id)!.tasks.push(task)
+    })
+
+    return Array.from(groupsMap.values())
+  }, [allTasksForCode, code])
 
   return (
     <div
@@ -36,7 +66,8 @@ export function AreaTaskSection({
         column && "h-full min-h-0 w-64 shrink-0",
       )}
     >
-      <div className="flex shrink-0 items-center justify-between gap-2 pb-2">
+      {/* Cabecera del Área (ej. CORTE) */}
+      <div className="flex shrink-0 items-center justify-between gap-2 pb-1">
         <div className="flex min-w-0 items-center gap-2">
           <span
             className="flex size-6 shrink-0 items-center justify-center rounded-md text-[10px] font-bold"
@@ -76,25 +107,82 @@ export function AreaTaskSection({
           )}
       </div>
 
+      {/* Lista agrupada por convocado */}
       <div className={cn(column && "min-h-0 flex-1 overflow-y-auto")}>
         {state.canChooseAreas || isSummoningThis ? (
-          <TaskProcessColumn
-            processCode={code}
-            tasks={allTasksForCode}
-            expandedKey={state.expandedKey}
-            onToggleCard={actions.setExpandedKey}
-            activeOverlayKey={state.activeOverlayKey}
-            onOverlayOpenChange={actions.setActiveOverlayKey}
-            fullWidth
-            contentOnly
-            selectionMode={isSummoningThis}
-            selectedStepIds={state.selectedStepIds}
-            onToggleStepSelection={actions.handleToggleStepSelection}
-            onUnsummon={
-              state.canChooseAreas ? actions.handleUnsummon : undefined
-            }
-            unsummoning={state.unsummoning}
-          />
+          <div className="space-y-4">
+            {groupedTasks.map(group => {
+              const isUnassigned = group.id === "unassigned"
+
+              // Primer step del grupo → menú de reasignar/desconvocar en cabecera
+              const headerStep = !isUnassigned
+                ? group.tasks
+                    .map(t =>
+                      t.workflowSteps?.find(s => s.processCode === code),
+                    )
+                    .find(Boolean)
+                : undefined
+
+              return (
+                <div key={group.id} className="space-y-2">
+                  {/* Encabezado: nombre + badge icon-only (sin nombre duplicado) */}
+                  <div className="flex items-center justify-between gap-2 px-1 text-xs font-semibold">
+                    <div className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
+                      {isUnassigned ? (
+                        <UserX className="size-3.5 shrink-0 text-muted-foreground/70" />
+                      ) : (
+                        <User className="size-3.5 shrink-0 text-emerald-400" />
+                      )}
+                      <span
+                        className={cn(
+                          "truncate",
+                          !isUnassigned && "font-bold text-foreground",
+                        )}
+                      >
+                        {group.name}
+                      </span>
+                      {!isUnassigned &&
+                        headerStep &&
+                        state.canChooseAreas &&
+                        actions.handleUnsummon && (
+                          <TaskAssignmentBadge
+                            step={headerStep}
+                            onUnsummon={actions.handleUnsummon}
+                            unsummoning={state.unsummoning}
+                            iconOnly
+                          />
+                        )}
+                    </div>
+                    <span className="shrink-0 rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+                      {group.tasks.length}
+                    </span>
+                  </div>
+
+                  {/* Filas sin badge de asignación (ya está en cabecera) */}
+                  <TaskProcessColumn
+                    processCode={code}
+                    tasks={group.tasks}
+                    expandedKey={state.expandedKey}
+                    onToggleCard={actions.setExpandedKey}
+                    activeOverlayKey={state.activeOverlayKey}
+                    onOverlayOpenChange={actions.setActiveOverlayKey}
+                    fullWidth
+                    contentOnly
+                    selectionMode={isSummoningThis}
+                    selectedStepIds={state.selectedStepIds}
+                    onToggleStepSelection={actions.handleToggleStepSelection}
+                    unsummoning={state.unsummoning}
+                  />
+                </div>
+              )
+            })}
+
+            {groupedTasks.length === 0 && (
+              <div className="flex h-12 items-center justify-center rounded-xl bg-foreground/5 px-3 text-sm font-medium text-muted-foreground">
+                Sin tareas
+              </div>
+            )}
+          </div>
         ) : (
           <OperatorTaskLists
             code={code}
@@ -109,7 +197,7 @@ export function AreaTaskSection({
 
 type OperatorTaskListsProps = {
   code: ProcessCode
-  tasks: any[]
+  tasks: Task[]
   panel: TaskAreaPanelReturn
 }
 
@@ -118,15 +206,15 @@ function OperatorTaskLists({ code, tasks, panel }: OperatorTaskListsProps) {
 
   const { assigned, available } = useMemo(() => {
     const assignedList = tasks.filter(task =>
-      task.workflowSteps.find(
-        (s: { processCode: ProcessCode }) => s.processCode === code,
-      )?.assignedById,
+      task.workflowSteps?.some(
+        (s: WorkflowStep) => s.processCode === code && Boolean(s.assignedById),
+      ),
     )
     const availableList = tasks.filter(
       task =>
-        !task.workflowSteps.find(
-          (s: { processCode: ProcessCode }) => s.processCode === code,
-        )?.assignedById,
+        !task.workflowSteps?.some(
+          (s: WorkflowStep) => s.processCode === code && Boolean(s.assignedById),
+        ),
     )
     return { assigned: assignedList, available: availableList }
   }, [tasks, code])

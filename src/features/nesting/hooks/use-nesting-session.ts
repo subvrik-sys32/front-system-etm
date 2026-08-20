@@ -36,10 +36,6 @@ type ProjectSessionApi = {
   requestSessionSave: () => void
 }
 
-/**
- * Toast de restauración, atajos undo/redo/delete, hidratar y persistir
- * edits por plancha.
- */
 export function useNestingSession(opts: {
   project: ProjectSessionApi
   history: HistoryApi
@@ -64,6 +60,7 @@ export function useNestingSession(opts: {
   const projectRef = useRef(project)
   const historyRef = useRef(history)
   const deleteRef = useRef(onDeleteSelected)
+
   useEffect(() => {
     projectRef.current = project
   })
@@ -103,7 +100,11 @@ export function useNestingSession(opts: {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return
       const mod = e.ctrlKey || e.metaKey
       const key = e.key.toLowerCase()
       if (mod) {
@@ -143,7 +144,14 @@ export function useNestingSession(opts: {
       history.resetAll?.() ?? history.reset()
       setLockedPieceIndices([])
     }
-  }, [project.sessionReady, project.sessionRestored, history, project, setActiveGroupIndex, setLockedPieceIndices])
+  }, [
+    project.sessionReady,
+    project.sessionRestored,
+    history,
+    project,
+    setActiveGroupIndex,
+    setLockedPieceIndices,
+  ])
 
   useEffect(() => {
     const p = projectRef.current
@@ -152,11 +160,20 @@ export function useNestingSession(opts: {
     const prev = p.getSheetEdits()
     p.setSheetEdits({
       ...prev,
-      [key]: { positionOverrides, angleOverrides, lockedIndices: lockedPieceIndices },
+      [key]: {
+        positionOverrides,
+        angleOverrides,
+        lockedIndices: lockedPieceIndices,
+      },
     })
     p.setActiveGroupIndexForSession(activeGroupIndex)
     p.requestSessionSave()
-  }, [positionOverrides, angleOverrides, lockedPieceIndices, activeGroupIndex])
+  }, [
+    positionOverrides,
+    angleOverrides,
+    lockedPieceIndices,
+    activeGroupIndex,
+  ])
 
   return { projectRef, historyRef, editsHydratedRef }
 }

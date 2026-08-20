@@ -13,6 +13,7 @@ import {
   PopoverOpenContext,
 } from "./contexts"
 import { SHEET_CONFIG } from "./sheet-config"
+import { suppressDismissClickThrough } from "./suppress-dismiss-click-through"
 import { useSmoothResize } from "./use-smooth-resize"
 import { useVirtualKeyboardOpen } from "./use-virtual-keyboard-open"
 
@@ -94,6 +95,7 @@ export function PopoverContent({
           onPointerDown={event => {
             event.preventDefault()
             event.stopPropagation()
+            suppressDismissClickThrough(400)
             close()
           }}
           onClick={event => {

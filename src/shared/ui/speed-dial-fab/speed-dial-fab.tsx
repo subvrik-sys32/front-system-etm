@@ -13,6 +13,7 @@ import {
   FAB_RIGHT_OFFSET_PX,
   FAB_Z_CLASS,
 } from "./fab-layout"
+import { suppressDismissClickThrough } from "@/components/ui/popover/suppress-dismiss-click-through"
 
 type Props = {
   actions: ReactNode[]
@@ -98,14 +99,17 @@ export function SpeedDialFab({ actions, className }: Props) {
       const target = e.target as HTMLElement
       if (rootRef.current?.contains(target)) return
       if (isInsideSheetOrPopover(target)) return
+      e.preventDefault()
+      e.stopPropagation()
+      suppressDismissClickThrough(400)
       setDialOpen(false)
     }
 
     window.addEventListener("keydown", onKey)
-    document.addEventListener("pointerdown", onPointerDown)
+    document.addEventListener("pointerdown", onPointerDown, true)
     return () => {
       window.removeEventListener("keydown", onKey)
-      document.removeEventListener("pointerdown", onPointerDown)
+      document.removeEventListener("pointerdown", onPointerDown, true)
     }
   }, [dialOpen])
 

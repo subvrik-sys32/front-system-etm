@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from "react"
 import { Loader2, Layers } from "lucide-react"
 import type { PlanGeometry, Entity, ChatMessage, Skill } from "../types"
+import { cadErrorMessage } from "../utils/cad-error-message"
 import { cadAiApi, downloadDxf } from "../api/cad-ai.api"
 import { UploadZone } from "./upload-zone"
 import { DxfViewer } from "./dxf-viewer"
@@ -42,7 +43,7 @@ export function CadAiPanel() {
         geometry: result.geometry,
       }])
     } catch (err: any) {
-      setError(err.message || "Error al analizar la imagen")
+      setError(cadErrorMessage(err, "Error al analizar la imagen"))
     } finally {
       setLoading(false)
     }
@@ -63,10 +64,10 @@ export function CadAiPanel() {
         geometry: result.geometry,
       }])
     } catch (err: any) {
-      setError(err.message || "Error al generar la geometría")
+      setError(cadErrorMessage(err, "Error al generar la geometría"))
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: `Error: ${err.message || "No se pudo generar la geometría."}`,
+        content: `Error: ${cadErrorMessage(err, "No se pudo generar la geometría.")}`,
       }])
     } finally {
       setLoading(false)
@@ -90,10 +91,10 @@ export function CadAiPanel() {
         geometry: result.geometry,
       }])
     } catch (err: any) {
-      setError(err.message || "Error al iterar")
+      setError(cadErrorMessage(err, "Error al iterar"))
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: `Error: ${err.message || "No se pudo procesar el cambio."}`,
+        content: `Error: ${cadErrorMessage(err, "No se pudo procesar el cambio.")}`,
       }])
     } finally {
       setLoading(false)
@@ -120,7 +121,7 @@ export function CadAiPanel() {
       const freshDxf = await cadAiApi.exportDxf(geom)
       downloadDxf(freshDxf)
     } catch (err: any) {
-      setError(err.message || "Error al exportar DXF")
+      setError(cadErrorMessage(err, "Error al exportar DXF"))
     }
   }, [])
 

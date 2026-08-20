@@ -10,7 +10,6 @@ import {
   Layers,
   FileImage,
   PencilRuler,
-  FileDown,
   Send,
   Bot,
 } from "lucide-react"
@@ -78,7 +77,7 @@ export function UploadZone({
   ]
 
   return (
-    <div className="relative flex h-full w-full flex-col bg-background">
+    <div className="relative flex h-full w-full flex-col bg-transparent">
       <div className="mx-auto flex w-full max-w-3xl flex-col px-3 py-3 sm:px-6 sm:py-6">
         
         {/* Encabezado */}
@@ -103,7 +102,7 @@ export function UploadZone({
 
         {/* Toggle de modo responsivo */}
         <div className="mb-4 flex shrink-0 justify-center sm:mb-5">
-          <div className="inline-flex rounded-xl bg-muted/60 p-1 dark:bg-muted/80">
+          <div className="inline-flex rounded-xl bg-background/40 backdrop-blur-md p-1 border border-border/20 shadow-sm">
             <button
               type="button"
               onClick={() => setMode("upload")}
@@ -138,8 +137,8 @@ export function UploadZone({
             <div
               {...getRootProps()}
               className={cn(
-                "flex min-h-[180px] sm:min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl bg-foreground/[0.03] px-4 py-8 transition-colors border border-dashed border-border/60 hover:border-primary/50",
-                isDragActive && "bg-foreground/10 border-primary",
+                "flex min-h-[180px] sm:min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl bg-background/30 backdrop-blur-md px-4 py-8 transition-colors border border-dashed border-border/40 hover:border-primary/50 shadow-sm",
+                isDragActive && "bg-background/50 border-primary",
                 loading && "pointer-events-none opacity-60",
               )}
             >
@@ -172,7 +171,7 @@ export function UploadZone({
               ].map(s => (
                 <div
                   key={s.n}
-                  className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 rounded-xl bg-foreground/[0.03] p-2.5 sm:px-3 text-center sm:text-left"
+                  className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 rounded-xl bg-background/30 backdrop-blur-md border border-border/20 p-2.5 sm:px-3 text-center sm:text-left shadow-2xs"
                 >
                   <span className="flex size-5 sm:size-6 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-[10px] sm:text-xs font-bold text-foreground">
                     {s.n}
@@ -185,7 +184,7 @@ export function UploadZone({
               ))}
             </div>
 
-            {/* Feature cards grid: 3 columnas también en móvil para evitar listas verticales largas */}
+            {/* Feature cards grid */}
             <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
               {[
                 {
@@ -209,7 +208,7 @@ export function UploadZone({
               ].map(c => (
                 <div
                   key={c.title}
-                  className="rounded-xl sm:rounded-2xl bg-foreground/[0.03] p-3 sm:p-4 transition hover:bg-foreground/[0.05] flex flex-col justify-between"
+                  className="rounded-xl sm:rounded-2xl bg-background/30 backdrop-blur-md border border-border/20 p-3 sm:p-4 transition hover:bg-background/40 flex flex-col justify-between shadow-2xs"
                 >
                   <div>
                     <c.icon className="mb-1.5 sm:mb-2 size-4 sm:size-5 text-muted-foreground" />
@@ -226,7 +225,7 @@ export function UploadZone({
             </div>
           </div>
         ) : (
-          <div className="flex min-h-[300px] sm:min-h-[360px] w-full flex-col overflow-hidden rounded-2xl bg-foreground/[0.03] border border-border/40">
+          <div className="flex min-h-[300px] sm:min-h-[360px] w-full flex-col overflow-hidden rounded-2xl bg-background/30 backdrop-blur-md border border-border/30 shadow-md">
             <div
               ref={scrollRef}
               className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 [scrollbar-width:none]"
@@ -246,7 +245,7 @@ export function UploadZone({
                           setInput(c.text)
                           textareaRef.current?.focus()
                         }}
-                        className="inline-flex items-center gap-1.5 rounded-lg bg-foreground/5 px-3 py-2 text-xs text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-background/50 backdrop-blur-xs border border-border/20 px-3 py-2 text-xs text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
                       >
                         <c.icon className="size-3.5" />
                         {c.text}
@@ -259,10 +258,10 @@ export function UploadZone({
                 <div
                   key={i}
                   className={cn(
-                    "rounded-xl px-3.5 py-2.5 text-sm leading-relaxed",
+                    "rounded-xl px-3.5 py-2.5 text-sm leading-relaxed backdrop-blur-xs",
                     m.role === "user"
-                      ? "ml-8 bg-foreground/10 text-foreground"
-                      : "mr-8 bg-foreground/5 text-foreground",
+                      ? "ml-8 bg-primary/15 text-foreground border border-primary/20"
+                      : "mr-8 bg-background/60 text-foreground border border-border/20",
                   )}
                 >
                   {m.content}
@@ -276,7 +275,7 @@ export function UploadZone({
               )}
             </div>
 
-            <div className="flex shrink-0 items-end gap-2.5 p-3.5 border-t border-border/40 bg-background/40 backdrop-blur-xs">
+            <div className="flex shrink-0 items-end gap-2.5 p-3.5 border-t border-border/20 bg-background/20 backdrop-blur-md">
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -290,14 +289,14 @@ export function UploadZone({
                 rows={1}
                 placeholder="Ej: Plato circular de 120mm con 6 perforaciones..."
                 disabled={loading}
-                className="min-h-[42px] max-h-[120px] w-full resize-none rounded-xl bg-foreground/5 px-3.5 py-2.5 text-sm outline-none focus:bg-foreground/10 disabled:opacity-50"
+                className="min-h-[42px] max-h-[120px] w-full resize-none rounded-xl bg-background/50 backdrop-blur-xs border border-border/20 px-3.5 py-2.5 text-sm outline-none focus:bg-background/80 disabled:opacity-50"
               />
               <button
                 type="button"
                 onClick={handleSend}
                 disabled={!input.trim() || loading}
                 className={cn(
-                  "flex size-10 shrink-0 items-center justify-center rounded-xl transition disabled:opacity-40",
+                  "flex size-10 shrink-0 items-center justify-center rounded-xl transition disabled:opacity-40 shadow-sm",
                   primaryBtn,
                 )}
               >

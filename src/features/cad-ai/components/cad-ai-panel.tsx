@@ -14,6 +14,7 @@ import { IterationPanel } from "./iteration-panel"
 import { SaveSkillModal } from "./save-skill-modal"
 import { SkillLibrary } from "./skill-library"
 import { SkillGenerator } from "./skill-generator"
+import CursorRingField from "./cursor-ring-.field"
 
 export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
   void embedded
@@ -129,7 +130,83 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
 
   if (!geometry) {
     return (
-      <div className="flex min-h-0 w-full flex-1 flex-col overflow-y-auto bg-background [scrollbar-width:none]">
+      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto bg-background [scrollbar-width:none]">
+        
+        {/* Fondo WebGL adaptativo para vista inicial (Optimizado para móvil/tablet/desktop) */}
+        <div className="absolute inset-0 z-0 opacity-30 pointer-events-auto">
+          <CursorRingField 
+            background="transparent"
+            dotSize={isMobile ? 60 : 90}
+            density={isMobile ? 100 : 300}
+            speed={isMobile ? 18 : 36}
+            cameraDistance={270}
+            colors={["#3074f9", "#7189ff", "#0b0b18"]}
+          />
+        </div>
+
+        {/* Capa de contenido */}
+        <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col">
+          {error && (
+            <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+              <span className="truncate">{error}</span>
+              <button type="button" onClick={() => setError(null)} className="hover:opacity-70">×</button>
+            </div>
+          )}
+
+          <div className="flex shrink-0 px-4 py-3">
+            <button
+              type="button"
+              aria-label="Skills"
+              title="Skills"
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowSkillLibrary(true)
+              }}
+              onPointerDown={(e) => e.stopPropagation()}
+              className={cn(CHROME_ICON_BTN, "h-9 w-auto gap-2 px-3 text-xs font-semibold backdrop-blur-xs")}
+            >
+              <Layers size={14} strokeWidth={2.25} />
+              <span>Skills</span>
+            </button>
+          </div>
+
+          <div className="flex w-full flex-col">
+            <UploadZone onAnalyze={handleAnalyze} onGenerate={handleGenerate} loading={loading} messages={messages} />
+          </div>
+
+          {showSkillLibrary && (
+            <SkillLibrary 
+              onOpenSkill={(s) => { setShowSkillLibrary(false); setSkillGenerator(s); }} 
+              onClose={() => setShowSkillLibrary(false)} 
+            />
+          )}
+          {skillGenerator && (
+            <SkillGenerator 
+              skill={skillGenerator} 
+              onClose={() => setSkillGenerator(null)} 
+              onLoadToWorkspace={(g, d) => { setGeometry(g); setDxf(d); geometryRef.current = g; setSkillGenerator(null); }} 
+            />
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-background">
+      
+      {/* Fondo WebGL adaptativo para vista activa (Optimizado para móvil/tablet/desktop) */}
+      <div className="absolute inset-0 z-0 opacity-20 pointer-events-auto">
+        <CursorRingField 
+          background="transparent"
+          density={isMobile ? 120 : 200}
+          speed={isMobile ? 2 : 4}
+          colors={["#3074f9", "#7189ff", "#0b0b18"]}
+        />
+      </div>
+
+      {/* Capa de contenido activo */}
+      <div className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
         {error && (
           <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive">
             <span className="truncate">{error}</span>
@@ -137,133 +214,85 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
           </div>
         )}
 
-        {/* Botón de Skills con icono y texto, sin contenedor de fondo adicional */}
-        <div className="flex shrink-0 px-4 py-3">
-          <button
-            type="button"
-            aria-label="Skills"
-            title="Skills"
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowSkillLibrary(true)
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-            className={cn(CHROME_ICON_BTN, "h-9 w-auto gap-2 px-3 text-xs font-semibold")}
-          >
-            <Layers size={14} strokeWidth={2.25} />
-            <span>Skills</span>
-          </button>
-        </div>
-
-        {/* Contenido principal */}
-        <div className="flex w-full flex-col">
-          <UploadZone onAnalyze={handleAnalyze} onGenerate={handleGenerate} loading={loading} messages={messages} />
-        </div>
-
-        {showSkillLibrary && (
-          <SkillLibrary 
-            onOpenSkill={(s) => { setShowSkillLibrary(false); setSkillGenerator(s); }} 
-            onClose={() => setShowSkillLibrary(false)} 
-          />
+        {isMobile && (
+          <div className="mb-2 flex shrink-0 items-center gap-1 rounded-xl bg-muted/60 p-1 dark:bg-muted/80 backdrop-blur-xs">
+            <button
+              type="button"
+              onClick={() => setMobilePane("viewer")}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-semibold transition-all",
+                mobilePane === "viewer" ? "bg-foreground/15 text-foreground shadow-2xs" : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+              )}
+            >
+              <Box className="h-4 w-4" />
+              Lienzo 3D / DXF
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobilePane("chat")}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-semibold transition-all",
+                mobilePane === "chat" ? "bg-foreground/15 text-foreground shadow-2xs" : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+              )}
+            >
+              <MessageSquare className="h-4 w-4" />
+              Chat & IA
+            </button>
+          </div>
         )}
-        {skillGenerator && (
-          <SkillGenerator 
-            skill={skillGenerator} 
-            onClose={() => setSkillGenerator(null)} 
-            onLoadToWorkspace={(g, d) => { setGeometry(g); setDxf(d); geometryRef.current = g; setSkillGenerator(null); }} 
-          />
-        )}
-      </div>
-    )
-  }
 
-  return (
-    <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-background">
-      {error && (
-        <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive">
-          <span className="truncate">{error}</span>
-          <button type="button" onClick={() => setError(null)} className="hover:opacity-70">×</button>
-        </div>
-      )}
-
-      {isMobile && (
-        <div className="mb-2 flex shrink-0 items-center gap-1 rounded-xl bg-muted/60 p-1 dark:bg-muted/80">
-          <button
-            type="button"
-            onClick={() => setMobilePane("viewer")}
-            className={cn(
-              "flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-semibold transition-all",
-              mobilePane === "viewer" ? "bg-foreground/15 text-foreground shadow-2xs" : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+        <div className="relative flex min-h-0 flex-1 flex-col gap-0 overflow-hidden desktop:flex-row desktop:gap-3">
+          <div className={cn("relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-muted/30 backdrop-blur-[2px]", isMobile && mobilePane !== "viewer" && "hidden")}>
+            {loading && (
+              <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
             )}
-          >
-            <Box className="h-4 w-4" />
-            Lienzo 3D / DXF
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobilePane("chat")}
-            className={cn(
-              "flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-semibold transition-all",
-              mobilePane === "chat" ? "bg-foreground/15 text-foreground shadow-2xs" : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
-            )}
-          >
-            <MessageSquare className="h-4 w-4" />
-            Chat & IA
-          </button>
-        </div>
-      )}
+            <DxfViewer
+              geometry={geometry}
+              onGeometryChange={handleGeometryChange}
+              onSendToAI={(ent) => setSelectedForAI(ent)}
+              className="absolute inset-0 h-full w-full"
+            />
+          </div>
 
-      <div className="relative flex min-h-0 flex-1 flex-col gap-0 overflow-hidden desktop:flex-row desktop:gap-3">
-        <div className={cn("relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-muted/30", isMobile && mobilePane !== "viewer" && "hidden")}>
-          {loading && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          )}
-          <DxfViewer
-            geometry={geometry}
-            onGeometryChange={handleGeometryChange}
-            onSendToAI={(ent) => setSelectedForAI(ent)}
-            className="absolute inset-0 h-full w-full"
-          />
-        </div>
-
-        <div className={cn(
-            "min-h-0 overflow-hidden rounded-xl bg-card",
+          <div className={cn(
+            "min-h-0 overflow-hidden rounded-xl bg-card/90 backdrop-blur-md shadow-lg",
             isMobile
               ? mobilePane === "chat"
                 ? "flex h-full w-full flex-1 flex-col"
                 : "hidden"
               : "flex w-full max-w-sm shrink-0 flex-col desktop:w-96",
           )}>
-          <IterationPanel
-            geometry={geometry}
-            dxf={dxf}
-            imagePath={imagePath}
-            onIterate={handleIterate}
-            onSaveSkill={() => setShowSaveSkill(true)}
-            onDownload={handleDownload}
-            onReset={handleReset}
-            loading={loading}
-            messages={messages}
-            selectedForAI={selectedForAI}
-            onClearAISelection={() => setSelectedForAI(null)}
-            activeSkill={activeSkill}
-            skillParams={skillParams}
-            onSkillParamsChange={setSkillParams}
-            onSkillRegenerate={async () => {}}
-          />
+            <IterationPanel
+              geometry={geometry}
+              dxf={dxf}
+              imagePath={imagePath}
+              onIterate={handleIterate}
+              onSaveSkill={() => setShowSaveSkill(true)}
+              onDownload={handleDownload}
+              onReset={handleReset}
+              loading={loading}
+              messages={messages}
+              selectedForAI={selectedForAI}
+              onClearAISelection={() => setSelectedForAI(null)}
+              activeSkill={activeSkill}
+              skillParams={skillParams}
+              onSkillParamsChange={setSkillParams}
+              onSkillRegenerate={async () => {}}
+            />
+          </div>
         </div>
-      </div>
 
-      {showSaveSkill && (
-        <SaveSkillModal
-          geometry={geometry}
-          thumbnailPath={imagePath && !imagePath.startsWith("blob:") ? imagePath : null}
-          onSaved={(skill) => { setShowSaveSkill(false); setActiveSkill(skill); }}
-          onClose={() => setShowSaveSkill(false)}
-        />
-      )}
+        {showSaveSkill && (
+          <SaveSkillModal
+            geometry={geometry}
+            thumbnailPath={imagePath && !imagePath.startsWith("blob:") ? imagePath : null}
+            onSaved={(skill) => { setShowSaveSkill(false); setActiveSkill(skill); }}
+            onClose={() => setShowSaveSkill(false)}
+          />
+        )}
+      </div>
     </div>
   )
 }

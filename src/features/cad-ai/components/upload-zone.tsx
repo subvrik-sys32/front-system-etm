@@ -29,9 +29,6 @@ interface UploadZoneProps {
 const primaryBtn =
   "bg-primary text-primary-foreground dark:bg-foreground dark:text-background hover:opacity-90"
 
-const secondaryBtn =
-  "bg-foreground/5 text-foreground hover:bg-foreground/10"
-
 export function UploadZone({
   onAnalyze,
   onGenerate,
@@ -81,26 +78,37 @@ export function UploadZone({
   ]
 
   return (
-    <div className="relative flex w-full flex-col bg-background">
-      <div className="mx-auto flex w-full max-w-3xl flex-col px-1 py-2 pb-6 tablet:px-2">
-        <div className="mb-3 shrink-0 text-center">
-          <h2 className="text-base font-bold tracking-tight text-foreground tablet:text-lg">
-            De la idea al{" "}
-            <span className="text-primary dark:text-foreground">corte</span>
-          </h2>
-          <p className="mx-auto mt-1 max-w-md text-[11px] text-muted-foreground tablet:text-xs">
-            Sube un plano o describe tu pieza — la IA genera el DXF listo para corte láser
-          </p>
+    <div className="relative flex h-full w-full flex-col bg-background">
+      <div className="mx-auto flex w-full max-w-3xl flex-col px-3 py-3 sm:px-6 sm:py-6">
+        
+        {/* Encabezado */}
+        <div className="mb-4 shrink-0 sm:mb-6 px-4">
+          <div className="flex flex-col items-center text-center md:flex-row md:items-baseline md:justify-start md:text-left gap-x-3 gap-y-1.5">
+            <h2 
+              className="font-bold tracking-tight text-foreground shrink-0"
+              style={{ fontSize: "clamp(1.5rem, 3.5vw, 2.25rem)" }}
+            >
+              De la idea al{" "}
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent dark:from-foreground dark:to-foreground/60">
+                corte
+              </span>
+            </h2>
+            
+            <div className="hidden md:flex items-center gap-3 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              <span className="size-1 rounded-full bg-muted-foreground/50 shrink-0" />
+              <span>Sube un plano o describe tu pieza — la IA genera el DXF listo para corte láser</span>
+            </div>
+          </div>
         </div>
 
-        {/* Toggle modo — sin borde, tokens */}
-        <div className="mb-3 flex shrink-0 justify-center">
+        {/* Toggle de modo responsivo */}
+        <div className="mb-4 flex shrink-0 justify-center sm:mb-5">
           <div className="inline-flex rounded-xl bg-muted/60 p-1 dark:bg-muted/80">
             <button
               type="button"
               onClick={() => setMode("upload")}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
+                "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors",
                 mode === "upload"
                   ? "bg-foreground/15 text-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground",
@@ -113,7 +121,7 @@ export function UploadZone({
               type="button"
               onClick={() => setMode("chat")}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
+                "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors",
                 mode === "chat"
                   ? "bg-foreground/15 text-foreground shadow-2xs"
                   : "text-muted-foreground hover:text-foreground",
@@ -126,12 +134,12 @@ export function UploadZone({
         </div>
 
         {mode === "upload" ? (
-          <div className="flex w-full flex-col gap-3">
+          <div className="flex w-full flex-col gap-3 sm:gap-4">
             <div
               {...getRootProps()}
               className={cn(
-                "flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-2xl bg-foreground/[0.03] px-4 py-8 transition-colors",
-                isDragActive && "bg-foreground/10",
+                "flex min-h-[180px] sm:min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-2xl bg-foreground/[0.03] px-4 py-8 transition-colors border border-dashed border-border/60 hover:border-primary/50",
+                isDragActive && "bg-foreground/10 border-primary",
                 loading && "pointer-events-none opacity-60",
               )}
             >
@@ -140,89 +148,96 @@ export function UploadZone({
                 <Loader2 className="size-8 animate-spin text-muted-foreground" />
               ) : (
                 <>
-                  <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-foreground/5">
-                    <ImageIcon className="size-6 text-muted-foreground" />
+                  <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-foreground/5 sm:size-14">
+                    <ImageIcon className="size-6 text-muted-foreground sm:size-7" />
                   </div>
-                  <p className="text-sm font-semibold text-foreground">
+                  <p className="text-sm font-semibold text-foreground sm:text-base">
                     {isDragActive
                       ? "Suelta el plano aquí"
                       : "Arrastra tu plano o haz click"}
                   </p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     PNG, JPG, WEBP, BMP · máx 20MB
                   </p>
                 </>
               )}
             </div>
 
-            {/* Steps */}
+            {/* Steps grid optimizado */}
             <div className="grid grid-cols-3 gap-2">
               {[
-                { n: "1", label: "Importa", icon: FileImage },
-                { n: "2", label: "Mide y edita", icon: PencilRuler },
-                { n: "3", label: "Exporta DXF", icon: FileDown },
+                { n: "1", label: "Importa", fullLabel: "Importa tu plano o imagen" },
+                { n: "2", label: "Edita", fullLabel: "Mide, edita y ajusta" },
+                { n: "3", label: "Exporta", fullLabel: "Exporta tu DXF" },
               ].map(s => (
                 <div
                   key={s.n}
-                  className="flex items-center gap-2 rounded-xl bg-foreground/[0.03] px-2.5 py-2"
+                  className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-2.5 rounded-xl bg-foreground/[0.03] p-2.5 sm:px-3 text-center sm:text-left"
                 >
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-[11px] font-bold text-foreground">
+                  <span className="flex size-5 sm:size-6 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-[10px] sm:text-xs font-bold text-foreground">
                     {s.n}
                   </span>
-                  <span className="truncate text-[11px] font-medium text-muted-foreground">
-                    {s.label}
+                  <span className="text-[11px] sm:text-xs font-medium text-muted-foreground leading-tight">
+                    <span className="sm:hidden">{s.label}</span>
+                    <span className="hidden sm:inline">{s.fullLabel}</span>
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* Feature cards */}
-            <div className="grid grid-cols-1 gap-2 tablet:grid-cols-3">
+            {/* Feature cards grid: 3 columnas también en móvil para evitar listas verticales largas */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
               {[
                 {
                   icon: ScanSearch,
                   title: "Detección IA",
-                  desc: "Detecta líneas, círculos, arcos y agujeros",
+                  desc: "Detecta líneas, círculos y arcos automáticamente",
+                  shortDesc: "Detecta líneas y arcos",
                 },
                 {
                   icon: MessageSquareText,
-                  title: "Iteración",
-                  desc: "Refina con lenguaje natural",
+                  title: "Iteración en vivo",
+                  desc: "Refina geometría compleja utilizando lenguaje natural",
+                  shortDesc: "Refina con lenguaje natural",
                 },
                 {
                   icon: Layers,
-                  title: "Skills",
-                  desc: "Guarda y reutiliza piezas paramétricas",
+                  title: "Skills reutilizables",
+                  desc: "Guarda y repara piezas paramétricas corporativas",
+                  shortDesc: "Guarda piezas paramétricas",
                 },
               ].map(c => (
                 <div
                   key={c.title}
-                  className="rounded-2xl bg-foreground/[0.03] p-3.5"
+                  className="rounded-xl sm:rounded-2xl bg-foreground/[0.03] p-3 sm:p-4 transition hover:bg-foreground/[0.05] flex flex-col justify-between"
                 >
-                  <c.icon className="mb-2 size-5 text-muted-foreground" />
-                  <p className="text-sm font-semibold text-foreground">
-                    {c.title}
-                  </p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                    {c.desc}
+                  <div>
+                    <c.icon className="mb-1.5 sm:mb-2 size-4 sm:size-5 text-muted-foreground" />
+                    <p className="text-xs sm:text-sm font-semibold text-foreground line-clamp-1">
+                      {c.title}
+                    </p>
+                  </div>
+                  <p className="mt-1 text-[11px] sm:text-xs leading-relaxed text-muted-foreground line-clamp-2">
+                    <span className="sm:hidden">{c.shortDesc}</span>
+                    <span className="hidden sm:inline">{c.desc}</span>
                   </p>
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <div className="flex min-h-[280px] w-full flex-col overflow-hidden rounded-2xl bg-foreground/[0.03]">
+          <div className="flex min-h-[300px] sm:min-h-[360px] w-full flex-col overflow-hidden rounded-2xl bg-foreground/[0.03] border border-border/40">
             <div
               ref={scrollRef}
-              className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3 [scrollbar-width:none]"
+              className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 [scrollbar-width:none]"
             >
               {messages.length === 0 && (
-                <div className="flex flex-col items-center gap-2 py-8 text-center">
-                  <Bot className="size-8 text-muted-foreground/50" />
+                <div className="flex flex-col items-center justify-center gap-2.5 py-12 text-center">
+                  <Bot className="size-9 text-muted-foreground/50" />
                   <p className="text-sm font-medium text-muted-foreground">
-                    Describe la pieza que necesitas
+                    Describe la pieza que necesitas fabricar
                   </p>
-                  <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+                  <div className="mt-2 flex flex-wrap justify-center gap-2">
                     {chips.map(c => (
                       <button
                         key={c.text}
@@ -231,9 +246,9 @@ export function UploadZone({
                           setInput(c.text)
                           textareaRef.current?.focus()
                         }}
-                        className="inline-flex items-center gap-1 rounded-lg bg-foreground/5 px-2.5 py-1.5 text-[11px] text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-foreground/5 px-3 py-2 text-xs text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
                       >
-                        <c.icon className="size-3" />
+                        <c.icon className="size-3.5" />
                         {c.text}
                       </button>
                     ))}
@@ -244,7 +259,7 @@ export function UploadZone({
                 <div
                   key={i}
                   className={cn(
-                    "rounded-xl px-3 py-2 text-sm",
+                    "rounded-xl px-3.5 py-2.5 text-sm leading-relaxed",
                     m.role === "user"
                       ? "ml-8 bg-foreground/10 text-foreground"
                       : "mr-8 bg-foreground/5 text-foreground",
@@ -254,14 +269,14 @@ export function UploadZone({
                 </div>
               ))}
               {loading && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground px-2">
                   <Loader2 className="size-3.5 animate-spin" />
-                  Generando...
+                  Generando geometría con IA...
                 </div>
               )}
             </div>
 
-            <div className="flex shrink-0 items-end gap-2 p-3">
+            <div className="flex shrink-0 items-end gap-2.5 p-3.5 border-t border-border/40 bg-background/40 backdrop-blur-xs">
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -273,9 +288,9 @@ export function UploadZone({
                   }
                 }}
                 rows={1}
-                placeholder="Describe la pieza..."
+                placeholder="Ej: Plato circular de 120mm con 6 perforaciones..."
                 disabled={loading}
-                className="min-h-[40px] max-h-[100px] w-full resize-none rounded-xl bg-foreground/5 px-3 py-2.5 text-sm outline-none focus:bg-foreground/10 disabled:opacity-50"
+                className="min-h-[42px] max-h-[120px] w-full resize-none rounded-xl bg-foreground/5 px-3.5 py-2.5 text-sm outline-none focus:bg-foreground/10 disabled:opacity-50"
               />
               <button
                 type="button"

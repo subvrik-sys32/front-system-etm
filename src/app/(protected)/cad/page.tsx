@@ -71,7 +71,7 @@ export default function CadPage() {
           <h1 className="shrink-0 text-2xl font-bold tracking-widest">CAD</h1>
           <span className="h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
           <p className="min-w-0 truncate text-sm text-muted-foreground">
-            IA · Plantillas paramétricas · DXF · Nesting
+            Inteligencia Artificial
           </p>
         </div>
         <div className="shrink-0">

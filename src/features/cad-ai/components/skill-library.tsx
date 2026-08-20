@@ -76,18 +76,18 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 px-5 pb-3">
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <div className="flex flex-1 items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2">
+            <Search size={15} className="shrink-0 text-muted-foreground" />
             <input
               type="search"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar skills..."
-              className="h-9 w-full rounded-xl border border-input bg-background pl-9 pr-3 text-xs outline-none focus:ring-2 focus:ring-ring"
+              className="w-full bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground/80"
             />
           </div>
           {/* Botones estilo Windows para alternar Vista de Cuadrícula / Lista */}
-          <div className="flex items-center rounded-xl border border-border bg-muted/40 p-0.5">
+          <div className="flex items-center rounded-xl bg-muted/40 p-0.5">
             <button
               type="button"
               onClick={() => setViewMode("grid")}
@@ -140,9 +140,9 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
                       key={skill.id}
                       type="button"
                       onClick={() => onOpenSkill(skill)}
-                      className="group relative flex flex-col rounded-xl border border-border bg-card p-2.5 text-left transition hover:border-primary/40 hover:shadow-sm"
+                      className="group relative flex flex-col rounded-xl bg-card p-2.5 text-left transition hover:border-primary/40 hover:shadow-sm"
                     >
-                      <div className="mb-2 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-lg border border-border/50 bg-secondary/30">
+                      <div className="mb-2 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-lg bg-secondary/30">
                         {skill.thumbnail && !skill.thumbnail.startsWith("blob:") ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -189,10 +189,10 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
                       key={skill.id}
                       type="button"
                       onClick={() => onOpenSkill(skill)}
-                      className="group flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2 text-left transition hover:border-primary/40 hover:shadow-sm"
+                      className="group flex items-center justify-between rounded-xl bg-card px-3 py-2 text-left transition hover:border-primary/40 hover:shadow-sm"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/50 bg-secondary/30">
+                        <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-secondary/30">
                           {skill.thumbnail && !skill.thumbnail.startsWith("blob:") ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -240,7 +240,7 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
           </ScrollArea>
         </div>
 
-        <div className="shrink-0 border-t border-border/40 px-5 py-3">
+        <div className="shrink-0 px-5 py-3">
           <div className="flex justify-end">
             <button
               type="button"

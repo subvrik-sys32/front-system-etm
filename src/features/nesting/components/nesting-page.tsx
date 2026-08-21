@@ -603,7 +603,7 @@ export function NestingPage() {
       footer={nestFooter}
       pieces={<PieceList ref={pieceListRef} {...pieceListProps} />}
       projectMaterial={
-        <div className="flex flex-col gap-3 px-3 pb-3 pt-3">
+        <div className="flex flex-col gap-3 px-3 pb-3 pt-1">
             <MaterialPanel
               settings={project.settings}
               onChange={project.onSettingsChange}
@@ -624,7 +624,7 @@ export function NestingPage() {
         </div>
       }
       layers={
-        <div className="flex flex-col gap-3 px-3 pb-3 pt-3">
+        <div className="flex flex-col gap-3 px-3 pb-3 pt-1">
             <LayerManager
               layers={layerList}
               hiddenKeys={hiddenLayerKeys}
@@ -634,7 +634,7 @@ export function NestingPage() {
         </div>
       }
       inspector={
-        <div className="flex flex-col gap-3 px-3 pb-3 pt-3">
+        <div className="flex flex-col gap-3 px-3 pb-3 pt-1">
             <PropertiesPanel
               sheetStats={sheetStats}
               selectedPiece={selectedPiece}

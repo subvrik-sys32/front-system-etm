@@ -39,7 +39,6 @@ function useRingDotSize(variant: keyof typeof RING_DOT_SIZE) {
 }
 
 export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
-  void embedded
   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
   const [dxf, setDxf] = useState<string>("")
   const [imagePath, setImagePath] = useState<string | null>(null)
@@ -179,12 +178,19 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
           )}
 
           <div
-            className="flex shrink-0 px-4 py-3"
-            style={{
-              paddingTop: isMobile
-                ? TOP_BAR_HEIGHT_PX + 12
-                : DESKTOP_TOP_BAR_HEIGHT_PX + 12,
-            }}
+            className={cn(
+              "flex shrink-0 px-4",
+              embedded ? "py-2" : "py-3",
+            )}
+            style={
+              embedded
+                ? undefined
+                : {
+                    paddingTop: isMobile
+                      ? TOP_BAR_HEIGHT_PX + 12
+                      : DESKTOP_TOP_BAR_HEIGHT_PX + 12,
+                  }
+            }
           >
             <button
               type="button"

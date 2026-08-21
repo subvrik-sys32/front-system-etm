@@ -1,6 +1,7 @@
 "use client"
 
 import type { LucideIcon } from "lucide-react"
+
 import { cn } from "@/shared/utils/utils"
 
 export type EntityToggleOption<T extends string = string> = {
@@ -13,14 +14,17 @@ type Props<T extends string> = {
   value: T
   onChange: (value: T) => void
   options: EntityToggleOption<T>[]
+  /**
+   * Targets táctiles ~36–44px. Siempre icono + label (ancho estable).
+   */
   compact?: boolean
   className?: string
   "aria-label"?: string
 }
 
 /**
- * Toggle segmentado Premium — diseño sofisticado, ultra-fluido
- * y completamente basado en CSS nativo (sin desfases ni parpadeos).
+ * Toggle segmentado SSOT.
+ * Ancho estable: columnas iguales (grid) + font-semibold fijo (no salta al activar).
  */
 export function EntityToggle<T extends string>({
   value,
@@ -30,15 +34,20 @@ export function EntityToggle<T extends string>({
   className,
   "aria-label": ariaLabel,
 }: Props<T>) {
+  const cols = options.length
+
   return (
     <div
       role="group"
       aria-label={ariaLabel}
       className={cn(
-        "relative inline-flex items-center gap-1 rounded-2xl bg-muted/60 p-1 backdrop-blur-md dark:bg-muted/40 shadow-xs",
-        compact ? "rounded-xl p-1" : "h-9 rounded-2xl",
+        "grid items-center gap-1 rounded-2xl bg-muted/60 p-1 shadow-xs backdrop-blur-md dark:bg-muted/40",
+        compact ? "rounded-xl" : "h-9 rounded-2xl",
         className,
       )}
+      style={{
+        gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+      }}
     >
       {options.map(option => {
         const Icon = option.icon
@@ -53,30 +62,26 @@ export function EntityToggle<T extends string>({
             aria-label={option.label}
             aria-pressed={active}
             className={cn(
-              "relative z-10 flex items-center justify-center font-medium select-none transition-all duration-300 ease-out",
+              "relative z-10 flex min-w-0 items-center justify-center gap-1.5 font-semibold select-none transition-colors duration-200",
               compact
-                ? "size-9 rounded-lg"
-                : "h-full gap-2 rounded-xl px-3.5 text-xs tracking-tight",
+                ? "h-9 rounded-lg px-2 text-xs"
+                : "h-full rounded-xl px-3 text-xs tracking-tight",
               active
                 ? "bg-background text-foreground shadow-xs ring-1 ring-border/5"
-                : "text-muted-foreground hover:text-foreground hover:bg-background/40",
+                : "text-muted-foreground hover:bg-background/40 hover:text-foreground",
             )}
           >
             {Icon ? (
               <Icon
-                size={compact ? 16 : 14}
+                size={compact ? 15 : 14}
                 strokeWidth={active ? 2.5 : 2}
                 className={cn(
-                  "transition-colors duration-200 shrink-0",
+                  "shrink-0 transition-colors duration-200",
                   active ? "text-primary" : "text-muted-foreground/80",
                 )}
               />
             ) : null}
-            {(!compact || options.length <= 2) && (
-              <span className={cn("truncate", active ? "font-semibold" : "font-medium")}>
-                {option.label}
-              </span>
-            )}
+            <span className="truncate">{option.label}</span>
           </button>
         )
       })}

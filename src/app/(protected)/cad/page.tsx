@@ -39,11 +39,10 @@ export default function CadPage() {
   usePageToolbar(isMobile ? null : <TabsNav />)
 
   return (
-    <PageShell mode="bleed">
+    <PageShell mode={isMobile ? "fill" : "bleed"}>
       <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-        {/* Solo mobile: labels visibles (mismo EntityToggle que desktop) */}
         {isMobile ? (
-          <div className="mb-2 flex shrink-0 justify-center px-2">
+          <div className="mb-2 flex shrink-0 justify-center px-1">
             <TabsNav />
           </div>
         ) : null}

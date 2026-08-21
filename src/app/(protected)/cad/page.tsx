@@ -64,9 +64,12 @@ export default function CadPage() {
   return (
     <PageShell mode="fill">
       <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-        <div className="mb-2 shrink-0 desktop:hidden">
-          <TabsNav compact />
-        </div>
+        {/* Solo mobile: en tablet/desktop viven en DesktopTopBar vía usePageToolbar */}
+        {isMobile ? (
+          <div className="mb-2 shrink-0">
+            <TabsNav compact />
+          </div>
+        ) : null}
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {tab === "ai" ? <CadAiPanel embedded /> : <CadWorkspacePanel embedded />}

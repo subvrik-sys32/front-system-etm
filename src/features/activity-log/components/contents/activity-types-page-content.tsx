@@ -11,6 +11,8 @@ import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
 import { IconAction } from "@/shared/ui/actions/icon-action"
 import { EntityToolbar } from "@/shared/ui/entity-toolbar/entity-toolbar"
 import { EntityToolbarSearch } from "@/shared/ui/entity-toolbar/entity-toolbar-search"
+import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
@@ -107,6 +109,7 @@ export function ActivityTypesPageContent() {
   const queryClient = useQueryClient()
 
   const [search, setSearch] = useState("")
+  const { isMobile } = useResponsive()
 
   // true: trae también los desactivados, para poder reactivarlos.
   const { types, loading } = useActivityTypes(true)
@@ -160,19 +163,22 @@ export function ActivityTypesPageContent() {
 
   const hasResults = defaultTypes.length > 0 || customTypes.length > 0
 
+  const toolbar = (
+    <EntityToolbar
+      variant={isMobile ? "page" : "chrome"}
+      left={<EntityToolbarSearch value={search} onChange={setSearch} />}
+    />
+  )
+
+  usePageToolbar(isMobile ? null : toolbar)
+
   return (
     <div className="relative flex h-full min-h-0 w-full flex-col">
       <AppListScroll
       >
-        <div className="mb-1 shrink-0 max-md:mt-2">
-          <EntityToolbar
-            left={
-              <div className="flex flex-wrap items-center gap-2 py-1">
-                <EntityToolbarSearch value={search} onChange={setSearch} />
-              </div>
-            }
-          />
-        </div>
+        {isMobile ? (
+          <div className="mb-1 shrink-0 max-md:mt-2">{toolbar}</div>
+        ) : null}
 
         <div className="flex flex-col gap-6 max-md:mt-2">
           {loading ? (

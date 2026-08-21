@@ -59,6 +59,7 @@ export function ActivityTypeActions() {
         <PrimaryAction
           label="Nueva actividad"
           icon={Plus}
+          iconOnly
           disabled={!canManage}
           onClick={() => setOpen(true)}
         />

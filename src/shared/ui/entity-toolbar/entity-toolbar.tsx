@@ -33,7 +33,7 @@ export function EntityToolbar({
       className={cn(
         "flex min-w-0 items-center gap-x-2 gap-y-1.5",
         isChrome
-          ? "w-auto shrink flex-nowrap overflow-visible py-0 px-0"
+          ? "w-auto shrink flex-nowrap items-center justify-end overflow-visible py-0 px-0 gap-1.5"
           : "w-full shrink-0 flex-wrap justify-between min-h-0 px-1 py-1 overflow-visible tablet:min-h-14 tablet:py-2.5",
         className,
       )}

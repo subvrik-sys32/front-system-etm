@@ -1,0 +1,171 @@
+diff --git a/src/shared/responsive/layout/app-shell.tsx b/src/shared/responsive/layout/app-shell.tsx
+index 0000000..1111111 100644
+--- a/src/shared/responsive/layout/app-shell.tsx
++++ b/src/shared/responsive/layout/app-shell.tsx
+@@ -67,7 +67,7 @@
+           ) : null}
+         </div>
+         {toolbar ? (
+-          <div className="flex min-w-0 flex-1 items-center overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
++          <div className="flex min-w-0 flex-1 items-center justify-end overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+             {toolbar}
+           </div>
+         ) : (
+diff --git a/src/app/(protected)/cad/page.tsx b/src/app/(protected)/cad/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/cad/page.tsx
++++ b/src/app/(protected)/cad/page.tsx
+@@ -64,9 +64,12 @@
+   return (
+     <PageShell mode="fill">
+       <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+-        <div className="mb-2 shrink-0 desktop:hidden">
+-          <TabsNav compact />
+-        </div>
++        {/* Solo mobile: en tablet/desktop viven en DesktopTopBar vía usePageToolbar */}
++        {isMobile ? (
++          <div className="mb-2 shrink-0">
++            <TabsNav compact />
++          </div>
++        ) : null}
+ 
+         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+           {tab === "ai" ? <CadAiPanel embedded /> : <CadWorkspacePanel embedded />}
+diff --git a/src/features/activity-log/components/actions/activity-type-actions.tsx b/src/features/activity-log/components/actions/activity-type-actions.tsx
+index 0000000..1111111 100644
+--- a/src/features/activity-log/components/actions/activity-type-actions.tsx
++++ b/src/features/activity-log/components/actions/activity-type-actions.tsx
+@@ -59,6 +59,7 @@
+         <PrimaryAction
+           label="Nueva actividad"
+           icon={Plus}
++          iconOnly
+           disabled={!canManage}
+           onClick={() => setOpen(true)}
+         />
+diff --git a/src/features/nesting/components/nesting-page.tsx b/src/features/nesting/components/nesting-page.tsx
+index 0000000..1111111 100644
+--- a/src/features/nesting/components/nesting-page.tsx
++++ b/src/features/nesting/components/nesting-page.tsx
+@@ -832,7 +832,7 @@
+           </div>
+ 
+           {/* top-12 ≈ tabs; bottom-0 = todo el resto del slot immersive */}
+-          <div className="absolute inset-x-0 bottom-0 top-14 mx-1 mb-1 overflow-hidden rounded-xl border-0 bg-zinc-100 shadow-xs dark:border-0 dark:bg-neutral-950">
++          <div className="absolute inset-x-0 bottom-0 top-12 mx-1 mb-1 overflow-hidden rounded-xl border-0 bg-zinc-100 shadow-xs dark:border-0 dark:bg-neutral-950">
+             <div className="absolute inset-px overflow-hidden rounded-4xl">
+               {!project.sessionReady ? (
+                 <WorkspaceSpinner />
+diff --git a/src/app/(protected)/nesting/page.tsx b/src/app/(protected)/nesting/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/nesting/page.tsx
++++ b/src/app/(protected)/nesting/page.tsx
+@@ -2,14 +2,10 @@
+ 
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+ import { PageShell } from "@/shared/responsive/layout/page-shell"
+-import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+-import { DESKTOP_TOP_BAR_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
+ import { NestingPage } from "@/features/nesting/components/nesting-page"
+ 
+ export default function NestingRoute() {
+   usePageTitle("Nesting")
+-  const { isMobile } = useResponsive()
+-
+   return (
+     <PageShell mode="fill">
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+diff --git a/src/shared/ui/entity-toolbar/entity-toolbar.tsx b/src/shared/ui/entity-toolbar/entity-toolbar.tsx
+index 0000000..1111111 100644
+--- a/src/shared/ui/entity-toolbar/entity-toolbar.tsx
++++ b/src/shared/ui/entity-toolbar/entity-toolbar.tsx
+@@ -33,7 +33,7 @@
+       className={cn(
+         "flex min-w-0 items-center gap-x-2 gap-y-1.5",
+         isChrome
+-          ? "w-auto shrink flex-nowrap overflow-visible py-0 px-0"
++          ? "w-auto shrink flex-nowrap items-center justify-end overflow-visible py-0 px-0 gap-1.5"
+           : "w-full shrink-0 flex-wrap justify-between min-h-0 px-1 py-1 overflow-visible tablet:min-h-14 tablet:py-2.5",
+         className,
+       )}
+diff --git a/src/features/activity-log/components/contents/activity-types-page-content.tsx b/src/features/activity-log/components/contents/activity-types-page-content.tsx
+index 0000000..1111111 100644
+--- a/src/features/activity-log/components/contents/activity-types-page-content.tsx
++++ b/src/features/activity-log/components/contents/activity-types-page-content.tsx
+@@ -11,6 +11,8 @@
+ import { IconAction } from "@/shared/ui/actions/icon-action"
+ import { EntityToolbar } from "@/shared/ui/entity-toolbar/entity-toolbar"
+ import { EntityToolbarSearch } from "@/shared/ui/entity-toolbar/entity-toolbar-search"
++import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
++import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ 
+ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+ import { usePermissions } from "@/features/permissions/hooks/use-permissions"
+@@ -107,6 +109,7 @@
+   const queryClient = useQueryClient()
+ 
+   const [search, setSearch] = useState("")
++  const { isMobile } = useResponsive()
+ 
+   // true: trae también los desactivados, para poder reactivarlos.
+   const { types, loading } = useActivityTypes(true)
+@@ -160,19 +163,22 @@
+ 
+   const hasResults = defaultTypes.length > 0 || customTypes.length > 0
+ 
++  const toolbar = (
++    <EntityToolbar
++      variant={isMobile ? "page" : "chrome"}
++      left={<EntityToolbarSearch value={search} onChange={setSearch} />}
++    />
++  )
++
++  usePageToolbar(isMobile ? null : toolbar)
++
+   return (
+     <div className="relative flex h-full min-h-0 w-full flex-col">
+       <AppListScroll
+       >
+-        <div className="mb-1 shrink-0 max-md:mt-2">
+-          <EntityToolbar
+-            left={
+-              <div className="flex flex-wrap items-center gap-2 py-1">
+-                <EntityToolbarSearch value={search} onChange={setSearch} />
+-              </div>
+-            }
+-          />
+-        </div>
++        {isMobile ? (
++          <div className="mb-1 shrink-0 max-md:mt-2">{toolbar}</div>
++        ) : null}
+ 
+         <div className="flex flex-col gap-6 max-md:mt-2">
+           {loading ? (
+diff --git a/src/shared/ui/entity-toolbar/entity-toolbar-search.tsx b/src/shared/ui/entity-toolbar/entity-toolbar-search.tsx
+index 0000000..1111111 100644
+--- a/src/shared/ui/entity-toolbar/entity-toolbar-search.tsx
++++ b/src/shared/ui/entity-toolbar/entity-toolbar-search.tsx
+@@ -68,7 +68,7 @@
+         data-toolbar-search=""
+         className={cn(
+           "flex items-center overflow-hidden transition-all duration-200 ease-out",
+-          open ? "w-60" : "w-8",
++          open ? "w-60" : "w-9",
+         )}
+       >
+         <button
+@@ -89,11 +89,11 @@
+             }
+           }}
+           className={cn(
+-            "flex size-8 shrink-0 touch-none items-center justify-center rounded-xl text-foreground transition-all duration-200",
+-            open ? "bg-muted" : "hover:bg-muted",
++            "flex size-9 shrink-0 touch-none items-center justify-center rounded-full bg-chrome text-muted-foreground shadow-xs backdrop-blur-xl transition-all duration-200 hover:text-foreground",
++            open && "bg-chrome text-foreground",
+           )}
+         >
+-          <Search size={14} strokeWidth={2} />
++          <Search size={16} strokeWidth={2.25} />
+         </button>
+ 
+         <div

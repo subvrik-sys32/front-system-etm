@@ -53,13 +53,13 @@ export function SidebarNavigation({
       <div className={cn("w-full", isDrawer ? "px-2 py-2 pb-3" : "px-2 py-1 pb-2")}>
         {!isDrawer && (
           <>
-            <div className={cn("mb-1 w-full", collapsed && "flex justify-center")}>
+            <div className="mb-1 w-full">
               <NotificationBell collapsed={collapsed} />
             </div>
-            <div className={cn("mb-2 w-full", collapsed && "flex justify-center")}>
+            <div className="mb-2 w-full">
               <MessageBell collapsed={collapsed} />
             </div>
-            <div className={cn("mb-2 w-full", collapsed && "flex justify-center")}>
+            <div className="mb-2 w-full">
               <SidebarPresence
                 collapsed={presenceCollapsed}
                 isDrawer={isDrawer}

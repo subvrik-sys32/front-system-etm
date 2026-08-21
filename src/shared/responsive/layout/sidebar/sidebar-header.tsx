@@ -33,12 +33,10 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
   const isRail = collapsed && !isDrawer
 
   return (
-    <div
-      className={cn(
-        "flex h-12 w-full shrink-0 items-center border-b border-border/40",
-        isRail ? "justify-center px-0" : "gap-2.5 px-3",
-      )}
-    >
+    // pl-3.5 fijo: mismo inset (14px) que el icono de las filas de navegación
+    // (px-2 del contenedor + pl-1.5 de la fila), en rail y en expandido. El
+    // logo nunca se mueve; solo el texto se desvanece.
+    <div className="flex h-12 w-full shrink-0 items-center gap-2.5 border-b border-border/40 pl-3.5 pr-3">
       <button
         type="button"
         onClick={onLogoClick}
@@ -60,11 +58,15 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
         />
       </button>
 
-      {!isRail && (
-        <p className="min-w-0 flex-1 overflow-hidden truncate whitespace-nowrap text-xs font-bold tracking-tight text-primary dark:text-white">
-          ETM S.A.C.
-        </p>
-      )}
+      <p
+        aria-hidden={isRail}
+        className={cn(
+          "min-w-0 flex-1 overflow-hidden truncate whitespace-nowrap text-xs font-bold tracking-tight text-primary transition-opacity duration-150 dark:text-white",
+          isRail ? "opacity-0 pointer-events-none" : "opacity-100",
+        )}
+      >
+        ETM S.A.C.
+      </p>
     </div>
   )
 }

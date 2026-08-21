@@ -17,7 +17,7 @@ type Props = {
   open?: boolean
 }
 
-const SIDEBAR_ASIDE_COLLAPSED_WIDTH = 64
+const SIDEBAR_ASIDE_COLLAPSED_WIDTH = 68
 const SIDEBAR_ASIDE_OPEN_WIDTH = 220
 
 /**

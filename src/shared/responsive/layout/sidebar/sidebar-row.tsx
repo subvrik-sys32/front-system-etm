@@ -28,10 +28,6 @@ export type SidebarRowProps = React.HTMLAttributes<HTMLDivElement> & {
   size?: "sm" | "md"
 }
 
-/**
- * - Expandido / drawer: fila completa (icono + label + badge).
- * - Colapsado: solo celda size-9 centrada; hover/activo = rectángulo del icono.
- */
 export function SidebarRow({
   icon: Icon,
   label,
@@ -50,55 +46,20 @@ export function SidebarRow({
   const isRail = collapsed && !isDrawer
   const cell = size === "sm" ? "size-8" : "size-9"
 
-  if (isRail) {
-    return (
-      <div
-        className={cn(
-          "relative mx-auto flex items-center justify-center rounded-xl select-none",
-          cell,
-          active
-            ? "bg-primary/10 text-primary font-semibold shadow-xs dark:bg-primary/15 dark:text-white"
-            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-          className,
-        )}
-        title={label}
-        {...props}
-      >
-        <Icon
-          className={cn(
-            "size-4 shrink-0",
-            active ? "text-primary dark:text-white" : "text-muted-foreground",
-          )}
-          strokeWidth={active ? 2.25 : 2}
-        />
-        {hasCount && (
-          <span
-            className={cn(
-              "absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs pointer-events-none",
-              collapsedBadgeColor || badgeColor,
-              badgeAnimated && "animate-pulse",
-            )}
-          >
-            {count}
-          </span>
-        )}
-      </div>
-    )
-  }
-
   return (
     <div
       className={cn(
-        "group relative flex w-full items-center rounded-xl font-medium select-none px-2.5",
+        "group relative flex w-full items-center rounded-xl font-medium select-none pl-1.5 pr-2",
         size === "sm" ? "h-8 text-xs" : "h-9 text-xs",
         active
           ? "bg-primary/10 text-primary font-semibold shadow-xs dark:bg-primary/15 dark:text-white"
           : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
         className,
       )}
+      title={isRail ? label : undefined}
       {...props}
     >
-      <div className="relative flex size-8 shrink-0 items-center justify-center">
+      <div className={cn("relative flex shrink-0 items-center justify-center", cell)}>
         <Icon
           className={cn(
             "size-4 shrink-0",
@@ -108,11 +69,32 @@ export function SidebarRow({
           )}
           strokeWidth={active ? 2.25 : 2}
         />
+
+        {/* Badge sobre el icono: SOLO se muestra si hay count Y estamos en modo rail */}
+        {hasCount && isRail && (
+          <span
+            className={cn(
+              "absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs pointer-events-none transition-opacity duration-150 opacity-100",
+              collapsedBadgeColor || badgeColor,
+              badgeAnimated && "animate-pulse",
+            )}
+          >
+            {count}
+          </span>
+        )}
       </div>
 
-      <div className="ml-2 flex min-w-0 flex-1 items-center justify-between gap-1 overflow-hidden">
+      <div
+        aria-hidden={isRail}
+        className={cn(
+          "ml-2 flex min-w-0 flex-1 items-center justify-between gap-1 overflow-hidden transition-opacity duration-150",
+          isRail ? "opacity-0 pointer-events-none" : "opacity-100",
+        )}
+      >
         <span className="block min-w-0 flex-1 truncate whitespace-nowrap overflow-hidden">{label}</span>
-        {hasCount && (
+        
+        {/* Badge lateral al texto: SOLO se muestra si hay count Y NO estamos en modo rail */}
+        {hasCount && !isRail && (
           <span
             className={cn(
               "ml-2 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[10px] font-bold leading-none shadow-xs",

@@ -1,0 +1,96 @@
+diff --git a/src/shared/responsive/layout/app-shell.tsx b/src/shared/responsive/layout/app-shell.tsx
+index 0000000..1111111 100644
+--- a/src/shared/responsive/layout/app-shell.tsx
++++ b/src/shared/responsive/layout/app-shell.tsx
+@@ -31,30 +31,46 @@
+   // Expandida → theme vive en el header del sidebar.
+   const showThemeOutside = mode === "collapsed" || mode === "closed"
+ 
+-  return (
+-    <div className="relative flex h-11 shrink-0 items-center gap-2 px-3">
++  // Overlay como mobile TopBar: el contenido scrollea debajo con blur.
++  // NO ocupa flujo (no robamos altura al main).
++  return (
++    <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-11 items-center gap-2 px-3">
+       <div
+         aria-hidden
+-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-11 bg-background/80 backdrop-blur-md"
++        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-14 backdrop-blur-xl"
++        style={{
++          maskImage: "linear-gradient(to bottom, black 40%, transparent)",
++          WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent)",
++        }}
+       />
+-      <SidebarShowButton />
+-      <div className="min-w-0 flex-1">
+-        {title ? (
+-          <div
+-            title={title}
+-            className="inline-flex max-w-full items-center rounded-full bg-chrome px-2.5 py-1.5 shadow-xs backdrop-blur-xl"
+-          >
+-            <span className="truncate text-sm font-semibold text-foreground">
+-              {title}
+-            </span>
+-          </div>
++      <div
++        aria-hidden
++        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-14 bg-background/65"
++        style={{
++          maskImage: "linear-gradient(to bottom, black 30%, transparent)",
++          WebkitMaskImage: "linear-gradient(to bottom, black 30%, transparent)",
++        }}
++      />
++      <div className="pointer-events-auto flex min-w-0 flex-1 items-center gap-2">
++        <SidebarShowButton />
++        <div className="min-w-0 flex-1">
++          {title ? (
++            <div
++              title={title}
++              className="inline-flex max-w-full items-center rounded-full bg-chrome px-2.5 py-1.5 shadow-xs backdrop-blur-xl"
++            >
++              <span className="truncate text-sm font-semibold text-foreground">
++                {title}
++              </span>
++            </div>
++          ) : null}
++        </div>
++        {actions ? (
++          <div className="flex shrink-0 items-center gap-1.5">{actions}</div>
+         ) : null}
++        {showThemeOutside && <ThemeToggle variant="icon" />}
+       </div>
+-      {actions ? (
+-        <div className="flex shrink-0 items-center gap-1.5">{actions}</div>
+-      ) : null}
+-      {showThemeOutside && <ThemeToggle variant="icon" />}
+-    </div>
++    </header>
+   )
+ }
+ 
+@@ -111,7 +127,8 @@
+         }}
+       >
+         <DesktopTopBar />
+-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
++        {/* Contenido a pantalla completa; el topbar flota encima con blur. */}
++        <div className="absolute inset-0 flex min-h-0 min-w-0 flex-col">
+           {children}
+         </div>
+       </main>
+diff --git a/src/shared/ui/vertical-scroll/app-list-scroll.tsx b/src/shared/ui/vertical-scroll/app-list-scroll.tsx
+index 0000000..1111111 100644
+--- a/src/shared/ui/vertical-scroll/app-list-scroll.tsx
++++ b/src/shared/ui/vertical-scroll/app-list-scroll.tsx
+@@ -55,7 +55,10 @@
+                     (searchOpen ? PAGE_SEARCH_BAR_HEIGHT_PX : 0),
+                   paddingBottom: `calc(${BOTTOM_NAV_HEIGHT_PX}px + env(safe-area-inset-bottom, 0px))`,
+                 }
+-            : undefined
++            : {
++                // DesktopTopBar overlay: scroll pasa bajo el blur.
++                paddingTop: 44,
++              }
+         }
+       >
+         {children}

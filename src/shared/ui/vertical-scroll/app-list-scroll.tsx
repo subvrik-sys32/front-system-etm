@@ -55,7 +55,10 @@ export function AppListScroll({ children, resetKey, className }: Props) {
                     (searchOpen ? PAGE_SEARCH_BAR_HEIGHT_PX : 0),
                   paddingBottom: `calc(${BOTTOM_NAV_HEIGHT_PX}px + env(safe-area-inset-bottom, 0px))`,
                 }
-            : undefined
+            : {
+                // DesktopTopBar overlay: scroll pasa bajo el blur.
+                paddingTop: 44,
+              }
         }
       >
         {children}

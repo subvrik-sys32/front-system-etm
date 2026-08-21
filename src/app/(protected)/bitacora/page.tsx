@@ -3,7 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query"
 
 import { useState } from "react"
-import { Layers, Wrench, ShieldCheck } from "lucide-react"
+import { Layers, Wrench, ShieldCheck, type LucideIcon } from "lucide-react"
 
 import { BitacoraDepartmentPage } from "@/features/activity-log/components/bitacora-department-page"
 import { TeamActivityLogPageContent } from "@/features/activity-log/components/contents/team-activity-log-page-content"
@@ -17,13 +17,14 @@ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
 import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
 import { PageShell } from "@/shared/responsive/layout/page-shell"
+import { EntityToggle } from "@/shared/ui/entity-toggle/entity-toggle"
 
 type ViewMode = ActivityDepartment | "TEAM"
 
 interface TabConfig {
   id: ViewMode
   label: string
-  icon: React.ComponentType<{ className?: string }>
+  icon: LucideIcon
   show: boolean
 }
 
@@ -86,49 +87,18 @@ export default function BitacoraPage() {
 
   function TabsNav({ compact }: { compact: boolean }) {
     return (
-      <nav
-        className={
-          compact
-            ? "flex w-full items-center gap-1 overflow-x-auto rounded-xl bg-popover p-1 [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden"
-            : "flex items-center gap-1 rounded-xl bg-popover p-1"
-        }
-      >
-        {tabs.map(tab => {
-          const IconComponent = tab.icon
-          const isActive = activeView === tab.id
-
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveView(tab.id)}
-              title={tab.label}
-              className={
-                compact
-                  ? `flex flex-1 shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
-                      isActive
-                        ? "bg-accent text-accent-foreground shadow-xs"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`
-                  : `flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                      isActive
-                        ? "bg-accent text-accent-foreground shadow-xs"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`
-              }
-            >
-              <IconComponent className="h-4 w-4 shrink-0" />
-              <span
-                className={
-                  compact ? "max-[420px]:hidden truncate" : "truncate"
-                }
-              >
-                {tab.label}
-              </span>
-            </button>
-          )
-        })}
-      </nav>
+      <EntityToggle
+        value={activeView}
+        onChange={setActiveView}
+        aria-label="Sección de bitácora"
+        compact={compact}
+        fullWidth={compact}
+        options={tabs.map(tab => ({
+          value: tab.id,
+          label: tab.label,
+          icon: tab.icon,
+        }))}
+      />
     )
   }
 

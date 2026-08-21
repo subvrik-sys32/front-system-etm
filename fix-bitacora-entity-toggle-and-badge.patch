@@ -1,0 +1,170 @@
+diff --git a/src/app/(protected)/bitacora/page.tsx b/src/app/(protected)/bitacora/page.tsx
+index b82443e..ac5c43c 100644
+--- a/src/app/(protected)/bitacora/page.tsx
++++ b/src/app/(protected)/bitacora/page.tsx
+@@ -3,7 +3,7 @@
+ import { useQueryClient } from "@tanstack/react-query"
+ 
+ import { useState } from "react"
+-import { Layers, Wrench, ShieldCheck } from "lucide-react"
++import { Layers, Wrench, ShieldCheck, type LucideIcon } from "lucide-react"
+ 
+ import { BitacoraDepartmentPage } from "@/features/activity-log/components/bitacora-department-page"
+ import { TeamActivityLogPageContent } from "@/features/activity-log/components/contents/team-activity-log-page-content"
+@@ -17,13 +17,14 @@ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+ import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
+ import { PageShell } from "@/shared/responsive/layout/page-shell"
++import { EntityToggle } from "@/shared/ui/entity-toggle/entity-toggle"
+ 
+ type ViewMode = ActivityDepartment | "TEAM"
+ 
+ interface TabConfig {
+   id: ViewMode
+   label: string
+-  icon: React.ComponentType<{ className?: string }>
++  icon: LucideIcon
+   show: boolean
+ }
+ 
+@@ -86,49 +87,18 @@ export default function BitacoraPage() {
+ 
+   function TabsNav({ compact }: { compact: boolean }) {
+     return (
+-      <nav
+-        className={
+-          compact
+-            ? "flex w-full items-center gap-1 overflow-x-auto rounded-xl bg-popover p-1 [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden"
+-            : "flex items-center gap-1 rounded-xl bg-popover p-1"
+-        }
+-      >
+-        {tabs.map(tab => {
+-          const IconComponent = tab.icon
+-          const isActive = activeView === tab.id
+-
+-          return (
+-            <button
+-              key={tab.id}
+-              type="button"
+-              onClick={() => setActiveView(tab.id)}
+-              title={tab.label}
+-              className={
+-                compact
+-                  ? `flex flex-1 shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+-                      isActive
+-                        ? "bg-accent text-accent-foreground shadow-xs"
+-                        : "text-muted-foreground hover:text-foreground"
+-                    }`
+-                  : `flex shrink-0 items-center justify-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+-                      isActive
+-                        ? "bg-accent text-accent-foreground shadow-xs"
+-                        : "text-muted-foreground hover:text-foreground"
+-                    }`
+-              }
+-            >
+-              <IconComponent className="h-4 w-4 shrink-0" />
+-              <span
+-                className={
+-                  compact ? "max-[420px]:hidden truncate" : "truncate"
+-                }
+-              >
+-                {tab.label}
+-              </span>
+-            </button>
+-          )
+-        })}
+-      </nav>
++      <EntityToggle
++        value={activeView}
++        onChange={setActiveView}
++        aria-label="Sección de bitácora"
++        compact={compact}
++        fullWidth={compact}
++        options={tabs.map(tab => ({
++          value: tab.id,
++          label: tab.label,
++          icon: tab.icon,
++        }))}
++      />
+     )
+   }
+ 
+diff --git a/src/shared/ui/entity-toggle/entity-toggle.tsx b/src/shared/ui/entity-toggle/entity-toggle.tsx
+index 2a85a7a..8ed6d37 100644
+--- a/src/shared/ui/entity-toggle/entity-toggle.tsx
++++ b/src/shared/ui/entity-toggle/entity-toggle.tsx
+@@ -19,6 +19,8 @@ type Props<T extends string> = {
+    * Default false = diseño bitácora Día/Semana/Mes (h-8, label + icono).
+    */
+   compact?: boolean
++  /** Reparte el ancho entre opciones (tabs de página en móvil). */
++  fullWidth?: boolean
+   className?: string
+   "aria-label"?: string
+ }
+@@ -32,6 +34,7 @@ export function EntityToggle<T extends string>({
+   onChange,
+   options,
+   compact = false,
++  fullWidth = false,
+   className,
+   "aria-label": ariaLabel,
+ }: Props<T>) {
+@@ -42,6 +45,7 @@ export function EntityToggle<T extends string>({
+       className={cn(
+         "inline-flex items-center bg-foreground/5 p-0.5",
+         compact ? "rounded-lg" : "h-8 rounded-xl",
++        fullWidth && "w-full",
+         className,
+       )}
+     >
+@@ -60,7 +64,9 @@ export function EntityToggle<T extends string>({
+             className={cn(
+               "flex items-center justify-center transition",
+               compact
+-                ? "size-11 rounded-md"
++                ? fullWidth
++                  ? "h-11 min-w-0 flex-1 rounded-md px-2"
++                  : "size-11 rounded-md"
+                 : "h-full gap-1.5 rounded-lg px-3 text-sm font-semibold",
+               active
+                 ? "bg-foreground/10 text-foreground"
+@@ -68,7 +74,11 @@ export function EntityToggle<T extends string>({
+             )}
+           >
+             {Icon ? <Icon size={compact ? 16 : 14} strokeWidth={2.25} /> : null}
+-            {!compact && <span>{option.label}</span>}
++            {(!compact || fullWidth) && (
++              <span className={fullWidth ? "truncate text-xs font-semibold" : undefined}>
++                {option.label}
++              </span>
++            )}
+           </button>
+         )
+       })}
+diff --git a/src/shared/ui/speed-dial-fab/fab-trigger.tsx b/src/shared/ui/speed-dial-fab/fab-trigger.tsx
+index 38a81af..4424a2e 100644
+--- a/src/shared/ui/speed-dial-fab/fab-trigger.tsx
++++ b/src/shared/ui/speed-dial-fab/fab-trigger.tsx
+@@ -58,7 +58,9 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
+         >
+           <Icon size={TOOLBAR_CHROME_ICON_SIZE} strokeWidth={2.25} className="shrink-0" />
+           {badge && (
+-            <span className="absolute -top-1 -right-1">{badge}</span>
++            <span className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2">
++              {badge}
++            </span>
+           )}
+         </button>
+       )
+@@ -83,7 +85,9 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
+       >
+         <Icon size={17} strokeWidth={2.2} />
+         {badge && (
+-          <span className="absolute -top-1 -right-1">{badge}</span>
++          <span className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2">
++            {badge}
++          </span>
+         )}
+       </button>
+     )

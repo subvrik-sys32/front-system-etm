@@ -19,6 +19,8 @@ type Props<T extends string> = {
    * Default false = diseño bitácora Día/Semana/Mes (h-8, label + icono).
    */
   compact?: boolean
+  /** Reparte el ancho entre opciones (tabs de página en móvil). */
+  fullWidth?: boolean
   className?: string
   "aria-label"?: string
 }
@@ -32,6 +34,7 @@ export function EntityToggle<T extends string>({
   onChange,
   options,
   compact = false,
+  fullWidth = false,
   className,
   "aria-label": ariaLabel,
 }: Props<T>) {
@@ -42,6 +45,7 @@ export function EntityToggle<T extends string>({
       className={cn(
         "inline-flex items-center bg-foreground/5 p-0.5",
         compact ? "rounded-lg" : "h-8 rounded-xl",
+        fullWidth && "w-full",
         className,
       )}
     >
@@ -60,7 +64,9 @@ export function EntityToggle<T extends string>({
             className={cn(
               "flex items-center justify-center transition",
               compact
-                ? "size-11 rounded-md"
+                ? fullWidth
+                  ? "h-11 min-w-0 flex-1 rounded-md px-2"
+                  : "size-11 rounded-md"
                 : "h-full gap-1.5 rounded-lg px-3 text-sm font-semibold",
               active
                 ? "bg-foreground/10 text-foreground"
@@ -68,7 +74,11 @@ export function EntityToggle<T extends string>({
             )}
           >
             {Icon ? <Icon size={compact ? 16 : 14} strokeWidth={2.25} /> : null}
-            {!compact && <span>{option.label}</span>}
+            {(!compact || fullWidth) && (
+              <span className={fullWidth ? "truncate text-xs font-semibold" : undefined}>
+                {option.label}
+              </span>
+            )}
           </button>
         )
       })}

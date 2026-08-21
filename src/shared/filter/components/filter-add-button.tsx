@@ -20,6 +20,12 @@ import {
   FabTrigger,
 } from "@/shared/ui/speed-dial-fab/fab-trigger"
 
+import {
+  TOOLBAR_CHROME_ICON_BTN,
+  TOOLBAR_CHROME_ICON_BTN_ACTIVE,
+  TOOLBAR_CHROME_ICON_SIZE,
+} from "@/shared/ui/entity-toolbar/toolbar-chrome"
+
 type Props={
   expanded?:boolean
   active?:boolean
@@ -67,27 +73,20 @@ export const FilterAddButton=
       }
 
       return (
-
-      <button
-        ref={ref}
-        type="button"
-        className={cn(
-          "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-foreground select-none transition-all duration-200",
-          active || hasActiveFilters
-            ? "bg-muted"
-            : "hover:bg-muted",
-          className
-        )}
-        {...props}
-      >
-
-        <Funnel
-          size={14}
-          strokeWidth={2}
-        />
-
-      </button>
-
+        <button
+          ref={ref}
+          type="button"
+          aria-label="Filtros"
+          title="Filtros"
+          className={cn(
+            TOOLBAR_CHROME_ICON_BTN,
+            (active || hasActiveFilters) && TOOLBAR_CHROME_ICON_BTN_ACTIVE,
+            className,
+          )}
+          {...props}
+        >
+          <Funnel size={TOOLBAR_CHROME_ICON_SIZE} strokeWidth={2.25} />
+        </button>
       )
     }
   )

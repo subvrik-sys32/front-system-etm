@@ -6,6 +6,10 @@ import { Search } from "lucide-react"
 import { cn } from "@/shared/utils/utils"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { usePageSearchStore } from "./page-search-store"
+import {
+  TOOLBAR_CHROME_ICON_BTN,
+  TOOLBAR_CHROME_ICON_SIZE,
+} from "./toolbar-chrome"
 
 type Props = {
   value: string
@@ -89,11 +93,11 @@ export function EntityToolbarSearch({
             }
           }}
           className={cn(
-            "flex size-8 shrink-0 touch-none items-center justify-center rounded-full bg-chrome text-muted-foreground shadow-xs backdrop-blur-xl transition-all duration-200 hover:text-foreground",
+            TOOLBAR_CHROME_ICON_BTN,
             open && "text-foreground",
           )}
         >
-          <Search size={14} strokeWidth={2.25} />
+          <Search size={TOOLBAR_CHROME_ICON_SIZE} strokeWidth={2.25} />
         </button>
 
         <div

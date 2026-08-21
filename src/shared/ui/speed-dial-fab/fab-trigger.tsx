@@ -5,6 +5,11 @@ import type { LucideIcon } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import {
+  TOOLBAR_CHROME_ICON_BTN,
+  TOOLBAR_CHROME_ICON_BTN_ACTIVE,
+  TOOLBAR_CHROME_ICON_SIZE,
+} from "@/shared/ui/entity-toolbar/toolbar-chrome"
 
 type Props = {
   icon: LucideIcon
@@ -35,22 +40,26 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
     const { isMobile } = useResponsive()
 
     if (!isMobile) {
+      // Desktop toolbar chrome: mismo círculo 32×32 que la lupa (EntityToolbarSearch).
+      // Label solo en aria/title; badge flotante (historial).
       return (
         <button
           ref={ref}
           type="button"
+          title={label}
+          aria-label={label}
           className={cn(
-            "flex h-8 items-center gap-2 rounded-xl px-2 text-foreground transition-colors hover:bg-muted",
-            active && "bg-muted",
+            TOOLBAR_CHROME_ICON_BTN,
+            "relative",
+            active && TOOLBAR_CHROME_ICON_BTN_ACTIVE,
             className,
           )}
           {...props}
         >
-          <Icon size={14} strokeWidth={2} className="shrink-0" />
-          <span className="whitespace-nowrap text-xs font-semibold uppercase tracking-[0.08em] select-none">
-            {label}
-          </span>
-          {badge}
+          <Icon size={TOOLBAR_CHROME_ICON_SIZE} strokeWidth={2.25} className="shrink-0" />
+          {badge && (
+            <span className="absolute -top-1 -right-1">{badge}</span>
+          )}
         </button>
       )
     }

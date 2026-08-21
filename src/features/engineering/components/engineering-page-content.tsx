@@ -162,7 +162,7 @@ export function EngineeringPageContent() {
   )
 
   return (
-    <div className="relative flex h-full min-h-0 w-full flex-col select-none overflow-hidden">
+    <div className="relative flex h-full min-h-0 w-full flex-col select-none">
       <div className="mb-1 shrink-0 px-0">
         <AdaptiveActionBar pinned={toolbar} actions={[]} />
       </div>

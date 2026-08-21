@@ -85,11 +85,11 @@ function DesktopShell({ children }: Props) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-sidebar text-foreground select-none">
+    <div className="flex h-dvh overflow-hidden bg-sidebar text-foreground select-none">
       <AppSidebar />
       <main
         onTransitionEnd={handleTransitionEnd}
-        className="relative z-10 flex h-screen min-w-0 flex-1 flex-col overflow-hidden bg-background"
+        className="relative z-10 flex h-dvh min-w-0 flex-1 flex-col overflow-hidden bg-background"
         style={{
           borderRadius,
           transition: `border-radius ${TRANSITION_TIMING}`,

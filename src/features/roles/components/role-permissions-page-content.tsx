@@ -1,6 +1,6 @@
-import { RolePermissionsSkeleton } from "./role-permissions-skeleton"
-import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
 "use client"
+
+import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
 
 import { useQueryClient } from "@tanstack/react-query"
 
@@ -47,6 +47,36 @@ import { cn } from "@/shared/utils/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 import type { Role } from "../types/role.types"
+
+
+/** Pulse del panel permisos: mismo shell de grupos que PermissionGroup (estilo bitácora). */
+function PermissionsPanelPulse() {
+  const groups = [4, 3, 5]
+  return (
+    <div className="flex animate-pulse flex-col gap-4" aria-hidden>
+      {groups.map((rows, gi) => (
+        <section key={gi} className="rounded-2xl bg-foreground/5 p-4">
+          <header className="mb-3 flex items-center justify-between gap-3">
+            <span className="h-3 w-28 rounded bg-foreground/10" />
+            <span className="h-6 w-20 rounded-full bg-foreground/5" />
+          </header>
+          <div className="grid grid-cols-1 gap-1 tablet:grid-cols-2 desktop:grid-cols-3">
+            {Array.from({ length: rows }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-2.5 px-3 py-2.5"
+                style={{ opacity: Math.max(1 - i * 0.14, 0.3) }}
+              >
+                <span className="size-4.5 shrink-0 rounded-md bg-foreground/5" />
+                <span className="h-3.5 w-24 rounded bg-foreground/10" />
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}
 
 export function RolePermissionsPageContent() {
   const queryClient = useQueryClient()
@@ -454,7 +484,7 @@ export function RolePermissionsPageContent() {
               />
             </header>
 
-            {hasSelection && permissionsLoading && <RolePermissionsSkeleton />}
+            {hasSelection && permissionsLoading && <PermissionsPanelPulse />}
 
             {hasSelection && !permissionsLoading && (
               <div className="flex flex-col gap-4 pb-4">
@@ -548,7 +578,7 @@ export function RolePermissionsPageContent() {
                   data-entity-table-scroll
                   className="min-h-0 min-w-0 flex-1 p-1.5"
                 >
-                  {permissionsLoading && <RolePermissionsSkeleton />}
+                  {permissionsLoading && <PermissionsPanelPulse />}
 
                   {!permissionsLoading && (
                     <div className="flex flex-col gap-4">

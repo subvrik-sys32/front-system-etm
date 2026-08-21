@@ -78,32 +78,24 @@ function OperatorNameText({
 }
 
 
-function ProcessMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
-  return (
-    <div
-      className="@container/prow overflow-hidden rounded-xl bg-foreground/5"
-      style={{ opacity }}
-      aria-hidden
-    >
-      <div className="flex animate-pulse items-start gap-2 px-3 py-3">
-        <div className="min-w-0 flex-1">
-          <div className="h-4 w-2/3 max-w-[12rem] rounded bg-foreground/10" />
-          <div className="mt-1.5 flex items-center gap-1.5">
-            <span className="h-3 w-14 rounded bg-foreground/5" />
-            <span className="h-3 w-10 rounded bg-foreground/5" />
-          </div>
-        </div>
-        <span className="h-8 w-16 shrink-0 rounded-lg bg-foreground/5" />
-      </div>
-    </div>
-  )
-}
-
+/** Loading = mismo shell que la fila real (estilo bitácora). */
 export function ProcessMobileCard(props: Props) {
   if (props.loading) {
-    return <ProcessMobileCardPulse opacity={props.opacity} />
+    const opacity = props.opacity ?? 1
+    return (
+      <div className="@container/prow rounded-xl bg-foreground/5" style={{ opacity }} aria-hidden>
+        <div className="flex items-center gap-1 px-1">
+          <div className="flex min-w-0 flex-1 animate-pulse items-center gap-2.5 py-3 pr-2">
+            <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
+              <span className="h-4 w-[50%] max-w-[12rem] rounded bg-foreground/10" />
+              <span className="h-3 w-20 rounded bg-foreground/5" />
+            </div>
+            <span className="h-8 w-16 shrink-0 rounded-lg bg-foreground/5" />
+          </div>
+        </div>
+      </div>
+    )
   }
-
   return (
     <ProcessMobileCardReady
       processTask={props.processTask}

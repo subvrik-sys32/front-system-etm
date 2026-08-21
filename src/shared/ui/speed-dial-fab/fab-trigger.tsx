@@ -40,8 +40,6 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
     const { isMobile } = useResponsive()
 
     if (!isMobile) {
-      // Desktop toolbar chrome: mismo círculo 32×32 que la lupa (EntityToolbarSearch).
-      // Label solo en aria/title; badge flotante (historial).
       return (
         <button
           ref={ref}
@@ -58,7 +56,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
         >
           <Icon size={TOOLBAR_CHROME_ICON_SIZE} strokeWidth={2.25} className="shrink-0" />
           {badge && (
-            <span className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2">
+            <span className="pointer-events-none absolute bottom-0 right-0 z-10 translate-x-1/4 translate-y-1/4">
               {badge}
             </span>
           )}
@@ -85,7 +83,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
       >
         <Icon size={17} strokeWidth={2.2} />
         {badge && (
-          <span className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2">
+          <span className="pointer-events-none absolute bottom-0 right-0 z-10 translate-x-1/4 translate-y-1/4">
             {badge}
           </span>
         )}

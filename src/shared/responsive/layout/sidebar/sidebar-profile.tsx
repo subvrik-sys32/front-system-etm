@@ -258,15 +258,19 @@ export function SidebarProfile({
           aria-hidden={!profileOpen}
           className={cn(
             "absolute inset-x-0 bottom-full z-0 overflow-hidden rounded-xl bg-popover",
-            "transition-opacity duration-150 ease-out",
+            "origin-bottom transition-[transform,opacity] duration-200 ease-out",
             profileOpen ? "opacity-100" : "pointer-events-none opacity-0",
           )}
-          style={{ height: panelHeight + OVERLAP + 8 }}
+          style={{
+            height: panelHeight + OVERLAP + 30,
+            // Solapa la tarjeta: parece salir de ella
+            transform: `translateY(${profileOpen ? OVERLAP : OVERLAP + 16}px)`,
+          }}
         >
           <div
             ref={panelRef}
             className="absolute inset-x-0 bottom-0 overflow-hidden"
-            style={{ height: panelHeight + OVERLAP + 8 }}
+            style={{ height: panelHeight + OVERLAP + 30 }}
           >
             <ProfilePreviewPanel
               contentRef={contentRef}

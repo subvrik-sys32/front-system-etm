@@ -78,18 +78,19 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
           visualState === "moving-out" || visualState === "moving-in"
             ? "will-change-[width]"
             : "will-change-auto",
-          !isDrawer && "transition-[width] duration-150 ease-out",
+          !isDrawer && "transition-[width] duration-200 ease-out",
           (isDrawer && !isVisible) || isFullyHidden ? "pointer-events-none" : "",
         )}
       >
+        {/* Contenido a ancho expandido fijo: el aside recorta. Iconos no se mueven. */}
         <div
           className="flex h-full flex-col overflow-hidden pt-1.5 pb-1.5"
           style={
             isDrawer
               ? undefined
               : {
-                  width: isHiddenOrMoving ? SIDEBAR_ASIDE_OPEN_WIDTH : width,
-                  minWidth: isHiddenOrMoving ? 0 : SIDEBAR_ASIDE_COLLAPSED_WIDTH,
+                  width: SIDEBAR_ASIDE_OPEN_WIDTH,
+                  minWidth: SIDEBAR_ASIDE_OPEN_WIDTH,
                 }
           }
         >
@@ -108,7 +109,7 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
             />
           </div>
 
-          <div className="z-20 shrink-0 select-none border-t border-border/40 p-2">
+          <div className="z-20 shrink-0 select-none border-t border-border/40 px-0 py-2">
             <SidebarProfile
               collapsed={collapsed}
               onEditProfile={() => setProfileEditOpen(true)}

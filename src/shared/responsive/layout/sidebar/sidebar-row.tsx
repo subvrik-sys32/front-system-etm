@@ -17,6 +17,9 @@ export const SIDEBAR_COUNT_BADGE_CLASS = cn(
   SIDEBAR_COUNT_BADGE,
 )
 
+/** Ancho del rail de iconos (= sidebar colapsado). */
+const ICON_RAIL = "w-[72px]"
+
 export type SidebarRowProps = React.HTMLAttributes<HTMLDivElement> & {
   icon: LucideIcon
   label: string
@@ -45,62 +48,72 @@ export function SidebarRow({
   ...props
 }: SidebarRowProps) {
   const hasCount = count !== undefined && count !== null && count !== ""
+  const labelsVisible = !collapsed || isDrawer
 
   return (
     <div
       className={cn(
-        "group relative flex w-full items-center rounded-xl font-medium transition-colors duration-150 select-none",
+        "group relative flex w-full items-center rounded-xl font-medium select-none",
         size === "sm" ? "h-8 text-xs" : "h-9 text-xs",
         active
           ? "bg-primary/10 text-primary font-semibold shadow-xs dark:bg-primary/15 dark:text-white"
           : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-        collapsed && !isDrawer ? "justify-center px-0" : "px-2.5",
-        className
+        className,
       )}
       {...props}
     >
-      {/* Contenedor del Icono */}
-      <div className="relative flex size-8 shrink-0 items-center justify-center">
+      {/* Rail fijo: el icono no se desplaza al colapsar */}
+      <div
+        className={cn(
+          "relative flex shrink-0 items-center justify-center",
+          isDrawer ? "w-10 px-0" : ICON_RAIL,
+        )}
+      >
         <Icon
           className={cn(
-            "size-4 shrink-0 transition-colors",
-            active ? "text-primary dark:text-white" : "text-muted-foreground group-hover:text-foreground"
+            "size-4 shrink-0",
+            active
+              ? "text-primary dark:text-white"
+              : "text-muted-foreground group-hover:text-foreground",
           )}
           strokeWidth={active ? 2.25 : 2}
         />
 
-        {/* Badge / Contador flotante en modo COLAPSADO */}
-        {collapsed && !isDrawer && hasCount && (
+        {hasCount && (
           <span
             className={cn(
-              "absolute -top-1 -right-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs pointer-events-none",
+              "absolute -top-0.5 right-2 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs pointer-events-none transition-opacity duration-200",
               collapsedBadgeColor || badgeColor,
-              badgeAnimated && "animate-pulse"
+              badgeAnimated && labelsVisible === false && "animate-pulse",
+              labelsVisible ? "opacity-0" : "opacity-100",
             )}
+            aria-hidden={labelsVisible}
           >
             {count}
           </span>
         )}
       </div>
 
-      {/* Contenido en modo EXPANDIDO / DRAWER */}
-      {(!collapsed || isDrawer) && (
-        <div className="ml-2 flex min-w-0 flex-1 items-center justify-between">
-          <span className="truncate">{label}</span>
-
-          {hasCount && (
-            <span
-              className={cn(
-                "ml-2 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[10px] font-bold leading-none shadow-xs",
-                badgeColor,
-                badgeAnimated && "animate-pulse"
-              )}
-            >
-              {count}
-            </span>
-          )}
-        </div>
-      )}
+      {/* Texto + badge: solo fade, sin unmount */}
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 items-center justify-between pr-2.5 transition-opacity duration-200",
+          labelsVisible ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+      >
+        <span className="truncate">{label}</span>
+        {hasCount && (
+          <span
+            className={cn(
+              "ml-2 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[10px] font-bold leading-none shadow-xs",
+              badgeColor,
+              badgeAnimated && "animate-pulse",
+            )}
+          >
+            {count}
+          </span>
+        )}
+      </div>
     </div>
   )
 }

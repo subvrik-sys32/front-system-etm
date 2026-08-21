@@ -258,7 +258,7 @@ export function SidebarProfile({
           aria-hidden={!profileOpen}
           className={cn(
             "absolute inset-x-0 bottom-full z-0 overflow-hidden rounded-xl bg-popover",
-            "origin-bottom transition-[transform,opacity] duration-200 ease-out",
+            "transition-opacity duration-150 ease-out",
             profileOpen ? "opacity-100" : "pointer-events-none opacity-0",
           )}
           style={{

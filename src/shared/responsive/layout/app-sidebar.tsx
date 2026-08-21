@@ -20,9 +20,11 @@ type Props = {
 const SIDEBAR_ASIDE_COLLAPSED_WIDTH = 64
 const SIDEBAR_ASIDE_OPEN_WIDTH = 220
 
-/** Fade out → swap layout → fade in (ms). Alineado al width 200ms. */
-const CONTENT_FADE_MS = 120
-
+/**
+ * Desktop: open | collapsed (rail) | closed — sin animar width (como el drawer móvil:
+ * el estado cambia y listo; solo hover/selección en filas).
+ * Móvil (drawer): siempre layout expandido; visibilidad la controla SidebarDrawer.
+ */
 export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
   const { mode, lastVisibleMode, visualState, notifyContentTransitionEnd } = useSidebarStore()
 
@@ -42,37 +44,6 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
         ? SIDEBAR_ASIDE_COLLAPSED_WIDTH
         : SIDEBAR_ASIDE_OPEN_WIDTH
 
-  /**
-   * Layout que ven los hijos (rail vs expandido).
-   * Se actualiza solo cuando el contenido ya está en opacity 0,
-   * para no reorganizar en medio del resize.
-   */
-  const [displayCollapsed, setDisplayCollapsed] = useState(collapsed)
-  const [contentVisible, setContentVisible] = useState(true)
-
-  useEffect(() => {
-    if (isDrawer) {
-      setDisplayCollapsed(false)
-      setContentVisible(true)
-      return
-    }
-    if (collapsed === displayCollapsed) {
-      setContentVisible(true)
-      return
-    }
-
-    setContentVisible(false)
-    const t = window.setTimeout(() => {
-      setDisplayCollapsed(collapsed)
-      // siguiente frame: fade in
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setContentVisible(true))
-      })
-    }, CONTENT_FADE_MS)
-
-    return () => window.clearTimeout(t)
-  }, [collapsed, displayCollapsed, isDrawer])
-
   const [profileEditOpen, setProfileEditOpen] = useState(false)
 
   const { projectsCount, activeTasksCount, processCounts } = useSidebarCounts()
@@ -91,50 +62,37 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
     cardRef,
   } = useProfilePanel()
 
-  const handleTransitionEnd = (event: React.TransitionEvent<HTMLElement>) => {
-    if (isDrawer || event.target !== event.currentTarget || event.propertyName !== "width") return
-    notifyContentTransitionEnd()
-  }
-
-  // En drawer no hay rail compacto
-  const layoutCollapsed = isDrawer ? false : displayCollapsed
+  // Sin transition de width: cerrar ciclo visualState al instante
+  useEffect(() => {
+    if (isDrawer) return
+    if (visualState !== "moving-in" && visualState !== "moving-out") return
+    const id = requestAnimationFrame(() => notifyContentTransitionEnd())
+    return () => cancelAnimationFrame(id)
+  }, [visualState, isDrawer, notifyContentTransitionEnd])
 
   return (
     <>
       <aside
         aria-hidden={isFullyHidden}
-        onTransitionEnd={handleTransitionEnd}
-        style={{
-          width,
-          contain: "layout style paint",
-        }}
+        style={{ width }}
         className={cn(
           !isDrawer && "shrink-0",
           isDrawer && "absolute left-0 top-0 h-full w-62",
           "h-full isolate z-0 flex flex-col bg-sidebar text-sidebar-foreground select-none overflow-hidden",
-          visualState === "moving-out" || visualState === "moving-in"
-            ? "will-change-[width]"
-            : "will-change-auto",
-          !isDrawer && "transition-[width] duration-200 ease-out",
           (isDrawer && !isVisible) || isFullyHidden ? "pointer-events-none" : "",
         )}
       >
-        <div
-          className={cn(
-            "flex h-full w-full flex-col overflow-hidden pt-1.5 pb-1.5 transition-opacity duration-150 ease-out",
-            contentVisible ? "opacity-100" : "opacity-0",
-          )}
-        >
-          <SidebarHeader collapsed={layoutCollapsed} isDrawer={isDrawer} />
+        <div className="flex h-full w-full flex-col overflow-hidden pt-1.5 pb-1.5">
+          <SidebarHeader collapsed={collapsed} isDrawer={isDrawer} />
 
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <SidebarNavigation
-              collapsed={layoutCollapsed}
+              collapsed={collapsed}
               isDrawer={isDrawer}
               projectsCount={projectsCount}
               activeTasksCount={activeTasksCount}
               processCounts={processCounts}
-              presenceCollapsed={presenceCollapsed || layoutCollapsed}
+              presenceCollapsed={presenceCollapsed || collapsed}
               presenceRef={presenceRef}
               prefetchOnHover={prefetchOnHover}
             />
@@ -142,7 +100,7 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
 
           <div className="z-20 shrink-0 select-none border-t border-border/40 p-1.5">
             <SidebarProfile
-              collapsed={layoutCollapsed}
+              collapsed={collapsed}
               onEditProfile={() => setProfileEditOpen(true)}
               profileOpen={profileOpen}
               setProfileOpen={setProfileOpen}

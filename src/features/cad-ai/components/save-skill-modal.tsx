@@ -94,7 +94,6 @@ export function SaveSkillModal({
               onChange={e => setName(e.target.value)}
               placeholder="Ej: Soporte rectangular con agujeros"
               className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/70"
-              autoFocus
             />
           </div>
         </div>

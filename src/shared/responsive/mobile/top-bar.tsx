@@ -134,14 +134,13 @@ export function TopBar() {
         >
           {/* h-10 fijo: con o sin texto la altura no cambia.
               mb-2 = mismo aire que empty state (mt-2) hacia los rows. */}
-          <div className="mb-2 flex h-10 items-center gap-2 rounded-xl border border-border bg-card px-3 shadow-xs">
+          <div className="mb-2 flex h-10 items-center gap-2 rounded-xl bg-card px-3 shadow-xs">
             <Search
               size={15}
               strokeWidth={2.2}
               className="shrink-0 text-muted-foreground"
             />
             <input
-              autoFocus
               value={searchValue}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={searchPlaceholder}

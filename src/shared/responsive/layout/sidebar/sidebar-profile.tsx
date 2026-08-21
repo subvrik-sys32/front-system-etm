@@ -1,9 +1,7 @@
 "use client"
 
-import { useState, type RefObject } from "react"
-
+import { useEffect, useState, type RefObject } from "react"
 import { useRouter } from "next/navigation"
-
 import { LogOut } from "lucide-react"
 
 import { useAuthStore } from "@/features/auth/store/auth-store"
@@ -16,7 +14,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-
 import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
 import { cn } from "@/shared/utils/utils"
 
@@ -36,19 +33,6 @@ type SidebarProfileProps = {
 
 const OVERLAP = 24
 
-/**
- * Rail y expandido comparten la MISMA tarjeta (mismo padding, mismo primer
- * renglón "avatar + gap-2.5") y el mismo botón de logout con celda de icono
- * fija — por eso el avatar y el icono de salir nunca cambian de X/Y al
- * colapsar o expandir. Lo único que se desvanece es el texto: nombre,
- * correo y la palabra "Cerrar sesión".
- *
- * El mecanismo para abrir la vista previa del perfil sigue siendo distinto
- * (Popover flotante en rail; panel que se despliega hacia arriba en
- * expandido) porque dependen de refs/medidas ya cableadas en
- * useProfilePanel — pero la geometría visible de avatar/logout es idéntica
- * en ambos casos, así que el cambio entre uno y otro no se percibe como salto.
- */
 export function SidebarProfile({
   collapsed,
   onEditProfile,
@@ -70,6 +54,12 @@ export function SidebarProfile({
   const confirmLogout = () => {
     logout()
     router.replace("/login")
+  }
+
+  const handleLogoutClick = () => {
+    setProfileOpen(false)
+    useOverlayStore.getState().close()
+    setLogoutOpen(true)
   }
 
   const avatar = (
@@ -95,66 +85,55 @@ export function SidebarProfile({
     />
   )
 
-  const openLogoutDialog = () => {
-    setProfileOpen(false)
-    useOverlayStore.getState().close()
-    setLogoutOpen(true)
-  }
-
   if (collapsed) {
     return (
       <>
-        <div ref={containerRef} className="w-full">
-          <div className="relative rounded-xl border-0 bg-card px-2.5 py-2.5 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <Popover open={profileOpen} onOpenChange={setProfileOpen} modal={false}>
-                <PopoverTrigger asChild>
-                  <button
-                    onClick={toggleProfile}
-                    disabled={!canOpenProfile}
-                    className={cn(
-                      "relative size-9 shrink-0 rounded-full",
-                      !canOpenProfile && "cursor-not-allowed opacity-60",
-                    )}
-                    aria-label="Mi perfil"
-                  >
-                    {avatar}
-                    <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500" />
-                    <ProfileMentionBadge className="absolute -top-1 -right-1" />
-                  </button>
-                </PopoverTrigger>
-
-                <PopoverContent side="right" align="end" sideOffset={12} className="w-72 border-none p-0">
-                  <div ref={panelRef} className="overflow-hidden rounded-xl">
-                    <div ref={contentRef}>
-                      <ProfilePreviewPanel
-                        contentRef={contentRef}
-                        onEdit={() => {
-                          setProfileOpen(false)
-                          onEditProfile()
-                        }}
-                      />
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* Misma celda de icono (size-8) y misma fila (mt-2) que en
-                expandido: el botón de salir tampoco se mueve en X/Y. */}
-            <div className="mt-2 flex items-center gap-1">
+        {/* El contenedor principal se blinda con shrink-0 */}
+        <div ref={containerRef} className="flex w-full shrink-0 flex-col items-center gap-1.5">
+          <Popover open={profileOpen} onOpenChange={setProfileOpen} modal={false}>
+            <PopoverTrigger asChild>
               <button
-                type="button"
-                onClick={openLogoutDialog}
-                aria-label="Cerrar sesión"
-                className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+                onClick={toggleProfile}
+                disabled={!canOpenProfile}
+                className={cn(
+                  "relative size-9 shrink-0 rounded-full",
+                  !canOpenProfile && "cursor-not-allowed opacity-60",
+                )}
+                aria-label="Mi perfil"
               >
-                <LogOut className="size-4" />
+                {avatar}
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                <ProfileMentionBadge className="absolute -top-1 -right-1" />
               </button>
-            </div>
-          </div>
-        </div>
+            </PopoverTrigger>
+            <PopoverContent
+              side="right"
+              align="end"
+              sideOffset={12}
+              className="w-72 border-none p-0"
+            >
+              <div ref={panelRef} className="overflow-hidden rounded-xl">
+                <div ref={contentRef}>
+                  <ProfilePreviewPanel
+                    contentRef={contentRef}
+                    onEdit={() => {
+                      setProfileOpen(false)
+                      onEditProfile()
+                    }}
+                  />
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
 
+          <button
+            onClick={handleLogoutClick}
+            className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+            aria-label="Cerrar sesión"
+          >
+            <LogOut className="size-4" />
+          </button>
+        </div>
         {logoutDialog}
       </>
     )
@@ -162,7 +141,8 @@ export function SidebarProfile({
 
   return (
     <>
-      <div ref={containerRef} className="relative">
+      {/* Contenedor principal protegido contra compresión */}
+      <div ref={containerRef} className="relative w-full shrink-0">
         <div
           aria-hidden={!profileOpen}
           className={cn(
@@ -172,7 +152,6 @@ export function SidebarProfile({
           )}
           style={{
             height: panelHeight + OVERLAP + 30,
-            // Solapa la tarjeta: parece salir de ella
             transform: `translateY(${profileOpen ? OVERLAP : OVERLAP + 16}px)`,
           }}
         >
@@ -193,28 +172,23 @@ export function SidebarProfile({
 
         <div
           ref={cardRef}
-          className="relative z-10 rounded-xl border-0 bg-card px-2.5 py-2.5 shadow-xs"
+          className="relative z-10 w-full overflow-hidden rounded-xl border-0 bg-card px-2.5 py-2.5 shadow-xs"
         >
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={toggleProfile}
-              disabled={!canOpenProfile}
-              aria-label="Mi perfil"
-              className={cn("relative size-9 shrink-0 rounded-full", !canOpenProfile && "cursor-not-allowed opacity-60")}
-            >
+          <div className="flex w-full items-center gap-2.5">
+            {/* Avatar de tamaño fijo */}
+            <div className="relative size-9 shrink-0">
               {avatar}
               <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500" />
-              <ProfileMentionBadge className="absolute -top-1 -right-1" />
-            </button>
-
+            </div>
+            
+            {/* Contenedor fluido para texto */}
             <div className="min-w-0 flex-1">
               {user ? (
                 <>
-                  <p className="block min-w-0 truncate whitespace-nowrap overflow-hidden text-sm font-semibold leading-tight text-foreground">
+                  <p className="block w-full truncate text-sm font-semibold leading-tight text-foreground">
                     {user.name}
                   </p>
-                  <p className="block min-w-0 truncate whitespace-nowrap overflow-hidden text-[11px] leading-tight text-muted-foreground">
+                  <p className="block w-full truncate text-[11px] leading-tight text-muted-foreground">
                     {user.email}
                   </p>
                 </>
@@ -227,24 +201,30 @@ export function SidebarProfile({
             </div>
           </div>
 
-          {/* Misma celda de icono (size-8) y misma fila (mt-2) que en rail;
-              acá además se ve la etiqueta de texto. */}
-          <div className="mt-2 flex items-center gap-1">
+          <div className="mt-2 flex w-full shrink-0 items-center gap-1">
             <button
               type="button"
-              onClick={openLogoutDialog}
-              aria-label="Cerrar sesión"
-              className="flex items-center gap-1.5 rounded-md text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+              onClick={toggleProfile}
+              disabled={!canOpenProfile}
+              className={cn(
+                "flex-1 truncate rounded-md px-2 py-1 text-xs transition",
+                canOpenProfile
+                  ? "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+                  : "cursor-not-allowed text-muted-foreground/70",
+              )}
             >
-              <span className="flex size-8 shrink-0 items-center justify-center">
-                <LogOut className="size-4" />
-              </span>
-              <span className="pr-2 text-xs">Cerrar sesión</span>
+              Mi perfil
+            </button>
+            <button
+              type="button"
+              onClick={handleLogoutClick}
+              className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+            >
+              Salir
             </button>
           </div>
         </div>
       </div>
-
       {logoutDialog}
     </>
   )

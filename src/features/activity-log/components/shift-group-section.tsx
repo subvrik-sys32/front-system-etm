@@ -154,7 +154,7 @@ export function ShiftGroupSection({
       <div
         className={cn(
           "mt-3 flex flex-col gap-4",
-          fill && "min-h-0 flex-1 overflow-y-auto overscroll-contain themed-scrollbar-y",
+          fill && "min-h-0 flex-1 flex flex-col",
         )}
       >
         {group.slots.map((slot) => {

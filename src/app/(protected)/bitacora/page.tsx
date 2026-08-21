@@ -13,6 +13,7 @@ import { useAuthStore } from "@/features/auth/store/auth-store"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 type ViewMode = ActivityDepartment | "TEAM"
 
@@ -25,6 +26,7 @@ interface TabConfig {
 
 export default function BitacoraPage() {
   const queryClient = useQueryClient()
+  const { isCompact } = useResponsive()
 
   const userRoles = useAuthStore(state => state.user?.roles)
   const { has } = usePermissions()
@@ -150,15 +152,37 @@ export default function BitacoraPage() {
         Tabs mobile DENTRO → mismo paddingTop del TopBar overlay.
         Cuerpo con embedded → sin segundo scroller.
       */}
-      <section className="flex min-h-0 w-full flex-1 flex-col">
-        <AppListScroll
-        >
-          <div className="mt-2 mb-2 shrink-0 desktop:hidden">
-            <TabsNav compact />
-          </div>
-
-          {/* flex-1 min-h-0: presupuesto de altura para semana/mes */}
-          <div className="flex min-h-0 w-full flex-1 flex-col">
+      <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+        {/*
+          Compact: AppListScroll (documento).
+          Desktop/tablet landscape: shell de altura — día/semana/mes
+          llenan el viewport (min height) y cada vista scrollea sola.
+        */}
+        {isCompact ? (
+          <AppListScroll>
+            <div className="mt-2 mb-2 shrink-0">
+              <TabsNav compact />
+            </div>
+            <div className="flex min-h-0 w-full flex-1 flex-col">
+              {activeView === "PRODUCCION" && (
+                <BitacoraDepartmentPage
+                  config={BITACORA_DEPARTMENTS.PRODUCCION}
+                  embedded
+                />
+              )}
+              {activeView === "INGENIERIA" && (
+                <BitacoraDepartmentPage
+                  config={BITACORA_DEPARTMENTS.INGENIERIA}
+                  embedded
+                />
+              )}
+              {activeView === "TEAM" && (
+                <TeamActivityLogPageContent embedded />
+              )}
+            </div>
+          </AppListScroll>
+        ) : (
+          <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
             {activeView === "PRODUCCION" && (
               <BitacoraDepartmentPage
                 config={BITACORA_DEPARTMENTS.PRODUCCION}
@@ -175,7 +199,7 @@ export default function BitacoraPage() {
               <TeamActivityLogPageContent embedded />
             )}
           </div>
-        </AppListScroll>
+        )}
       </section>
     </main>
   )

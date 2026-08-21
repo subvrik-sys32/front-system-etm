@@ -89,6 +89,7 @@ export function AgendaDayView({
             group={group}
             logsBySlot={logsBySlot}
             loading={loading}
+            fill={!isCompact}
             onLogClick={onLogClick}
             onDeleteLog={onDeleteLog}
             beginDrag={beginDrag}
@@ -115,10 +116,58 @@ export function AgendaDayView({
     )
   }
 
+  // Desktop: misma idea que semana — min-h-full llena viewport vacío;
+  // minmax(min-content, 1fr) reparte franjas; un solo ScrollArea.
   return (
     <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden rounded-2xl bg-card">
       <ScrollArea className="h-full min-h-0 min-w-0 flex-1 rounded-2xl">
-        <div className="flex flex-col gap-3 p-2 pb-3">{body}</div>
+        <div className="flex min-h-full flex-col gap-3 p-2 pb-3">
+          {showAuto && (
+            <div className="shrink-0">
+              <AutoActivitySection logs={autoLogs} />
+            </div>
+          )}
+          <div
+            className="grid min-h-0 w-full flex-1 gap-3"
+            style={{
+              gridTemplateRows: `repeat(${SHIFT_GROUPS.length}, minmax(min-content, 1fr))`,
+            }}
+          >
+            {SHIFT_GROUPS.map(group => {
+              const logsBySlot: Record<string, ActivityLog[]> = {}
+              if (!loading) {
+                for (const slot of group.slots) {
+                  logsBySlot[slot.shift] = logs.filter(
+                    log => log.shift === slot.shift,
+                  )
+                }
+              }
+              return (
+                <ShiftGroupSection
+                  key={group.key}
+                  group={group}
+                  logsBySlot={logsBySlot}
+                  loading={loading}
+                  fill
+                  onLogClick={onLogClick}
+                  onDeleteLog={onDeleteLog}
+                  beginDrag={beginDrag}
+                  registerSlot={registerSlot}
+                  draggingLogId={draggingLogId}
+                  hoverShift={hoverShift}
+                  deletingLogId={deletingLogId}
+                  canCreate={canCreate}
+                  canDelete={canDelete}
+                  slotState={slotState}
+                  isLogBusy={isLogBusy}
+                  canDuplicateLog={canDuplicateLog}
+                  onEditLog={onEditLog}
+                  onDuplicateLog={onDuplicateLog}
+                />
+              )
+            })}
+          </div>
+        </div>
       </ScrollArea>
     </div>
   )

@@ -402,8 +402,8 @@ export function ActivityLogPageContent({
       <div className="mb-1 shrink-0">{toolbar}</div>
 
       {showDesktopAreaSidebar ? (
-        <div className="flex min-h-0 w-full flex-1 gap-3">
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="flex min-h-0 w-full flex-1 gap-3 overflow-hidden">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
             {mainContent}
           </div>
           <TaskAreaSidebar className="flex h-full min-h-0 w-[min(40vw,26rem)] shrink-0 flex-col overflow-hidden rounded-2xl bg-card" />

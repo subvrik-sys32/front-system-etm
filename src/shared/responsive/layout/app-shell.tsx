@@ -31,11 +31,7 @@ function DesktopTopBar() {
     <div className="relative flex h-9 shrink-0 items-center gap-1 px-3">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-12 bg-background/65 backdrop-blur-xl"
-        style={{
-          maskImage: "linear-gradient(to bottom, black 40%, transparent)",
-          WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent)",
-        }}
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-9 bg-background/80 backdrop-blur-md"
       />
       <SidebarShowButton />
       {showThemeOutside && <ThemeToggle variant="icon" />}

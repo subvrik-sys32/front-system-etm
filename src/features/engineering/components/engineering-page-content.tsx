@@ -135,9 +135,12 @@ export function EngineeringPageContent() {
     </div>
   )
 
-  // Cabecera fija (fuera del scroll). KPI + columnas scrollean juntos.
-  const scrollBody = (
+  // Un AppListScroll: toolbar + contenido (como tareas). Móvil recibe padding chrome.
+  const body = (
     <div className="flex w-full flex-col select-none">
+      <div className="mb-1 shrink-0">
+        <AdaptiveActionBar pinned={toolbar} actions={[]} />
+      </div>
       {viewMode === "processes" ? (
         <div className="flex w-full flex-col max-md:mt-2">
           <EngineeringProcessBoard
@@ -163,12 +166,10 @@ export function EngineeringPageContent() {
 
   return (
     <div className="relative flex h-full min-h-0 w-full flex-col select-none">
-      <div className="mb-1 shrink-0 px-0">
-        <AdaptiveActionBar pinned={toolbar} actions={[]} />
-      </div>
-      <AppListScroll className="min-h-0 flex-1">
-        {scrollBody}
+      <AppListScroll>
+        {body}
       </AppListScroll>
+
 
       <EngineeringTaskDialog
         open={dialogOpen}

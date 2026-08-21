@@ -54,7 +54,7 @@ export function ProductionProcessCard({
 
   return (
 
-    <div className="overflow-hidden rounded-2xl">
+    <div className="rounded-2xl">
 
       <button
         type="button"

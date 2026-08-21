@@ -156,7 +156,7 @@ function ProjectMobileCardReady({
   const statusInk = useDomainInk(project.status.color)
 
   return (
-    <div className={cn("@container/prow overflow-hidden rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
+    <div className={cn("@container/prow rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
       <div className="flex items-center gap-1 px-1">
         <DragCell hidden={!isManualMode} />
 
@@ -203,7 +203,7 @@ function ProjectMobileCardReady({
             {/* Mobile: cliente · iconos etapa/estado · PM | md+: cliente · PM */}
             <div
               className={cn(
-                "mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden text-xs transition-all duration-200",
+                "mt-0.5 flex min-w-0 items-center gap-1.5 text-xs transition-all duration-200",
                 expanded
                   ? "max-h-0 opacity-0"
                   : "max-h-5 opacity-100",
@@ -355,7 +355,7 @@ function ProjectMobileCardReady({
             onClick={() => setShowFields(true)}
             className="flex w-full items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2.5 transition hover:bg-foreground/5"
           >
-            <span className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-sm text-muted-foreground">
+            <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground">
               <span
                 className="size-1.5 shrink-0 rounded-full"
                 style={{ backgroundColor: project.client.color }}

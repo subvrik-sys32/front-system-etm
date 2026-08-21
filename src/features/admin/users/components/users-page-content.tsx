@@ -268,7 +268,7 @@ export function UsersPageContent() {
     <div
       className={cn(
         "flex h-full min-h-0 w-full flex-col",
-        isMobile ? "" : "overflow-hidden",
+        "",
       )}
     >
       {!isMobile && searchToolbar}
@@ -276,7 +276,7 @@ export function UsersPageContent() {
       <div
         className={cn(
           "flex min-h-0 flex-1 gap-4",
-          isMobile ? "flex-col" : "overflow-hidden",
+          isMobile ? "flex-col" : "",
         )}
       >
         {isMobile && (

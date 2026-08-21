@@ -426,7 +426,7 @@ export function TaskProductionPanel({
               onClick={() => setExpanded(true)}
               className="flex w-full items-center gap-3 rounded-2xl p-3 text-left transition hover:brightness-110 tablet:gap-4 tablet:p-4"
               style={{
-                background: getGlassSurface(status?.color ?? "#64748B").background,
+                background: getGlassSurface(status?.color ?? "#64748B", theme).background,
               }}
             >
 
@@ -477,7 +477,7 @@ export function TaskProductionPanel({
           <div
             className="flex w-full flex-col gap-6 rounded-2xl p-4 tablet:p-5"
             style={{
-              background: getGlassSurface(status?.color ?? "#64748B").background,
+              background: getGlassSurface(status?.color ?? "#64748B", theme).background,
             }}
           >
 

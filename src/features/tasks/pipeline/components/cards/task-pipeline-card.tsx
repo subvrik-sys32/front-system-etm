@@ -96,7 +96,7 @@ export function TaskPipelineCard({
       >
         <div
           className={cn(
-            "overflow-hidden rounded-xl transition duration-200 ease-out",
+            "rounded-xl transition duration-200 ease-out",
             expanded && "shadow-xs",
             longPressEnabled &&
               pressed &&

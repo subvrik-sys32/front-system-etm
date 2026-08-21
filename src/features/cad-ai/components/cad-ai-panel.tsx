@@ -247,7 +247,7 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
         </div>
       )}
 
-      <div className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <div className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col">
         {error && (
           <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
             <span className="truncate">{error}</span>
@@ -269,7 +269,7 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
         )}
 
         {!isCompact ? (
-          <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 overflow-hidden p-2">
+          <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 p-2">
             {/* Contenedor del visor CAD unificado con shadow-xs */}
             <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-muted/30 shadow-xs backdrop-blur-[2px]">
               {loading && (

@@ -1,0 +1,301 @@
+diff --git a/src/features/admin/users/components/users-page-content.tsx b/src/features/admin/users/components/users-page-content.tsx
+index 86f2e41..c3b6fc2 100644
+--- a/src/features/admin/users/components/users-page-content.tsx
++++ b/src/features/admin/users/components/users-page-content.tsx
+@@ -268,7 +268,7 @@ export function UsersPageContent() {
+     <div
+       className={cn(
+         "flex h-full min-h-0 w-full flex-col",
+-        isMobile ? "" : "overflow-hidden",
++        "",
+       )}
+     >
+       {!isMobile && searchToolbar}
+@@ -276,7 +276,7 @@ export function UsersPageContent() {
+       <div
+         className={cn(
+           "flex min-h-0 flex-1 gap-4",
+-          isMobile ? "flex-col" : "overflow-hidden",
++          isMobile ? "flex-col" : "",
+         )}
+       >
+         {isMobile && (
+diff --git a/src/features/cad-ai/components/cad-ai-panel.tsx b/src/features/cad-ai/components/cad-ai-panel.tsx
+index 4428995..8b8254a 100644
+--- a/src/features/cad-ai/components/cad-ai-panel.tsx
++++ b/src/features/cad-ai/components/cad-ai-panel.tsx
+@@ -247,7 +247,7 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
+         </div>
+       )}
+ 
+-      <div className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
++      <div className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col">
+         {error && (
+           <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
+             <span className="truncate">{error}</span>
+@@ -269,7 +269,7 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
+         )}
+ 
+         {!isCompact ? (
+-          <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 overflow-hidden p-2">
++          <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 p-2">
+             {/* Contenedor del visor CAD unificado con shadow-xs */}
+             <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-muted/30 shadow-xs backdrop-blur-[2px]">
+               {loading && (
+diff --git a/src/features/engineering/components/engineering-page-content.tsx b/src/features/engineering/components/engineering-page-content.tsx
+index 5986081..03b1377 100644
+--- a/src/features/engineering/components/engineering-page-content.tsx
++++ b/src/features/engineering/components/engineering-page-content.tsx
+@@ -135,9 +135,12 @@ export function EngineeringPageContent() {
+     </div>
+   )
+ 
+-  // Cabecera fija (fuera del scroll). KPI + columnas scrollean juntos.
+-  const scrollBody = (
++  // Un AppListScroll: toolbar + contenido (como tareas). Móvil recibe padding chrome.
++  const body = (
+     <div className="flex w-full flex-col select-none">
++      <div className="mb-1 shrink-0">
++        <AdaptiveActionBar pinned={toolbar} actions={[]} />
++      </div>
+       {viewMode === "processes" ? (
+         <div className="flex w-full flex-col max-md:mt-2">
+           <EngineeringProcessBoard
+@@ -163,13 +166,11 @@ export function EngineeringPageContent() {
+ 
+   return (
+     <div className="relative flex h-full min-h-0 w-full flex-col select-none">
+-      <div className="mb-1 shrink-0 px-0">
+-        <AdaptiveActionBar pinned={toolbar} actions={[]} />
+-      </div>
+-      <AppListScroll className="min-h-0 flex-1">
+-        {scrollBody}
++      <AppListScroll>
++        {body}
+       </AppListScroll>
+ 
++
+       <EngineeringTaskDialog
+         open={dialogOpen}
+         onClose={() => setDialogOpen(false)}
+diff --git a/src/features/nesting/components/nesting-page.tsx b/src/features/nesting/components/nesting-page.tsx
+index 145664e..03af76d 100644
+--- a/src/features/nesting/components/nesting-page.tsx
++++ b/src/features/nesting/components/nesting-page.tsx
+@@ -713,15 +713,15 @@ export function NestingPage() {
+ 
+       {/* —— Desktop: sidebar + canvas —— */}
+       {!isCompact && (
+-        <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 overflow-hidden">
++        <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3">
+           <aside className="flex h-full min-h-0 w-80 shrink-0 flex-col overflow-hidden rounded-2xl bg-muted p-3 shadow-xs dark:bg-foreground/5">
+             {panel}
+           </aside>
+           <div
+             className={
+               project.sheetGroups.length > 0
+-                ? "flex h-full min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-hidden"
+-                : "flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
++                ? "flex h-full min-h-0 min-w-0 flex-1 flex-col gap-2"
++                : "flex h-full min-h-0 min-w-0 flex-1 flex-col"
+             }
+           >
+             {project.sheetGroups.length > 0 && (
+diff --git a/src/features/processes/components/production-hub/production-process-card.tsx b/src/features/processes/components/production-hub/production-process-card.tsx
+index b32ef3d..12d89ae 100644
+--- a/src/features/processes/components/production-hub/production-process-card.tsx
++++ b/src/features/processes/components/production-hub/production-process-card.tsx
+@@ -54,7 +54,7 @@ export function ProductionProcessCard({
+ 
+   return (
+ 
+-    <div className="overflow-hidden rounded-2xl">
++    <div className="rounded-2xl">
+ 
+       <button
+         type="button"
+diff --git a/src/features/processes/table/process-mobile-card.tsx b/src/features/processes/table/process-mobile-card.tsx
+index 385a4ed..89b61f7 100644
+--- a/src/features/processes/table/process-mobile-card.tsx
++++ b/src/features/processes/table/process-mobile-card.tsx
+@@ -149,7 +149,7 @@ function ProcessMobileCardReady({
+   const isDimmed = isCompleted || (dimOthers && !expanded)
+ 
+   return (
+-    <div className={cn("@container/prow overflow-hidden rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
++    <div className={cn("@container/prow rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
+       <div className="flex items-center gap-1 px-1">
+         <div
+           role="button"
+@@ -216,7 +216,7 @@ function ProcessMobileCardReady({
+             {/* Mobile: cliente · iconos prio/estado · operario | md+: cliente · operario */}
+             <div
+               className={cn(
+-                "mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden text-xs transition-all duration-200",
++                "mt-0.5 flex min-w-0 items-center gap-1.5 text-xs transition-all duration-200",
+                 expanded
+                   ? "max-h-0 opacity-0"
+                   : "max-h-5 opacity-100",
+@@ -249,7 +249,7 @@ function ProcessMobileCardReady({
+               </span>
+ 
+               <span className="shrink-0 text-muted-foreground/80">·</span>
+-              <span className="flex min-w-0 items-center gap-1 overflow-hidden">
++              <span className="flex min-w-0 items-center gap-1">
+                 <span className="md:hidden">
+                   <EntityIconBadge
+                     icon={operator?.icon}
+@@ -365,7 +365,7 @@ function ProcessMobileCardReady({
+             onClick={() => setShowFields(true)}
+             className="flex w-full items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2.5 transition hover:bg-foreground/5"
+           >
+-            <span className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-sm text-muted-foreground">
++            <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground">
+               <span
+                 className="size-1.5 shrink-0 rounded-full"
+                 style={{ backgroundColor: project.client.color }}
+diff --git a/src/features/projects/table/project-mobile-card.tsx b/src/features/projects/table/project-mobile-card.tsx
+index 4b25442..8c963fb 100644
+--- a/src/features/projects/table/project-mobile-card.tsx
++++ b/src/features/projects/table/project-mobile-card.tsx
+@@ -156,7 +156,7 @@ function ProjectMobileCardReady({
+   const statusInk = useDomainInk(project.status.color)
+ 
+   return (
+-    <div className={cn("@container/prow overflow-hidden rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
++    <div className={cn("@container/prow rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
+       <div className="flex items-center gap-1 px-1">
+         <DragCell hidden={!isManualMode} />
+ 
+@@ -203,7 +203,7 @@ function ProjectMobileCardReady({
+             {/* Mobile: cliente · iconos etapa/estado · PM | md+: cliente · PM */}
+             <div
+               className={cn(
+-                "mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden text-xs transition-all duration-200",
++                "mt-0.5 flex min-w-0 items-center gap-1.5 text-xs transition-all duration-200",
+                 expanded
+                   ? "max-h-0 opacity-0"
+                   : "max-h-5 opacity-100",
+@@ -355,7 +355,7 @@ function ProjectMobileCardReady({
+             onClick={() => setShowFields(true)}
+             className="flex w-full items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2.5 transition hover:bg-foreground/5"
+           >
+-            <span className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-sm text-muted-foreground">
++            <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground">
+               <span
+                 className="size-1.5 shrink-0 rounded-full"
+                 style={{ backgroundColor: project.client.color }}
+diff --git a/src/features/roles/components/role-permissions-page-content.tsx b/src/features/roles/components/role-permissions-page-content.tsx
+index 59e77c1..d511f9d 100644
+--- a/src/features/roles/components/role-permissions-page-content.tsx
++++ b/src/features/roles/components/role-permissions-page-content.tsx
+@@ -279,7 +279,7 @@ export function RolePermissionsPageContent() {
+     <div
+       className={cn(
+         "flex h-full min-h-0 w-full flex-col",
+-        isMobile ? "" : "overflow-hidden",
++        "",
+       )}
+     >
+       {!isMobile && searchToolbar}
+@@ -287,7 +287,7 @@ export function RolePermissionsPageContent() {
+       <div
+         className={cn(
+           "flex min-h-0 flex-1 gap-4",
+-          isMobile ? "flex-col" : "overflow-hidden"
++          isMobile ? "flex-col" : ""
+         )}
+       >
+         {/* PANEL IZQUIERDO: ROLES o USUARIOS */}
+diff --git a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+index ed17b2e..5bfcbbc 100644
+--- a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
++++ b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+@@ -426,7 +426,7 @@ export function TaskProductionPanel({
+               onClick={() => setExpanded(true)}
+               className="flex w-full items-center gap-3 rounded-2xl p-3 text-left transition hover:brightness-110 tablet:gap-4 tablet:p-4"
+               style={{
+-                background: getGlassSurface(status?.color ?? "#64748B").background,
++                background: getGlassSurface(status?.color ?? "#64748B", theme).background,
+               }}
+             >
+ 
+@@ -477,7 +477,7 @@ export function TaskProductionPanel({
+           <div
+             className="flex w-full flex-col gap-6 rounded-2xl p-4 tablet:p-5"
+             style={{
+-              background: getGlassSurface(status?.color ?? "#64748B").background,
++              background: getGlassSurface(status?.color ?? "#64748B", theme).background,
+             }}
+           >
+ 
+diff --git a/src/features/tasks/pipeline/components/cards/task-pipeline-card.tsx b/src/features/tasks/pipeline/components/cards/task-pipeline-card.tsx
+index 441d934..b660e04 100644
+--- a/src/features/tasks/pipeline/components/cards/task-pipeline-card.tsx
++++ b/src/features/tasks/pipeline/components/cards/task-pipeline-card.tsx
+@@ -96,7 +96,7 @@ export function TaskPipelineCard({
+       >
+         <div
+           className={cn(
+-            "overflow-hidden rounded-xl transition duration-200 ease-out",
++            "rounded-xl transition duration-200 ease-out",
+             expanded && "shadow-xs",
+             longPressEnabled &&
+               pressed &&
+diff --git a/src/features/tasks/table/task-mobile-card.tsx b/src/features/tasks/table/task-mobile-card.tsx
+index bd9ead5..0980637 100644
+--- a/src/features/tasks/table/task-mobile-card.tsx
++++ b/src/features/tasks/table/task-mobile-card.tsx
+@@ -155,7 +155,7 @@ function TaskMobileCardReady({
+   const isDimmed = isCompleted || (dimOthers && !expanded)
+ 
+   return (
+-    <div className={cn("@container/trow overflow-hidden rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
++    <div className={cn("@container/trow rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
+       <div className="flex items-center gap-1 px-1">
+         <DragCell hidden={!isManualMode} />
+ 
+@@ -248,7 +248,7 @@ function TaskMobileCardReady({
+             {/* Mobile: cliente · iconos · prioridad | md+: cliente · prioridad (cliente y PM/prioridad se quedan abajo) */}
+             <div
+               className={cn(
+-                "mt-0.5 flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden text-xs transition-all duration-200",
++                "mt-0.5 flex min-w-0 max-w-full items-center gap-1.5 text-xs transition-all duration-200",
+                 expanded
+                   ? "max-h-0 opacity-0"
+                   : "max-h-5 opacity-100",
+@@ -280,7 +280,7 @@ function TaskMobileCardReady({
+               </span>
+ 
+               <span className="shrink-0 text-muted-foreground/80">·</span>
+-              <span className="flex min-w-0 items-center gap-1 overflow-hidden">
++              <span className="flex min-w-0 items-center gap-1">
+                 <span className="md:hidden">
+                   {task.priority.icon ? (
+                     <EntityIconBadge
+@@ -394,7 +394,7 @@ function TaskMobileCardReady({
+             className="flex w-full items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2.5 transition hover:bg-foreground/5"
+           >
+             {/* Datos colapsados ADENTRO (CON ICONO/INICIAL DE PRIORIDAD en lugar de nombre) */}
+-            <span className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-sm text-muted-foreground">
++            <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground">
+               <span
+                 className="size-1.5 shrink-0 rounded-full"
+                 style={{ backgroundColor: task.project.client.color }}
+diff --git a/src/shared/responsive/layout/app-shell.tsx b/src/shared/responsive/layout/app-shell.tsx
+index f492668..4fb9650 100644
+--- a/src/shared/responsive/layout/app-shell.tsx
++++ b/src/shared/responsive/layout/app-shell.tsx
+@@ -31,11 +31,7 @@ function DesktopTopBar() {
+     <div className="relative flex h-9 shrink-0 items-center gap-1 px-3">
+       <div
+         aria-hidden
+-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-12 bg-background/65 backdrop-blur-xl"
+-        style={{
+-          maskImage: "linear-gradient(to bottom, black 40%, transparent)",
+-          WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent)",
+-        }}
++        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-9 bg-background/80 backdrop-blur-md"
+       />
+       <SidebarShowButton />
+       {showThemeOutside && <ThemeToggle variant="icon" />}

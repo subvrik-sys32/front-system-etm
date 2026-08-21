@@ -3,6 +3,10 @@
 import { useState, useCallback, useRef } from "react"
 import { Loader2, Layers, SlidersHorizontal } from "lucide-react"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import {
+  TOP_BAR_HEIGHT_PX,
+  DESKTOP_TOP_BAR_HEIGHT_PX,
+} from "@/shared/responsive/layout/chrome-constants"
 import { cn } from "@/shared/utils/utils"
 import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
@@ -174,7 +178,14 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
             </div>
           )}
 
-          <div className="flex shrink-0 px-4 py-3">
+          <div
+            className="flex shrink-0 px-4 py-3"
+            style={{
+              paddingTop: isMobile
+                ? TOP_BAR_HEIGHT_PX + 12
+                : DESKTOP_TOP_BAR_HEIGHT_PX + 12,
+            }}
+          >
             <button
               type="button"
               aria-label="Skills"

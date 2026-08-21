@@ -21,6 +21,7 @@ import {
 
 import { PermissionGroup } from "./permissions/permission-group"
 import { PermissionsModeTabs, type PermissionsMode } from "./permissions-mode-tabs"
+import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
 import { UserDialog } from "@/features/admin/users/components/dialog/user-dialog"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
@@ -262,6 +263,12 @@ export function RolePermissionsPageContent() {
   // en Usuarios. Ahora se manda como primer hijo de cada
   // AppListScroll; para desktop se sigue mostrando afuera, ya que ahí
   // no hay TopBar flotante.
+  usePageToolbar(
+    isMobile ? null : (
+      <PermissionsModeTabs mode={mode} onChange={handleModeChange} />
+    ),
+  )
+
   const searchToolbar = (
     <div className={cn("mb-1 shrink-0", isMobile && "mt-2")}>
       <EntityToolbar
@@ -270,7 +277,7 @@ export function RolePermissionsPageContent() {
             <EntityToolbarSearch value={search} onChange={setSearch} />
           </div>
         }
-        right={<PermissionsModeTabs mode={mode} onChange={handleModeChange} />}
+        right={null}
       />
     </div>
   )

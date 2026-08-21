@@ -4,12 +4,8 @@ import { useMemo, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 
 import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
-import { AdaptiveActionBar } from "@/shared/responsive/adaptative/adaptive-action-bar"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
-import {
-  TOP_BAR_HEIGHT_PX,
-  BOTTOM_NAV_HEIGHT_PX,
-} from "@/shared/responsive/layout/chrome-constants"
+import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
 import { cn } from "@/shared/utils/utils"
 
 import { ContextPicker } from "@/features/tasks/components/context-picker"
@@ -102,25 +98,30 @@ export function EngineeringPageContent() {
     setDialogOpen(true)
   }
 
-  const toolbar = (
-    <div className="w-full shrink-0 select-none rounded-2xl bg-surface p-2 tablet:p-4">
-      <div className="flex flex-col gap-2 tablet:hidden">
+  const { isMobile } = useResponsive()
+
+  // Desktop: toggle en topbar (como tabs de departamento en bitácora).
+  usePageToolbar(isMobile ? null : <EngineeringViewToggle />)
+
+  // Secundaria: picker centrado + contador — layout tipo bitácora (Día/fecha/entradas).
+  const secondaryBar = (
+    <div className="flex w-full shrink-0 select-none flex-col gap-2">
+      {/* Mobile: toggle + badge en la misma fila; picker debajo */}
+      <div className="flex items-center gap-1.5 tablet:hidden">
+        <EngineeringViewToggle />
+        <div className="min-w-0 flex-1" />
+        <EntryCountBadge count={tasks.length} compact />
+      </div>
+      <div className="tablet:hidden">
         <ContextPicker
           mode="projects"
           value={{ projectId, taskId: "" }}
           onChange={v => setProjectId(v.projectId)}
         />
-        <div className="flex items-center gap-1.5">
-          <EngineeringViewToggle />
-          <div className="min-w-0 flex-1" />
-          <EntryCountBadge count={tasks.length} compact />
-        </div>
       </div>
-
+      {/* Tablet+: picker centro + badge derecha (toggle ya está en topbar) */}
       <div className="hidden tablet:grid tablet:grid-cols-[1fr_auto_1fr] tablet:items-center tablet:gap-4">
-        <div className="justify-self-start">
-          <EngineeringViewToggle />
-        </div>
+        <div />
         <div className="justify-self-center">
           <ContextPicker
             mode="projects"
@@ -135,12 +136,9 @@ export function EngineeringPageContent() {
     </div>
   )
 
-  // Un AppListScroll: toolbar + contenido (como tareas). Móvil recibe padding chrome.
   const body = (
     <div className="flex w-full flex-col select-none">
-      <div className="mb-1 shrink-0">
-        <AdaptiveActionBar pinned={toolbar} actions={[]} />
-      </div>
+      <div className="mb-1 shrink-0">{secondaryBar}</div>
       {viewMode === "processes" ? (
         <div className="flex w-full flex-col max-md:mt-2">
           <EngineeringProcessBoard

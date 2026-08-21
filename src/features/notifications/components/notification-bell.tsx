@@ -123,7 +123,8 @@ export function NotificationBell({
         >
           <Bell size={16} strokeWidth={2} />
           {count > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground text-[10px]">
+            /* --- AQUÍ CAMBIÓ LA BURBUJA (bg-sidebar-primary y text-sidebar-primary-foreground para igualar al sidebar) --- */
+            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-sidebar-primary font-semibold text-sidebar-primary-foreground text-[10px]">
               {count > 9 ? "9+" : count}
             </span>
           )}
@@ -135,7 +136,7 @@ export function NotificationBell({
       <button
         type="button"
         title={collapsed ? "Notificaciones" : undefined}
-        className="w-full text-left"
+        className="w-full text-left transition-colors lg:active:bg-foreground/5 rounded-lg"
       >
         <SidebarRow
           icon={Bell}
@@ -143,8 +144,6 @@ export function NotificationBell({
           collapsed={collapsed}
           active={open}
           count={count > 0 ? (count > 9 ? "9+" : count) : undefined}
-          collapsedBadgeColor="bg-primary text-primary-foreground"
-          badgeColor="bg-primary text-primary-foreground"
           badgeAnimated={count > 0}
         />
       </button>
@@ -158,18 +157,13 @@ export function NotificationBell({
           type="button"
           onClick={() => markAllAsRead()}
           disabled={loading || visibleNotifications.length === 0}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-cyan-700 dark:hover:text-primary disabled:cursor-not-allowed disabled:text-muted-foreground/70 disabled:hover:bg-transparent"
+          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground disabled:cursor-not-allowed disabled:text-muted-foreground/70 disabled:hover:bg-transparent"
         >
           <Eraser size={13} />
           Limpiar
         </button>
       </div>
 
-      {/*
-        Una sola caja de altura: la define el estado vacío (sizer).
-        Loading y lista se pintan en el mismo rectángulo (absolute inset-0).
-        Sin h-52 / max-h-96 / números mágicos.
-      */}
       <div className="relative min-h-0 w-full flex-1">
         <div
           className="invisible flex flex-col items-center justify-center gap-2 px-2 py-14 text-center"
@@ -213,13 +207,11 @@ export function NotificationBell({
                   onCancelConfirm={() => setConfirmingId(null)}
                 />
               ))}
-
             </div>
           )}
         </ScrollArea>
       </div>
 
-      {/* Footer: misma altura siempre (una sola fila de acción) */}
       <div className="flex h-10 shrink-0 items-center justify-center p-2 select-none">
         {notifications.length === 0 && !loading ? (
           <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">

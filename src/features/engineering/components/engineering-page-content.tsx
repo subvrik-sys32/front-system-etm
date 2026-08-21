@@ -53,7 +53,6 @@ function EntryCountBadge({
 
 export function EngineeringPageContent() {
   const queryClient = useQueryClient()
-  const { isMobile } = useResponsive()
   const viewMode = useEngineeringViewStore(s => s.viewMode)
 
   const { users } = useUsersDirectory()
@@ -81,8 +80,6 @@ export function EngineeringPageContent() {
     () => (users as User[]).filter(isEngineeringUser),
     [users],
   )
-
-  const fillHeight = viewMode === "processes"
 
   function openCreate(opts?: {
     processCode?: EngineeringProcessCode
@@ -138,23 +135,12 @@ export function EngineeringPageContent() {
     </div>
   )
 
-  const body = (
-    <div
-      className={
-        fillHeight
-          ? "flex min-h-0 w-full flex-1 flex-col select-none"
-          : "flex w-full flex-col select-none"
-      }
-    >
-      <div className="mb-1 shrink-0">
-        <AdaptiveActionBar
-          pinned={toolbar}
-          actions={[]}
-        />
-      </div>
-
+  // Cabecera fija (fuera del scroll) = estilo bitácora.
+  // Dentro del scroller: KPI sticky + grid/lista scrollean juntos.
+  const scrollBody = (
+    <div className="flex w-full flex-col select-none">
       {viewMode === "processes" ? (
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden max-md:mt-2">
+        <div className="flex w-full flex-col max-md:mt-2">
           <EngineeringProcessBoard
             tasks={tasks}
             loading={loading}
@@ -176,32 +162,14 @@ export function EngineeringPageContent() {
     </div>
   )
 
-  // Vista procesos: el board es dueño del scroll (desktop y mobile).
-  // AppListScroll rompe el snap horizontal y el alto en mobile.
-  const useListScroll = viewMode !== "processes"
-
   return (
     <div className="relative flex h-full min-h-0 w-full flex-col select-none overflow-hidden">
-      {useListScroll ? (
-        <AppListScroll
-        >
-          {body}
-        </AppListScroll>
-      ) : (
-        <div
-          className="flex min-h-0 flex-1 flex-col overflow-hidden"
-          style={
-            isMobile
-              ? {
-                  paddingTop: TOP_BAR_HEIGHT_PX,
-                  paddingBottom: `calc(${BOTTOM_NAV_HEIGHT_PX}px + env(safe-area-inset-bottom, 0px))`,
-                }
-              : undefined
-          }
-        >
-          {body}
-        </div>
-      )}
+      <div className="mb-1 shrink-0 px-0">
+        <AdaptiveActionBar pinned={toolbar} actions={[]} />
+      </div>
+      <AppListScroll className="min-h-0 flex-1">
+        {scrollBody}
+      </AppListScroll>
 
       <EngineeringTaskDialog
         open={dialogOpen}

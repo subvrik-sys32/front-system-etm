@@ -4,7 +4,6 @@ import { useMemo } from "react"
 import { Plus } from "lucide-react"
 
 import { EntityChip } from "@/shared/ui/entity-chip/entity-chip"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/shared/utils/utils"
 
 import {
@@ -99,18 +98,17 @@ export function EngineeringProcessBoard({
   return (
     <div
       className={cn(
-        "flex h-full min-h-0 w-full flex-1 flex-col transition-opacity duration-200",
+        "flex w-full flex-col transition-opacity duration-200",
         loading && "pointer-events-none select-none opacity-60 animate-pulse"
       )}
     >
-      {/* Header de KPIs */}
-      <div className="mb-4 shrink-0">
+      {/* KPI sticky respecto al scroller de página (AppListScroll). */}
+      <div className="sticky top-0 z-10 mb-4 shrink-0 bg-background/80 py-1 backdrop-blur-md">
         <EngineeringKpiHeader tasks={tasks} />
       </div>
 
-      {/* Grid de Procesos */}
-      <ScrollArea className="min-h-0 flex-1 pr-1">
-        <div className="grid grid-cols-1 gap-3 pb-4 xl:grid-cols-2">
+      {/* Grid: altura natural → scrollea junto con el resto de la página. */}
+      <div className="grid grid-cols-1 gap-3 pb-4 xl:grid-cols-2">
           {ENGINEERING_PROCESS_ORDER.map(code => {
             const colTasks = byProcess.get(code) ?? []
 
@@ -167,7 +165,6 @@ export function EngineeringProcessBoard({
             )
           })}
         </div>
-      </ScrollArea>
     </div>
   )
 }

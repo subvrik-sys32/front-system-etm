@@ -25,13 +25,9 @@ type Props = {
 }
 
 function DesktopTopBar() {
-  const mode = useSidebarStore(state => state.mode)
   const title = usePageTitleStore(s => s.title)
   const actions = usePageActionsStore(s => s.actions)
   const toolbar = usePageToolbarStore(s => s.toolbar)
-  // Compacta o cerrada → theme fuera (junto al ojo cuando aplica).
-  // Expandida → theme vive en el header del sidebar.
-  const showThemeOutside = mode === "collapsed" || mode === "closed"
 
   // Overlay como mobile: contenido scrollea debajo con blur.
   return (
@@ -54,8 +50,8 @@ function DesktopTopBar() {
       />
       <div className="pointer-events-auto flex min-w-0 flex-1 items-center gap-2">
         <SidebarShowButton />
-        {/* Theme antes del título de página cuando el sidebar está compacto/cerrado */}
-        {showThemeOutside && <ThemeToggle variant="icon" />}
+        {/* Theme siempre en topbar (no en sidebar). */}
+        <ThemeToggle variant="icon" />
         <div className="min-w-0 shrink-0">
           {title ? (
             <div
@@ -76,7 +72,9 @@ function DesktopTopBar() {
           <div className="min-w-0 flex-1" />
         )}
         {actions ? (
-          <div className="flex shrink-0 items-center gap-1.5 overflow-visible py-1.5">{actions}</div>
+          <div className="flex shrink-0 items-center gap-1.5 overflow-visible py-1.5">
+            {actions}
+          </div>
         ) : null}
       </div>
     </header>

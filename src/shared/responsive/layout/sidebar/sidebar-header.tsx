@@ -4,7 +4,10 @@ import Image from "next/image"
 
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
-import { ThemeToggle } from "@/shared/theme/theme-toggle"
+import {
+  TOOLBAR_CHROME_ICON_BTN,
+  TOOLBAR_CHROME_ICON_SIZE,
+} from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { cn } from "@/shared/utils/utils"
 
 type Props = {
@@ -13,14 +16,11 @@ type Props = {
 }
 
 /**
- * Header del sidebar — densidad alta.
- *
- * Máquina de layout (desktop): un solo control = logo ETM
- *   open → collapsed → closed  (advanceLayoutMode)
- * Reabrir desde closed: logo en DesktopTopBar (SidebarShowButton).
- *
- * Sin iconos PanelLeftClose / EyeOff (ahorro de fila y de ruido).
- * Theme solo cuando hay ancho (open / drawer).
+ * Header del sidebar.
+ * - Logo = mismo chrome del topbar (círculo size-8, bg-chrome).
+ * - Layout open: [logo | marca] en fila (sin caja extra que tape el blur).
+ * - Theme vive siempre en DesktopTopBar (no aquí).
+ * - Logo avanza la máquina open → collapsed → closed.
  */
 export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
   const advanceLayoutMode = useSidebarStore(s => s.advanceLayoutMode)
@@ -46,17 +46,13 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
       onClick={onLogoClick}
       title={logoTitle}
       aria-label={logoTitle}
-      className={cn(
-        "relative flex size-9 shrink-0 items-center justify-center rounded-xl",
-        "transition-colors hover:bg-foreground/10 active:bg-foreground/15",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-      )}
+      className={cn(TOOLBAR_CHROME_ICON_BTN, "shrink-0")}
     >
       <Image
         src="/icon.svg"
         alt="ETM SAC"
-        width={32}
-        height={32}
+        width={TOOLBAR_CHROME_ICON_SIZE + 4}
+        height={TOOLBAR_CHROME_ICON_SIZE + 4}
         priority
         draggable={false}
         className="select-none object-contain"
@@ -64,7 +60,7 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
     </button>
   )
 
-  // —— Collapsed (rail de iconos): solo logo ——
+  // Rail colapsado: solo logo chrome
   if (collapsed && !isDrawer) {
     return (
       <div className="flex w-full shrink-0 justify-center px-2 pb-2 pt-3">
@@ -73,26 +69,23 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
     )
   }
 
-  // —— Open / drawer: logo + marca + theme ——
+  // Open / drawer: logo + letras en horizontal (sin card / sin fondo extra)
   return (
     <div
       className={cn(
-        "flex w-full shrink-0 flex-col items-center gap-2",
+        "flex w-full shrink-0 items-center gap-2.5",
         isDrawer ? "px-4 pb-3 pt-4" : "px-3 pb-2 pt-3",
       )}
     >
       {logoButton}
-
-      <div className="flex flex-col items-center gap-0.5 text-center">
-        <h1 className="text-sm font-semibold leading-tight tracking-tight text-primary dark:text-white">
+      <div className="min-w-0 flex-1 leading-tight">
+        <p className="truncate text-sm font-semibold text-primary dark:text-white">
           COMPANY S.A.C.
-        </h1>
-        <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary/70 dark:text-white/70">
+        </p>
+        <p className="truncate text-[10px] font-medium uppercase tracking-[0.12em] text-primary/70 dark:text-white/70">
           ERP Industrial
         </p>
       </div>
-
-      <ThemeToggle variant="icon" />
     </div>
   )
 }

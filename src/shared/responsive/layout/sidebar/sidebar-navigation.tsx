@@ -15,8 +15,6 @@ import { MessageBell } from "@/features/comments/components/message-bell"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { ThemeToggle } from "@/shared/theme"
-
 import type { ProcessCounts } from "../hooks/use-sidebar-counts"
 
 type SidebarNavigationProps = {

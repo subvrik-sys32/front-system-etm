@@ -808,7 +808,7 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
     dr.entities = null
   }
 
-  const handlePointerLeave = (e: React.MouseEvent) => {
+  const handlePointerLeave = (e: React.PointerEvent<HTMLCanvasElement>) => {
     mouseRef.current = null
     snapRef.current = null
     needsRedrawRef.current = true
@@ -1021,7 +1021,7 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
+          onPointerLeave={handlePointerLeave}
           onDoubleClick={handleDoubleClick}
           className={cursor}
           style={{ display: "block", width: "100%", height: "100%", touchAction: "none" }}

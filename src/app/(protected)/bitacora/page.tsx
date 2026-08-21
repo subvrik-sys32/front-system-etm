@@ -130,20 +130,9 @@ export default function BitacoraPage() {
 
   return (
     <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
-      {/* Desktop: chrome de página en flujo del shell (no overlay) */}
-      <header className="mb-1 hidden min-h-10 shrink-0 flex-wrap items-center justify-between gap-2 desktop:flex">
-        <div className="flex min-h-10 min-w-0 flex-1 items-center gap-2">
-          <h1 className="shrink-0 text-2xl font-bold tracking-widest">
-            BITÁCORA
-          </h1>
-          <span className="h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
-          <p className="min-w-0 truncate text-sm text-muted-foreground">
-            Control y registro de actividades
-          </p>
-        </div>
-        <div className="shrink-0">
-          <TabsNav compact={false} />
-        </div>
+      {/* Título en DesktopTopBar (pill). Aquí solo tabs de departamento. */}
+      <header className="mb-1 hidden min-h-10 shrink-0 items-center justify-end gap-2 desktop:flex">
+        <TabsNav compact={false} />
       </header>
 
       {/*

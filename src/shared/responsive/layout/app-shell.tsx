@@ -11,6 +11,7 @@ import { useSidebarStore } from "@/shared/stores/sidebar-store"
 import { BREAKPOINTS } from "@/shared/responsive/breakpoints"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
+import { usePageTitleStore } from "@/shared/responsive/navigation/page-title-store"
 import { isImmersiveRoute } from "@/shared/responsive/navigation/immersive-routes"
 import { TOP_BAR_HEIGHT_PX, BOTTOM_NAV_HEIGHT_PX } from "./chrome-constants"
 import { TopBar } from "@/shared/responsive/mobile/top-bar"
@@ -23,17 +24,30 @@ type Props = {
 
 function DesktopTopBar() {
   const mode = useSidebarStore(state => state.mode)
+  const title = usePageTitleStore(s => s.title)
   // Compacta o cerrada → theme fuera (junto al ojo cuando aplica).
   // Expandida → theme vive en el header del sidebar.
   const showThemeOutside = mode === "collapsed" || mode === "closed"
 
   return (
-    <div className="relative flex h-9 shrink-0 items-center gap-1 px-3">
+    <div className="relative flex h-11 shrink-0 items-center gap-2 px-3">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-9 bg-background/80 backdrop-blur-md"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-11 bg-background/80 backdrop-blur-md"
       />
       <SidebarShowButton />
+      <div className="min-w-0 flex-1">
+        {title ? (
+          <div
+            title={title}
+            className="inline-flex max-w-full items-center rounded-full bg-chrome px-2.5 py-1.5 shadow-xs backdrop-blur-xl"
+          >
+            <span className="truncate text-sm font-semibold text-foreground">
+              {title}
+            </span>
+          </div>
+        ) : null}
+      </div>
       {showThemeOutside && <ThemeToggle variant="icon" />}
     </div>
   )

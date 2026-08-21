@@ -176,6 +176,10 @@ export function SidebarPresence({
   }
 
   const renderTriggerContent = () => {
+    const emeraldBadgeClass = open
+      ? "bg-emerald-500 text-black font-bold"
+      : "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold"
+
     if (isTopbar) {
       return (
         <button
@@ -189,7 +193,7 @@ export function SidebarPresence({
         >
           <Users size={16} strokeWidth={2} />
           {onlineUsers.length > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 text-black font-bold text-[9px]">
+            <span className={cn("absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px]", emeraldBadgeClass)}>
               {onlineUsers.length > 9 ? "9+" : onlineUsers.length}
             </span>
           )}
@@ -209,8 +213,9 @@ export function SidebarPresence({
           collapsed={collapsed}
           active={open}
           count={onlineUsers.length >= 0 ? (onlineUsers.length > 9 ? "9+" : String(onlineUsers.length)) : undefined}
-          collapsedBadgeColor="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
-          badgeColor="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+          collapsedBadgeColor={open ? "bg-emerald-500 text-black font-bold" : "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold"}
+          badgeColor={open ? "bg-emerald-500 text-black font-bold" : "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold"}
+          badgeAnimated={onlineUsers.length > 0}
           size="sm"
         />
       </button>
@@ -233,7 +238,6 @@ export function SidebarPresence({
         />
       </div>
 
-      {/* Lista: único scroller. min-h-0 evita empujar/solapar el footer. */}
       <CommandList
         className={cn(
           "min-h-0 w-full flex-1 select-none",
@@ -261,7 +265,6 @@ export function SidebarPresence({
         </CommandGroup>
       </CommandList>
 
-      {/* Footer fijo (como antes): sibling flex, no absolute → no solapa. */}
       {showToggle && (
         <div className="shrink-0 border-t border-border/40 bg-popover px-1 pt-2">
           {!expanded ? (

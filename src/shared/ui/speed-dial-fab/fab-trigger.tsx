@@ -48,7 +48,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
           aria-label={label}
           className={cn(
             TOOLBAR_CHROME_ICON_BTN,
-            "relative overflow-visible",
+            "relative z-20 overflow-visible",
             active && TOOLBAR_CHROME_ICON_BTN_ACTIVE,
             className,
           )}
@@ -56,7 +56,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
         >
           <Icon size={TOOLBAR_CHROME_ICON_SIZE} strokeWidth={2.25} className="shrink-0" />
           {badge && (
-            <span className="pointer-events-none absolute bottom-0 right-0 z-10 translate-x-1/4 translate-y-1/4">
+            <span className="pointer-events-none absolute -bottom-0.5 -right-0.5 z-[60]">
               {badge}
             </span>
           )}
@@ -71,7 +71,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
         aria-label={label}
         title={label}
         className={cn(
-          "relative flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full shadow-xs transition active:scale-95",
+          "relative z-20 flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full shadow-xs transition active:scale-95",
           accentClassName ??
             cn(
               "bg-foreground text-background",
@@ -83,7 +83,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
       >
         <Icon size={17} strokeWidth={2.2} />
         {badge && (
-          <span className="pointer-events-none absolute bottom-0 right-0 z-10 translate-x-1/4 translate-y-1/4">
+          <span className="pointer-events-none absolute -bottom-0.5 -right-0.5 z-[60]">
             {badge}
           </span>
         )}

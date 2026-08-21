@@ -21,9 +21,8 @@ export function HistoryToggleButton({ count, active, onClick }: Props) {
         className={cn(
           "flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold select-none transition-colors duration-200",
           // Desktop toolbar: mismo azul que NotificationBell / TAREAS
-          !isMobile && "bg-primary text-primary-foreground shadow-xs",
-          // Mobile FAB (bg-foreground): contraste invertido
-          isMobile && "bg-background text-foreground shadow-xs ring-1 ring-border",
+          "bg-foreground text-background shadow-xs",
+          isMobile && "ring-1 ring-border",
           active && "animate-history-bounce ring-2 ring-primary/40",
         )}
       >

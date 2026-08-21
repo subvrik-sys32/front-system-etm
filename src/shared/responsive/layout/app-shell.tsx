@@ -35,7 +35,7 @@ function DesktopTopBar() {
 
   // Overlay como mobile: contenido scrollea debajo con blur.
   return (
-    <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-11 items-center gap-2 px-3">
+    <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-11 items-center gap-2 overflow-visible px-3">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-14 backdrop-blur-xl"
@@ -67,7 +67,7 @@ function DesktopTopBar() {
           ) : null}
         </div>
         {toolbar ? (
-          <div className="flex min-w-0 flex-1 items-center justify-end overflow-x-auto py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex min-w-0 flex-1 items-center justify-end overflow-visible py-1.5">
             {toolbar}
           </div>
         ) : (

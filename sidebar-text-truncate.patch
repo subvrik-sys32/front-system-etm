@@ -1,0 +1,58 @@
+diff --git a/src/shared/responsive/layout/sidebar/sidebar-header.tsx b/src/shared/responsive/layout/sidebar/sidebar-header.tsx
+index 5f4b665..0fb6c76 100644
+--- a/src/shared/responsive/layout/sidebar/sidebar-header.tsx
++++ b/src/shared/responsive/layout/sidebar/sidebar-header.tsx
+@@ -61,7 +61,7 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
+       </button>
+ 
+       {!isRail && (
+-        <p className="min-w-0 flex-1 truncate text-xs font-bold tracking-tight text-primary dark:text-white">
++        <p className="min-w-0 flex-1 overflow-hidden truncate whitespace-nowrap text-xs font-bold tracking-tight text-primary dark:text-white">
+           ETM S.A.C.
+         </p>
+       )}
+diff --git a/src/shared/responsive/layout/sidebar/sidebar-profile.tsx b/src/shared/responsive/layout/sidebar/sidebar-profile.tsx
+index 495e91f..35fd6b6 100644
+--- a/src/shared/responsive/layout/sidebar/sidebar-profile.tsx
++++ b/src/shared/responsive/layout/sidebar/sidebar-profile.tsx
+@@ -294,10 +294,10 @@ export function SidebarProfile({
+             <div className="min-w-0 flex-1">
+               {user ? (
+                 <>
+-                  <p className="truncate text-sm font-semibold leading-tight text-foreground">
++                  <p className="block min-w-0 truncate whitespace-nowrap overflow-hidden text-sm font-semibold leading-tight text-foreground">
+                     {user.name}
+                   </p>
+-                  <p className="truncate text-[11px] leading-tight text-muted-foreground">
++                  <p className="block min-w-0 truncate whitespace-nowrap overflow-hidden text-[11px] leading-tight text-muted-foreground">
+                     {user.email}
+                   </p>
+                 </>
+diff --git a/src/shared/responsive/layout/sidebar/sidebar-row.tsx b/src/shared/responsive/layout/sidebar/sidebar-row.tsx
+index 6218f98..c281fed 100644
+--- a/src/shared/responsive/layout/sidebar/sidebar-row.tsx
++++ b/src/shared/responsive/layout/sidebar/sidebar-row.tsx
+@@ -110,8 +110,8 @@ export function SidebarRow({
+         />
+       </div>
+ 
+-      <div className="ml-2 flex min-w-0 flex-1 items-center justify-between">
+-        <span className="truncate">{label}</span>
++      <div className="ml-2 flex min-w-0 flex-1 items-center justify-between gap-1 overflow-hidden">
++        <span className="block min-w-0 flex-1 truncate whitespace-nowrap overflow-hidden">{label}</span>
+         {hasCount && (
+           <span
+             className={cn(
+diff --git a/src/shared/responsive/layout/sidebar/sidebar-section.tsx b/src/shared/responsive/layout/sidebar/sidebar-section.tsx
+index c34e94a..28d4109 100644
+--- a/src/shared/responsive/layout/sidebar/sidebar-section.tsx
++++ b/src/shared/responsive/layout/sidebar/sidebar-section.tsx
+@@ -23,7 +23,7 @@ export function SidebarSection({
+     <section className={cn(isDrawer ? "mb-2.5" : "mb-2")}>
+       {!isRail && (
+         <div className={cn("mb-1.5 flex h-3.5 items-center", isDrawer ? "px-3" : "px-2.5")}>
+-          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
++          <span className="block max-w-full overflow-hidden truncate whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
+             {title}
+           </span>
+         </div>

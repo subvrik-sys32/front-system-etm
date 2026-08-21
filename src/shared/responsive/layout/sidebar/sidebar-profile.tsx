@@ -294,10 +294,10 @@ export function SidebarProfile({
             <div className="min-w-0 flex-1">
               {user ? (
                 <>
-                  <p className="truncate text-sm font-semibold leading-tight text-foreground">
+                  <p className="block min-w-0 truncate whitespace-nowrap overflow-hidden text-sm font-semibold leading-tight text-foreground">
                     {user.name}
                   </p>
-                  <p className="truncate text-[11px] leading-tight text-muted-foreground">
+                  <p className="block min-w-0 truncate whitespace-nowrap overflow-hidden text-[11px] leading-tight text-muted-foreground">
                     {user.email}
                   </p>
                 </>

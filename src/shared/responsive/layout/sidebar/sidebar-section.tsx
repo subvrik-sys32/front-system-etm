@@ -23,7 +23,7 @@ export function SidebarSection({
     <section className={cn(isDrawer ? "mb-2.5" : "mb-2")}>
       {!isRail && (
         <div className={cn("mb-1.5 flex h-3.5 items-center", isDrawer ? "px-3" : "px-2.5")}>
-          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
+          <span className="block max-w-full overflow-hidden truncate whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
             {title}
           </span>
         </div>

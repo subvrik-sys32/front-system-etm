@@ -110,8 +110,8 @@ export function SidebarRow({
         />
       </div>
 
-      <div className="ml-2 flex min-w-0 flex-1 items-center justify-between">
-        <span className="truncate">{label}</span>
+      <div className="ml-2 flex min-w-0 flex-1 items-center justify-between gap-1 overflow-hidden">
+        <span className="block min-w-0 flex-1 truncate whitespace-nowrap overflow-hidden">{label}</span>
         {hasCount && (
           <span
             className={cn(

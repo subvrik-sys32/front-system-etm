@@ -61,7 +61,7 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
       </button>
 
       {!isRail && (
-        <p className="min-w-0 flex-1 truncate text-xs font-bold tracking-tight text-primary dark:text-white">
+        <p className="min-w-0 flex-1 overflow-hidden truncate whitespace-nowrap text-xs font-bold tracking-tight text-primary dark:text-white">
           ETM S.A.C.
         </p>
       )}

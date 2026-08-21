@@ -150,7 +150,7 @@ export function SidebarProfile({
 
           ref={containerRef}
 
-          className="flex w-full flex-col items-center"
+          className="flex w-full flex-col items-center gap-1.5"
 
         >
 

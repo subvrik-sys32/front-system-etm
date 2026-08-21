@@ -135,7 +135,10 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
       <button
         type="button"
         title={collapsed ? "Mensajes" : undefined}
-        className="w-full text-left"
+        className={cn(
+          "text-left rounded-xl",
+          collapsed ? "mx-auto flex justify-center" : "w-full",
+        )}
       >
         <SidebarRow
           icon={MessageSquare}

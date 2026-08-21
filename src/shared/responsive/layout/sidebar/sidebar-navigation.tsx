@@ -56,12 +56,13 @@ export function SidebarNavigation({
             <div className={cn("mb-1 w-full", collapsed && "flex justify-center")}>
               <NotificationBell collapsed={collapsed} />
             </div>
-            <div className={cn("mb-3 w-full", collapsed && "flex justify-center")}>
+            <div className={cn("mb-2 w-full", collapsed && "flex justify-center")}>
               <MessageBell collapsed={collapsed} />
             </div>
-            <div className="w-full mb-3">
+            <div className={cn("mb-2 w-full", collapsed && "flex justify-center")}>
               <SidebarPresence
                 collapsed={presenceCollapsed}
+                isDrawer={isDrawer}
                 presenceRef={presenceRef}
               />
             </div>

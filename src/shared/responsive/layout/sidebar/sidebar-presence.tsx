@@ -201,7 +201,10 @@ export function SidebarPresence({
       <button
         type="button"
         title={collapsed ? `${onlineUsers.length} en línea` : undefined}
-        className="w-full text-left"
+        className={cn(
+          "text-left rounded-xl",
+          collapsed ? "mx-auto flex justify-center" : "w-full",
+        )}
       >
         <SidebarRow
           icon={Users}

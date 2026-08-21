@@ -4,11 +4,9 @@ import React from "react"
 import type { LucideIcon } from "lucide-react"
 import { cn } from "@/shared/utils/utils"
 
-/** Burbuja de contador del sidebar — usar en campana, historial, etc. */
 export const SIDEBAR_COUNT_BADGE =
   "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground"
 
-/** Contador de alerta (notificaciones / mensajes). */
 export const ALERT_COUNT_BADGE =
   "bg-destructive/15 text-destructive dark:bg-destructive/25 dark:text-red-300"
 
@@ -16,9 +14,6 @@ export const SIDEBAR_COUNT_BADGE_CLASS = cn(
   "flex items-center justify-center rounded-full font-bold leading-none shadow-xs select-none",
   SIDEBAR_COUNT_BADGE,
 )
-
-/** Ancho del rail de iconos (= sidebar colapsado). */
-const ICON_RAIL = "w-[72px]"
 
 export type SidebarRowProps = React.HTMLAttributes<HTMLDivElement> & {
   icon: LucideIcon
@@ -33,6 +28,10 @@ export type SidebarRowProps = React.HTMLAttributes<HTMLDivElement> & {
   size?: "sm" | "md"
 }
 
+/**
+ * - Expandido / drawer: fila completa (icono + label + badge).
+ * - Colapsado: solo celda size-9 centrada; hover/activo = rectángulo del icono.
+ */
 export function SidebarRow({
   icon: Icon,
   label,
@@ -48,12 +47,49 @@ export function SidebarRow({
   ...props
 }: SidebarRowProps) {
   const hasCount = count !== undefined && count !== null && count !== ""
-  const labelsVisible = !collapsed || isDrawer
+  const isRail = collapsed && !isDrawer
+  const cell = size === "sm" ? "size-8" : "size-9"
+
+  if (isRail) {
+    return (
+      <div
+        className={cn(
+          "relative mx-auto flex items-center justify-center rounded-xl select-none",
+          cell,
+          active
+            ? "bg-primary/10 text-primary font-semibold shadow-xs dark:bg-primary/15 dark:text-white"
+            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+          className,
+        )}
+        title={label}
+        {...props}
+      >
+        <Icon
+          className={cn(
+            "size-4 shrink-0",
+            active ? "text-primary dark:text-white" : "text-muted-foreground",
+          )}
+          strokeWidth={active ? 2.25 : 2}
+        />
+        {hasCount && (
+          <span
+            className={cn(
+              "absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs pointer-events-none",
+              collapsedBadgeColor || badgeColor,
+              badgeAnimated && "animate-pulse",
+            )}
+          >
+            {count}
+          </span>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div
       className={cn(
-        "group relative flex w-full items-center rounded-xl font-medium select-none",
+        "group relative flex w-full items-center rounded-xl font-medium select-none px-2.5",
         size === "sm" ? "h-8 text-xs" : "h-9 text-xs",
         active
           ? "bg-primary/10 text-primary font-semibold shadow-xs dark:bg-primary/15 dark:text-white"
@@ -62,13 +98,7 @@ export function SidebarRow({
       )}
       {...props}
     >
-      {/* Rail fijo: el icono no se desplaza al colapsar */}
-      <div
-        className={cn(
-          "relative flex shrink-0 items-center justify-center",
-          isDrawer ? "w-10 px-0" : ICON_RAIL,
-        )}
-      >
+      <div className="relative flex size-8 shrink-0 items-center justify-center">
         <Icon
           className={cn(
             "size-4 shrink-0",
@@ -78,29 +108,9 @@ export function SidebarRow({
           )}
           strokeWidth={active ? 2.25 : 2}
         />
-
-        {hasCount && (
-          <span
-            className={cn(
-              "absolute -top-0.5 right-2 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs pointer-events-none transition-opacity duration-200",
-              collapsedBadgeColor || badgeColor,
-              badgeAnimated && labelsVisible === false && "animate-pulse",
-              labelsVisible ? "opacity-0" : "opacity-100",
-            )}
-            aria-hidden={labelsVisible}
-          >
-            {count}
-          </span>
-        )}
       </div>
 
-      {/* Texto + badge: solo fade, sin unmount */}
-      <div
-        className={cn(
-          "flex min-w-0 flex-1 items-center justify-between pr-2.5 transition-opacity duration-200",
-          labelsVisible ? "opacity-100" : "pointer-events-none opacity-0",
-        )}
-      >
+      <div className="ml-2 flex min-w-0 flex-1 items-center justify-between">
         <span className="truncate">{label}</span>
         {hasCount && (
           <span

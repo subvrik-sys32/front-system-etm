@@ -139,7 +139,10 @@ export function NotificationBell({
       <button
         type="button"
         title={collapsed ? "Notificaciones" : undefined}
-        className="w-full text-left transition-colors lg:active:bg-foreground/5 rounded-lg"
+        className={cn(
+          "text-left transition-colors lg:active:bg-foreground/5 rounded-xl",
+          collapsed ? "mx-auto flex justify-center" : "w-full",
+        )}
       >
         <SidebarRow
           icon={Bell}

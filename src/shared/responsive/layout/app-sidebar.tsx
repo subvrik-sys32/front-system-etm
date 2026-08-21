@@ -17,8 +17,8 @@ type Props = {
   open?: boolean
 }
 
-const SIDEBAR_ASIDE_COLLAPSED_WIDTH = 72
-const SIDEBAR_ASIDE_OPEN_WIDTH = 248
+const SIDEBAR_ASIDE_COLLAPSED_WIDTH = 64
+const SIDEBAR_ASIDE_OPEN_WIDTH = 220
 
 export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
   const { mode, lastVisibleMode, visualState, notifyContentTransitionEnd } = useSidebarStore()
@@ -83,17 +83,7 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
         )}
       >
         {/* Contenido a ancho expandido fijo: el aside recorta. Iconos no se mueven. */}
-        <div
-          className="flex h-full flex-col overflow-hidden pt-1.5 pb-1.5"
-          style={
-            isDrawer
-              ? undefined
-              : {
-                  width: SIDEBAR_ASIDE_OPEN_WIDTH,
-                  minWidth: SIDEBAR_ASIDE_OPEN_WIDTH,
-                }
-          }
-        >
+        <div className="flex h-full w-full flex-col overflow-hidden pt-1.5 pb-1.5">
           <SidebarHeader collapsed={collapsed} isDrawer={isDrawer} />
 
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -109,7 +99,7 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
             />
           </div>
 
-          <div className="z-20 shrink-0 select-none border-t border-border/40 px-0 py-2">
+          <div className="z-20 shrink-0 select-none border-t border-border/40 p-1.5">
             <SidebarProfile
               collapsed={collapsed}
               onEditProfile={() => setProfileEditOpen(true)}

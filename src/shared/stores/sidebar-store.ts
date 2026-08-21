@@ -27,6 +27,8 @@ type SidebarStore = {
 
   toggleCollapsed: () => void
   toggleClosed: () => void
+  /** Logo ETM: open → collapsed → closed (reabrir desde topbar). */
+  advanceLayoutMode: () => void
   /** Split / viewport angosto: pasar a iconos sin toggle. */
   collapseIfOpen: () => void
   notifyContentTransitionEnd: () => void
@@ -100,6 +102,32 @@ export const useSidebarStore = create<SidebarStore>()(set => ({
           state.mode === "closed"
             ? state.lastVisibleMode
             : (state.mode as "open" | "collapsed"),
+        visualState: nextVisualState(next, state.visualState),
+      }
+    }),
+
+  advanceLayoutMode: () =>
+    set(state => {
+      // Procedural: open → collapsed → closed
+      // (desde closed se reabre con el logo del topbar → lastVisibleMode)
+      if (state.mode === "open") {
+        return {
+          mode: "collapsed" as const,
+          lastVisibleMode: "collapsed" as const,
+          visualState: nextVisualState("collapsed", state.visualState),
+        }
+      }
+      if (state.mode === "collapsed") {
+        return {
+          mode: "closed" as const,
+          lastVisibleMode: "collapsed" as const,
+          visualState: nextVisualState("closed", state.visualState),
+        }
+      }
+      // closed → restore
+      const next = state.lastVisibleMode
+      return {
+        mode: next,
         visualState: nextVisualState(next, state.visualState),
       }
     }),

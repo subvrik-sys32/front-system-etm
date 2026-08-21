@@ -50,7 +50,11 @@ export function SidebarNavigation({
 
   return (
     <ScrollArea className="min-h-0 w-full flex-1">
-      <div className={cn("w-full", isDrawer ? "px-2 py-2 pb-3" : "px-2 py-1 pb-2")}>
+      {/* 
+        Aumentamos el padding superior (pt-3 o pt-4) para separar 
+        visualmente los elementos del borde inferior del SidebarHeader.
+      */}
+      <div className={cn("w-full", isDrawer ? "px-2 pt-3 pb-3" : "px-2 pt-3 pb-2")}>
         {!isDrawer && (
           <>
             <div className="mb-1 w-full">

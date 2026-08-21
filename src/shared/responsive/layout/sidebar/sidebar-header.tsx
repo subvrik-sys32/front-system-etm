@@ -34,11 +34,7 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
 
   return (
     <div className="flex h-12 w-full shrink-0 items-center border-b border-border/40 px-3">
-      {/* 
-        mx-auto mantiene todo el bloque centrado en el sidebar.
-        Cero transiciones de movimiento o ancho para evitar cualquier efecto de desplazamiento.
-      */}
-      <div className={cn("mx-auto flex items-center", isRail ? "gap-0" : "gap-2.5")}>
+      <div className="flex w-full items-center justify-start gap-2.5">
         <button
           type="button"
           onClick={onLogoClick}
@@ -46,7 +42,10 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
           aria-label={logoTitle}
           className={cn(
             TOOLBAR_CHROME_ICON_BTN,
-            "flex size-9 shrink-0 items-center justify-center rounded-xl p-1.5",
+            "flex size-9 shrink-0 items-center justify-center rounded-xl p-1.5 transition-transform",
+            // Ajusta este valor de píxeles (ej. translate-x-1, translate-x-2) 
+            // según lo que necesites para centrarlo exactamente cuando está en modo rail.
+            isRail && "translate-x-1.5" 
           )}
         >
           <Image
@@ -60,7 +59,6 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
           />
         </button>
 
-        {/* Si es rail, el texto se oculta inmediatamente sin animar su ancho ni deslizarse */}
         {!isRail && (
           <p className="overflow-hidden truncate whitespace-nowrap text-xs font-bold tracking-tight text-primary dark:text-white">
             ETM COMPANY SAC

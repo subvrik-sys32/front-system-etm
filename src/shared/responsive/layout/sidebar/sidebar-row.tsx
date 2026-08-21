@@ -8,6 +8,10 @@ import { cn } from "@/shared/utils/utils"
 export const SIDEBAR_COUNT_BADGE =
   "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground"
 
+/** Contador de alerta (notificaciones / mensajes). */
+export const ALERT_COUNT_BADGE =
+  "bg-destructive/15 text-destructive dark:bg-destructive/25 dark:text-red-300"
+
 export const SIDEBAR_COUNT_BADGE_CLASS = cn(
   "flex items-center justify-center rounded-full font-bold leading-none shadow-xs select-none",
   SIDEBAR_COUNT_BADGE,

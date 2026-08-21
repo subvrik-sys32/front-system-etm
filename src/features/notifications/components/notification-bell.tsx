@@ -8,7 +8,7 @@ import { Spinner } from "@/shared/ui/spinner/spinner"
 import { toast } from "sonner"
 
 import { cn } from "@/shared/utils/utils"
-import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
+import { ALERT_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
 import { useManagedOverlay } from "@/shared/stores/hooks/use-managed-overlay"
 import { SidebarRow } from "@/shared/responsive/layout/sidebar/sidebar-row"
@@ -127,7 +127,7 @@ export function NotificationBell({
             <span
               className={cn(
                 "absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs",
-                SIDEBAR_COUNT_BADGE,
+                ALERT_COUNT_BADGE,
               )}
             >
               {count > 9 ? "9+" : count}
@@ -149,6 +149,8 @@ export function NotificationBell({
           collapsed={collapsed}
           active={open}
           count={count > 0 ? (count > 9 ? "9+" : count) : undefined}
+          badgeColor={ALERT_COUNT_BADGE}
+          collapsedBadgeColor={ALERT_COUNT_BADGE}
           badgeAnimated={count > 0}
         />
       </button>

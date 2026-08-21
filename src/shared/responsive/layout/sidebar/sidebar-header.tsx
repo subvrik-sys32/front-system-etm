@@ -65,7 +65,8 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
 
       {(!collapsed || isDrawer) && (
         <div className="min-w-0 flex-1 overflow-hidden">
-          <p className="truncate text-xs font-bold tracking-tight text-primary">
+          {/* Se añadió dark:text-white para que sea blanco en modo oscuro */}
+          <p className="truncate text-xs font-bold tracking-tight text-primary dark:text-white">
             ETM S.A.C.
           </p>
           <p className="truncate text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">

@@ -9,7 +9,6 @@ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { PageShell } from "@/shared/responsive/layout/page-shell"
 import { CadWorkspacePanel } from "@/features/cad/components/cad-workspace-panel"
 import { CadAiPanel } from "@/features/cad-ai/components/cad-ai-panel"
-import { cn } from "@/shared/utils/utils"
 import { EntityToggle } from "@/shared/ui/entity-toggle/entity-toggle"
 
 type Tab = "ai" | "templates"
@@ -23,14 +22,12 @@ export default function CadPage() {
   const { isMobile } = useResponsive()
   const [tab, setTab] = useState<Tab>("ai")
 
-  function TabsNav({ compact }: { compact: boolean }) {
+  function TabsNav() {
     return (
       <EntityToggle
         value={tab}
         onChange={setTab}
-        compact={compact}
         aria-label="Vista CAD"
-        className={cn(compact && "w-full justify-center")}
         options={[
           { value: "ai" as const, label: "IA", icon: Sparkles },
           { value: "templates" as const, label: "Plantillas", icon: Boxes },
@@ -39,15 +36,15 @@ export default function CadPage() {
     )
   }
 
-  usePageToolbar(isMobile ? null : <TabsNav compact={false} />)
+  usePageToolbar(isMobile ? null : <TabsNav />)
 
   return (
     <PageShell mode="bleed">
       <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-        {/* Solo mobile: en tablet/desktop viven en DesktopTopBar vía usePageToolbar */}
+        {/* Solo mobile: labels visibles (mismo EntityToggle que desktop) */}
         {isMobile ? (
-          <div className="mb-2 shrink-0">
-            <TabsNav compact />
+          <div className="mb-2 flex shrink-0 justify-center px-2">
+            <TabsNav />
           </div>
         ) : null}
 

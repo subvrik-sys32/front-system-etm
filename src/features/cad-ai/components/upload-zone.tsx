@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
+import { EntityToggle } from "@/shared/ui/entity-toggle/entity-toggle"
 import type { ChatMessage } from "../types"
 
 interface UploadZoneProps {
@@ -100,36 +101,17 @@ export function UploadZone({
           </div>
         </div>
 
-        {/* Toggle de modo responsivo */}
+        {/* Toggle de modo — SSOT EntityToggle (mismo look Día/Semana/Mes) */}
         <div className="mb-4 flex shrink-0 justify-center sm:mb-5">
-          <div className="inline-flex rounded-xl bg-card p-1 shadow-xs">
-            <button
-              type="button"
-              onClick={() => setMode("upload")}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors",
-                mode === "upload"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <FileImage className="size-3.5" />
-              Subir plano
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("chat")}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors",
-                mode === "chat"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <MessageSquareText className="size-3.5" />
-              Crear con chat
-            </button>
-          </div>
+          <EntityToggle
+            value={mode}
+            onChange={setMode}
+            aria-label="Modo de entrada CAD"
+            options={[
+              { value: "upload", label: "Subir plano", icon: FileImage },
+              { value: "chat", label: "Crear con chat", icon: MessageSquareText },
+            ]}
+          />
         </div>
 
         {mode === "upload" ? (

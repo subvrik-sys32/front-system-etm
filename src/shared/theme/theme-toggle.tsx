@@ -3,6 +3,10 @@
 import { Monitor, Moon, Sun } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
+import {
+  TOOLBAR_CHROME_ICON_BTN,
+  TOOLBAR_CHROME_ICON_SIZE,
+} from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { useThemeStore, type ThemeMode } from "./theme-store"
 
 const OPTIONS: { mode: ThemeMode; label: string; icon: typeof Sun }[] = [
@@ -48,13 +52,9 @@ export function ThemeToggle({
         title={label}
         aria-label={label}
         onClick={() => setMode(next)}
-        className={cn(
-          chromeIconButtonClass,
-          "size-8",
-          className,
-        )}
+        className={cn(TOOLBAR_CHROME_ICON_BTN, className)}
       >
-        <Icon size={16} strokeWidth={1.75} />
+        <Icon size={TOOLBAR_CHROME_ICON_SIZE} strokeWidth={2.25} />
       </button>
     )
   }

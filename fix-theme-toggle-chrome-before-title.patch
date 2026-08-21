@@ -1,0 +1,52 @@
+diff --git a/src/shared/responsive/layout/app-shell.tsx b/src/shared/responsive/layout/app-shell.tsx
+index 96acc47..314a0b6 100644
+--- a/src/shared/responsive/layout/app-shell.tsx
++++ b/src/shared/responsive/layout/app-shell.tsx
+@@ -54,6 +54,8 @@ function DesktopTopBar() {
+       />
+       <div className="pointer-events-auto flex min-w-0 flex-1 items-center gap-2">
+         <SidebarShowButton />
++        {/* Theme antes del título de página cuando el sidebar está compacto/cerrado */}
++        {showThemeOutside && <ThemeToggle variant="icon" />}
+         <div className="min-w-0 shrink-0">
+           {title ? (
+             <div
+@@ -76,7 +78,6 @@ function DesktopTopBar() {
+         {actions ? (
+           <div className="flex shrink-0 items-center gap-1.5 overflow-visible py-1.5">{actions}</div>
+         ) : null}
+-        {showThemeOutside && <ThemeToggle variant="icon" />}
+       </div>
+     </header>
+   )
+diff --git a/src/shared/theme/theme-toggle.tsx b/src/shared/theme/theme-toggle.tsx
+index 38aedfd..7e42c8c 100644
+--- a/src/shared/theme/theme-toggle.tsx
++++ b/src/shared/theme/theme-toggle.tsx
+@@ -3,6 +3,10 @@
+ import { Monitor, Moon, Sun } from "lucide-react"
+ 
+ import { cn } from "@/shared/utils/utils"
++import {
++  TOOLBAR_CHROME_ICON_BTN,
++  TOOLBAR_CHROME_ICON_SIZE,
++} from "@/shared/ui/entity-toolbar/toolbar-chrome"
+ import { useThemeStore, type ThemeMode } from "./theme-store"
+ 
+ const OPTIONS: { mode: ThemeMode; label: string; icon: typeof Sun }[] = [
+@@ -48,13 +52,9 @@ export function ThemeToggle({
+         title={label}
+         aria-label={label}
+         onClick={() => setMode(next)}
+-        className={cn(
+-          chromeIconButtonClass,
+-          "size-8",
+-          className,
+-        )}
++        className={cn(TOOLBAR_CHROME_ICON_BTN, className)}
+       >
+-        <Icon size={16} strokeWidth={1.75} />
++        <Icon size={TOOLBAR_CHROME_ICON_SIZE} strokeWidth={2.25} />
+       </button>
+     )
+   }

@@ -54,6 +54,8 @@ function DesktopTopBar() {
       />
       <div className="pointer-events-auto flex min-w-0 flex-1 items-center gap-2">
         <SidebarShowButton />
+        {/* Theme antes del título de página cuando el sidebar está compacto/cerrado */}
+        {showThemeOutside && <ThemeToggle variant="icon" />}
         <div className="min-w-0 shrink-0">
           {title ? (
             <div
@@ -76,7 +78,6 @@ function DesktopTopBar() {
         {actions ? (
           <div className="flex shrink-0 items-center gap-1.5 overflow-visible py-1.5">{actions}</div>
         ) : null}
-        {showThemeOutside && <ThemeToggle variant="icon" />}
       </div>
     </header>
   )

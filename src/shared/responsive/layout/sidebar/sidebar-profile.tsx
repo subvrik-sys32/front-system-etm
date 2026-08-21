@@ -104,20 +104,6 @@ export function SidebarProfile({
 
 
 
-  const [isMounting, setIsMounting] = useState(true)
-
-
-
-  useEffect(() => {
-
-    const timer = setTimeout(() => setIsMounting(false), 700)
-
-    return () => clearTimeout(timer)
-
-  }, [])
-
-
-
   const confirmLogout = () => {
 
     logout()
@@ -186,13 +172,9 @@ export function SidebarProfile({
 
           className={cn(
 
-            "flex flex-col items-center gap-2",
-
-            isMounting && "animate-gemini-in opacity-0"
-
+            "flex flex-col items-center gap-2"
           )}
 
-          style={isMounting ? { animationDelay: "320ms" } : undefined}
 
         >
 
@@ -210,9 +192,8 @@ export function SidebarProfile({
 
                   "relative h-9 w-9 shrink-0 rounded-full transition",
 
-                  !canOpenProfile && "cursor-not-allowed opacity-60",
-
-                )}
+                  !canOpenProfile && "cursor-not-allowed opacity-60"
+          )}
 
                 aria-label="Mi perfil"
 
@@ -314,13 +295,9 @@ export function SidebarProfile({
 
         className={cn(
 
-          "relative",
+          "relative"
+          )}
 
-          isMounting && "animate-gemini-in opacity-0"
-
-        )}
-
-        style={isMounting ? { animationDelay: "320ms" } : undefined}
 
       >
 
@@ -334,8 +311,7 @@ export function SidebarProfile({
 
             "origin-bottom transition-[transform,opacity] duration-300 ease-out",
 
-            profileOpen ? "opacity-100" : "pointer-events-none opacity-0",
-
+            profileOpen ? "opacity-100" : "pointer-events-none opacity-0"
           )}
 
           style={{
@@ -426,9 +402,8 @@ export function SidebarProfile({
 
                   ? "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
 
-                  : "cursor-not-allowed text-muted-foreground/70",
-
-              )}
+                  : "cursor-not-allowed text-muted-foreground/70"
+          )}
 
             >
 

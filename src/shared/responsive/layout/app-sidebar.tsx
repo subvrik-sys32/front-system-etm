@@ -84,7 +84,7 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
       >
         <div 
           className={cn(
-            "flex h-full flex-col overflow-hidden pt-2 pb-2 transition-opacity duration-200 ease-out",
+            "flex h-full flex-col overflow-hidden pt-2 pb-2",
             collapsed ? "opacity-95" : "opacity-100",
           )} 
           style={

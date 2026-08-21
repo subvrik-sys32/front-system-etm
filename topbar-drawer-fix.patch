@@ -1,0 +1,260 @@
+diff --git a/src/features/comments/components/message-bell.tsx b/src/features/comments/components/message-bell.tsx
+index fff808c..2f1617f 100644
+--- a/src/features/comments/components/message-bell.tsx
++++ b/src/features/comments/components/message-bell.tsx
+@@ -12,6 +12,7 @@ import {
+ } from "lucide-react"
+ 
+ import { cn } from "@/shared/utils/utils"
++import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
+ import { ALERT_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
+ import { useSidebarStore } from "@/shared/stores/sidebar-store"
+ import { useManagedOverlay } from "@/shared/stores/hooks/use-managed-overlay"
+@@ -118,10 +119,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
+           type="button"
+           aria-label="Mensajes"
+           onClick={() => setOpen(!open)}
+-          className={cn(
+-            "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20",
+-            open && "bg-foreground/20 text-foreground",
+-          )}
++          className={cn(TOPBAR_ICON_BTN, open && TOPBAR_ICON_BTN_ACTIVE)}
+         >
+           <MessageSquare size={16} strokeWidth={2} />
+           {count > 0 && (
+diff --git a/src/features/notifications/components/notification-bell.tsx b/src/features/notifications/components/notification-bell.tsx
+index 91a369d..0234251 100644
+--- a/src/features/notifications/components/notification-bell.tsx
++++ b/src/features/notifications/components/notification-bell.tsx
+@@ -8,6 +8,7 @@ import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { toast } from "sonner"
+ 
+ import { cn } from "@/shared/utils/utils"
++import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
+ import { ALERT_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
+ import { useSidebarStore } from "@/shared/stores/sidebar-store"
+ import { useManagedOverlay } from "@/shared/stores/hooks/use-managed-overlay"
+@@ -117,10 +118,7 @@ export function NotificationBell({
+           type="button"
+           aria-label="Notificaciones"
+           onClick={() => handleOpenChange(!open)}
+-          className={cn(
+-            "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20",
+-            open && "bg-foreground/20 text-foreground",
+-          )}
++          className={cn(TOPBAR_ICON_BTN, open && TOPBAR_ICON_BTN_ACTIVE)}
+         >
+           <Bell size={16} strokeWidth={2} />
+           {count > 0 && (
+diff --git a/src/shared/responsive/layout/app-sidebar.tsx b/src/shared/responsive/layout/app-sidebar.tsx
+index da2c98e..fa84292 100644
+--- a/src/shared/responsive/layout/app-sidebar.tsx
++++ b/src/shared/responsive/layout/app-sidebar.tsx
+@@ -84,7 +84,7 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
+       >
+         <div 
+           className={cn(
+-            "flex h-full flex-col overflow-hidden pt-2 pb-2 transition-opacity duration-200 ease-out",
++            "flex h-full flex-col overflow-hidden pt-2 pb-2",
+             collapsed ? "opacity-95" : "opacity-100",
+           )} 
+           style={
+diff --git a/src/shared/responsive/layout/sidebar/sidebar-presence.tsx b/src/shared/responsive/layout/sidebar/sidebar-presence.tsx
+index f3f6e07..48eaa72 100644
+--- a/src/shared/responsive/layout/sidebar/sidebar-presence.tsx
++++ b/src/shared/responsive/layout/sidebar/sidebar-presence.tsx
+@@ -4,6 +4,7 @@ import { useMemo, useState, useRef } from "react"
+ import { Users, Search, ChevronDown, ChevronUp } from "lucide-react"
+ 
+ import { cn } from "@/shared/utils/utils"
++import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
+ import { useAuthStore } from "@/features/auth/store/auth-store"
+ import { useUsersDirectory } from "@/features/users/hooks/use-users-directory"
+ import { formatNotificationDate } from "@/features/notifications/utils/format-notification-date"
+@@ -183,8 +184,8 @@ export function SidebarPresence({
+           aria-label="Usuarios en línea"
+           onClick={() => handleOpenChange(!open)}
+           className={cn(
+-            "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20",
+-            open && "bg-foreground/20 text-foreground",
++            TOPBAR_ICON_BTN,
++            open && TOPBAR_ICON_BTN_ACTIVE,
+           )}
+         >
+           <Users size={16} strokeWidth={2} />
+diff --git a/src/shared/responsive/layout/sidebar/sidebar-profile.tsx b/src/shared/responsive/layout/sidebar/sidebar-profile.tsx
+index 64b3d49..02566c9 100644
+--- a/src/shared/responsive/layout/sidebar/sidebar-profile.tsx
++++ b/src/shared/responsive/layout/sidebar/sidebar-profile.tsx
+@@ -104,20 +104,6 @@ export function SidebarProfile({
+ 
+ 
+ 
+-  const [isMounting, setIsMounting] = useState(true)
+-
+-
+-
+-  useEffect(() => {
+-
+-    const timer = setTimeout(() => setIsMounting(false), 700)
+-
+-    return () => clearTimeout(timer)
+-
+-  }, [])
+-
+-
+-
+   const confirmLogout = () => {
+ 
+     logout()
+@@ -186,13 +172,9 @@ export function SidebarProfile({
+ 
+           className={cn(
+ 
+-            "flex flex-col items-center gap-2",
+-
+-            isMounting && "animate-gemini-in opacity-0"
+-
++            "flex flex-col items-center gap-2"
+           )}
+ 
+-          style={isMounting ? { animationDelay: "320ms" } : undefined}
+ 
+         >
+ 
+@@ -210,9 +192,8 @@ export function SidebarProfile({
+ 
+                   "relative h-9 w-9 shrink-0 rounded-full transition",
+ 
+-                  !canOpenProfile && "cursor-not-allowed opacity-60",
+-
+-                )}
++                  !canOpenProfile && "cursor-not-allowed opacity-60"
++          )}
+ 
+                 aria-label="Mi perfil"
+ 
+@@ -314,13 +295,9 @@ export function SidebarProfile({
+ 
+         className={cn(
+ 
+-          "relative",
+-
+-          isMounting && "animate-gemini-in opacity-0"
+-
+-        )}
++          "relative"
++          )}
+ 
+-        style={isMounting ? { animationDelay: "320ms" } : undefined}
+ 
+       >
+ 
+@@ -334,8 +311,7 @@ export function SidebarProfile({
+ 
+             "origin-bottom transition-[transform,opacity] duration-300 ease-out",
+ 
+-            profileOpen ? "opacity-100" : "pointer-events-none opacity-0",
+-
++            profileOpen ? "opacity-100" : "pointer-events-none opacity-0"
+           )}
+ 
+           style={{
+@@ -426,9 +402,8 @@ export function SidebarProfile({
+ 
+                   ? "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+ 
+-                  : "cursor-not-allowed text-muted-foreground/70",
+-
+-              )}
++                  : "cursor-not-allowed text-muted-foreground/70"
++          )}
+ 
+             >
+ 
+diff --git a/src/shared/responsive/layout/sidebar/sidebar-row.tsx b/src/shared/responsive/layout/sidebar/sidebar-row.tsx
+index d9966f5..daf1211 100644
+--- a/src/shared/responsive/layout/sidebar/sidebar-row.tsx
++++ b/src/shared/responsive/layout/sidebar/sidebar-row.tsx
+@@ -49,7 +49,7 @@ export function SidebarRow({
+   return (
+     <div
+       className={cn(
+-        "group relative flex w-full items-center rounded-xl font-medium transition-all duration-150 select-none",
++        "group relative flex w-full items-center rounded-xl font-medium transition-colors duration-150 select-none",
+         size === "sm" ? "h-9 text-xs" : "h-10 text-xs",
+         active
+           ? "bg-primary/10 text-primary font-semibold shadow-xs dark:bg-primary/15 dark:text-white"
+@@ -91,7 +91,7 @@ export function SidebarRow({
+           {hasCount && (
+             <span
+               className={cn(
+-                "ml-2 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[10px] font-bold leading-none shadow-xs transition-all",
++                "ml-2 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[10px] font-bold leading-none shadow-xs",
+                 badgeColor,
+                 badgeAnimated && "animate-pulse"
+               )}
+diff --git a/src/shared/responsive/mobile/top-bar.tsx b/src/shared/responsive/mobile/top-bar.tsx
+index b516374..a779741 100644
+--- a/src/shared/responsive/mobile/top-bar.tsx
++++ b/src/shared/responsive/mobile/top-bar.tsx
+@@ -12,6 +12,8 @@ import { usePageTitleStore } from "@/shared/responsive/navigation/page-title-sto
+ import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
+ import { usePageSearchStore } from "@/shared/ui/entity-toolbar/page-search-store"
+ import { TOP_BAR_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
++import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
++import { cn } from "@/shared/utils/utils"
+ 
+ export function TopBar() {
+   const toggleDrawer = useMobileNavStore(s => s.toggleDrawer)
+@@ -94,8 +96,8 @@ export function TopBar() {
+             }}
+             className={
+               searchOpen
+-                ? "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/20 text-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20"
+-                : "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20"
++                ? cn(TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE)
++                : TOPBAR_ICON_BTN
+             }
+           >
+             {searchOpen ? (
+@@ -115,7 +117,7 @@ export function TopBar() {
+           onClick={() => setProfileOpen(true)}
+           aria-label="Perfil"
+           disabled={!user}
+-          className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20 disabled:opacity-50"
++          className={cn(TOPBAR_ICON_BTN, "disabled:opacity-50")}
+         >
+           <div className="relative size-7 shrink-0">
+             {user ? (
+diff --git a/src/shared/ui/entity-toolbar/toolbar-chrome.ts b/src/shared/ui/entity-toolbar/toolbar-chrome.ts
+index a962ef2..73ad695 100644
+--- a/src/shared/ui/entity-toolbar/toolbar-chrome.ts
++++ b/src/shared/ui/entity-toolbar/toolbar-chrome.ts
+@@ -1,13 +1,21 @@
+ /**
+- * SSOT — botones de chrome del EntityToolbar / DesktopTopBar.
+- * Misma huella que EntityToolbarSearch (lupa): 32×32, círculo, bg-chrome.
+- * EntityToggle NO usa esto (diseño segmentado Día/Semana/Mes).
++ * SSOT — botones de chrome del EntityToolbar / DesktopTopBar / TopBar móvil.
++ * Contraste legible en light y dark (no text-muted lavado).
+  */
++
++/** Desktop / toolbar: 32×32 */
+ export const TOOLBAR_CHROME_ICON_BTN =
+-  "relative flex size-8 shrink-0 touch-none items-center justify-center overflow-visible rounded-full bg-chrome text-muted-foreground shadow-xs backdrop-blur-xl transition-all duration-200 hover:text-foreground"
++  "relative flex size-8 shrink-0 touch-none items-center justify-center overflow-visible rounded-full bg-chrome text-foreground/80 shadow-xs backdrop-blur-xl transition-colors duration-150 hover:bg-muted hover:text-foreground"
+ 
+ export const TOOLBAR_CHROME_ICON_BTN_ACTIVE =
+   "bg-muted text-foreground"
+ 
+-/** Icon size dentro del círculo chrome */
++/** TopBar móvil (y triggers topbar): 40×40, mismo contraste */
++export const TOPBAR_ICON_BTN =
++  "relative flex size-10 shrink-0 items-center justify-center overflow-visible rounded-full bg-chrome text-foreground/80 shadow-xs backdrop-blur-xl transition-colors duration-150 hover:bg-muted hover:text-foreground active:bg-muted"
++
++export const TOPBAR_ICON_BTN_ACTIVE =
++  "bg-muted text-foreground"
++
++/** Icon size dentro del círculo chrome desktop */
+ export const TOOLBAR_CHROME_ICON_SIZE = 14 as const

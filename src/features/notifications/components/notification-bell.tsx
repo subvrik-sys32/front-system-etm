@@ -8,6 +8,7 @@ import { Spinner } from "@/shared/ui/spinner/spinner"
 import { toast } from "sonner"
 
 import { cn } from "@/shared/utils/utils"
+import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { ALERT_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
 import { useManagedOverlay } from "@/shared/stores/hooks/use-managed-overlay"
@@ -117,10 +118,7 @@ export function NotificationBell({
           type="button"
           aria-label="Notificaciones"
           onClick={() => handleOpenChange(!open)}
-          className={cn(
-            "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20",
-            open && "bg-foreground/20 text-foreground",
-          )}
+          className={cn(TOPBAR_ICON_BTN, open && TOPBAR_ICON_BTN_ACTIVE)}
         >
           <Bell size={16} strokeWidth={2} />
           {count > 0 && (

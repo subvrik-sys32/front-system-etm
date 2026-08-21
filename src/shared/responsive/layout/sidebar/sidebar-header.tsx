@@ -30,6 +30,8 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
       ? "Expandir barra lateral"
       : "Comprimir barra lateral"
 
+  const isCollapsedMode = collapsed && !isDrawer
+
   const logoButton = (
     <button
       type="button"
@@ -56,16 +58,19 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
   return (
     <div
       className={cn(
-        "flex h-14 w-full shrink-0 items-center border-b border-border/40 transition-all",
-        collapsed && !isDrawer ? "justify-center px-2" : "gap-3 px-3",
+        "flex h-14 w-full shrink-0 items-center border-b border-border/40 px-3 transition-[gap] duration-200",
+        // Sin texto visible: centrado real y sin gap reservado.
+        // Con texto visible: alineado a la izquierda con separación normal.
+        isCollapsedMode ? "justify-center gap-0" : "justify-start gap-3",
         isDrawer && "px-4",
       )}
     >
-      {logoButton}
+      <div className="flex size-10 shrink-0 items-center justify-center">
+        {logoButton}
+      </div>
 
       {(!collapsed || isDrawer) && (
         <div className="min-w-0 flex-1 overflow-hidden">
-          {/* Se añadió dark:text-white para que sea blanco en modo oscuro */}
           <p className="truncate text-xs font-bold tracking-tight text-primary dark:text-white">
             ETM S.A.C.
           </p>

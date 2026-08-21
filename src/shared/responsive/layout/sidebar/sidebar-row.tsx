@@ -49,7 +49,7 @@ export function SidebarRow({
   return (
     <div
       className={cn(
-        "group relative flex w-full items-center rounded-xl font-medium transition-all duration-150 select-none",
+        "group relative flex w-full items-center rounded-xl font-medium transition-colors duration-150 select-none",
         size === "sm" ? "h-9 text-xs" : "h-10 text-xs",
         active
           ? "bg-primary/10 text-primary font-semibold shadow-xs dark:bg-primary/15 dark:text-white"
@@ -91,7 +91,7 @@ export function SidebarRow({
           {hasCount && (
             <span
               className={cn(
-                "ml-2 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[10px] font-bold leading-none shadow-xs transition-all",
+                "ml-2 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[10px] font-bold leading-none shadow-xs",
                 badgeColor,
                 badgeAnimated && "animate-pulse"
               )}

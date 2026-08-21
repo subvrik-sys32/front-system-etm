@@ -12,6 +12,8 @@ import { usePageTitleStore } from "@/shared/responsive/navigation/page-title-sto
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
 import { usePageSearchStore } from "@/shared/ui/entity-toolbar/page-search-store"
 import { TOP_BAR_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
+import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
+import { cn } from "@/shared/utils/utils"
 
 export function TopBar() {
   const toggleDrawer = useMobileNavStore(s => s.toggleDrawer)
@@ -94,8 +96,8 @@ export function TopBar() {
             }}
             className={
               searchOpen
-                ? "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/20 text-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20"
-                : "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20"
+                ? cn(TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE)
+                : TOPBAR_ICON_BTN
             }
           >
             {searchOpen ? (
@@ -115,7 +117,7 @@ export function TopBar() {
           onClick={() => setProfileOpen(true)}
           aria-label="Perfil"
           disabled={!user}
-          className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20 disabled:opacity-50"
+          className={cn(TOPBAR_ICON_BTN, "disabled:opacity-50")}
         >
           <div className="relative size-7 shrink-0">
             {user ? (

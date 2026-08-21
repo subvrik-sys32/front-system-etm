@@ -14,10 +14,9 @@ import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
-import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
 import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
 import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
-import { DESKTOP_TOP_BAR_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
+import { PageShell } from "@/shared/responsive/layout/page-shell"
 
 type ViewMode = ActivityDepartment | "TEAM"
 
@@ -136,23 +135,8 @@ export default function BitacoraPage() {
   usePageToolbar(isMobile || isCompact ? null : <TabsNav compact={false} />)
 
   return (
-    <main
-      className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pb-3"
-      style={!isCompact ? { paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX } : undefined}
-    >
-
-      {/*
-        Contrato único (igual que tareas):
-        un AppListScroll por superficie de lista.
-        Tabs mobile DENTRO → mismo paddingTop del TopBar overlay.
-        Cuerpo con embedded → sin segundo scroller.
-      */}
+    <PageShell mode={isCompact ? "list" : "fill"}>
       <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-        {/*
-          Compact: AppListScroll (documento).
-          Desktop/tablet landscape: shell de altura — día/semana/mes
-          llenan el viewport (min height) y cada vista scrollea sola.
-        */}
         {isCompact ? (
           <AppListScroll>
             <div className="mt-2 mb-2 shrink-0">
@@ -196,6 +180,6 @@ export default function BitacoraPage() {
           </div>
         )}
       </section>
-    </main>
+    </PageShell>
   )
 }

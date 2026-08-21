@@ -6,6 +6,7 @@ import { ProcessPageContent } from "@/features/processes/components/process-page
 import { getProcessDefinition } from "@/features/processes/selectors/get-process-definition"
 import type { ProcessCode } from "@/features/tasks/types/task.types"
 import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+import { PageShell } from "@/shared/responsive/layout/page-shell"
 
 export default function ProcessPage() {
   const searchParams = useSearchParams()
@@ -20,7 +21,7 @@ export default function ProcessPage() {
   usePageTitle(process?.label ?? "Proceso")
 
   return (
-    <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
+    <PageShell mode="list">
       {/* Título en DesktopTopBar (pill). */}
 
       <section className="flex min-h-0 w-full flex-1 flex-col">
@@ -31,6 +32,6 @@ export default function ProcessPage() {
           initialShowHistory={initialShowHistory}
         />
       </section>
-    </main>
+    </PageShell>
   )
 }

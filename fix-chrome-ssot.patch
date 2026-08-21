@@ -1,0 +1,468 @@
+diff --git a/src/shared/responsive/layout/use-chrome-inset.ts b/src/shared/responsive/layout/use-chrome-inset.ts
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/src/shared/responsive/layout/use-chrome-inset.ts
+@@ -0,0 +1,51 @@
++"use client"
++
++import type { CSSProperties } from "react"
++
++import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
++import { usePageSearchStore } from "@/shared/ui/entity-toolbar/page-search-store"
++import {
++  TOP_BAR_HEIGHT_PX,
++  BOTTOM_NAV_HEIGHT_PX,
++  PAGE_SEARCH_BAR_HEIGHT_PX,
++  DESKTOP_TOP_BAR_HEIGHT_PX,
++} from "@/shared/responsive/layout/chrome-constants"
++
++type Options = {
++  /** Si false, no aplica paddingBottom. Default true. */
++  bottom?: boolean
++}
++
++/**
++ * Único dueño del inset del chrome overlay (TopBar blur + BottomNav).
++ * AppListScroll y PageShell leen de acá — ninguna page calcula px a mano.
++ */
++export function useChromeInset(options: Options = {}): CSSProperties {
++  const { bottom = true } = options
++  const { isMobile, isLandscape } = useResponsive()
++  const searchOpen = usePageSearchStore(s => s.open && s.enabled)
++
++  if (isMobile) {
++    if (isLandscape) {
++      return {
++        paddingTop: searchOpen ? PAGE_SEARCH_BAR_HEIGHT_PX : 4,
++        ...(bottom
++          ? { paddingBottom: "env(safe-area-inset-bottom, 0px)" }
++          : null),
++      }
++    }
++    return {
++      paddingTop:
++        TOP_BAR_HEIGHT_PX + (searchOpen ? PAGE_SEARCH_BAR_HEIGHT_PX : 0),
++      ...(bottom
++        ? {
++            paddingBottom: `calc(${BOTTOM_NAV_HEIGHT_PX}px + env(safe-area-inset-bottom, 0px))`,
++          }
++        : null),
++    }
++  }
++
++  return {
++    paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX,
++  }
++}
+
+diff --git a/src/shared/responsive/layout/page-shell.tsx b/src/shared/responsive/layout/page-shell.tsx
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/src/shared/responsive/layout/page-shell.tsx
+@@ -0,0 +1,44 @@
++"use client"
++
++import type { ReactNode } from "react"
++
++import { cn } from "@/shared/utils/utils"
++import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
++
++type Props = {
++  children: ReactNode
++  className?: string
++  /**
++   * fill = CAD, Nesting, Bitácora desktop: inset en el shell.
++   * list = listas con AppListScroll: inset lo aplica el scroll.
++   */
++  mode?: "fill" | "list"
++}
++
++/**
++ * Shell de página unificado.
++ * TopBar siempre overlay con blur (AppShell).
++ * mode=fill → paddingTop del chrome acá.
++ * mode=list → AppListScroll es dueño del inset.
++ */
++export function PageShell({
++  children,
++  className,
++  mode = "list",
++}: Props) {
++  const inset = useChromeInset({ bottom: mode === "fill" })
++
++  return (
++    <main
++      className={cn(
++        "flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none",
++        "tablet:px-4 desktop:px-5 desktop:pb-3",
++        mode === "fill" && "overflow-hidden",
++        className,
++      )}
++      style={mode === "fill" ? inset : undefined}
++    >
++      {children}
++    </main>
++  )
++}
+
+diff --git a/src/shared/ui/vertical-scroll/app-list-scroll.tsx b/src/shared/ui/vertical-scroll/app-list-scroll.tsx
+index 0000000..1111111 100644
+--- a/src/shared/ui/vertical-scroll/app-list-scroll.tsx
++++ b/src/shared/ui/vertical-scroll/app-list-scroll.tsx
+@@ -5,14 +5,7 @@
+ 
+ import { cn } from "@/shared/utils/utils"
+ import { ScrollArea } from "@/components/ui/scroll-area"
+-import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+-import {
+-  TOP_BAR_HEIGHT_PX,
+-  BOTTOM_NAV_HEIGHT_PX,
+-  PAGE_SEARCH_BAR_HEIGHT_PX,
+-  DESKTOP_TOP_BAR_HEIGHT_PX,
+-} from "@/shared/responsive/layout/chrome-constants"
+-import { usePageSearchStore } from "@/shared/ui/entity-toolbar/page-search-store"
++import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
+ 
+ type Props = {
+   children: React.ReactNode
+@@ -22,15 +15,13 @@
+ 
+ /**
+  * Único dueño del scroll vertical de páginas lista.
+- * TopBar es overlay en mobile y desktop: paddingTop = chrome para que
+- * el primer row no arranque tapado; al scrollear el contenido pasa bajo el blur.
++ * Inset del chrome: useChromeInset (SSOT).
+  */
+ export function AppListScroll({ children, resetKey, className }: Props) {
+   const pathname = usePathname()
+   const key = resetKey ?? pathname
+   const scrollRef = useRef<HTMLDivElement | null>(null)
+-  const { isMobile, isLandscape } = useResponsive()
+-  const searchOpen = usePageSearchStore(s => s.open && s.enabled)
++  const inset = useChromeInset()
+ 
+   useEffect(() => {
+     scrollRef.current?.scrollTo({ top: 0 })
+@@ -44,24 +35,7 @@
+     >
+       <div
+         className={cn("flex min-h-full flex-col", className)}
+-        style={
+-          isMobile
+-            ? isLandscape
+-              ? {
+-                  paddingTop: searchOpen ? PAGE_SEARCH_BAR_HEIGHT_PX : 4,
+-                  paddingBottom: "env(safe-area-inset-bottom, 0px)",
+-                }
+-              : {
+-                  paddingTop:
+-                    TOP_BAR_HEIGHT_PX +
+-                    (searchOpen ? PAGE_SEARCH_BAR_HEIGHT_PX : 0),
+-                  paddingBottom: `calc(${BOTTOM_NAV_HEIGHT_PX}px + env(safe-area-inset-bottom, 0px))`,
+-                }
+-            : {
+-                // DesktopTopBar overlay: scroll pasa bajo el blur.
+-                paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX,
+-              }
+-        }
++        style={inset}
+       >
+         {children}
+       </div>
+
+diff --git a/src/app/(protected)/projects/page.tsx b/src/app/(protected)/projects/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/projects/page.tsx
++++ b/src/app/(protected)/projects/page.tsx
+@@ -5,10 +5,14 @@
+ import { ProjectActions } from "@/features/projects/components/actions/project-actions"
+ import { ProjectPageContent } from "@/features/projects/components/project-page-content"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
++import { PageShell } from "@/shared/responsive/layout/page-shell"
+ import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
+ 
+ export default function ProjectsPage() {
+   usePageTitle("Proyectos")
++  const { isMobile } = useResponsive()
++  usePageActions(isMobile ? null : <ProjectActions />)
++
+   usePageActions(<ProjectActions />)
+ 
+   const searchParams = useSearchParams()
+@@ -17,7 +21,7 @@
+   const initialShowHistory = searchParams.get("history") === "1"
+ 
+   return (
+-    <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
++    <PageShell mode="list">
+ 
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+         <ProjectPageContent
+@@ -26,6 +30,6 @@
+           initialShowHistory={initialShowHistory}
+         />
+       </section>
+-    </main>
++    </PageShell>
+   )
+ }
+
+diff --git a/src/app/(protected)/nesting/page.tsx b/src/app/(protected)/nesting/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/nesting/page.tsx
++++ b/src/app/(protected)/nesting/page.tsx
+@@ -1,6 +1,7 @@
+ "use client"
+ 
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
++import { PageShell } from "@/shared/responsive/layout/page-shell"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ import { DESKTOP_TOP_BAR_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
+ import { NestingPage } from "@/features/nesting/components/nesting-page"
+@@ -10,15 +11,10 @@
+   const { isMobile } = useResponsive()
+ 
+   return (
+-    <main
+-      className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pb-3"
+-      style={{
+-        paddingTop: isMobile ? undefined : DESKTOP_TOP_BAR_HEIGHT_PX,
+-      }}
+-    >
++    <PageShell mode="fill">
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+         <NestingPage />
+       </section>
+-    </main>
++    </PageShell>
+   )
+ }
+
+diff --git a/src/app/(protected)/cad/page.tsx b/src/app/(protected)/cad/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/cad/page.tsx
++++ b/src/app/(protected)/cad/page.tsx
+@@ -68,7 +68,7 @@
+   usePageToolbar(isMobile ? null : <TabsNav compact={false} />)
+ 
+   return (
+-    <main className="flex h-full min-h-0 flex-col overflow-hidden bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pb-3">
++    <PageShell mode="fill">
+ 
+       {/* Shell fill-height — chrome mobile como engineering board */}
+       <section
+@@ -91,6 +91,6 @@
+           {tab === "ai" ? <CadAiPanel embedded /> : <CadWorkspacePanel embedded />}
+         </div>
+       </section>
+-    </main>
++    </PageShell>
+   )
+ }
+
+diff --git a/src/app/(protected)/bitacora/page.tsx b/src/app/(protected)/bitacora/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/bitacora/page.tsx
++++ b/src/app/(protected)/bitacora/page.tsx
+@@ -14,7 +14,6 @@
+ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+ import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+-import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+ import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
+ import { DESKTOP_TOP_BAR_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
+@@ -136,10 +135,7 @@
+   usePageToolbar(isMobile || isCompact ? null : <TabsNav compact={false} />)
+ 
+   return (
+-    <main
+-      className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pb-3"
+-      style={!isCompact ? { paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX } : undefined}
+-    >
++    <PageShell mode={isCompact ? "list" : "fill"}>
+ 
+       {/*
+         Contrato único (igual que tareas):
+@@ -196,6 +192,6 @@
+           </div>
+         )}
+       </section>
+-    </main>
++    </PageShell>
+   )
+ }
+
+diff --git a/src/app/(protected)/admin/access/page.tsx b/src/app/(protected)/admin/access/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/admin/access/page.tsx
++++ b/src/app/(protected)/admin/access/page.tsx
+@@ -16,7 +16,7 @@
+   usePageActions(isMobile ? null : <UserActions />)
+ 
+   return (
+-    <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
++    <PageShell mode="list">
+ 
+       {/* FAB crear usuario (mobile) — mismo UserActions */}
+       <div className="desktop:hidden">
+@@ -26,6 +26,6 @@
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+         <RolePermissionsPageContent />
+       </section>
+-    </main>
++    </PageShell>
+   )
+ }
+
+diff --git a/src/app/(protected)/admin/activity-types/page.tsx b/src/app/(protected)/admin/activity-types/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/admin/activity-types/page.tsx
++++ b/src/app/(protected)/admin/activity-types/page.tsx
+@@ -3,6 +3,9 @@
+ import { ActivityTypeActions } from "@/features/activity-log/components/actions/activity-type-actions"
+ import { ActivityTypesPageContent } from "@/features/activity-log/components/contents/activity-types-page-content"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
++import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
++import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
++import { PageShell } from "@/shared/responsive/layout/page-shell"
+ import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
+ 
+ export default function ActivityTypesPage() {
+@@ -10,7 +13,7 @@
+   usePageActions(<ActivityTypeActions />)
+ 
+   return (
+-    <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
++    <PageShell mode="list">
+ 
+       <div className="mb-1 shrink-0 desktop:hidden">
+         <ActivityTypeActions />
+@@ -19,6 +22,6 @@
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+         <ActivityTypesPageContent />
+       </section>
+-    </main>
++    </PageShell>
+   )
+ }
+
+diff --git a/src/app/(protected)/processes/page.tsx b/src/app/(protected)/processes/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/processes/page.tsx
++++ b/src/app/(protected)/processes/page.tsx
+@@ -6,6 +6,7 @@
+ import { getProcessDefinition } from "@/features/processes/selectors/get-process-definition"
+ import type { ProcessCode } from "@/features/tasks/types/task.types"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
++import { PageShell } from "@/shared/responsive/layout/page-shell"
+ 
+ export default function ProcessPage() {
+   const searchParams = useSearchParams()
+@@ -20,7 +21,7 @@
+   usePageTitle(process?.label ?? "Proceso")
+ 
+   return (
+-    <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
++    <PageShell mode="list">
+       {/* Título en DesktopTopBar (pill). */}
+ 
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+@@ -31,6 +32,6 @@
+           initialShowHistory={initialShowHistory}
+         />
+       </section>
+-    </main>
++    </PageShell>
+   )
+ }
+
+diff --git a/src/app/(protected)/ingenieria/page.tsx b/src/app/(protected)/ingenieria/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/ingenieria/page.tsx
++++ b/src/app/(protected)/ingenieria/page.tsx
+@@ -2,17 +2,18 @@
+ 
+ import { EngineeringPageContent } from "@/features/engineering/components/engineering-page-content"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
++import { PageShell } from "@/shared/responsive/layout/page-shell"
+ 
+ export default function IngenieriaPage() {
+   usePageTitle("Ingeniería")
+ 
+   return (
+-    <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
++    <PageShell mode="list">
+       {/* Título en DesktopTopBar (pill). */}
+ 
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+         <EngineeringPageContent />
+       </section>
+-    </main>
++    </PageShell>
+   )
+ }
+
+diff --git a/src/app/(protected)/production/page.tsx b/src/app/(protected)/production/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/production/page.tsx
++++ b/src/app/(protected)/production/page.tsx
+@@ -1,16 +1,15 @@
+ "use client"
+ 
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+-import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
++import { PageShell } from "@/shared/responsive/layout/page-shell"
+ import { TaskAreaSidebar } from "@/features/tasks/pipeline/components/panel/task-area-sidebar"
+ 
+ /** Asignación — bottom nav móvil apunta aquí (/production). */
+ export default function AssignmentPage() {
+   usePageTitle("Asignación")
+-  const { isMobile } = useResponsive()
+ 
+   return (
+-    <main className="relative flex h-full min-h-0 flex-col bg-background px-2 pt-0 pb-1 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
++    <PageShell mode="list" className="px-2 pb-1">
+       {/* Título en DesktopTopBar (pill). */}
+ 
+       {/*
+@@ -19,6 +18,6 @@
+         - desktop: panel con scroll propio
+       */}
+       <TaskAreaSidebar className="min-h-0 flex-1" />
+-    </main>
++    </PageShell>
+   )
+ }
+
+diff --git a/src/app/(protected)/tasks/page.tsx b/src/app/(protected)/tasks/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/tasks/page.tsx
++++ b/src/app/(protected)/tasks/page.tsx
+@@ -5,6 +5,7 @@
+ import { TaskActions } from "@/features/tasks/components/actions/task-actions"
+ import { TaskPageContent } from "@/features/tasks/components/task-page-content"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
++import { PageShell } from "@/shared/responsive/layout/page-shell"
+ import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
+ 
+ export default function TasksPage() {
+@@ -17,7 +18,7 @@
+   const initialShowHistory = searchParams.get("history") === "1"
+ 
+   return (
+-    <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
++    <PageShell mode="list">
+ 
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+         <TaskPageContent
+@@ -26,6 +27,6 @@
+           initialShowHistory={initialShowHistory}
+         />
+       </section>
+-    </main>
++    </PageShell>
+   )
+ }

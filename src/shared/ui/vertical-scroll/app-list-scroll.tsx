@@ -5,14 +5,7 @@ import { usePathname } from "next/navigation"
 
 import { cn } from "@/shared/utils/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
-import {
-  TOP_BAR_HEIGHT_PX,
-  BOTTOM_NAV_HEIGHT_PX,
-  PAGE_SEARCH_BAR_HEIGHT_PX,
-  DESKTOP_TOP_BAR_HEIGHT_PX,
-} from "@/shared/responsive/layout/chrome-constants"
-import { usePageSearchStore } from "@/shared/ui/entity-toolbar/page-search-store"
+import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
 
 type Props = {
   children: React.ReactNode
@@ -22,15 +15,13 @@ type Props = {
 
 /**
  * Único dueño del scroll vertical de páginas lista.
- * TopBar es overlay en mobile y desktop: paddingTop = chrome para que
- * el primer row no arranque tapado; al scrollear el contenido pasa bajo el blur.
+ * Inset del chrome: useChromeInset (SSOT).
  */
 export function AppListScroll({ children, resetKey, className }: Props) {
   const pathname = usePathname()
   const key = resetKey ?? pathname
   const scrollRef = useRef<HTMLDivElement | null>(null)
-  const { isMobile, isLandscape } = useResponsive()
-  const searchOpen = usePageSearchStore(s => s.open && s.enabled)
+  const inset = useChromeInset()
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 })
@@ -44,24 +35,7 @@ export function AppListScroll({ children, resetKey, className }: Props) {
     >
       <div
         className={cn("flex min-h-full flex-col", className)}
-        style={
-          isMobile
-            ? isLandscape
-              ? {
-                  paddingTop: searchOpen ? PAGE_SEARCH_BAR_HEIGHT_PX : 4,
-                  paddingBottom: "env(safe-area-inset-bottom, 0px)",
-                }
-              : {
-                  paddingTop:
-                    TOP_BAR_HEIGHT_PX +
-                    (searchOpen ? PAGE_SEARCH_BAR_HEIGHT_PX : 0),
-                  paddingBottom: `calc(${BOTTOM_NAV_HEIGHT_PX}px + env(safe-area-inset-bottom, 0px))`,
-                }
-            : {
-                // DesktopTopBar overlay: scroll pasa bajo el blur.
-                paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX,
-              }
-        }
+        style={inset}
       >
         {children}
       </div>

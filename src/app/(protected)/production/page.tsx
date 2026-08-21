@@ -1,16 +1,15 @@
 "use client"
 
 import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
-import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { PageShell } from "@/shared/responsive/layout/page-shell"
 import { TaskAreaSidebar } from "@/features/tasks/pipeline/components/panel/task-area-sidebar"
 
 /** Asignación — bottom nav móvil apunta aquí (/production). */
 export default function AssignmentPage() {
   usePageTitle("Asignación")
-  const { isMobile } = useResponsive()
 
   return (
-    <main className="relative flex h-full min-h-0 flex-col bg-background px-2 pt-0 pb-1 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
+    <PageShell mode="list" className="px-2 pb-1">
       {/* Título en DesktopTopBar (pill). */}
 
       {/*
@@ -19,6 +18,6 @@ export default function AssignmentPage() {
         - desktop: panel con scroll propio
       */}
       <TaskAreaSidebar className="min-h-0 flex-1" />
-    </main>
+    </PageShell>
   )
 }

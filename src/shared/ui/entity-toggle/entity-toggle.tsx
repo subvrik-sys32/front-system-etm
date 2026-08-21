@@ -1,14 +1,6 @@
 "use client"
 
-import {
-  useCallback,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type TouchEvent,
-} from "react"
 import type { LucideIcon } from "lucide-react"
-
 import { cn } from "@/shared/utils/utils"
 
 export type EntityToggleOption<T extends string = string> = {
@@ -21,120 +13,33 @@ type Props<T extends string> = {
   value: T
   onChange: (value: T) => void
   options: EntityToggleOption<T>[]
-  /**
-   * Solo iconos, targets táctiles ~44px (toolbar móvil).
-   * Default false = label + icono (formato CAD / Día·Semana·Mes).
-   */
   compact?: boolean
-  /** Reparte el ancho entre opciones (tabs de página en móvil). */
-  fullWidth?: boolean
   className?: string
   "aria-label"?: string
 }
 
 /**
- * Toggle segmentado SSOT.
- * Visual = modelo CAD (bg-card + pastilla bg-background).
- * Movimiento = pastilla deslizante + swipe horizontal en touch.
+ * Toggle segmentado Premium — diseño sofisticado, ultra-fluido
+ * y completamente basado en CSS nativo (sin desfases ni parpadeos).
  */
 export function EntityToggle<T extends string>({
   value,
   onChange,
   options,
   compact = false,
-  fullWidth = false,
   className,
   "aria-label": ariaLabel,
 }: Props<T>) {
-  const trackRef = useRef<HTMLDivElement>(null)
-  const btnRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
-  const [pill, setPill] = useState({ left: 0, width: 0, ready: false })
-  const touchStartX = useRef<number | null>(null)
-
-  const measure = useCallback(() => {
-    const track = trackRef.current
-    const btn = btnRefs.current.get(value)
-    if (!track || !btn) return
-    const tr = track.getBoundingClientRect()
-    const br = btn.getBoundingClientRect()
-    setPill({
-      left: br.left - tr.left,
-      width: br.width,
-      ready: true,
-    })
-  }, [value])
-
-  useLayoutEffect(() => {
-    measure()
-  }, [measure, options, compact, fullWidth])
-
-  useLayoutEffect(() => {
-    const track = trackRef.current
-    if (!track || typeof ResizeObserver === "undefined") return
-    const ro = new ResizeObserver(() => measure())
-    ro.observe(track)
-    return () => ro.disconnect()
-  }, [measure])
-
-  const goRelative = useCallback(
-    (delta: number) => {
-      const idx = options.findIndex(o => o.value === value)
-      if (idx < 0) return
-      const next = options[idx + delta]
-      if (next) onChange(next.value)
-    },
-    [onChange, options, value],
-  )
-
-  const onTouchStart = useCallback((e: TouchEvent) => {
-    touchStartX.current = e.touches[0]?.clientX ?? null
-  }, [])
-
-  const onTouchEnd = useCallback(
-    (e: TouchEvent) => {
-      const start = touchStartX.current
-      touchStartX.current = null
-      if (start == null) return
-      const end = e.changedTouches[0]?.clientX
-      if (end == null) return
-      const dx = end - start
-      // Umbral táctil: evita pelear con taps
-      if (Math.abs(dx) < 48) return
-      if (dx < 0) goRelative(1)
-      else goRelative(-1)
-    },
-    [goRelative],
-  )
-
   return (
     <div
-      ref={trackRef}
       role="group"
       aria-label={ariaLabel}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
       className={cn(
-        // Modelo CAD: superficie card + pastilla blanca/background
-        "relative inline-flex items-center rounded-xl bg-card p-1 shadow-xs",
-        compact && !fullWidth && "rounded-lg",
-        fullWidth && "w-full",
+        "relative inline-flex items-center gap-1 rounded-2xl bg-muted/60 p-1 backdrop-blur-md dark:bg-muted/40 shadow-xs",
+        compact ? "rounded-xl p-1" : "h-9 rounded-2xl",
         className,
       )}
     >
-      {/* Pastilla deslizante */}
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute top-1 bottom-1 rounded-lg bg-background shadow-xs",
-          "transition-[transform,width] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
-          !pill.ready && "opacity-0",
-        )}
-        style={{
-          width: pill.width,
-          transform: `translateX(${pill.left}px)`,
-        }}
-      />
-
       {options.map(option => {
         const Icon = option.icon
         const active = value === option.value
@@ -143,36 +48,32 @@ export function EntityToggle<T extends string>({
           <button
             key={option.value}
             type="button"
-            ref={el => {
-              if (el) btnRefs.current.set(option.value, el)
-              else btnRefs.current.delete(option.value)
-            }}
             onClick={() => onChange(option.value)}
             title={option.label}
             aria-label={option.label}
             aria-pressed={active}
             className={cn(
-              "relative z-[1] flex items-center justify-center transition-colors duration-200",
+              "relative z-10 flex items-center justify-center font-medium select-none transition-all duration-300 ease-out",
               compact
-                ? fullWidth
-                  ? "h-11 min-w-0 flex-1 gap-1.5 rounded-lg px-2"
-                  : "size-11 rounded-md"
-                : "h-7 gap-1.5 rounded-lg px-3.5 text-xs font-semibold",
+                ? "size-9 rounded-lg"
+                : "h-full gap-2 rounded-xl px-3.5 text-xs tracking-tight",
               active
-                ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground",
+                ? "bg-background text-foreground shadow-xs ring-1 ring-border/5"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/40",
             )}
           >
             {Icon ? (
-              <Icon size={compact ? 16 : 14} strokeWidth={2.25} />
-            ) : null}
-            {(!compact || fullWidth) && (
-              <span
+              <Icon
+                size={compact ? 16 : 14}
+                strokeWidth={active ? 2.5 : 2}
                 className={cn(
-                  "truncate",
-                  fullWidth ? "text-xs font-semibold" : undefined,
+                  "transition-colors duration-200 shrink-0",
+                  active ? "text-primary" : "text-muted-foreground/80",
                 )}
-              >
+              />
+            ) : null}
+            {(!compact || options.length <= 2) && (
+              <span className={cn("truncate", active ? "font-semibold" : "font-medium")}>
                 {option.label}
               </span>
             )}

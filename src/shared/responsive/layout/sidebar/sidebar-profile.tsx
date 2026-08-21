@@ -170,10 +170,7 @@ export function SidebarProfile({
 
           ref={containerRef}
 
-          className={cn(
-
-            "flex flex-col items-center gap-2"
-          )}
+          className="flex w-full flex-col items-center"
 
 
         >
@@ -190,7 +187,7 @@ export function SidebarProfile({
 
                 className={cn(
 
-                  "relative h-9 w-9 shrink-0 rounded-full transition",
+                  "relative size-9 shrink-0 rounded-full",
 
                   !canOpenProfile && "cursor-not-allowed opacity-60"
           )}
@@ -358,33 +355,23 @@ export function SidebarProfile({
 
           ref={cardRef}
 
-          className="relative z-10 rounded-xl border-0 bg-card px-3 py-3 shadow-xs transition-colors duration-300"
+          className="relative z-10 rounded-xl border-0 bg-card py-2 shadow-xs"
 
         >
 
-          <div className="flex items-center justify-between gap-2">
-
-            <div className="flex min-w-0 items-center gap-2.5">
-
-              <div className="relative h-9 w-9 shrink-0">
-
+          <div className="flex items-center gap-0">
+            <div className="relative flex w-[72px] shrink-0 items-center justify-center">
+              <div className="relative size-9 shrink-0">
                 {avatar}
-
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500" />
-
+                <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500" />
               </div>
-
-              {user ? (
-
-                <p className="truncate text-sm font-semibold leading-tight text-foreground">{user.name}</p>
-
-              ) : (
-
-                <div className="h-3 w-28 animate-pulse rounded bg-foreground/5" />
-
-              )}
-
             </div>
+            <div className="flex min-w-0 flex-1 items-center justify-between gap-2 pr-0.5">
+              {user ? (
+                <p className="truncate text-sm font-semibold leading-tight text-foreground">{user.name}</p>
+              ) : (
+                <div className="h-3 w-28 animate-pulse rounded bg-foreground/5" />
+              )}
 
 
 
@@ -410,7 +397,7 @@ export function SidebarProfile({
               Mi perfil
 
             </button>
-
+            </div>
           </div>
 
 

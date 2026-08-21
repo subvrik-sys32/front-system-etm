@@ -7,6 +7,9 @@ import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-sto
 import { TOOLBAR_CHROME_ICON_BTN } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { cn } from "@/shared/utils/utils"
 
+/** Ancho del rail colapsado — logo y avatar comparten este eje. */
+const RAIL_W = "w-[72px]"
+
 type Props = {
   collapsed: boolean
   isDrawer?: boolean
@@ -30,52 +33,45 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
       ? "Expandir barra lateral"
       : "Comprimir barra lateral"
 
-  const isCollapsedMode = collapsed && !isDrawer
-
-  const logoButton = (
-    <button
-      type="button"
-      onClick={onLogoClick}
-      title={logoTitle}
-      aria-label={logoTitle}
-      className={cn(
-        TOOLBAR_CHROME_ICON_BTN,
-        "group relative flex size-10 shrink-0 items-center justify-center rounded-xl p-2 transition-all active:scale-95",
-      )}
-    >
-      <Image
-        src="/icon.svg"
-        alt="ETM S.A.C."
-        width={32}
-        height={32}
-        priority
-        draggable={false}
-        className="max-h-6 w-auto select-object-contain transition-transform duration-200 group-hover:scale-105"
-      />
-    </button>
-  )
-
   return (
     <div
       className={cn(
-        "flex h-14 w-full shrink-0 items-center border-b border-border/40 px-3 transition-[gap] duration-200",
-        // Sin texto visible: centrado real y sin gap reservado.
-        // Con texto visible: alineado a la izquierda con separación normal.
-        isCollapsedMode ? "justify-center gap-0" : "justify-start gap-3",
-        isDrawer && "px-4",
+        "flex h-12 w-full shrink-0 items-center border-b border-border/40",
+        isDrawer && "px-2",
       )}
     >
-      <div className="flex size-10 shrink-0 items-center justify-center">
-        {logoButton}
+      <div
+        className={cn(
+          "flex shrink-0 items-center justify-center",
+          isDrawer ? "w-12" : RAIL_W,
+        )}
+      >
+        <button
+          type="button"
+          onClick={onLogoClick}
+          title={logoTitle}
+          aria-label={logoTitle}
+          className={cn(
+            TOOLBAR_CHROME_ICON_BTN,
+            "flex size-9 shrink-0 items-center justify-center rounded-xl p-1.5 active:scale-95",
+          )}
+        >
+          <Image
+            src="/icon.svg"
+            alt="ETM S.A.C."
+            width={28}
+            height={28}
+            priority
+            draggable={false}
+            className="max-h-5 w-auto select-none object-contain"
+          />
+        </button>
       </div>
 
       {(!collapsed || isDrawer) && (
-        <div className="min-w-0 flex-1 overflow-hidden">
+        <div className="min-w-0 flex-1 overflow-hidden pr-3">
           <p className="truncate text-xs font-bold tracking-tight text-primary dark:text-white">
             ETM S.A.C.
-          </p>
-          <p className="truncate text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
-            ERP Industrial
           </p>
         </div>
       )}

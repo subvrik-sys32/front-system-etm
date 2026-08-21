@@ -22,9 +22,9 @@ export function SidebarSection({
 
     return (
 
-      <section className="mb-6">
+      <section className="mb-3">
 
-        <div className="mb-2 px-4">
+        <div className="mb-1 px-3">
 
           <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
             {title}
@@ -32,7 +32,7 @@ export function SidebarSection({
 
         </div>
 
-        <div className="space-y-0.5">
+        <div className="space-y-0">
           {children}
         </div>
 
@@ -44,9 +44,9 @@ export function SidebarSection({
 
   return (
 
-    <section className="mb-5">
+    <section className="mb-2.5">
 
-      <div className={cn("mb-2 px-3 h-4")}>
+      <div className={cn("mb-1 px-2.5 h-3.5")}>
 
         {!collapsed && (
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
@@ -56,7 +56,7 @@ export function SidebarSection({
 
       </div>
 
-      <div className="space-y-0.5">
+      <div className="space-y-0">
         {children}
       </div>
 

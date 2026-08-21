@@ -49,18 +49,18 @@ export function SidebarRow({
   return (
     <div
       className={cn(
-        "group relative flex w-full items-center rounded-xl font-medium transition-colors duration-150 select-none",
-        size === "sm" ? "h-9 text-xs" : "h-10 text-xs",
+        "group relative flex w-full items-center rounded-lg font-medium transition-colors duration-150 select-none",
+        size === "sm" ? "h-8 text-xs" : "h-8 text-xs",
         active
           ? "bg-primary/10 text-primary font-semibold shadow-xs dark:bg-primary/15 dark:text-white"
           : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-        collapsed && !isDrawer ? "justify-center px-0" : "px-3",
+        collapsed && !isDrawer ? "justify-center px-0" : "px-2.5",
         className
       )}
       {...props}
     >
       {/* Contenedor del Icono */}
-      <div className="relative flex size-8 shrink-0 items-center justify-center">
+      <div className="relative flex size-7 shrink-0 items-center justify-center">
         <Icon
           className={cn(
             "size-4 shrink-0 transition-colors",
@@ -85,7 +85,7 @@ export function SidebarRow({
 
       {/* Contenido en modo EXPANDIDO / DRAWER */}
       {(!collapsed || isDrawer) && (
-        <div className="ml-2.5 flex flex-1 items-center justify-between min-w-0">
+        <div className="ml-2 flex min-w-0 flex-1 items-center justify-between">
           <span className="truncate">{label}</span>
 
           {hasCount && (

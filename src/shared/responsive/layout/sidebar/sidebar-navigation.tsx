@@ -50,7 +50,7 @@ export function SidebarNavigation({
 
   return (
     <ScrollArea className="min-h-0 w-full flex-1">
-      <div className={cn("w-full", isDrawer ? "px-2 py-3 pb-4" : "px-2 py-1 pb-2")}>
+      <div className={cn("w-full", isDrawer ? "px-1.5 py-2 pb-3" : "px-1.5 py-1 pb-1.5")}>
         {!isDrawer && (
           <>
             <div className={cn("mb-1 w-full", collapsed && "flex justify-center")}>

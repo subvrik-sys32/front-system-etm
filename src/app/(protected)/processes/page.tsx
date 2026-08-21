@@ -22,8 +22,6 @@ export default function ProcessPage() {
 
   return (
     <PageShell mode="list">
-      {/* Título en DesktopTopBar (pill). */}
-
       <section className="flex min-h-0 w-full flex-1 flex-col">
         <ProcessPageContent
           processCode={processCode}

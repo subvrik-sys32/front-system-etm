@@ -4,11 +4,12 @@ import { useState } from "react"
 import { Sparkles, Boxes } from "lucide-react"
 
 import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
-import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
+import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import {
   TOP_BAR_HEIGHT_PX,
   BOTTOM_NAV_HEIGHT_PX,
+  DESKTOP_TOP_BAR_HEIGHT_PX,
 } from "@/shared/responsive/layout/chrome-constants"
 import { CadWorkspacePanel } from "@/features/cad/components/cad-workspace-panel"
 import { CadAiPanel } from "@/features/cad-ai/components/cad-ai-panel"
@@ -24,7 +25,6 @@ type Tab = "ai" | "templates"
  */
 export default function CadPage() {
   usePageTitle("CAD")
-  // Tabs desktop van en chrome vía header residual; mobile ya tiene TabsNav.
   const { isMobile } = useResponsive()
   const [tab, setTab] = useState<Tab>("ai")
 
@@ -65,8 +65,10 @@ export default function CadPage() {
     )
   }
 
+  usePageToolbar(isMobile ? null : <TabsNav compact={false} />)
+
   return (
-    <main className="flex h-full min-h-0 flex-col overflow-hidden bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
+    <main className="flex h-full min-h-0 flex-col overflow-hidden bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pb-3">
 
       {/* Shell fill-height — chrome mobile como engineering board */}
       <section
@@ -77,7 +79,7 @@ export default function CadPage() {
                 paddingTop: TOP_BAR_HEIGHT_PX,
                 paddingBottom: `calc(${BOTTOM_NAV_HEIGHT_PX}px + env(safe-area-inset-bottom, 0px))`,
               }
-            : undefined
+            : { paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX }
         }
       >
         {/* Tabs mobile */}

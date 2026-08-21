@@ -216,7 +216,7 @@ function EntryCountBadge({
 export function TeamActivityLogPageContent({ embedded = false }: { embedded?: boolean } = {}) {
   const queryClient = useQueryClient()
 
-  usePageTitle("Bitácora de Equipo", { mobile: "Bitácora" })
+  usePageTitle("Bitácora", { mobile: "Bitácora" })
 
   const { users } = useUsersDirectory()
 

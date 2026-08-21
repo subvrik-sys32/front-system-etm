@@ -13,7 +13,7 @@ export type BitacoraDepartmentConfig = {
 export const BITACORA_DEPARTMENTS: Record<ActivityDepartment, BitacoraDepartmentConfig> = {
   PRODUCCION: {
     department: "PRODUCCION",
-    pageTitle: "Bitácora de Producción",
+    pageTitle: "Bitácora",
     mobileTitle: "Bitácora",
     heading: "BITÁCORA DE PRODUCCIÓN",
     subtitle: "Qué hiciste hoy",
@@ -21,7 +21,7 @@ export const BITACORA_DEPARTMENTS: Record<ActivityDepartment, BitacoraDepartment
   },
   INGENIERIA: {
     department: "INGENIERIA",
-    pageTitle: "Bitácora de Ingeniería",
+    pageTitle: "Bitácora",
     mobileTitle: "Bitácora",
     heading: "BITÁCORA DE INGENIERÍA",
     subtitle: "Qué hiciste hoy",

@@ -59,7 +59,7 @@ export function AppListScroll({ children, resetKey, className }: Props) {
                 }
             : {
                 // DesktopTopBar overlay: scroll pasa bajo el blur.
-                paddingTop: 44,
+                paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX,
               }
         }
       >

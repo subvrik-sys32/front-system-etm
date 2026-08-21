@@ -78,15 +78,12 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
           visualState === "moving-out" || visualState === "moving-in"
             ? "will-change-[width]"
             : "will-change-auto",
-          !isDrawer && "transition-[width] duration-300 ease-out",
+          !isDrawer && "transition-[width] duration-150 ease-out",
           (isDrawer && !isVisible) || isFullyHidden ? "pointer-events-none" : "",
         )}
       >
-        <div 
-          className={cn(
-            "flex h-full flex-col overflow-hidden pt-2 pb-2",
-            collapsed ? "opacity-95" : "opacity-100",
-          )} 
+        <div
+          className="flex h-full flex-col overflow-hidden pt-1.5 pb-1.5"
           style={
             isDrawer
               ? undefined

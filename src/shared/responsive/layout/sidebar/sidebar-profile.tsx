@@ -1,14 +1,10 @@
 "use client"
 
-
-
 import { useEffect, useState, type RefObject } from "react"
 
 import { useRouter } from "next/navigation"
 
 import { LogOut } from "lucide-react"
-
-
 
 import { useAuthStore } from "@/features/auth/store/auth-store"
 
@@ -17,8 +13,6 @@ import { useOverlayStore } from "@/shared/stores/overlay-store"
 import { ProfilePreviewPanel } from "@/features/profile"
 
 import { ProfileMentionBadge } from "@/features/notifications/components/profile-mention-badge"
-
-
 
 import {
 
@@ -33,8 +27,6 @@ import {
 import { ActionDialog } from "@/shared/ui/dialogs/action-dialog/action-dialog"
 
 import { cn } from "@/shared/utils/utils"
-
-
 
 type SidebarProfileProps = {
 
@@ -62,11 +54,7 @@ type SidebarProfileProps = {
 
 }
 
-
-
 const OVERLAP = 24
-
-
 
 export function SidebarProfile({
 
@@ -102,8 +90,6 @@ export function SidebarProfile({
 
   const [logoutOpen, setLogoutOpen] = useState(false)
 
-
-
   const confirmLogout = () => {
 
     logout()
@@ -111,8 +97,6 @@ export function SidebarProfile({
     router.replace("/login")
 
   }
-
-
 
   const avatar = (
 
@@ -131,8 +115,6 @@ export function SidebarProfile({
     </div>
 
   )
-
-
 
   const logoutDialog = (
 
@@ -158,8 +140,6 @@ export function SidebarProfile({
 
   )
 
-
-
   if (collapsed) {
 
     return (
@@ -171,7 +151,6 @@ export function SidebarProfile({
           ref={containerRef}
 
           className="flex w-full flex-col items-center"
-
 
         >
 
@@ -186,11 +165,9 @@ export function SidebarProfile({
                 disabled={!canOpenProfile}
 
                 className={cn(
-
                   "relative size-9 shrink-0 rounded-full",
-
-                  !canOpenProfile && "cursor-not-allowed opacity-60"
-          )}
+                  !canOpenProfile && "cursor-not-allowed opacity-60",
+                )}
 
                 aria-label="Mi perfil"
 
@@ -205,8 +182,6 @@ export function SidebarProfile({
               </button>
 
             </PopoverTrigger>
-
-
 
             <PopoverContent
 
@@ -246,8 +221,6 @@ export function SidebarProfile({
 
           </Popover>
 
-
-
           <button
 
             onClick={() => {
@@ -270,8 +243,6 @@ export function SidebarProfile({
 
         </div>
 
-
-
         {logoutDialog}
 
       </>
@@ -280,172 +251,91 @@ export function SidebarProfile({
 
   }
 
-
-
   return (
-
     <>
-
-            <div
-
-        ref={containerRef}
-
-        className={cn(
-
-          "relative"
-          )}
-
-
-      >
-
+      <div ref={containerRef} className="relative">
         <div
-
           aria-hidden={!profileOpen}
-
           className={cn(
-
             "absolute inset-x-0 bottom-full z-0 overflow-hidden rounded-xl bg-popover",
-
-            "origin-bottom transition-[transform,opacity] duration-300 ease-out",
-
-            profileOpen ? "opacity-100" : "pointer-events-none opacity-0"
+            "transition-opacity duration-150 ease-out",
+            profileOpen ? "opacity-100" : "pointer-events-none opacity-0",
           )}
-
-          style={{
-
-            height: panelHeight + OVERLAP + 30,
-
-            transform: `translateY(${profileOpen ? OVERLAP : OVERLAP + 16}px)`,
-
-          }}
-
+          style={{ height: panelHeight + OVERLAP + 8 }}
         >
-
           <div
-
             ref={panelRef}
-
             className="absolute inset-x-0 bottom-0 overflow-hidden"
-
-            style={{ height: panelHeight + OVERLAP + 30 }}
-
+            style={{ height: panelHeight + OVERLAP + 8 }}
           >
-
             <ProfilePreviewPanel
-
               contentRef={contentRef}
-
               onEdit={() => {
-
                 setProfileOpen(false)
-
                 onEditProfile()
-
               }}
-
             />
-
           </div>
-
         </div>
 
-
-
         <div
-
           ref={cardRef}
-
-          className="relative z-10 rounded-xl border-0 bg-card py-2 shadow-xs"
-
+          className="relative z-10 rounded-xl border-0 bg-card px-2.5 py-2.5 shadow-xs"
         >
-
-          <div className="flex items-center gap-0">
-            <div className="relative flex w-[72px] shrink-0 items-center justify-center">
-              <div className="relative size-9 shrink-0">
-                {avatar}
-                <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500" />
-              </div>
+          <div className="flex items-center gap-2.5">
+            <div className="relative size-9 shrink-0">
+              {avatar}
+              <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500" />
             </div>
-            <div className="flex min-w-0 flex-1 items-center justify-between gap-2 pr-0.5">
+            <div className="min-w-0 flex-1">
               {user ? (
-                <p className="truncate text-sm font-semibold leading-tight text-foreground">{user.name}</p>
+                <>
+                  <p className="truncate text-sm font-semibold leading-tight text-foreground">
+                    {user.name}
+                  </p>
+                  <p className="truncate text-[11px] leading-tight text-muted-foreground">
+                    {user.email}
+                  </p>
+                </>
               ) : (
-                <div className="h-3 w-28 animate-pulse rounded bg-foreground/5" />
+                <div className="space-y-1">
+                  <div className="h-3 w-24 animate-pulse rounded bg-foreground/5" />
+                  <div className="h-2.5 w-32 animate-pulse rounded bg-foreground/5" />
+                </div>
               )}
-
-
-
-            <button
-
-              onClick={toggleProfile}
-
-              disabled={!canOpenProfile}
-
-              className={cn(
-
-                "shrink-0 rounded-md px-2 py-1 text-xs transition",
-
-                canOpenProfile
-
-                  ? "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
-
-                  : "cursor-not-allowed text-muted-foreground/70"
-          )}
-
-            >
-
-              Mi perfil
-
-            </button>
             </div>
           </div>
 
-
-
-          <div className="mt-1.5 flex items-center justify-between gap-2">
-
-            {user ? (
-
-              <p className="min-w-0 truncate text-xs text-muted-foreground">{user.email}</p>
-
-            ) : (
-
-              <div className="h-2 w-20 animate-pulse rounded bg-foreground/5" />
-
-            )}
-
-
-
+          <div className="mt-2 flex items-center gap-1">
             <button
-
+              type="button"
+              onClick={toggleProfile}
+              disabled={!canOpenProfile}
+              className={cn(
+                "rounded-md px-2 py-1 text-xs transition",
+                canOpenProfile
+                  ? "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+                  : "cursor-not-allowed text-muted-foreground/70",
+              )}
+            >
+              Mi perfil
+            </button>
+            <button
+              type="button"
               onClick={() => {
-
                 setProfileOpen(false)
                 useOverlayStore.getState().close()
                 setLogoutOpen(true)
-
               }}
-
-              className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
-
+              className="rounded-md px-2 py-1 text-xs text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
             >
-
               Salir
-
             </button>
-
           </div>
-
         </div>
-
       </div>
 
-
-
       {logoutDialog}
-
     </>
-
   )
-
 }

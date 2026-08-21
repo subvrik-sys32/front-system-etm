@@ -49,8 +49,8 @@ export function SidebarRow({
   return (
     <div
       className={cn(
-        "group relative flex w-full items-center rounded-lg font-medium transition-colors duration-150 select-none",
-        size === "sm" ? "h-8 text-xs" : "h-8 text-xs",
+        "group relative flex w-full items-center rounded-xl font-medium transition-colors duration-150 select-none",
+        size === "sm" ? "h-8 text-xs" : "h-9 text-xs",
         active
           ? "bg-primary/10 text-primary font-semibold shadow-xs dark:bg-primary/15 dark:text-white"
           : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
@@ -60,7 +60,7 @@ export function SidebarRow({
       {...props}
     >
       {/* Contenedor del Icono */}
-      <div className="relative flex size-7 shrink-0 items-center justify-center">
+      <div className="relative flex size-8 shrink-0 items-center justify-center">
         <Icon
           className={cn(
             "size-4 shrink-0 transition-colors",

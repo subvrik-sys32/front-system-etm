@@ -22,7 +22,7 @@ export function SidebarSection({
 
     return (
 
-      <section className="mb-3">
+      <section className="mb-3.5">
 
         <div className="mb-1 px-3">
 
@@ -32,7 +32,7 @@ export function SidebarSection({
 
         </div>
 
-        <div className="space-y-0">
+        <div className="space-y-0.5">
           {children}
         </div>
 
@@ -44,7 +44,7 @@ export function SidebarSection({
 
   return (
 
-    <section className="mb-2.5">
+    <section className="mb-3">
 
       <div className={cn("mb-1 px-2.5 h-3.5")}>
 
@@ -56,7 +56,7 @@ export function SidebarSection({
 
       </div>
 
-      <div className="space-y-0">
+      <div className="space-y-0.5">
         {children}
       </div>
 

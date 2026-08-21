@@ -37,7 +37,11 @@ export function PrimaryAction({
           : "h-8 gap-1.5 whitespace-nowrap rounded-lg px-3.5 text-xs font-semibold",
         disabled
           ? "cursor-not-allowed bg-muted text-muted-foreground/50"
-          : "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/95",
+          : cn(
+              // Misma familia de color que la burbuja del sidebar
+              "bg-primary/10 text-primary hover:bg-primary/15 active:bg-primary/20",
+              "dark:bg-primary/20 dark:text-primary-foreground dark:hover:bg-primary/25",
+            ),
         isLoading && "cursor-wait opacity-80",
       )}
     >

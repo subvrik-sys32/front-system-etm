@@ -4,6 +4,15 @@ import React from "react"
 import type { LucideIcon } from "lucide-react"
 import { cn } from "@/shared/utils/utils"
 
+/** Burbuja de contador del sidebar — usar en campana, historial, etc. */
+export const SIDEBAR_COUNT_BADGE =
+  "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground"
+
+export const SIDEBAR_COUNT_BADGE_CLASS = cn(
+  "flex items-center justify-center rounded-full font-bold leading-none shadow-xs select-none",
+  SIDEBAR_COUNT_BADGE,
+)
+
 export type SidebarRowProps = React.HTMLAttributes<HTMLDivElement> & {
   icon: LucideIcon
   label: string
@@ -23,7 +32,7 @@ export function SidebarRow({
   collapsed = false,
   active = false,
   count,
-  badgeColor = "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground",
+  badgeColor = SIDEBAR_COUNT_BADGE,
   collapsedBadgeColor,
   badgeAnimated = false,
   isDrawer = false,

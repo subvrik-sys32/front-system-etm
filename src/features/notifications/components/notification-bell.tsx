@@ -8,6 +8,7 @@ import { Spinner } from "@/shared/ui/spinner/spinner"
 import { toast } from "sonner"
 
 import { cn } from "@/shared/utils/utils"
+import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
 import { useManagedOverlay } from "@/shared/stores/hooks/use-managed-overlay"
 import { SidebarRow } from "@/shared/responsive/layout/sidebar/sidebar-row"
@@ -123,8 +124,12 @@ export function NotificationBell({
         >
           <Bell size={16} strokeWidth={2} />
           {count > 0 && (
-            /* --- AQUÍ CAMBIÓ LA BURBUJA (bg-sidebar-primary y text-sidebar-primary-foreground para igualar al sidebar) --- */
-            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-sidebar-primary font-semibold text-sidebar-primary-foreground text-[10px]">
+            <span
+              className={cn(
+                "absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs",
+                SIDEBAR_COUNT_BADGE,
+              )}
+            >
               {count > 9 ? "9+" : count}
             </span>
           )}

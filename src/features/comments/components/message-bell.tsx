@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
+import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
 import { useManagedOverlay } from "@/shared/stores/hooks/use-managed-overlay"
 import { SidebarRow } from "@/shared/responsive/layout/sidebar/sidebar-row"
@@ -124,7 +125,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
         >
           <MessageSquare size={16} strokeWidth={2} />
           {count > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+            <span className={cn("absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs", SIDEBAR_COUNT_BADGE)}>
               {count > 9 ? "9+" : count}
             </span>
           )}
@@ -144,8 +145,8 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
           collapsed={collapsed}
           active={open}
           count={count > 0 ? (count > 9 ? "9+" : count) : undefined}
-          collapsedBadgeColor="bg-primary text-primary-foreground"
-          badgeColor="bg-primary text-primary-foreground"
+          collapsedBadgeColor={SIDEBAR_COUNT_BADGE}
+          badgeColor={SIDEBAR_COUNT_BADGE}
           badgeAnimated={count > 0}
         />
       </button>

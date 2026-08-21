@@ -135,8 +135,7 @@ export function EngineeringPageContent() {
     </div>
   )
 
-  // Cabecera fija (fuera del scroll) = estilo bitácora.
-  // Dentro del scroller: KPI sticky + grid/lista scrollean juntos.
+  // Cabecera fija (fuera del scroll). KPI + columnas scrollean juntos.
   const scrollBody = (
     <div className="flex w-full flex-col select-none">
       {viewMode === "processes" ? (

@@ -1,0 +1,29 @@
+diff --git a/src/features/engineering/components/engineering-page-content.tsx b/src/features/engineering/components/engineering-page-content.tsx
+index d0269c9..10bbff9 100644
+--- a/src/features/engineering/components/engineering-page-content.tsx
++++ b/src/features/engineering/components/engineering-page-content.tsx
+@@ -135,8 +135,7 @@ export function EngineeringPageContent() {
+     </div>
+   )
+ 
+-  // Cabecera fija (fuera del scroll) = estilo bitácora.
+-  // Dentro del scroller: KPI sticky + grid/lista scrollean juntos.
++  // Cabecera fija (fuera del scroll). KPI + columnas scrollean juntos.
+   const scrollBody = (
+     <div className="flex w-full flex-col select-none">
+       {viewMode === "processes" ? (
+diff --git a/src/features/engineering/components/engineering-process-board.tsx b/src/features/engineering/components/engineering-process-board.tsx
+index 2886390..98306b3 100644
+--- a/src/features/engineering/components/engineering-process-board.tsx
++++ b/src/features/engineering/components/engineering-process-board.tsx
+@@ -102,8 +102,8 @@ export function EngineeringProcessBoard({
+         loading && "pointer-events-none select-none opacity-60 animate-pulse"
+       )}
+     >
+-      {/* KPI sticky respecto al scroller de página (AppListScroll). */}
+-      <div className="sticky top-0 z-10 mb-4 shrink-0 bg-background/80 py-1 backdrop-blur-md">
++      {/* KPI en el flujo: scrollea junto con el grid. */}
++      <div className="mb-4 shrink-0">
+         <EngineeringKpiHeader tasks={tasks} />
+       </div>
+ 

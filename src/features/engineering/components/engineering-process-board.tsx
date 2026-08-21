@@ -102,8 +102,8 @@ export function EngineeringProcessBoard({
         loading && "pointer-events-none select-none opacity-60 animate-pulse"
       )}
     >
-      {/* KPI sticky respecto al scroller de página (AppListScroll). */}
-      <div className="sticky top-0 z-10 mb-4 shrink-0 bg-background/80 py-1 backdrop-blur-md">
+      {/* KPI en el flujo: scrollea junto con el grid. */}
+      <div className="mb-4 shrink-0">
         <EngineeringKpiHeader tasks={tasks} />
       </div>
 

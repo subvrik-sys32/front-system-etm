@@ -1,0 +1,347 @@
+diff --git a/src/app/(protected)/bitacora/page.tsx b/src/app/(protected)/bitacora/page.tsx
+index 83d276a..3a8845c 100644
+--- a/src/app/(protected)/bitacora/page.tsx
++++ b/src/app/(protected)/bitacora/page.tsx
+@@ -1,94 +1,152 @@
+ "use client"
+ 
+-import type { LucideIcon } from "lucide-react"
++import { useState } from "react"
++import { Layers, Wrench, ShieldCheck, type LucideIcon } from "lucide-react"
+ 
+-import { cn } from "@/shared/utils/utils"
++import { BitacoraDepartmentPage } from "@/features/activity-log/components/bitacora-department-page"
++import { TeamActivityLogPageContent } from "@/features/activity-log/components/contents/team-activity-log-page-content"
++import { BITACORA_DEPARTMENTS } from "@/features/activity-log/constants/bitacora-departments"
++import type { ActivityDepartment } from "@/features/activity-log/types/activity-log.types"
++import { useAuthStore } from "@/features/auth/store/auth-store"
++import { usePermissions } from "@/features/permissions/hooks/use-permissions"
++import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
++import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
++import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
++import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
++import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
++import { PageShell } from "@/shared/responsive/layout/page-shell"
++import { EntityToggle } from "@/shared/ui/entity-toggle/entity-toggle"
+ 
+-export type EntityToggleOption<T extends string = string> = {
+-  value: T
++type ViewMode = ActivityDepartment | "TEAM"
++
++interface TabConfig {
++  id: ViewMode
+   label: string
+-  icon?: LucideIcon
++  icon: LucideIcon
++  show: boolean
+ }
+ 
+-type Props<T extends string> = {
+-  value: T
+-  onChange: (value: T) => void
+-  options: EntityToggleOption<T>[]
+-  /**
+-   * Targets táctiles ~36–44px. Siempre icono + label (ancho estable).
+-   */
+-  compact?: boolean
+-  /** Ocupa el 100% del contenedor (tabs de página en móvil). */
+-  fullWidth?: boolean
+-  className?: string
+-  "aria-label"?: string
+-}
++export default function BitacoraPage() {
++  usePageTitle("Bitácora")
++  const { isCompact, isMobile } = useResponsive()
+ 
+-/**
+- * Toggle segmentado SSOT.
+- * Ancho estable: columnas iguales (grid) + font-semibold fijo (no salta al activar).
+- */
+-export function EntityToggle<T extends string>({
+-  value,
+-  onChange,
+-  options,
+-  compact = false,
+-  fullWidth = false,
+-  className,
+-  "aria-label": ariaLabel,
+-}: Props<T>) {
+-  const cols = Math.max(options.length, 1)
++  const userRoles = useAuthStore(state => state.user?.roles)
++  const { has } = usePermissions()
+ 
+-  return (
+-    <div
+-      role="group"
+-      aria-label={ariaLabel}
+-      className={cn(
+-        "grid items-center gap-1 rounded-2xl bg-muted/60 p-1 shadow-xs backdrop-blur-md dark:bg-muted/40",
+-        compact ? "rounded-xl" : "h-9 rounded-2xl",
+-        fullWidth && "w-full",
+-        className,
+-      )}
+-      style={{
+-        gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+-      }}
+-    >
+-      {options.map(option => {
+-        const Icon = option.icon
+-        const active = value === option.value
++  const roleCodes = userRoles?.map(role => role.code) ?? []
++  const isAdmin = roleCodes.includes("ADMIN")
++
++  const canSeeProduccion =
++    isAdmin ||
++    BITACORA_DEPARTMENTS.PRODUCCION.roles.some(r => roleCodes.includes(r))
++  const canSeeIngenieria =
++    isAdmin ||
++    BITACORA_DEPARTMENTS.INGENIERIA.roles.some(r => roleCodes.includes(r))
++  const canSeeTeam = has(PermissionCode.ACTIVITY_LOG_READ_ANY)
++
++  const tabs: TabConfig[] = [
++    {
++      id: "PRODUCCION" as ViewMode,
++      label: "Producción",
++      icon: Layers,
++      show: canSeeProduccion,
++    },
++    {
++      id: "INGENIERIA" as ViewMode,
++      label: "Ingeniería",
++      icon: Wrench,
++      show: canSeeIngenieria,
++    },
++    {
++      id: "TEAM" as ViewMode,
++      label: "Equipo",
++      icon: ShieldCheck,
++      show: canSeeTeam,
++    },
++  ].filter(tab => tab.show)
++
++  const [activeView, setActiveView] = useState<ViewMode>(() => {
++    const firstAvailable = tabs.find(t => t.show)
++    return firstAvailable ? firstAvailable.id : "PRODUCCION"
++  })
++
++  if (!userRoles) {
++    return null
++  }
++
++  if (tabs.length === 0) {
++    return (
++      <div className="flex flex-col items-center justify-center p-10 text-muted-foreground">
++        <p>No tienes permisos para visualizar ninguna bitácora.</p>
++      </div>
++    )
++  }
+ 
+-        return (
+-          <button
+-            key={option.value}
+-            type="button"
+-            onClick={() => onChange(option.value)}
+-            title={option.label}
+-            aria-label={option.label}
+-            aria-pressed={active}
+-            className={cn(
+-              "relative z-10 flex min-w-0 items-center justify-center gap-1.5 font-semibold select-none transition-colors duration-200",
+-              compact
+-                ? "h-9 rounded-lg px-2 text-xs"
+-                : "h-full rounded-xl px-3 text-xs tracking-tight",
+-              active
+-                ? "bg-background text-foreground shadow-xs ring-1 ring-border/5"
+-                : "text-muted-foreground hover:bg-background/40 hover:text-foreground",
++  function TabsNav({ compact }: { compact: boolean }) {
++    return (
++      <EntityToggle
++        value={activeView}
++        onChange={setActiveView}
++        aria-label="Sección de bitácora"
++        compact={compact}
++        fullWidth={compact}
++        options={tabs.map(tab => ({
++          value: tab.id,
++          label: tab.label,
++          icon: tab.icon,
++        }))}
++      />
++    )
++  }
++
++  usePageToolbar(isMobile || isCompact ? null : <TabsNav compact={false} />)
++
++  return (
++    <PageShell mode={isCompact ? "list" : "fill"}>
++      <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
++        {isCompact ? (
++          <AppListScroll>
++            <div className="mt-2 mb-2 shrink-0">
++              <TabsNav compact />
++            </div>
++            <div className="flex min-h-0 w-full flex-1 flex-col">
++              {activeView === "PRODUCCION" && (
++                <BitacoraDepartmentPage
++                  config={BITACORA_DEPARTMENTS.PRODUCCION}
++                  embedded
++                />
++              )}
++              {activeView === "INGENIERIA" && (
++                <BitacoraDepartmentPage
++                  config={BITACORA_DEPARTMENTS.INGENIERIA}
++                  embedded
++                />
++              )}
++              {activeView === "TEAM" && (
++                <TeamActivityLogPageContent embedded />
++              )}
++            </div>
++          </AppListScroll>
++        ) : (
++          <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
++            {activeView === "PRODUCCION" && (
++              <BitacoraDepartmentPage
++                config={BITACORA_DEPARTMENTS.PRODUCCION}
++                embedded
++              />
+             )}
+-          >
+-            {Icon ? (
+-              <Icon
+-                size={compact ? 15 : 14}
+-                strokeWidth={active ? 2.5 : 2}
+-                className={cn(
+-                  "shrink-0 transition-colors duration-200",
+-                  active ? "text-primary" : "text-muted-foreground/80",
+-                )}
++            {activeView === "INGENIERIA" && (
++              <BitacoraDepartmentPage
++                config={BITACORA_DEPARTMENTS.INGENIERIA}
++                embedded
+               />
+-            ) : null}
+-            <span className="min-w-0 truncate">{option.label}</span>
+-          </button>
+-        )
+-      })}
+-    </div>
++            )}
++            {activeView === "TEAM" && (
++              <TeamActivityLogPageContent embedded />
++            )}
++          </div>
++        )}
++      </section>
++    </PageShell>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/shared/responsive/layout/app-shell.tsx b/src/shared/responsive/layout/app-shell.tsx
+index 6fae3ea..a417f29 100644
+--- a/src/shared/responsive/layout/app-shell.tsx
++++ b/src/shared/responsive/layout/app-shell.tsx
+@@ -67,14 +67,14 @@ function DesktopTopBar() {
+           ) : null}
+         </div>
+         {toolbar ? (
+-          <div className="flex min-w-0 flex-1 items-center justify-end overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
++          <div className="flex min-w-0 flex-1 items-center justify-end overflow-x-auto py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+             {toolbar}
+           </div>
+         ) : (
+           <div className="min-w-0 flex-1" />
+         )}
+         {actions ? (
+-          <div className="flex shrink-0 items-center gap-1.5">{actions}</div>
++          <div className="flex shrink-0 items-center gap-1.5 overflow-visible py-1.5">{actions}</div>
+         ) : null}
+         {showThemeOutside && <ThemeToggle variant="icon" />}
+       </div>
+diff --git a/src/shared/ui/entity-toggle/entity-toggle.tsx b/src/shared/ui/entity-toggle/entity-toggle.tsx
+index a2a0cc1..c70e72f 100644
+--- a/src/shared/ui/entity-toggle/entity-toggle.tsx
++++ b/src/shared/ui/entity-toggle/entity-toggle.tsx
+@@ -14,27 +14,22 @@ type Props<T extends string> = {
+   value: T
+   onChange: (value: T) => void
+   options: EntityToggleOption<T>[]
+-  /**
+-   * Targets táctiles ~36–44px. Siempre icono + label (ancho estable).
+-   */
+   compact?: boolean
++  fullWidth?: boolean
+   className?: string
+   "aria-label"?: string
+ }
+ 
+-/**
+- * Toggle segmentado SSOT.
+- * Ancho estable: columnas iguales (grid) + font-semibold fijo (no salta al activar).
+- */
+ export function EntityToggle<T extends string>({
+   value,
+   onChange,
+   options,
+   compact = false,
++  fullWidth = false,
+   className,
+   "aria-label": ariaLabel,
+ }: Props<T>) {
+-  const cols = options.length
++  const cols = Math.max(options.length, 1)
+ 
+   return (
+     <div
+@@ -43,6 +38,7 @@ export function EntityToggle<T extends string>({
+       className={cn(
+         "grid items-center gap-1 rounded-2xl bg-muted/60 p-1 shadow-xs backdrop-blur-md dark:bg-muted/40",
+         compact ? "rounded-xl" : "h-9 rounded-2xl",
++        fullWidth && "w-full",
+         className,
+       )}
+       style={{
+@@ -81,7 +77,7 @@ export function EntityToggle<T extends string>({
+                 )}
+               />
+             ) : null}
+-            <span className="truncate">{option.label}</span>
++            <span className="min-w-0 truncate">{option.label}</span>
+           </button>
+         )
+       })}
+diff --git a/src/shared/ui/entity-toolbar/toolbar-chrome.ts b/src/shared/ui/entity-toolbar/toolbar-chrome.ts
+index 862cfb1..a962ef2 100644
+--- a/src/shared/ui/entity-toolbar/toolbar-chrome.ts
++++ b/src/shared/ui/entity-toolbar/toolbar-chrome.ts
+@@ -4,7 +4,7 @@
+  * EntityToggle NO usa esto (diseño segmentado Día/Semana/Mes).
+  */
+ export const TOOLBAR_CHROME_ICON_BTN =
+-  "flex size-8 shrink-0 touch-none items-center justify-center rounded-full bg-chrome text-muted-foreground shadow-xs backdrop-blur-xl transition-all duration-200 hover:text-foreground"
++  "relative flex size-8 shrink-0 touch-none items-center justify-center overflow-visible rounded-full bg-chrome text-muted-foreground shadow-xs backdrop-blur-xl transition-all duration-200 hover:text-foreground"
+ 
+ export const TOOLBAR_CHROME_ICON_BTN_ACTIVE =
+   "bg-muted text-foreground"
+diff --git a/src/shared/ui/speed-dial-fab/fab-trigger.tsx b/src/shared/ui/speed-dial-fab/fab-trigger.tsx
+index 5ffd9a7..14313fe 100644
+--- a/src/shared/ui/speed-dial-fab/fab-trigger.tsx
++++ b/src/shared/ui/speed-dial-fab/fab-trigger.tsx
+@@ -48,7 +48,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
+           aria-label={label}
+           className={cn(
+             TOOLBAR_CHROME_ICON_BTN,
+-            "relative",
++            "relative overflow-visible",
+             active && TOOLBAR_CHROME_ICON_BTN_ACTIVE,
+             className,
+           )}
+@@ -71,7 +71,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
+         aria-label={label}
+         title={label}
+         className={cn(
+-          "relative flex size-11 shrink-0 items-center justify-center rounded-full shadow-xs transition active:scale-95",
++          "relative flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full shadow-xs transition active:scale-95",
+           accentClassName ??
+             cn(
+               "bg-foreground text-background",

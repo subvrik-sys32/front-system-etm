@@ -48,7 +48,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
           aria-label={label}
           className={cn(
             TOOLBAR_CHROME_ICON_BTN,
-            "relative",
+            "relative overflow-visible",
             active && TOOLBAR_CHROME_ICON_BTN_ACTIVE,
             className,
           )}
@@ -71,7 +71,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
         aria-label={label}
         title={label}
         className={cn(
-          "relative flex size-11 shrink-0 items-center justify-center rounded-full shadow-xs transition active:scale-95",
+          "relative flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full shadow-xs transition active:scale-95",
           accentClassName ??
             cn(
               "bg-foreground text-background",

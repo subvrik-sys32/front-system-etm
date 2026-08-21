@@ -14,27 +14,22 @@ type Props<T extends string> = {
   value: T
   onChange: (value: T) => void
   options: EntityToggleOption<T>[]
-  /**
-   * Targets táctiles ~36–44px. Siempre icono + label (ancho estable).
-   */
   compact?: boolean
+  fullWidth?: boolean
   className?: string
   "aria-label"?: string
 }
 
-/**
- * Toggle segmentado SSOT.
- * Ancho estable: columnas iguales (grid) + font-semibold fijo (no salta al activar).
- */
 export function EntityToggle<T extends string>({
   value,
   onChange,
   options,
   compact = false,
+  fullWidth = false,
   className,
   "aria-label": ariaLabel,
 }: Props<T>) {
-  const cols = options.length
+  const cols = Math.max(options.length, 1)
 
   return (
     <div
@@ -43,6 +38,7 @@ export function EntityToggle<T extends string>({
       className={cn(
         "grid items-center gap-1 rounded-2xl bg-muted/60 p-1 shadow-xs backdrop-blur-md dark:bg-muted/40",
         compact ? "rounded-xl" : "h-9 rounded-2xl",
+        fullWidth && "w-full",
         className,
       )}
       style={{
@@ -81,7 +77,7 @@ export function EntityToggle<T extends string>({
                 )}
               />
             ) : null}
-            <span className="truncate">{option.label}</span>
+            <span className="min-w-0 truncate">{option.label}</span>
           </button>
         )
       })}

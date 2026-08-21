@@ -4,7 +4,7 @@
  * EntityToggle NO usa esto (diseño segmentado Día/Semana/Mes).
  */
 export const TOOLBAR_CHROME_ICON_BTN =
-  "flex size-8 shrink-0 touch-none items-center justify-center rounded-full bg-chrome text-muted-foreground shadow-xs backdrop-blur-xl transition-all duration-200 hover:text-foreground"
+  "relative flex size-8 shrink-0 touch-none items-center justify-center overflow-visible rounded-full bg-chrome text-muted-foreground shadow-xs backdrop-blur-xl transition-all duration-200 hover:text-foreground"
 
 export const TOOLBAR_CHROME_ICON_BTN_ACTIVE =
   "bg-muted text-foreground"

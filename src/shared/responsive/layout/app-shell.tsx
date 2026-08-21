@@ -67,14 +67,14 @@ function DesktopTopBar() {
           ) : null}
         </div>
         {toolbar ? (
-          <div className="flex min-w-0 flex-1 items-center justify-end overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex min-w-0 flex-1 items-center justify-end overflow-x-auto py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {toolbar}
           </div>
         ) : (
           <div className="min-w-0 flex-1" />
         )}
         {actions ? (
-          <div className="flex shrink-0 items-center gap-1.5">{actions}</div>
+          <div className="flex shrink-0 items-center gap-1.5 overflow-visible py-1.5">{actions}</div>
         ) : null}
         {showThemeOutside && <ThemeToggle variant="icon" />}
       </div>

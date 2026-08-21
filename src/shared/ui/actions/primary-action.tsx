@@ -31,21 +31,21 @@ export function PrimaryAction({
       title={label}
       aria-label={label}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center transition",
+        "inline-flex shrink-0 items-center justify-center transition shadow-xs",
         iconOnly
-          ? "size-10 rounded-xl"
-          : "h-10 gap-2 whitespace-nowrap rounded-xl px-5 text-sm font-semibold",
+          ? "size-8 rounded-lg"
+          : "h-8 gap-1.5 whitespace-nowrap rounded-lg px-3.5 text-xs font-semibold",
         disabled
-          ? "cursor-not-allowed bg-foreground/10 text-foreground/35"
-          : "bg-foreground text-background hover:bg-foreground/90",
+          ? "cursor-not-allowed bg-muted text-muted-foreground/50"
+          : "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/95",
         isLoading && "cursor-wait opacity-80",
       )}
     >
       {isLoading ? (
-        <Spinner size={16} />
+        <Spinner size={14} />
       ) : (
         <>
-          {Icon ? <Icon size={iconOnly ? 18 : 16} strokeWidth={2.5} /> : null}
+          {Icon ? <Icon size={iconOnly ? 16 : 14} strokeWidth={2.5} /> : null}
           {!iconOnly && label}
         </>
       )}

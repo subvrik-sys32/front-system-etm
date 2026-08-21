@@ -12,6 +12,7 @@ import { BREAKPOINTS } from "@/shared/responsive/breakpoints"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
 import { usePageTitleStore } from "@/shared/responsive/navigation/page-title-store"
+import { usePageActionsStore } from "@/shared/responsive/navigation/page-actions-store"
 import { isImmersiveRoute } from "@/shared/responsive/navigation/immersive-routes"
 import { TOP_BAR_HEIGHT_PX, BOTTOM_NAV_HEIGHT_PX } from "./chrome-constants"
 import { TopBar } from "@/shared/responsive/mobile/top-bar"
@@ -25,6 +26,7 @@ type Props = {
 function DesktopTopBar() {
   const mode = useSidebarStore(state => state.mode)
   const title = usePageTitleStore(s => s.title)
+  const actions = usePageActionsStore(s => s.actions)
   // Compacta o cerrada → theme fuera (junto al ojo cuando aplica).
   // Expandida → theme vive en el header del sidebar.
   const showThemeOutside = mode === "collapsed" || mode === "closed"
@@ -48,6 +50,9 @@ function DesktopTopBar() {
           </div>
         ) : null}
       </div>
+      {actions ? (
+        <div className="flex shrink-0 items-center gap-1.5">{actions}</div>
+      ) : null}
       {showThemeOutside && <ThemeToggle variant="icon" />}
     </div>
   )

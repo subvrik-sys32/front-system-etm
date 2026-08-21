@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Sparkles, Boxes } from "lucide-react"
 
 import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import {
   TOP_BAR_HEIGHT_PX,
@@ -23,6 +24,7 @@ type Tab = "ai" | "templates"
  */
 export default function CadPage() {
   usePageTitle("CAD")
+  // Tabs desktop van en chrome vía header residual; mobile ya tiene TabsNav.
   const { isMobile } = useResponsive()
   const [tab, setTab] = useState<Tab>("ai")
 
@@ -65,10 +67,6 @@ export default function CadPage() {
 
   return (
     <main className="flex h-full min-h-0 flex-col overflow-hidden bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
-      {/* Título en DesktopTopBar (pill). Aquí solo tabs. */}
-      <header className="mb-1 hidden min-h-10 shrink-0 items-center justify-end gap-2 desktop:flex">
-        <TabsNav compact={false} />
-      </header>
 
       {/* Shell fill-height — chrome mobile como engineering board */}
       <section

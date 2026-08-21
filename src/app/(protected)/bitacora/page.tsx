@@ -14,6 +14,8 @@ import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
+import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
 
 type ViewMode = ActivityDepartment | "TEAM"
 
@@ -25,6 +27,7 @@ interface TabConfig {
 }
 
 export default function BitacoraPage() {
+  usePageTitle("Bitácora")
   const queryClient = useQueryClient()
   const { isCompact } = useResponsive()
 
@@ -130,10 +133,6 @@ export default function BitacoraPage() {
 
   return (
     <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
-      {/* Título en DesktopTopBar (pill). Aquí solo tabs de departamento. */}
-      <header className="mb-1 hidden min-h-10 shrink-0 items-center justify-end gap-2 desktop:flex">
-        <TabsNav compact={false} />
-      </header>
 
       {/*
         Contrato único (igual que tareas):

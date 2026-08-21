@@ -1,0 +1,245 @@
+diff --git a/src/shared/responsive/navigation/page-actions-store.ts b/src/shared/responsive/navigation/page-actions-store.ts
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/src/shared/responsive/navigation/page-actions-store.ts
+@@ -0,0 +1,17 @@
++import { create } from "zustand"
++import type { ReactNode } from "react"
++
++type PageActionsState = {
++  actions: ReactNode | null
++  setActions: (actions: ReactNode | null) => void
++}
++
++/**
++ * Acciones de página (ej. "+") en el chrome del shell.
++ * Mismo contrato que usePageTitle: cada page setea y limpia al desmontar.
++ * DesktopTopBar las renderiza a la derecha del pill de título.
++ */
++export const usePageActionsStore = create<PageActionsState>(set => ({
++  actions: null,
++  setActions: actions => set({ actions }),
++}))
+diff --git a/src/shared/responsive/navigation/hooks/use-page-actions.ts b/src/shared/responsive/navigation/hooks/use-page-actions.ts
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/src/shared/responsive/navigation/hooks/use-page-actions.ts
+@@ -0,0 +1,19 @@
++"use client"
++
++import { useEffect, type ReactNode } from "react"
++
++import { usePageActionsStore } from "../page-actions-store"
++
++/**
++ * Publica acciones de página en DesktopTopBar (derecha del título).
++ * En mobile normalmente el FAB/AdaptiveActionBar ya cubre esto;
++ * igual se puede usar si hace falta en el chrome.
++ */
++export function usePageActions(actions: ReactNode | null) {
++  const setActions = usePageActionsStore(s => s.setActions)
++
++  useEffect(() => {
++    setActions(actions)
++    return () => setActions(null)
++  }, [actions, setActions])
++}
+diff --git a/src/shared/responsive/layout/app-shell.tsx b/src/shared/responsive/layout/app-shell.tsx
+index 0000000..1111111 100644
+--- a/src/shared/responsive/layout/app-shell.tsx
++++ b/src/shared/responsive/layout/app-shell.tsx
+@@ -12,6 +12,7 @@
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
+ import { usePageTitleStore } from "@/shared/responsive/navigation/page-title-store"
++import { usePageActionsStore } from "@/shared/responsive/navigation/page-actions-store"
+ import { isImmersiveRoute } from "@/shared/responsive/navigation/immersive-routes"
+ import { TOP_BAR_HEIGHT_PX, BOTTOM_NAV_HEIGHT_PX } from "./chrome-constants"
+ import { TopBar } from "@/shared/responsive/mobile/top-bar"
+@@ -25,6 +26,7 @@
+ function DesktopTopBar() {
+   const mode = useSidebarStore(state => state.mode)
+   const title = usePageTitleStore(s => s.title)
++  const actions = usePageActionsStore(s => s.actions)
+   // Compacta o cerrada → theme fuera (junto al ojo cuando aplica).
+   // Expandida → theme vive en el header del sidebar.
+   const showThemeOutside = mode === "collapsed" || mode === "closed"
+@@ -48,6 +50,9 @@
+           </div>
+         ) : null}
+       </div>
++      {actions ? (
++        <div className="flex shrink-0 items-center gap-1.5">{actions}</div>
++      ) : null}
+       {showThemeOutside && <ThemeToggle variant="icon" />}
+     </div>
+   )
+diff --git a/src/app/(protected)/projects/page.tsx b/src/app/(protected)/projects/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/projects/page.tsx
++++ b/src/app/(protected)/projects/page.tsx
+@@ -5,9 +5,11 @@
+ import { ProjectActions } from "@/features/projects/components/actions/project-actions"
+ import { ProjectPageContent } from "@/features/projects/components/project-page-content"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
++import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
+ 
+ export default function ProjectsPage() {
+   usePageTitle("Proyectos")
++  usePageActions(<ProjectActions />)
+ 
+   const searchParams = useSearchParams()
+   const projectId = searchParams.get("projectId") ?? undefined
+@@ -16,10 +18,6 @@
+ 
+   return (
+     <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
+-      {/* Título en DesktopTopBar (pill). Aquí solo acciones. */}
+-      <header className="mb-1 hidden shrink-0 items-center justify-end gap-2 desktop:flex">
+-        <ProjectActions />
+-      </header>
+ 
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+         <ProjectPageContent
+diff --git a/src/app/(protected)/tasks/page.tsx b/src/app/(protected)/tasks/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/tasks/page.tsx
++++ b/src/app/(protected)/tasks/page.tsx
+@@ -5,9 +5,11 @@
+ import { TaskActions } from "@/features/tasks/components/actions/task-actions"
+ import { TaskPageContent } from "@/features/tasks/components/task-page-content"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
++import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
+ 
+ export default function TasksPage() {
+   usePageTitle("Tareas")
++  usePageActions(<TaskActions />)
+ 
+   const searchParams = useSearchParams()
+   const taskId = searchParams.get("taskId") ?? undefined
+@@ -16,10 +18,6 @@
+ 
+   return (
+     <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
+-      {/* Título en DesktopTopBar (pill). Aquí solo acciones. */}
+-      <header className="mb-1 hidden shrink-0 items-center justify-end gap-2 desktop:flex">
+-        <TaskActions />
+-      </header>
+ 
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+         <TaskPageContent
+diff --git a/src/app/(protected)/admin/access/page.tsx b/src/app/(protected)/admin/access/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/admin/access/page.tsx
++++ b/src/app/(protected)/admin/access/page.tsx
+@@ -3,6 +3,7 @@
+ import { UserActions } from "@/features/admin/users/components/actions/user-actions"
+ import { RolePermissionsPageContent } from "@/features/roles/components/role-permissions-page-content"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
++import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
+ 
+ /**
+  * Hub único de administración de personas y permisos.
+@@ -10,13 +11,10 @@
+  */
+ export default function AccessPage() {
+   usePageTitle("Acceso")
++  usePageActions(<UserActions />)
+ 
+   return (
+     <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
+-      {/* Título en DesktopTopBar (pill). Aquí solo acciones. */}
+-      <header className="mb-1 hidden shrink-0 items-center justify-end gap-2 desktop:flex">
+-        <UserActions />
+-      </header>
+ 
+       {/* FAB crear usuario (mobile) — mismo UserActions */}
+       <div className="desktop:hidden">
+diff --git a/src/app/(protected)/admin/activity-types/page.tsx b/src/app/(protected)/admin/activity-types/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/admin/activity-types/page.tsx
++++ b/src/app/(protected)/admin/activity-types/page.tsx
+@@ -3,16 +3,14 @@
+ import { ActivityTypeActions } from "@/features/activity-log/components/actions/activity-type-actions"
+ import { ActivityTypesPageContent } from "@/features/activity-log/components/contents/activity-types-page-content"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
++import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
+ 
+ export default function ActivityTypesPage() {
+   usePageTitle("Actividades")
++  usePageActions(<ActivityTypeActions />)
+ 
+   return (
+     <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
+-      {/* Título en DesktopTopBar (pill). Aquí solo acciones. */}
+-      <header className="mb-1 hidden shrink-0 items-center justify-end gap-2 desktop:flex">
+-        <ActivityTypeActions />
+-      </header>
+ 
+       <div className="mb-1 shrink-0 desktop:hidden">
+         <ActivityTypeActions />
+diff --git a/src/app/(protected)/bitacora/page.tsx b/src/app/(protected)/bitacora/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/bitacora/page.tsx
++++ b/src/app/(protected)/bitacora/page.tsx
+@@ -14,6 +14,8 @@
+ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+ import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
++import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
++import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+ 
+ type ViewMode = ActivityDepartment | "TEAM"
+ 
+@@ -25,6 +27,7 @@
+ }
+ 
+ export default function BitacoraPage() {
++  usePageTitle("Bitácora")
+   const queryClient = useQueryClient()
+   const { isCompact } = useResponsive()
+ 
+@@ -130,10 +133,6 @@
+ 
+   return (
+     <main className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
+-      {/* Título en DesktopTopBar (pill). Aquí solo tabs de departamento. */}
+-      <header className="mb-1 hidden min-h-10 shrink-0 items-center justify-end gap-2 desktop:flex">
+-        <TabsNav compact={false} />
+-      </header>
+ 
+       {/*
+         Contrato único (igual que tareas):
+diff --git a/src/app/(protected)/cad/page.tsx b/src/app/(protected)/cad/page.tsx
+index 0000000..1111111 100644
+--- a/src/app/(protected)/cad/page.tsx
++++ b/src/app/(protected)/cad/page.tsx
+@@ -4,6 +4,7 @@
+ import { Sparkles, Boxes } from "lucide-react"
+ 
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
++import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ import {
+   TOP_BAR_HEIGHT_PX,
+@@ -23,6 +24,7 @@
+  */
+ export default function CadPage() {
+   usePageTitle("CAD")
++  // Tabs desktop van en chrome vía header residual; mobile ya tiene TabsNav.
+   const { isMobile } = useResponsive()
+   const [tab, setTab] = useState<Tab>("ai")
+ 
+@@ -65,10 +67,6 @@
+ 
+   return (
+     <main className="flex h-full min-h-0 flex-col overflow-hidden bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
+-      {/* Título en DesktopTopBar (pill). Aquí solo tabs. */}
+-      <header className="mb-1 hidden min-h-10 shrink-0 items-center justify-end gap-2 desktop:flex">
+-        <TabsNav compact={false} />
+-      </header>
+ 
+       {/* Shell fill-height — chrome mobile como engineering board */}
+       <section

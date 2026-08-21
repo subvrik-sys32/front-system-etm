@@ -139,7 +139,7 @@ export function AppSidebar({
         {/* Contenedor interno con desvanecimiento suave de textos sincronizado */}
         <div 
           className={cn(
-            "pt-6 pb-6 flex h-full flex-col overflow-hidden",
+            "flex h-full flex-col overflow-hidden pt-2 pb-2",
             "transition-opacity duration-200 ease-out",
             collapsed ? "opacity-95" : "opacity-100"
           )} 
@@ -184,7 +184,7 @@ export function AppSidebar({
             />
           </div>
 
-          <div className="shrink-0 select-none border-t border-border/40 p-3 pt-3 z-20">
+          <div className="z-20 shrink-0 select-none border-t border-border/40 p-2">
             <SidebarProfile
               collapsed={collapsed}
               onEditProfile={() => setProfileEditOpen(true)}

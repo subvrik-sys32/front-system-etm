@@ -9,11 +9,6 @@ import {
 } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { cn } from "@/shared/utils/utils"
 
-/**
- * Solo visible con sidebar `closed`.
- * Mismo gesto que el logo del rail: advanceLayoutMode (reabre lastVisibleMode).
- * Estilo chrome del topbar (círculo size-8).
- */
 export function SidebarShowButton() {
   const mode = useSidebarStore(state => state.mode)
   const advanceLayoutMode = useSidebarStore(state => state.advanceLayoutMode)

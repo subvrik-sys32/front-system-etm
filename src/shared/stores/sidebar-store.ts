@@ -108,26 +108,20 @@ export const useSidebarStore = create<SidebarStore>()(set => ({
 
   advanceLayoutMode: () =>
     set(state => {
-      // Procedural: open → collapsed → closed
-      // (desde closed se reabre con el logo del topbar → lastVisibleMode)
-      if (state.mode === "open") {
+      // Logo ETM: solo alterna open ↔ collapsed.
+      // closed se reabre desde el logo del topbar (mismo advance).
+      if (state.mode === "closed") {
+        const next = state.lastVisibleMode
         return {
-          mode: "collapsed" as const,
-          lastVisibleMode: "collapsed" as const,
-          visualState: nextVisualState("collapsed", state.visualState),
+          mode: next,
+          visualState: nextVisualState(next, state.visualState),
         }
       }
-      if (state.mode === "collapsed") {
-        return {
-          mode: "closed" as const,
-          lastVisibleMode: "collapsed" as const,
-          visualState: nextVisualState("closed", state.visualState),
-        }
-      }
-      // closed → restore
-      const next = state.lastVisibleMode
+      const next: SidebarMode =
+        state.mode === "open" ? "collapsed" : "open"
       return {
         mode: next,
+        lastVisibleMode: next,
         visualState: nextVisualState(next, state.visualState),
       }
     }),

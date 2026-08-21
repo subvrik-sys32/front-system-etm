@@ -17,10 +17,10 @@ type Props = {
 
 /**
  * Header del sidebar.
- * - Logo = mismo chrome del topbar (círculo size-8, bg-chrome).
- * - Layout open: [logo | marca] en fila (sin caja extra que tape el blur).
- * - Theme vive siempre en DesktopTopBar (no aquí).
- * - Logo avanza la máquina open → collapsed → closed.
+ * - Logo = mismo chrome del topbar (círculo size-8).
+ * - Open: [logo | marca] en fila.
+ * - Theme vive en DesktopTopBar.
+ * - Logo: open ↔ collapsed (advanceLayoutMode).
  */
 export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
   const advanceLayoutMode = useSidebarStore(s => s.advanceLayoutMode)
@@ -37,7 +37,7 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
   const logoTitle = isDrawer
     ? "Cerrar menú"
     : collapsed
-      ? "Ocultar barra lateral"
+      ? "Expandir barra lateral"
       : "Comprimir barra lateral"
 
   const logoButton = (
@@ -60,21 +60,19 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
     </button>
   )
 
-  // Rail colapsado: solo logo chrome
   if (collapsed && !isDrawer) {
     return (
-      <div className="flex w-full shrink-0 justify-center px-2 pb-2 pt-3">
+      <div className="flex w-full shrink-0 justify-center px-2 py-1.5">
         {logoButton}
       </div>
     )
   }
 
-  // Open / drawer: logo + letras en horizontal (sin card / sin fondo extra)
   return (
     <div
       className={cn(
         "flex w-full shrink-0 items-center gap-2.5",
-        isDrawer ? "px-4 pb-3 pt-4" : "px-3 pb-2 pt-3",
+        isDrawer ? "px-4 py-3" : "px-3 py-1.5",
       )}
     >
       {logoButton}

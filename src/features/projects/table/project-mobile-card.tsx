@@ -81,7 +81,7 @@ export function ProjectMobileCard(props: Props) {
       <div className="@container/prow rounded-xl bg-foreground/5" style={{ opacity }} aria-hidden>
         <div className="flex items-center gap-1 px-1">
           <div className="flex min-w-0 flex-1 animate-pulse items-center gap-2.5 py-3 pr-2">
-            <span className="h-7 w-14 shrink-0 rounded-md bg-foreground/10" />
+            <span className="inline-flex h-7 min-w-[2.75rem] shrink-0 items-center justify-center rounded-md bg-foreground/10 px-2" />
             <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
               <span className="h-4 w-[45%] max-w-[12rem] rounded bg-foreground/10" />
               <span className="flex items-center gap-1.5">

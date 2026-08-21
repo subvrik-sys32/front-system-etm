@@ -1,0 +1,361 @@
+diff --git a/src/features/admin/users/components/cards/user-mobile-skeleton.tsx b/src/features/admin/users/components/cards/user-mobile-skeleton.tsx
+deleted file mode 100644
+index 18d750a..0000000
+--- a/src/features/admin/users/components/cards/user-mobile-skeleton.tsx
++++ /dev/null
+@@ -1,82 +0,0 @@
+-"use client"
+-
+-function SkeletonUserRow({
+-  opacity,
+-}: {
+-  opacity: number
+-}) {
+-
+-  return (
+-
+-    <article
+-      className="overflow-hidden rounded-xl bg-foreground/5"
+-      style={{ opacity }}
+-    >
+-
+-      <button
+-        type="button"
+-        disabled
+-        className="w-full text-left"
+-      >
+-
+-        <header className="flex items-center justify-between gap-2.5 px-3 py-3">
+-
+-          <span className="h-4 w-24 rounded bg-foreground/10" />
+-
+-          <span className="inline-flex items-center gap-1.5">
+-
+-            <span className="h-1.5 w-1.5 rounded-full bg-foreground/10" />
+-
+-            <span className="h-4 w-18 rounded bg-foreground/10" />
+-
+-          </span>
+-
+-        </header>
+-
+-        <div className="flex items-center gap-2.5 px-3 pb-3">
+-
+-          <div className="min-w-0 flex-1">
+-
+-            <span className="block h-8 w-full rounded-full bg-foreground/5" />
+-
+-          </div>
+-
+-          <span className="h-4 w-4 shrink-0 rounded-sm bg-foreground/5" />
+-
+-        </div>
+-
+-      </button>
+-
+-    </article>
+-
+-  )
+-
+-}
+-
+-const SKELETON_ROWS = [
+-  1,
+-  0.85,
+-  0.7,
+-  0.55,
+-  0.4,
+-  0.3,
+-]
+-
+-export function UserMobileSkeleton() {
+-
+-  return (
+-
+-    <div className="flex animate-pulse flex-col gap-3">
+-
+-      {SKELETON_ROWS.map((opacity, index) => (
+-
+-        <SkeletonUserRow
+-          key={index}
+-          opacity={opacity}
+-        />
+-
+-      ))}
+-
+-    </div>
+-  )
+-}
+\ No newline at end of file
+diff --git a/src/features/admin/users/components/user-desktop-row-skeleton.tsx b/src/features/admin/users/components/user-desktop-row-skeleton.tsx
+deleted file mode 100644
+index 8b3a9c5..0000000
+--- a/src/features/admin/users/components/user-desktop-row-skeleton.tsx
++++ /dev/null
+@@ -1,27 +0,0 @@
+-"use client"
+-
+-function SkeletonUserDesktopRow({ opacity }: { opacity: number }) {
+-  return (
+-    <div
+-      className="flex w-full animate-pulse items-center justify-between gap-3 px-3 py-2.5"
+-      style={{ opacity }}
+-    >
+-      <div className="flex min-w-0 items-center gap-2.5">
+-        <span className="size-2.5 shrink-0 rounded-full bg-foreground/10" />
+-        <span className="h-4 w-28 rounded bg-foreground/10" />
+-      </div>
+-    </div>
+-  )
+-}
+-
+-const OPACITIES = [1, 0.85, 0.7, 0.55, 0.4]
+-
+-export function UserDesktopRowSkeleton() {
+-  return (
+-    <>
+-      {OPACITIES.map((opacity, index) => (
+-        <SkeletonUserDesktopRow key={index} opacity={opacity} />
+-      ))}
+-    </>
+-  )
+-}
+\ No newline at end of file
+diff --git a/src/features/processes/table/process-mobile-card.tsx b/src/features/processes/table/process-mobile-card.tsx
+index ff9b77b..ab5f193 100644
+--- a/src/features/processes/table/process-mobile-card.tsx
++++ b/src/features/processes/table/process-mobile-card.tsx
+@@ -81,19 +81,18 @@ function OperatorNameText({
+ function ProcessMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
+   return (
+     <div
+-      className="@container/prow overflow-hidden rounded-xl bg-foreground/5"
++      className="@container/prow rounded-xl bg-foreground/5"
+       style={{ opacity }}
+       aria-hidden
+     >
+-      <div className="flex animate-pulse items-start gap-2 px-3 py-3">
+-        <div className="min-w-0 flex-1">
+-          <div className="h-4 w-2/3 max-w-[12rem] rounded bg-foreground/10" />
+-          <div className="mt-1.5 flex items-center gap-1.5">
+-            <span className="h-3 w-14 rounded bg-foreground/5" />
+-            <span className="h-3 w-10 rounded bg-foreground/5" />
++      <div className="flex items-center gap-1 px-1">
++        <div className="flex min-w-0 flex-1 animate-pulse items-center gap-2.5 py-3 pr-2">
++          <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
++            <span className="h-4 w-[50%] max-w-[12rem] rounded bg-foreground/10" />
++            <span className="h-3 w-20 rounded bg-foreground/5" />
+           </div>
++          <span className="h-8 w-16 shrink-0 rounded-lg bg-foreground/5" />
+         </div>
+-        <span className="h-8 w-16 shrink-0 rounded-lg bg-foreground/5" />
+       </div>
+     </div>
+   )
+diff --git a/src/features/projects/table/project-mobile-card.tsx b/src/features/projects/table/project-mobile-card.tsx
+index f4072e4..d412b08 100644
+--- a/src/features/projects/table/project-mobile-card.tsx
++++ b/src/features/projects/table/project-mobile-card.tsx
+@@ -76,23 +76,22 @@ type Props =
+ function ProjectMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
+   return (
+     <div
+-      className="@container/prow overflow-hidden rounded-xl bg-foreground/5"
++      className="@container/prow rounded-xl bg-foreground/5"
+       style={{ opacity }}
+       aria-hidden
+     >
+-      <div className="flex animate-pulse items-start gap-2 px-3 py-3">
+-        <div className="min-w-0 flex-1">
+-          <div className="flex items-center gap-1.5">
+-            <span className="h-5 w-12 rounded-md bg-foreground/10" />
+-          </div>
+-          <div className="mt-1.5 h-4 w-2/3 max-w-[14rem] rounded bg-foreground/10" />
+-          <div className="mt-1.5 flex items-center gap-1.5">
+-            <span className="size-1.5 rounded-full bg-foreground/15" />
+-            <span className="h-3 w-16 rounded bg-foreground/5" />
+-            <span className="h-3 w-10 rounded bg-foreground/5" />
++      <div className="flex items-center gap-1 px-1">
++        <div className="flex min-w-0 flex-1 animate-pulse items-center gap-2.5 py-3 pr-2">
++          <span className="inline-flex h-7 min-w-[2.75rem] shrink-0 items-center justify-center rounded-md bg-foreground/10 px-2" />
++          <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
++            <span className="h-4 w-[45%] max-w-[12rem] rounded bg-foreground/10" />
++            <span className="flex items-center gap-1.5">
++              <span className="size-1.5 rounded-full bg-foreground/15" />
++              <span className="h-3 w-16 rounded bg-foreground/5" />
++            </span>
+           </div>
++          <span className="hidden h-3 w-10 shrink-0 rounded bg-foreground/5 md:block" />
+         </div>
+-        <span className="hidden h-3 w-10 shrink-0 rounded bg-foreground/5 md:block" />
+       </div>
+     </div>
+   )
+diff --git a/src/features/roles/components/role-permissions-page-content.tsx b/src/features/roles/components/role-permissions-page-content.tsx
+index 78c1784..6f6b08d 100644
+--- a/src/features/roles/components/role-permissions-page-content.tsx
++++ b/src/features/roles/components/role-permissions-page-content.tsx
+@@ -1,7 +1,7 @@
+-import { RolePermissionsSkeleton } from "./role-permissions-skeleton"
+-import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
+ "use client"
+ 
++import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
++
+ import { useQueryClient } from "@tanstack/react-query"
+ 
+ import { useMemo, useState } from "react"
+diff --git a/src/features/roles/table/index.ts b/src/features/roles/table/index.ts
+index fcafff7..ea88984 100644
+--- a/src/features/roles/table/index.ts
++++ b/src/features/roles/table/index.ts
+@@ -1,6 +1,4 @@
+ export * from "./role-desktop-row"
+-export * from "./role-desktop-row-skeleton"
+ export * from "./role-mobile-card"
+-export * from "./role-mobile-skeleton"
+ export * from "./user-desktop-row"
+-export * from "./user-mobile-card"
+\ No newline at end of file
++export * from "./user-mobile-card"
+diff --git a/src/features/roles/table/role-desktop-row-skeleton.tsx b/src/features/roles/table/role-desktop-row-skeleton.tsx
+deleted file mode 100644
+index ff1a14e..0000000
+--- a/src/features/roles/table/role-desktop-row-skeleton.tsx
++++ /dev/null
+@@ -1,36 +0,0 @@
+-"use client"
+-
+-// Calco exacto de la fila real de RoleDesktopRow (punto de color +
+-// texto), sin datos -- mismo motivo que project-mobile-skeleton.tsx:
+-// vive junto al componente real para que sea imposible que se
+-// desincronicen entre sí.
+-//
+-// Sin wrapper propio con padding/gap a propósito: esto se inserta
+-// DENTRO del mismo contenedor que ya tiene "gap-2.5 p-2" para las
+-// filas reales (ver role-permissions-page-content.tsx) -- envolverlo
+-// acá también hubiera duplicado el espaciado durante la carga.
+-function SkeletonRoleDesktopRow({ opacity }: { opacity: number }) {
+-  return (
+-    <div
+-      className="flex w-full animate-pulse items-center justify-between gap-3 px-3 py-2.5"
+-      style={{ opacity }}
+-    >
+-      <div className="flex min-w-0 items-center gap-2.5">
+-        <span className="size-2.5 shrink-0 rounded-full bg-foreground/10" />
+-        <span className="h-4 w-28 rounded bg-foreground/10" />
+-      </div>
+-    </div>
+-  )
+-}
+-
+-const OPACITIES = [1, 0.85, 0.7, 0.55, 0.4]
+-
+-export function RoleDesktopRowSkeleton() {
+-  return (
+-    <>
+-      {OPACITIES.map((opacity, index) => (
+-        <SkeletonRoleDesktopRow key={index} opacity={opacity} />
+-      ))}
+-    </>
+-  )
+-}
+diff --git a/src/features/roles/table/role-mobile-skeleton.tsx b/src/features/roles/table/role-mobile-skeleton.tsx
+deleted file mode 100644
+index 611f3aa..0000000
+--- a/src/features/roles/table/role-mobile-skeleton.tsx
++++ /dev/null
+@@ -1,51 +0,0 @@
+-"use client"
+-
+-// Skeleton mobile de Roles -- calco estructural exacto de
+-// SkeletonUserRow (user-mobile-skeleton.tsx): mismo wrapper
+-// <button disabled>, mismo padding de header (px-3 py-3) separado
+-// de la fila de contenido (px-3 pb-3), mismo tamaño de label
+-// (h-4 w-24), y el mismo fade de opacidad de 6 pasos.
+-//
+-// Sin wrapper propio con gap a propósito: esto se inserta DENTRO del
+-// mismo "space-y-3" que ya envuelve las cards reales (ver
+-// role-permissions-page-content.tsx) -- envolverlo acá también
+-// hubiera duplicado el espaciado durante la carga.
+-function SkeletonRoleMobileCard({ opacity }: { opacity: number }) {
+-  return (
+-    <article
+-      className="overflow-hidden rounded-xl bg-foreground/5"
+-      style={{ opacity }}
+-    >
+-      <button
+-        type="button"
+-        disabled
+-        className="w-full text-left"
+-      >
+-        <header className="flex items-center justify-between gap-2.5 px-3 py-3">
+-          <span className="h-4 w-24 rounded bg-foreground/10" />
+-
+-          {/* Placeholder del "Inactivo" opcional de la card real */}
+-          <span className="hidden h-4 w-14 rounded bg-foreground/10" />
+-        </header>
+-
+-        <div className="flex items-center gap-2.5 px-3 pb-3">
+-          <div className="min-w-0 flex-1">
+-            <span className="block h-8 w-full rounded-full bg-foreground/5" />
+-          </div>
+-        </div>
+-      </button>
+-    </article>
+-  )
+-}
+-
+-const OPACITIES = [1, 0.85, 0.7, 0.55, 0.4, 0.3]
+-
+-export function RoleMobileSkeleton() {
+-  return (
+-    <>
+-      {OPACITIES.map((opacity, index) => (
+-        <SkeletonRoleMobileCard key={index} opacity={opacity} />
+-      ))}
+-    </>
+-  )
+-}
+\ No newline at end of file
+diff --git a/src/features/tasks/table/task-mobile-card.tsx b/src/features/tasks/table/task-mobile-card.tsx
+index 27bc90d..49774ca 100644
+--- a/src/features/tasks/table/task-mobile-card.tsx
++++ b/src/features/tasks/table/task-mobile-card.tsx
+@@ -66,24 +66,23 @@ type Props =
+ function TaskMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
+   return (
+     <div
+-      className="@container/trow overflow-hidden rounded-xl bg-foreground/5"
++      className="@container/trow rounded-xl bg-foreground/5"
+       style={{ opacity }}
+       aria-hidden
+     >
+-      <div className="flex animate-pulse items-start gap-2 px-3 py-3">
+-        <div className="min-w-0 flex-1">
+-          <div className="flex items-center gap-1.5">
+-            <span className="h-5 w-10 rounded-md bg-foreground/10" />
+-            <span className="h-5 w-14 rounded-md bg-foreground/10" />
+-          </div>
+-          <div className="mt-1.5 h-4 w-3/5 max-w-[12rem] rounded bg-foreground/10" />
+-          <div className="mt-1.5 flex items-center gap-1.5">
+-            <span className="size-1.5 rounded-full bg-foreground/15" />
+-            <span className="h-3 w-20 rounded bg-foreground/5" />
+-            <span className="h-3 w-10 rounded bg-foreground/5" />
++      {/* Misma geometría que la fila: px-1 + py-3 + chip px-2 py-1 */}
++      <div className="flex items-center gap-1 px-1">
++        <div className="flex min-w-0 flex-1 animate-pulse items-center gap-2.5 py-3 pr-2">
++          <span className="inline-flex h-7 min-w-[2.75rem] shrink-0 items-center justify-center rounded-md bg-foreground/10 px-2" />
++          <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
++            <span className="h-4 w-[40%] max-w-[11rem] rounded bg-foreground/10" />
++            <span className="flex items-center gap-1.5">
++              <span className="size-1.5 rounded-full bg-foreground/15" />
++              <span className="h-3 w-20 rounded bg-foreground/5" />
++            </span>
+           </div>
++          <span className="hidden h-3 w-14 shrink-0 rounded bg-foreground/5 md:block" />
+         </div>
+-        <span className="hidden h-3 w-14 shrink-0 rounded bg-foreground/5 md:block" />
+       </div>
+     </div>
+   )

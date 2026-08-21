@@ -161,7 +161,7 @@ export function DatePicker({
         }}
         // Ancho/caja solo en desktop. En sheet el root debe ser full-width
         // (inset-x-0); el max-w va en el contenido interno.
-        floatingClassName="w-auto max-w-xs rounded-xl p-0 shadow-xl bg-popover"
+        floatingClassName="w-auto max-w-xs rounded-xl p-0 shadow-xs bg-popover"
         className="flex w-full flex-col gap-3 p-4 pb-6"
       >
         <div className="mx-auto flex w-full max-w-xs flex-col items-center gap-3">

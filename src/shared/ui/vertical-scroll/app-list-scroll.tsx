@@ -15,16 +15,13 @@ import { usePageSearchStore } from "@/shared/ui/entity-toolbar/page-search-store
 
 type Props = {
   children: React.ReactNode
-  /** Reset scroll to top when this key changes (default: pathname). */
   resetKey?: string
   className?: string
 }
 
 /**
- * Page list scroller.
- * - Mobile/tablet (compact): pads for fixed TopBar + BottomNav overlays.
- * - Desktop: fills the shell content slot.
- * - Scroll is native (overflow); no pull-to-refresh, no custom gesture physics.
+ * Único dueño del scroll vertical de páginas lista.
+ * Mobile: padding chrome. Desktop: sin overflow clip en ancestros del shell.
  */
 export function AppListScroll({ children, resetKey, className }: Props) {
   const pathname = usePathname()

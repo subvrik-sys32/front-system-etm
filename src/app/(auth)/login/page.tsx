@@ -21,7 +21,7 @@ export default function LoginPage() {
     >
       {/* Theme: esquina superior derecha, fuera del card (no compite con Entrar) */}
       <div className="absolute right-4 top-4 z-10 tablet:right-6 tablet:top-6">
-        <ThemeToggle variant="icon" className="size-10 rounded-full bg-chrome text-muted-foreground shadow-sm shadow-black/15 dark:shadow-black/40 backdrop-blur-xl hover:bg-chrome hover:text-foreground" />
+        <ThemeToggle variant="icon" className="size-10 rounded-full bg-chrome text-muted-foreground shadow-xs backdrop-blur-xl hover:bg-chrome hover:text-foreground" />
       </div>
 
       <div className="w-full max-w-4xl">
@@ -30,7 +30,7 @@ export default function LoginPage() {
           Card: tokens de tema (no negro hardcodeado en light).
         */}
         <div
-          className={`overflow-hidden rounded-2xl border-0 bg-card shadow-xl backdrop-blur-xl ${SHORT}:grid ${SHORT}:grid-cols-2 laptop:grid laptop:grid-cols-2`}
+          className={`overflow-hidden rounded-2xl border-0 bg-card shadow-xs backdrop-blur-xl ${SHORT}:grid ${SHORT}:grid-cols-2 laptop:grid laptop:grid-cols-2`}
         >
           {/* LEFT — marca: light = panel suave; dark = panel oscuro de marca */}
           <div

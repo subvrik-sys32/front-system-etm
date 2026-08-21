@@ -7,7 +7,6 @@ import { cn } from "@/shared/utils/utils"
 
 type Props = PropsWithChildren<{ className?: string }>
 
-/** Fila horizontal — scroll nativo del browser. */
 export function HorizontalScroll({ children, className }: Props) {
   return (
     <ScrollArea orientation="horizontal" className="h-full min-h-0 w-full">

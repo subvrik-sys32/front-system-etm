@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef } from "react"
-import { Loader2, Layers, MessageSquare, Box, SlidersHorizontal } from "lucide-react"
+import { Loader2, Layers, SlidersHorizontal } from "lucide-react"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { cn } from "@/shared/utils/utils"
 import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
@@ -49,7 +49,6 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
   const [skillParams, setSkillParams] = useState<Record<string, number | string> | null>(null)
   const [skillGenerator, setSkillGenerator] = useState<Skill | null>(null)
   
-  const [mobilePane, setMobilePane] = useState<"viewer" | "chat">("viewer")
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false)
 
   const { isMobile, isCompact } = useResponsive()
@@ -257,35 +256,11 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
         )}
 
         {isCompact && (
-          <div className="absolute inset-x-0 top-2 z-10 flex h-11 items-center gap-1.5 px-2">
-            <div className="flex flex-1 items-center gap-1 rounded-xl bg-muted/80 p-1 shadow-xs backdrop-blur-xs">
-              <button
-                type="button"
-                onClick={() => setMobilePane("viewer")}
-                className={cn(
-                  "flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-all",
-                  mobilePane === "viewer" ? "bg-foreground/15 text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Box className="h-4 w-4" />
-                Lienzo 3D / DXF
-              </button>
-              <button
-                type="button"
-                onClick={() => setMobilePane("chat")}
-                className={cn(
-                  "flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition-all",
-                  mobilePane === "chat" ? "bg-foreground/15 text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <MessageSquare className="h-4 w-4" />
-                Chat & IA
-              </button>
-            </div>
+          <div className="absolute inset-x-0 top-2 z-10 flex h-11 items-center justify-end gap-1.5 px-2">
             <button
               type="button"
-              aria-label="Abrir panel de control"
-              className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-foreground/5 text-foreground shadow-xs"
+              aria-label="Abrir panel de IA"
+              className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-foreground/5 text-foreground shadow-xs backdrop-blur-xl"
               onClick={() => setIsMobilePanelOpen(true)}
             >
               <SlidersHorizontal size={16} strokeWidth={2.2} />
@@ -314,25 +289,19 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
             </aside>
           </div>
         ) : (
-          <div className="absolute inset-x-0 bottom-0 top-14 mx-1 mb-1 overflow-hidden rounded-xl bg-zinc-100 shadow-xs dark:bg-neutral-950">
+          <div className="absolute inset-x-0 bottom-0 top-0 mx-1 mb-1 mt-1 overflow-hidden rounded-xl bg-zinc-100 shadow-xs dark:bg-neutral-950">
             <div className="absolute inset-0 overflow-hidden">
               {loading && (
                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               )}
-              {mobilePane === "viewer" ? (
-                <DxfViewer
-                  geometry={geometry}
-                  onGeometryChange={handleGeometryChange}
-                  onSendToAI={(ent) => setSelectedForAI(ent)}
-                  className="absolute inset-0 h-full w-full shadow-xs"
-                />
-              ) : (
-                <div className="flex h-full flex-col overflow-hidden shadow-xs">
-                  {iterationContent}
-                </div>
-              )}
+              <DxfViewer
+                geometry={geometry}
+                onGeometryChange={handleGeometryChange}
+                onSendToAI={(ent) => setSelectedForAI(ent)}
+                className="absolute inset-0 h-full w-full"
+              />
             </div>
           </div>
         )}

@@ -66,7 +66,7 @@ export function ConvocarMenu({
             variant === "field" &&
               "w-full min-w-0 justify-between rounded-xl px-3 py-2.5 text-sm",
             active
-              ? "bg-foreground/20 text-foreground shadow-sm"
+              ? "bg-foreground/20 text-foreground shadow-xs"
               : "bg-foreground/5 text-muted-foreground hover:bg-foreground/10",
             variant === "field" && selected && "text-foreground",
             className,

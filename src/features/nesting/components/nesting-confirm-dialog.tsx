@@ -60,7 +60,7 @@ export function NestingConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl border-border bg-popover p-5 text-foreground shadow-2xl sm:max-w-md">
+      <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl border-border bg-popover p-5 text-foreground shadow-xs sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-lg font-bold text-foreground">{title}</DialogTitle>
           <DialogDescription className="pt-2 text-sm leading-relaxed text-muted-foreground">

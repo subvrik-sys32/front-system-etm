@@ -28,7 +28,15 @@ function DesktopTopBar() {
   const showThemeOutside = mode === "collapsed" || mode === "closed"
 
   return (
-    <div className="flex h-9 shrink-0 items-center gap-1 px-3">
+    <div className="relative flex h-9 shrink-0 items-center gap-1 px-3">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-12 bg-background/65 backdrop-blur-xl"
+        style={{
+          maskImage: "linear-gradient(to bottom, black 40%, transparent)",
+          WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent)",
+        }}
+      />
       <SidebarShowButton />
       {showThemeOutside && <ThemeToggle variant="icon" />}
     </div>
@@ -88,7 +96,7 @@ function DesktopShell({ children }: Props) {
         }}
       >
         <DesktopTopBar />
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {children}
         </div>
       </main>
@@ -156,7 +164,7 @@ function CompactShell({ children }: Props) {
             {children}
           </div>
         ) : (
-          <div className="absolute inset-0 z-10 flex min-h-0 flex-col overflow-hidden">
+          <div className="absolute inset-0 z-10 flex min-h-0 flex-col">
             {children}
           </div>
         )}

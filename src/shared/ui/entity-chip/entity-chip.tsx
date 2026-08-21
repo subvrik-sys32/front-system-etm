@@ -43,7 +43,7 @@ export function EntityChip({
       title={label}
       aria-label={label}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-lg font-semibold leading-none shadow-sm",
+        "inline-flex shrink-0 items-center justify-center rounded-lg font-semibold leading-none shadow-xs",
         compact ? "h-7 gap-1.5 text-xs" : "h-8 gap-2 text-sm",
         iconOnly
           ? compact

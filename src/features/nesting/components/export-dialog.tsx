@@ -81,7 +81,7 @@ export function ExportDialog({
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent
         size="large"
-        className="flex h-[85vh] max-h-[85vh] w-full max-w-lg flex-col gap-0 overflow-hidden rounded-2xl p-0 text-foreground shadow-2xl"
+        className="flex h-[85vh] max-h-[85vh] w-full max-w-lg flex-col gap-0 overflow-hidden rounded-2xl p-0 text-foreground shadow-xs"
       >
         <div className="shrink-0">
           <FormDialogHeader title="Exportar" icon={FileUp} />

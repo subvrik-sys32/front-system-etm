@@ -82,7 +82,7 @@ export function UserCreateDialAction() {
         label="NUEVO USUARIO"
         disabled={!canCreate}
         onClick={handleOpen}
-        accentClassName="bg-primary text-primary-foreground shadow-lg"
+        accentClassName="bg-primary text-primary-foreground shadow-xs"
         className={!canCreate ? "cursor-not-allowed opacity-40" : undefined}
       />
       {dialog}

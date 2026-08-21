@@ -84,7 +84,7 @@ export function EntityExpandedToggle<T extends string>({
                 "flex min-w-0 items-center justify-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold tracking-wide transition-colors",
                 fullWidth && "flex-1",
                 isActive
-                  ? "bg-foreground/10 text-foreground shadow-sm"
+                  ? "bg-foreground/10 text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-muted-foreground",
               )}
             >

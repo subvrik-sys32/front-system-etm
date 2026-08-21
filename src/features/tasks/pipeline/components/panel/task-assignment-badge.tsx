@@ -130,7 +130,7 @@ export function TaskAssignmentBadge({
           setOpen(false)
         }}
         onCloseAutoFocus={e => e.preventDefault()}
-        className="z-50 min-w-36 rounded-xl border-0 bg-popover p-1 text-popover-foreground shadow-xl"
+        className="z-50 min-w-36 rounded-xl border-0 bg-popover p-1 text-popover-foreground shadow-xs"
       >
         {!invited && candidates.length > 0 && (
           <>

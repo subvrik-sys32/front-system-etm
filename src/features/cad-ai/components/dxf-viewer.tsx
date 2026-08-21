@@ -95,6 +95,17 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
     entities: Entity[] | null
   }>({ isDragging: false, isPanning: false, startSX: 0, startSY: 0, startWX: 0, startWY: 0, startOffsetX: 0, startOffsetY: 0, didMove: false, entities: null })
 
+  /** Multi-touch (mismo modelo que nesting DxfCanvas). */
+  const pointersRef = useRef(new Map<number, { x: number; y: number }>())
+  const pinchRef = useRef<{
+    startDist: number
+    startScale: number
+    startOffsetX: number
+    startOffsetY: number
+    midX: number
+    midY: number
+  } | null>(null)
+
   const undoStackRef = useRef<PlanGeometry[]>([])
   const redoStackRef = useRef<PlanGeometry[]>([])
 
@@ -494,7 +505,7 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
     needsRedrawRef.current = true
   }, [])
 
-  const getMousePos = (e: React.MouseEvent): [number, number] => {
+  const getMousePos = (e: React.MouseEvent | React.PointerEvent): [number, number] => {
     const rect = canvasRef.current?.getBoundingClientRect()
     if (!rect) return [0, 0]
     return [e.clientX - rect.left, e.clientY - rect.top]
@@ -515,7 +526,32 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
     needsRedrawRef.current = true
   }
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* noop */ }
+
+    // 2+ dedos → pinch-zoom (paridad nesting DxfCanvas)
+    if (pointersRef.current.size >= 2) {
+      const pts = [...pointersRef.current.values()]
+      const dx = pts[1].x - pts[0].x
+      const dy = pts[1].y - pts[0].y
+      const dist = Math.hypot(dx, dy) || 1
+      const midX = (pts[0].x + pts[1].x) / 2
+      const midY = (pts[0].y + pts[1].y) / 2
+      const tr = transformRef.current
+      pinchRef.current = {
+        startDist: dist,
+        startScale: tr.scale,
+        startOffsetX: tr.offsetX,
+        startOffsetY: tr.offsetY,
+        midX,
+        midY,
+      }
+      dragRef.current.isPanning = false
+      dragRef.current.isDragging = false
+      return
+    }
+
     const [sx, sy] = getMousePos(e)
     const t = transformRef.current
     const [wx, wy] = fromScreen(sx, sy, t)
@@ -588,7 +624,40 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
     needsRedrawRef.current = true
   }
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (pointersRef.current.has(e.pointerId)) {
+      pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    }
+
+    if (pinchRef.current && pointersRef.current.size >= 2) {
+      const pts = [...pointersRef.current.values()]
+      const dx = pts[1].x - pts[0].x
+      const dy = pts[1].y - pts[0].y
+      const dist = Math.hypot(dx, dy) || 1
+      const midX = (pts[0].x + pts[1].x) / 2
+      const midY = (pts[0].y + pts[1].y) / 2
+      const pinch = pinchRef.current
+      const factor = dist / pinch.startDist
+      const newScale = Math.min(200, Math.max(0.05, pinch.startScale * factor))
+      const canvas = canvasRef.current
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect()
+        const cx = midX - rect.left - canvas.clientWidth / 2
+        const cy = midY - rect.top - canvas.clientHeight / 2
+        const scaleRatio = newScale / pinch.startScale
+        const midDx = midX - pinch.midX
+        const midDy = midY - pinch.midY
+        transformRef.current = {
+          ...transformRef.current,
+          scale: newScale,
+          offsetX: pinch.startOffsetX * scaleRatio + cx * (1 - scaleRatio) + midDx,
+          offsetY: pinch.startOffsetY * scaleRatio + cy * (1 - scaleRatio) + midDy,
+        }
+        needsRedrawRef.current = true
+      }
+      return
+    }
+
     const [sx, sy] = getMousePos(e)
     mouseRef.current = [sx, sy]
     needsRedrawRef.current = true
@@ -683,7 +752,13 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
     }
   }
 
-  const handleMouseUp = (e: React.MouseEvent) => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    pointersRef.current.delete(e.pointerId)
+    if (pointersRef.current.size < 2) {
+      pinchRef.current = null
+    }
+    try { e.currentTarget.releasePointerCapture(e.pointerId) } catch { /* noop */ }
+
     const dr = dragRef.current
     const draw = drawRef.current
 
@@ -733,11 +808,11 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
     dr.entities = null
   }
 
-  const handleMouseLeave = (e: React.MouseEvent) => {
+  const handlePointerLeave = (e: React.MouseEvent) => {
     mouseRef.current = null
     snapRef.current = null
     needsRedrawRef.current = true
-    handleMouseUp(e)
+    handlePointerUp(e)
   }
 
   const handleDoubleClick = (e: React.MouseEvent) => {
@@ -943,17 +1018,17 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
         <canvas
           ref={canvasRef}
           onWheel={handleWheel}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
           onDoubleClick={handleDoubleClick}
           className={cursor}
-          style={{ display: "block", width: "100%", height: "100%" }}
+          style={{ display: "block", width: "100%", height: "100%", touchAction: "none" }}
         />
 
         {views.length > 1 && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 flex gap-1 bg-white/90 rounded-md border border-border shadow-sm p-1 z-10">
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 flex gap-1 bg-white/90 rounded-md border border-border shadow-xs p-1 z-10">
             {views.map((v, i) => (
               <button
                 key={i}
@@ -970,7 +1045,7 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
 
         {geometry && (
           <div
-            className="absolute top-2 rounded-md bg-white/90 border border-border px-2.5 py-1 text-xs text-muted-foreground shadow-sm z-10"
+            className="absolute top-2 rounded-md bg-white/90 border border-border px-2.5 py-1 text-xs text-muted-foreground shadow-xs z-10"
             style={{ left: RULER_SIZE + 8 }}
           >
             {activeEntities.length} ent · {activeViewGeom ? `${activeViewGeom.dimensions.width}×${activeViewGeom.dimensions.height}` : `${geometry.dimensions.width}×${geometry.dimensions.height}`} {geometry.units}
@@ -981,7 +1056,7 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
 
         {geometry && activeEntities.some(e => e.layer && e.layer !== "0") && (
           <div
-            className="absolute bottom-9 flex flex-col gap-0.5 bg-white/90 rounded-md border border-border px-2 py-1.5 text-[10px] shadow-sm z-10"
+            className="absolute bottom-9 flex flex-col gap-0.5 bg-white/90 rounded-md border border-border px-2 py-1.5 text-[10px] shadow-xs z-10"
             style={{ left: RULER_SIZE + 8 }}
           >
             {activeEntities.some(e => e.layer === "CUT") && <div className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#dc2626]"></span> Corte</div>}
@@ -994,14 +1069,14 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
           <div className="absolute bottom-2 right-2 flex gap-1 z-10">
             <button
               onClick={handleUndoLastMeasurement}
-              className="rounded-md bg-white border border-border px-2.5 py-1 text-xs font-medium shadow-sm hover:bg-secondary transition-colors"
+              className="rounded-md bg-white border border-border px-2.5 py-1 text-xs font-medium shadow-xs hover:bg-secondary transition-colors"
               title="Eliminar la última medición"
             >
               Deshacer última
             </button>
             <button
               onClick={handleClearMeasurements}
-              className="rounded-md bg-white border border-border px-2.5 py-1 text-xs font-medium shadow-sm hover:bg-secondary transition-colors"
+              className="rounded-md bg-white border border-border px-2.5 py-1 text-xs font-medium shadow-xs hover:bg-secondary transition-colors"
             >
               Borrar mediciones
             </button>
@@ -1009,7 +1084,7 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
         )}
 
         {selectedMeasurementId !== null && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-md bg-amber-50 border border-amber-300 px-3 py-1 text-xs text-amber-700 shadow-sm z-10">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-md bg-amber-50 border border-amber-300 px-3 py-1 text-xs text-amber-700 shadow-xs z-10">
             Medición seleccionada · <kbd className="font-semibold">Supr</kbd> para eliminarla · <kbd className="font-semibold">Esc</kbd> para anular
           </div>
         )}
@@ -1017,7 +1092,7 @@ export function DxfViewer({ geometry, className, onGeometryChange, onSendToAI }:
         {aiSelectCount > 0 && (
           <button
             onClick={() => { aiSelectIdsRef.current = new Set(); setAiSelectCount(0); needsRedrawRef.current = true }}
-            className="absolute rounded-md bg-white border border-border px-2.5 py-1 text-xs font-medium shadow-sm hover:bg-secondary transition-colors z-10"
+            className="absolute rounded-md bg-white border border-border px-2.5 py-1 text-xs font-medium shadow-xs hover:bg-secondary transition-colors z-10"
             style={{ bottom: measureCount > 0 ? 40 : 8, right: 8 }}
           >
             Limpiar IA

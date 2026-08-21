@@ -183,7 +183,7 @@ export function SidebarPresence({
           aria-label="Usuarios en línea"
           onClick={() => handleOpenChange(!open)}
           className={cn(
-            "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-sm shadow-black/15 dark:shadow-black/40 backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20",
+            "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20",
             open && "bg-foreground/20 text-foreground",
           )}
         >
@@ -306,7 +306,7 @@ export function SidebarPresence({
           <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent
               size="large"
-              className="flex max-h-[min(85dvh,40rem)] flex-col overflow-hidden rounded-2xl bg-popover p-0 text-foreground shadow-sm shadow-black/15 dark:shadow-black/40"
+              className="flex max-h-[min(85dvh,40rem)] flex-col overflow-hidden rounded-2xl bg-popover p-0 text-foreground shadow-xs"
             >
               <FormDialogHeader title="Usuarios en línea" icon={Users} />
               <div className="flex min-h-0 flex-1 flex-col p-2">
@@ -325,7 +325,7 @@ export function SidebarPresence({
             align="start"
             sideOffset={8}
             floatingClassName="w-72"
-            className="z-40 flex max-h-[min(28rem,75dvh)] w-full min-w-90 max-w-lg flex-col overflow-hidden rounded-xl border-none bg-popover p-2 text-foreground shadow-sm shadow-black/15 dark:shadow-black/40 select-none"
+            className="z-40 flex max-h-[min(28rem,75dvh)] w-full min-w-90 max-w-lg flex-col overflow-hidden rounded-xl border-none bg-popover p-2 text-foreground shadow-xs select-none"
           >
             {panelBody}
           </PopoverContent>

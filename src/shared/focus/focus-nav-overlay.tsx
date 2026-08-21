@@ -26,7 +26,7 @@ export function FocusNavOverlay() {
       aria-live="polite"
       aria-busy="true"
     >
-      <div className="flex flex-col items-center gap-3 rounded-2xl bg-chrome px-6 py-5 shadow-2xl">
+      <div className="flex flex-col items-center gap-3 rounded-2xl bg-chrome px-6 py-5 shadow-xs">
         <Spinner size={22} className="text-primary" />
         <p className="text-sm font-medium text-foreground">
           {label ?? "Dirigiendo…"}

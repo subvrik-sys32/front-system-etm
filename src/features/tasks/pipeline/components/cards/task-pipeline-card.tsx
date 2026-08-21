@@ -97,11 +97,11 @@ export function TaskPipelineCard({
         <div
           className={cn(
             "overflow-hidden rounded-xl transition duration-200 ease-out",
-            expanded && "shadow-sm shadow-black/15 dark:shadow-black/40",
+            expanded && "shadow-xs",
             longPressEnabled &&
               pressed &&
               !overlayOpen &&
-              "scale-[0.98] shadow-sm shadow-black/15 dark:shadow-black/40",
+              "scale-[0.98] shadow-xs",
             isDimmed && "opacity-50",
             overlayLocked && "opacity-40"
           )}

@@ -98,7 +98,7 @@ export function CommentHistoryDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           size="large"
-          className="flex h-[min(40rem,85dvh)] max-h-[85dvh] w-full max-w-180 flex-col overflow-hidden rounded-2xl p-0 text-foreground shadow-2xl"
+          className="flex h-[min(40rem,85dvh)] max-h-[85dvh] w-full max-w-180 flex-col overflow-hidden rounded-2xl p-0 text-foreground shadow-xs"
           onPointerDownOutside={preventNestedDialogClose}
           onInteractOutside={preventNestedDialogClose}
         >

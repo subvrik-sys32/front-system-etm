@@ -6,11 +6,11 @@ import { cn } from "@/shared/utils/utils"
 
 /**
  * Sombra única de elevación suave (cards, toasts, botones chrome).
- * Misma que IconAction — evita shadow-lg/xl que se recortan con
+ * Misma que IconAction — evita shadow-xs/xl que se recortan con
  * overflow-hidden del AppShell y se ven pesadas en light.
  */
 export const ELEVATION_SHADOW =
-  "shadow-sm shadow-black/15 dark:shadow-black/40"
+  "shadow-xs"
 
 /** Superficie compartida: info / material / editar / borrar */
 export const CHROME_ICON_BTN =

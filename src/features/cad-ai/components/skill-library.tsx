@@ -63,7 +63,7 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
       <DialogContent
         size="large"
         className={cn(
-          "flex flex-col gap-0 overflow-hidden rounded-2xl p-0 text-foreground shadow-2xl",
+          "flex flex-col gap-0 overflow-hidden rounded-2xl p-0 text-foreground shadow-xs",
           "h-[75vh] max-h-[600px] w-full max-w-2xl bg-background",
         )}
       >
@@ -140,7 +140,7 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
                       key={skill.id}
                       type="button"
                       onClick={() => onOpenSkill(skill)}
-                      className="group relative flex flex-col rounded-xl bg-card p-2.5 text-left transition hover:border-border hover:shadow-md"
+                      className="group relative flex flex-col rounded-xl bg-card p-2.5 text-left transition hover:border-border hover:shadow-xs"
                     >
                       <div className="mb-2 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-lg bg-muted/50">
                         {skill.thumbnail && !skill.thumbnail.startsWith("blob:") ? (
@@ -189,7 +189,7 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
                       key={skill.id}
                       type="button"
                       onClick={() => onOpenSkill(skill)}
-                      className="group flex items-center justify-between rounded-xl bg-card px-3 py-2 text-left transition hover:border-border hover:shadow-md"
+                      className="group flex items-center justify-between rounded-xl bg-card px-3 py-2 text-left transition hover:border-border hover:shadow-xs"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted/50">

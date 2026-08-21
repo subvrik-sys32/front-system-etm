@@ -248,7 +248,7 @@ export function EngineeringColumnOperators({
           type="button"
           className={cn(
             "group flex h-9 w-full min-w-0 items-center gap-2 rounded-xl bg-foreground/[0.04] p-1.5 text-left backdrop-blur-sm transition-all duration-150",
-            "hover:bg-foreground/[0.08] hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            "hover:bg-foreground/[0.08] hover:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           )}
         >
           <div className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70 transition-colors group-hover:text-foreground">

@@ -280,7 +280,7 @@ export function TaskProductionPanel({
                         "pointer-events-none absolute -right-1.5 -top-1.5 z-10",
                         "flex h-4 min-w-4 items-center justify-center",
                         "rounded-full bg-sky-500 px-1 text-[9px] font-bold leading-none text-white",
-                        "shadow-md ring-2",
+                        "shadow-xs ring-2",
                       )}
                       style={{
                         // Anillo del color del proceso (contraste con el centro, no negro)
@@ -303,7 +303,7 @@ export function TaskProductionPanel({
                         "pointer-events-none absolute z-10",
                         "flex h-4 min-w-4 items-center justify-center overflow-hidden",
                         "rounded-full text-[9px] font-bold leading-none text-white",
-                        "shadow-md",
+                        "shadow-xs",
                         hasComments
                           ? "-bottom-1 -left-1.5"
                           : "-right-1.5 -top-1.5",
@@ -337,7 +337,7 @@ export function TaskProductionPanel({
                         "pointer-events-none absolute -right-1.5 -top-1.5 z-10",
                         "flex h-4 min-w-4 items-center justify-center",
                         "rounded-full bg-amber-500 text-[9px] font-bold text-white",
-                        "shadow-md",
+                        "shadow-xs",
                       )}
                       style={{
                         boxShadow: `0 0 0 2px ${

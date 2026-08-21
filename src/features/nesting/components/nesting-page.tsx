@@ -714,7 +714,7 @@ export function NestingPage() {
       {/* —— Desktop: sidebar + canvas —— */}
       {!isCompact && (
         <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 overflow-hidden">
-          <aside className="flex h-full min-h-0 w-80 shrink-0 flex-col overflow-hidden rounded-2xl bg-muted p-3 shadow-sm dark:bg-foreground/5">
+          <aside className="flex h-full min-h-0 w-80 shrink-0 flex-col overflow-hidden rounded-2xl bg-muted p-3 shadow-xs dark:bg-foreground/5">
             {panel}
           </aside>
           <div
@@ -736,7 +736,7 @@ export function NestingPage() {
                 />
               </div>
             )}
-            <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-zinc-100 shadow-sm dark:border-0 dark:bg-neutral-950">
+            <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-zinc-100 shadow-xs dark:border-0 dark:bg-neutral-950">
               <div className="absolute inset-0 overflow-hidden rounded-xl">
                 {!project.sessionReady ? (
                   <WorkspaceSpinner />
@@ -771,7 +771,7 @@ export function NestingPage() {
             </div>
             {selectedPieceIndices.length >= 2 && (
               <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-0.5 rounded-xl bg-muted/95 p-1.5 shadow-lg backdrop-blur-sm">
+                <div className="flex items-center gap-0.5 rounded-xl bg-muted/95 p-1.5 shadow-xs backdrop-blur-sm">
                   <span className="px-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                     Alinear
                   </span>
@@ -832,7 +832,7 @@ export function NestingPage() {
           </div>
 
           {/* top-12 ≈ tabs; bottom-0 = todo el resto del slot immersive */}
-          <div className="absolute inset-x-0 bottom-0 top-14 mx-1 mb-1 overflow-hidden rounded-xl border-0 bg-zinc-100 shadow-sm dark:border-0 dark:bg-neutral-950">
+          <div className="absolute inset-x-0 bottom-0 top-14 mx-1 mb-1 overflow-hidden rounded-xl border-0 bg-zinc-100 shadow-xs dark:border-0 dark:bg-neutral-950">
             <div className="absolute inset-px overflow-hidden rounded-4xl">
               {!project.sessionReady ? (
                 <WorkspaceSpinner />
@@ -886,7 +886,7 @@ export function NestingPage() {
       >
         <DialogContent
           size="large"
-          className="flex max-h-[min(92dvh,100%)] h-[min(92dvh,100%)] w-[calc(100vw-1.5rem)] max-w-lg flex-col gap-0 overflow-hidden rounded-2xl border-none bg-popover p-0 text-foreground shadow-2xl"
+          className="flex max-h-[min(92dvh,100%)] h-[min(92dvh,100%)] w-[calc(100vw-1.5rem)] max-w-lg flex-col gap-0 overflow-hidden rounded-2xl border-none bg-popover p-0 text-foreground shadow-xs"
         >
           <div className="shrink-0">
             <FormDialogHeader title="Panel de Control" icon={SlidersHorizontal} />
@@ -908,7 +908,7 @@ export function NestingPage() {
       />
 
       <Dialog open={pendingDelete} onOpenChange={(open) => !open && setPendingDelete(false)}>
-        <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl bg-popover p-5 text-foreground shadow-2xl sm:max-w-md">
+        <DialogContent className="max-w-[calc(100vw-2rem)] rounded-2xl bg-popover p-5 text-foreground shadow-xs sm:max-w-md">
           <DialogHeader>
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
               <Trash2 size={20} />

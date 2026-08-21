@@ -48,7 +48,7 @@ export function HexColorPicker({
           align="start"
           sideOffset={6}
           className={[
-            'z-50 w-58 p-3 rounded-lg shadow-lg flex flex-col gap-3',
+            'z-50 w-58 p-3 rounded-lg shadow-xs flex flex-col gap-3',
 
             'bg-popover border border-border',
             'animate-in fade-in-0 zoom-in-95',

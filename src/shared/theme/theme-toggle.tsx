@@ -86,7 +86,7 @@ export function ThemeToggle({
                   ? "gap-0 px-1.5 py-1.5"
                   : "gap-1.5 px-2 py-2 text-xs font-medium",
                 active
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:bg-foreground/10 hover:text-foreground active:bg-foreground/15",
               )}
             >

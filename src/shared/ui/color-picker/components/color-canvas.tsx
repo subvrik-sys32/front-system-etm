@@ -78,7 +78,7 @@ export function ColorCanvas({ hue, saturation, value, onChange }: ColorCanvasPro
       }}
     >
       <span
-        className="absolute w-3.5 h-3.5 rounded-full border-2 border-white shadow-md -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+        className="absolute w-3.5 h-3.5 rounded-full border-2 border-white shadow-xs -translate-x-1/2 -translate-y-1/2 pointer-events-none"
         style={{ left: thumbLeft, top: thumbTop, boxShadow: '0 0 0 1px rgba(0,0,0,0.25)' }}
       />
     </div>

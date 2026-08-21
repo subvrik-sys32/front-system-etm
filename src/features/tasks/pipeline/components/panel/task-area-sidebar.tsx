@@ -102,7 +102,7 @@ export function TaskAreaSidebar({ className }: { className?: string }) {
               bottom: `calc(${BOTTOM_NAV_HEIGHT_PX}px + env(safe-area-inset-bottom, 0px) + 8px)`,
             }}
           >
-            <div className="animate-slide-up-in overflow-hidden rounded-2xl bg-card shadow-lg shadow-black/40">
+            <div className="animate-slide-up-in overflow-hidden rounded-2xl bg-card shadow-xs ">
               <div className="flex justify-center pt-2.5">
                 <div className="h-1 w-10 rounded-full bg-foreground/20" />
               </div>

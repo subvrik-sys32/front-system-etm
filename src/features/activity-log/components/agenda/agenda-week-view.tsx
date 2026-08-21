@@ -220,7 +220,7 @@ export function AgendaWeekView({
                         "bg-amber-400 text-background shadow-[0_0_12px_rgba(251,191,36,0.35)]",
                       !isToday &&
                         isAnchor &&
-                        "bg-foreground text-background shadow-sm",
+                        "bg-foreground text-background shadow-xs",
                       !isToday &&
                         !isAnchor &&
                         "text-muted-foreground hover:bg-foreground/10 hover:text-foreground",

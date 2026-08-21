@@ -1318,12 +1318,12 @@ export function DxfCanvas({
       )}
 
       {canvasTool === "zoomWindow" && !boxSelectScreen && (
-        <div className="pointer-events-none absolute left-1/2 top-16 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-md">
+        <div className="pointer-events-none absolute left-1/2 top-16 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-xs">
           Arrastra un rectángulo para hacer zoom (Anticlick para salir)
         </div>
       )}
       {canvasTool === "rotate" && !rotatePivotScreen && (
-        <div className="pointer-events-none absolute left-1/2 top-16 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-md">
+        <div className="pointer-events-none absolute left-1/2 top-16 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-xs">
           Clic = pivot · arrastrar = ángulo (Shift = 15°) (Anticlick para salir)
         </div>
       )}

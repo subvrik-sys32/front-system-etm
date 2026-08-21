@@ -97,7 +97,7 @@ export function ActionDialog({
     >
       <DialogContent
         className={cn(
-          "max-w-[calc(100vw-2rem)] sm:max-w-90 rounded-2xl p-5 text-foreground shadow-2xl",
+          "max-w-[calc(100vw-2rem)] sm:max-w-90 rounded-2xl p-5 text-foreground shadow-xs",
           "bg-popover backdrop-blur-xl"
         )}
         onPointerDownOutside={preventNestedDialogClose}

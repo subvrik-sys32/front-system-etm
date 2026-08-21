@@ -110,7 +110,7 @@ export function PopoverContent({
           className={cn(
             "fixed inset-x-0 bottom-0 z-40 mt-16 flex flex-col overflow-hidden outline-none",
             "rounded-t-2xl bg-popover text-popover-foreground",
-            "shadow-sm shadow-black/15 dark:shadow-black/40",
+            "shadow-xs",
             "pb-[env(safe-area-inset-bottom,0px)]",
             className,
           )}
@@ -206,7 +206,7 @@ export function PopoverContent({
         event.stopPropagation()
       }}
       className={cn(
-        "z-40 pointer-events-auto flex flex-col gap-2.5 overflow-hidden rounded-xl bg-popover p-2.5 text-sm text-popover-foreground shadow-sm shadow-black/15 dark:shadow-black/40 outline-none",
+        "z-40 pointer-events-auto flex flex-col gap-2.5 overflow-hidden rounded-xl bg-popover p-2.5 text-sm text-popover-foreground shadow-xs outline-none",
         "transition-[width,height] duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
         "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-200",
         "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-150",

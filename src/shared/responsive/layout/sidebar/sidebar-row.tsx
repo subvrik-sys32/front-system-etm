@@ -40,7 +40,7 @@ export function SidebarRow({
         "group relative flex w-full items-center rounded-xl font-medium transition-colors duration-200 select-none overflow-visible",
         size === "sm" ? "h-9 text-xs" : "h-10 text-xs font-semibold",
         active
-          ? "bg-foreground/10 text-foreground shadow-sm"
+          ? "bg-foreground/10 text-foreground shadow-xs"
           : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
         collapsed ? "justify-center px-0" : "px-2.5",
         className

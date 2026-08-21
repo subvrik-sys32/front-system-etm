@@ -83,7 +83,7 @@ export function DiagnosticsDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
         size="large"
-        className="flex max-h-[85vh] w-[min(960px,95vw)] max-w-none flex-col gap-0 overflow-hidden border-border bg-popover p-0 text-foreground shadow-2xl sm:max-w-none"
+        className="flex max-h-[85vh] w-[min(960px,95vw)] max-w-none flex-col gap-0 overflow-hidden border-border bg-popover p-0 text-foreground shadow-xs sm:max-w-none"
       >
         <DialogHeader className="shrink-0 border-b border-border px-6 py-4 pr-12">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -152,7 +152,7 @@ export function DiagnosticsDialog({
                   className={cn(
                     "rounded-lg px-3 py-1 text-[11px] font-medium transition-colors flex items-center gap-1.5",
                     filterMode === mode
-                      ? "bg-foreground/15 text-foreground shadow-sm"
+                      ? "bg-foreground/15 text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                   )}
                 >
@@ -180,7 +180,7 @@ export function DiagnosticsDialog({
                 deslice a los costados en vez de perder contenido. */}
             <div className="overflow-x-auto">
               <table className="w-full min-w-188 border-collapse text-left text-xs">
-              <thead className="sticky top-0 z-10 bg-muted text-[10px] uppercase tracking-wider text-muted-foreground shadow-sm">
+              <thead className="sticky top-0 z-10 bg-muted text-[10px] uppercase tracking-wider text-muted-foreground shadow-xs">
                 <tr>
                   <th className="px-4 py-3 font-medium">Nombre del archivo</th>
                   <th className="px-2 py-3 text-center font-medium">Cant.</th>

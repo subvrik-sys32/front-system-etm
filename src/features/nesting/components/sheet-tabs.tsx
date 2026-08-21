@@ -106,7 +106,7 @@ className="w-full p-1 pb-2">
                   className={cn(
                     "flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold tracking-wide transition-colors",
                     isActive
-                      ? "bg-foreground/10 text-foreground shadow-sm"
+                      ? "bg-foreground/10 text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-muted-foreground"
                   )}
                 >
@@ -144,7 +144,7 @@ className="w-full p-1 pb-2">
                     className={cn(
                       "flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-xs font-semibold tracking-wide transition-colors",
                       isGroupActive
-                        ? "bg-foreground/10 text-foreground shadow-sm"
+                        ? "bg-foreground/10 text-foreground shadow-xs"
                         : "text-muted-foreground hover:text-muted-foreground"
                     )}
                   >

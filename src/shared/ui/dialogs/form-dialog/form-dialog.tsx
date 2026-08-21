@@ -63,7 +63,7 @@ export function FormDialog({
       <DialogContent
         size="large"
         className={cn(
-          "flex flex-col gap-0 overflow-hidden rounded-2xl p-0 text-foreground shadow-2xl",
+          "flex flex-col gap-0 overflow-hidden rounded-2xl p-0 text-foreground shadow-xs",
           isMobile
             ? "max-h-dvh w-180 max-w-180 bg-popover"
             : // Mismo contrato que ExportDialog; un poco más ancho por campos de form

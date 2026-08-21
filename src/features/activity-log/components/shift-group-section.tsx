@@ -419,7 +419,7 @@ export function ShiftGroupSection({
                                   onInteractOutside={() => setMenuOpenLogId(null)}
                                   className={cn(
                                     "fixed inset-x-0 bottom-0 z-40 flex max-h-[85dvh] flex-col overflow-hidden",
-                                    "rounded-t-3xl bg-popover shadow-2xl outline-none",
+                                    "rounded-t-3xl bg-popover shadow-xs outline-none",
                                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
                                     "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
                                     "data-[state=closed]:duration-250 data-[state=open]:duration-300",

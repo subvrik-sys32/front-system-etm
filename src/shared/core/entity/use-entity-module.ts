@@ -312,7 +312,7 @@ export function useEntityModule<
 
   return{
     items:query.data??[],
-    loading:query.isLoading,
+    loading: query.isPending,
     refreshing:query.isFetching,
     create:create.mutateAsync,
     update:update.mutateAsync,

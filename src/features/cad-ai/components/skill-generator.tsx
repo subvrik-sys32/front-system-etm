@@ -91,7 +91,7 @@ export function SkillGenerator({
       <DialogContent
         size="large"
         className={cn(
-          "flex flex-col gap-0 overflow-hidden rounded-2xl p-0 text-foreground shadow-2xl",
+          "flex flex-col gap-0 overflow-hidden rounded-2xl p-0 text-foreground shadow-xs",
           "h-[85vh] max-h-[85vh] w-full max-w-5xl bg-popover",
         )}
       >

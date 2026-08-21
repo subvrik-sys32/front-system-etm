@@ -42,7 +42,7 @@ const AreaChip = memo(function AreaChip({
         "inline-flex select-none items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold transition-colors duration-150 ease-out",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
         selected
-          ? "bg-foreground/15 text-foreground shadow-2xs"
+          ? "bg-foreground/15 text-foreground shadow-xs"
           : "bg-background/80 text-muted-foreground hover:bg-background hover:text-foreground dark:bg-foreground/5 dark:hover:bg-foreground/10"
       )}
     >
@@ -81,7 +81,7 @@ export function AreaFilterChips({
       role="group"
       aria-label="Filtro por área de trabajo"
       className={cn(
-        "rounded-xl bg-muted/60 p-1.5 shadow-2xs dark:bg-muted/80",
+        "rounded-xl bg-muted/60 p-1.5 shadow-xs dark:bg-muted/80",
         className
       )}
     >

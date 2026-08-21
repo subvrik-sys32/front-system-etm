@@ -9,6 +9,7 @@ import { AdaptiveActionBar } from "@/shared/responsive/adaptative/adaptive-actio
 import { EntityExpandProvider } from "@/shared/ui/entity-table/features/expansion"
 import { EntityToolbar } from "@/shared/ui/entity-toolbar/entity-toolbar"
 import { EntityToolbarSearch } from "@/shared/ui/entity-toolbar/entity-toolbar-search"
+import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
 import { ExportMenu, type ExportScope } from "@/shared/export"
 import { BackToProjectButton } from "@/features/projects/components/actions/back-to-project-button"
 import { TaskTable } from "@/features/tasks/table"
@@ -52,51 +53,52 @@ export function TaskPageContent({
   }
 
   const toolbar = (
-    <div className="mb-1 shrink-0">
-      <EntityToolbar
-        left={
-          <AdaptiveActionBar
-            pinned={
-              <>
-                <BackToProjectButton />
-                <EntityToolbarSearch value={search} onChange={setSearch} />
-                {isMobile && (
-                  <FilterBar module="tasks" showAddButton={false} />
-                )}
-              </>
-            }
-            actions={[
-              <FilterBar
-                key="filter"
-                module="tasks"
-                alwaysExpanded={isMobile}
-                showChips={!isMobile}
-              />,
-              <TaskSortButton key="sort" />,
-              <HistoryToggleButton
-                key="history"
-                count={completedCount}
-                active={showHistory}
-                onClick={() => setShowHistory(v => !v)}
-              />,
-              <ExportMenu
-                key="export"
-                scopes={REPORT_EXPORT_SCOPES}
-                onExport={handleExport}
-              />,
-              ...(isMobile ? [<TaskCreateDialAction key="create" />] : []),
-            ]}
-          />
-        }
-      />
-    </div>
+    <EntityToolbar
+      variant={isMobile ? "page" : "chrome"}
+      left={
+        <AdaptiveActionBar
+          pinned={
+            <>
+              <BackToProjectButton />
+              <EntityToolbarSearch value={search} onChange={setSearch} />
+              {isMobile && (
+                <FilterBar module="tasks" showAddButton={false} />
+              )}
+            </>
+          }
+          actions={[
+            <FilterBar
+              key="filter"
+              module="tasks"
+              alwaysExpanded={isMobile}
+              showChips={!isMobile}
+            />,
+            <TaskSortButton key="sort" />,
+            <HistoryToggleButton
+              key="history"
+              count={completedCount}
+              active={showHistory}
+              onClick={() => setShowHistory(v => !v)}
+            />,
+            <ExportMenu
+              key="export"
+              scopes={REPORT_EXPORT_SCOPES}
+              onExport={handleExport}
+            />,
+            ...(isMobile ? [<TaskCreateDialAction key="create" />] : []),
+          ]}
+        />
+      }
+    />
   )
+
+  usePageToolbar(isMobile ? null : toolbar)
 
   return (
     <div className="relative flex h-full min-h-0 w-full flex-col">
       <AppListScroll
       >
-        {toolbar}
+        {isMobile ? <div className="mb-1 shrink-0">{toolbar}</div> : null}
         <EntityExpandProvider>
           <TaskTable
             tasks={tasks}

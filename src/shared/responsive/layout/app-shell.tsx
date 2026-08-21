@@ -13,6 +13,7 @@ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
 import { usePageTitleStore } from "@/shared/responsive/navigation/page-title-store"
 import { usePageActionsStore } from "@/shared/responsive/navigation/page-actions-store"
+import { usePageToolbarStore } from "@/shared/responsive/navigation/page-toolbar-store"
 import { isImmersiveRoute } from "@/shared/responsive/navigation/immersive-routes"
 import { TOP_BAR_HEIGHT_PX, BOTTOM_NAV_HEIGHT_PX } from "./chrome-constants"
 import { TopBar } from "@/shared/responsive/mobile/top-bar"
@@ -27,12 +28,12 @@ function DesktopTopBar() {
   const mode = useSidebarStore(state => state.mode)
   const title = usePageTitleStore(s => s.title)
   const actions = usePageActionsStore(s => s.actions)
+  const toolbar = usePageToolbarStore(s => s.toolbar)
   // Compacta o cerrada → theme fuera (junto al ojo cuando aplica).
   // Expandida → theme vive en el header del sidebar.
   const showThemeOutside = mode === "collapsed" || mode === "closed"
 
-  // Overlay como mobile TopBar: el contenido scrollea debajo con blur.
-  // NO ocupa flujo (no robamos altura al main).
+  // Overlay como mobile: contenido scrollea debajo con blur.
   return (
     <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-11 items-center gap-2 px-3">
       <div
@@ -53,11 +54,11 @@ function DesktopTopBar() {
       />
       <div className="pointer-events-auto flex min-w-0 flex-1 items-center gap-2">
         <SidebarShowButton />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 shrink-0">
           {title ? (
             <div
               title={title}
-              className="inline-flex max-w-full items-center rounded-full bg-chrome px-2.5 py-1.5 shadow-xs backdrop-blur-xl"
+              className="inline-flex max-w-[10rem] items-center rounded-full bg-chrome px-2.5 py-1.5 shadow-xs backdrop-blur-xl desktop:max-w-[14rem]"
             >
               <span className="truncate text-sm font-semibold text-foreground">
                 {title}
@@ -65,6 +66,13 @@ function DesktopTopBar() {
             </div>
           ) : null}
         </div>
+        {toolbar ? (
+          <div className="flex min-w-0 flex-1 items-center overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {toolbar}
+          </div>
+        ) : (
+          <div className="min-w-0 flex-1" />
+        )}
         {actions ? (
           <div className="flex shrink-0 items-center gap-1.5">{actions}</div>
         ) : null}

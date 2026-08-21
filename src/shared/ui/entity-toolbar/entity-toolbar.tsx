@@ -8,6 +8,8 @@ type Props = {
   left?: ReactNode
   right?: ReactNode
   className?: string
+  /** chrome = compacto dentro de DesktopTopBar */
+  variant?: "page" | "chrome"
 }
 
 /**
@@ -18,14 +20,21 @@ type Props = {
  * Por eso acá y en FilterBar chips → overflow-visible + flex-wrap;
  * el padding solo ayuda si el clip ya no existe en el padre directo.
  */
-export function EntityToolbar({ left, right, className }: Props) {
+export function EntityToolbar({
+  left,
+  right,
+  className,
+  variant = "page",
+}: Props) {
+  const isChrome = variant === "chrome"
+
   return (
     <div
       className={cn(
-        "flex w-full shrink-0 flex-wrap items-center justify-between gap-x-2 gap-y-1.5",
-        "min-h-0 px-1 py-1",
-        "overflow-visible",
-        "tablet:min-h-14 tablet:py-2.5",
+        "flex min-w-0 items-center gap-x-2 gap-y-1.5",
+        isChrome
+          ? "w-auto shrink flex-nowrap overflow-visible py-0 px-0"
+          : "w-full shrink-0 flex-wrap justify-between min-h-0 px-1 py-1 overflow-visible tablet:min-h-14 tablet:py-2.5",
         className,
       )}
     >

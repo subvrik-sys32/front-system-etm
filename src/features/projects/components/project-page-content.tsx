@@ -14,6 +14,7 @@ import { EntityExpandProvider } from "@/shared/ui/entity-table/features/expansio
 
 import { EntityToolbar } from "@/shared/ui/entity-toolbar/entity-toolbar"
 import { EntityToolbarSearch } from "@/shared/ui/entity-toolbar/entity-toolbar-search"
+import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
 
 import { FilterBar } from "@/shared/filter/components/filter-bar"
 
@@ -53,42 +54,48 @@ export function ProjectPageContent({
     [projects],
   )
 
+  const toolbar = (
+    <EntityToolbar
+      variant={isMobile ? "page" : "chrome"}
+      left={
+        <AdaptiveActionBar
+          pinned={
+            <>
+              <EntityToolbarSearch value={search} onChange={setSearch} />
+              {isMobile && (
+                <FilterBar module="projects" showAddButton={false} />
+              )}
+            </>
+          }
+          actions={[
+            <FilterBar
+              key="filter"
+              module="projects"
+              alwaysExpanded={isMobile}
+              showChips={!isMobile}
+            />,
+            <ProjectSortButton key="sort" />,
+            <HistoryToggleButton
+              key="history"
+              count={completedCount}
+              active={showHistory}
+              onClick={() => setShowHistory(v => !v)}
+            />,
+            ...(isMobile ? [<ProjectCreateDialAction key="create" />] : []),
+          ]}
+        />
+      }
+    />
+  )
+
+  // Desktop/tablet: toolbar en DesktopTopBar. Mobile: dentro del scroll.
+  usePageToolbar(isMobile ? null : toolbar)
+
   return (
     <div className="relative flex h-full min-h-0 w-full flex-col">
       <AppListScroll
       >
-        <div className="mb-1">
-          <EntityToolbar
-            left={
-              <AdaptiveActionBar
-                pinned={
-                  <>
-                    <EntityToolbarSearch value={search} onChange={setSearch} />
-                    {isMobile && (
-                      <FilterBar module="projects" showAddButton={false} />
-                    )}
-                  </>
-                }
-                actions={[
-                  <FilterBar
-                    key="filter"
-                    module="projects"
-                    alwaysExpanded={isMobile}
-                    showChips={!isMobile}
-                  />,
-                  <ProjectSortButton key="sort" />,
-                  <HistoryToggleButton
-                    key="history"
-                    count={completedCount}
-                    active={showHistory}
-                    onClick={() => setShowHistory(v => !v)}
-                  />,
-                  ...(isMobile ? [<ProjectCreateDialAction key="create" />] : []),
-                ]}
-              />
-            }
-          />
-        </div>
+        {isMobile ? <div className="mb-1">{toolbar}</div> : null}
 
         <EntityExpandProvider>
           <ProjectTable

@@ -10,6 +10,7 @@ import {
   TOP_BAR_HEIGHT_PX,
   BOTTOM_NAV_HEIGHT_PX,
   PAGE_SEARCH_BAR_HEIGHT_PX,
+  DESKTOP_TOP_BAR_HEIGHT_PX,
 } from "@/shared/responsive/layout/chrome-constants"
 import { usePageSearchStore } from "@/shared/ui/entity-toolbar/page-search-store"
 
@@ -21,7 +22,8 @@ type Props = {
 
 /**
  * Único dueño del scroll vertical de páginas lista.
- * Mobile: padding chrome. Desktop: sin overflow clip en ancestros del shell.
+ * TopBar es overlay en mobile y desktop: paddingTop = chrome para que
+ * el primer row no arranque tapado; al scrollear el contenido pasa bajo el blur.
  */
 export function AppListScroll({ children, resetKey, className }: Props) {
   const pathname = usePathname()

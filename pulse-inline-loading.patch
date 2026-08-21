@@ -1,0 +1,1166 @@
+diff --git a/src/app/(protected)/loading.tsx b/src/app/(protected)/loading.tsx
+deleted file mode 100644
+index 7abb3b0..0000000
+--- a/src/app/(protected)/loading.tsx
++++ /dev/null
+@@ -1,23 +0,0 @@
+-"use client"
+-
+-import { EntityListSkeleton } from "@/shared/ui/entity-table/entity-list-skeleton"
+-
+-/**
+- * Skeleton de segmento protected.
+- * Las páginas client también usan `loading` de React Query en tablas.
+- */
+-export default function ProtectedLoading() {
+-  return (
+-    <div className="flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none tablet:px-4 desktop:px-5 desktop:pt-1 desktop:pb-3">
+-      <header className="mb-1 hidden min-h-10 shrink-0 items-center gap-2 desktop:flex">
+-        <div className="h-7 w-28 rounded-md bg-foreground/10" />
+-        <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
+-        <div className="h-4 w-40 rounded bg-foreground/5" />
+-      </header>
+-      <section className="flex min-h-0 w-full flex-1 flex-col">
+-        <div className="mb-2 h-10 shrink-0 rounded-xl bg-foreground/5" />
+-        <EntityListSkeleton variant="task" rows={8} />
+-      </section>
+-    </div>
+-  )
+-}
+diff --git a/src/features/admin/users/components/cards/user-mobile-card.tsx b/src/features/admin/users/components/cards/user-mobile-card.tsx
+index 013f8ce..f868e2f 100644
+--- a/src/features/admin/users/components/cards/user-mobile-card.tsx
++++ b/src/features/admin/users/components/cards/user-mobile-card.tsx
+@@ -20,19 +20,56 @@ import {
+   UserRowActions,
+ } from "../actions/user-row-actions"
+ 
+-type Props = {
+-  user: User
+-  index: number
+-  expanded: boolean
+-  onToggle: () => void
++type Props =
++  | {
++      loading: true
++      opacity?: number
++      user?: undefined
++      index?: number
++      expanded?: boolean
++      onToggle?: () => void
++    }
++  | {
++      loading?: false
++      opacity?: number
++      user: User
++      index: number
++      expanded: boolean
++      onToggle: () => void
++    }
++
++function UserMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
++  return (
++    <article
++      className="overflow-hidden rounded-xl bg-foreground/5"
++      style={{ opacity }}
++      aria-hidden
++    >
++      <div className="w-full text-left">
++        <header className="flex animate-pulse items-center justify-between gap-2.5 px-3 py-3">
++          <span className="h-4 w-24 rounded bg-foreground/10" />
++          <span className="inline-flex items-center gap-1.5">
++            <span className="h-1.5 w-1.5 rounded-full bg-foreground/10" />
++            <span className="h-4 w-16 rounded bg-foreground/10" />
++          </span>
++        </header>
++        <div className="flex animate-pulse items-center gap-2.5 px-3 pb-3">
++          <div className="min-w-0 flex-1">
++            <span className="block h-8 w-full rounded-full bg-foreground/5" />
++          </div>
++          <span className="h-4 w-4 shrink-0 rounded-sm bg-foreground/5" />
++        </div>
++      </div>
++    </article>
++  )
+ }
+ 
+-export function UserMobileCard({
+-  user,
+-  index,
+-  expanded,
+-  onToggle,
+-}: Props) {
++export function UserMobileCard(props: Props) {
++  if (props.loading) {
++    return <UserMobileCardPulse opacity={props.opacity} />
++  }
++
++  const { user, index, expanded, onToggle } = props
+ 
+   return (
+ 
+diff --git a/src/features/admin/users/components/user-desktop-row.tsx b/src/features/admin/users/components/user-desktop-row.tsx
+index b21237e..6658fba 100644
+--- a/src/features/admin/users/components/user-desktop-row.tsx
++++ b/src/features/admin/users/components/user-desktop-row.tsx
+@@ -4,17 +4,44 @@ import { cn } from "@/shared/utils/utils"
+ 
+ import type { User } from "@/features/users/types/user.types"
+ 
+-type Props = {
+-  user: User
+-  selected: boolean
+-  onSelect: () => void
++type Props =
++  | {
++      loading: true
++      opacity?: number
++      user?: undefined
++      selected?: boolean
++      onSelect?: () => void
++    }
++  | {
++      loading?: false
++      opacity?: number
++      user: User
++      selected: boolean
++      onSelect: () => void
++    }
++
++function UserDesktopRowPulse({ opacity = 1 }: { opacity?: number }) {
++  return (
++    <div
++      className="flex w-full animate-pulse items-center justify-between gap-3 px-3 py-2.5"
++      style={{ opacity }}
++      aria-hidden
++    >
++      <div className="flex min-w-0 items-center gap-2.5">
++        <span className="size-2.5 shrink-0 rounded-full bg-foreground/10" />
++        <span className="h-4 w-28 rounded bg-foreground/10" />
++      </div>
++    </div>
++  )
+ }
+ 
+-// Fila de usuario en DESKTOP -- calco exacto de RoleDesktopRow (punto
+-// de color + texto, sin badge), para que Usuarios y Roles luzcan
+-// idénticos. El punto usa el color del usuario; un anillo claro
+-// indica que está online, en vez de un segundo punto aparte.
+-export function UserDesktopRow({ user, selected, onSelect }: Props) {
++export function UserDesktopRow(props: Props) {
++  if (props.loading) {
++    return <UserDesktopRowPulse opacity={props.opacity} />
++  }
++
++  const { user, selected, onSelect } = props
++
+   return (
+     <button
+       type="button"
+diff --git a/src/features/admin/users/components/users-page-content.tsx b/src/features/admin/users/components/users-page-content.tsx
+index de08b8b..86f2e41 100644
+--- a/src/features/admin/users/components/users-page-content.tsx
++++ b/src/features/admin/users/components/users-page-content.tsx
+@@ -1,5 +1,7 @@
+ "use client"
+ 
++import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
++
+ import { useQueryClient } from "@tanstack/react-query"
+ 
+ import { useMemo, useState } from "react"
+@@ -8,6 +10,10 @@ import { ArrowLeft, Plus, Trash2, Save } from "lucide-react"
+ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+ import { usePermissions } from "@/features/permissions/hooks/use-permissions"
+ import { useRoles } from "@/features/roles/hooks/use-roles"
++import {
++  RoleDesktopRow,
++  RoleMobileCard,
++} from "@/features/roles/table"
+ import { useAreas } from "@/features/areas/hooks/use-areas"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ import { PrimaryAction } from "@/shared/ui/actions/primary-action"
+@@ -23,21 +29,13 @@ import { useUserMutations } from "@/features/users/hooks/use-user-mutations"
+ import { useUsers } from "@/features/users/hooks/use-users"
+ import { validateUser } from "../hooks/validate-user"
+ import { UserMobileCard } from "./cards/user-mobile-card"
+-import { UserMobileSkeleton } from "./cards/user-mobile-skeleton"
+ import { UserDesktopRow } from "./user-desktop-row"
+-import { UserDesktopRowSkeleton } from "./user-desktop-row-skeleton"
+ import { UserForm } from "./form/user-form"
+ import { UserDialog } from "./dialog/user-dialog"
+ 
+ import { generateUserDefaultsFromEmail } from "@/features/users/utils/generate-user-defaults-from-email"
+ import { isLevelAllowedForRoles } from "@/features/users/utils/allowed-levels-for-roles"
+ 
+-import {
+-  RoleDesktopRow,
+-  RoleDesktopRowSkeleton,
+-  RoleMobileCard,
+-  RoleMobileSkeleton,
+-} from "@/features/roles/table"
+ import type { Role } from "@/features/roles/types/role.types"
+ import type { User } from "@/features/users/types/user.types"
+ 
+@@ -289,7 +287,9 @@ export function UsersPageContent() {
+                 {searchToolbar}
+                 <div className="space-y-3 pb-4">
+                   {loadingRoles ? (
+-                    <RoleMobileSkeleton />
++                    ENTITY_PULSE_OPACITIES.map((opacity, i) => (
++                      <RoleMobileCard key={i} loading opacity={opacity} />
++                    ))
+                   ) : filteredRoles.length === 0 ? (
+                     <div className="rounded-2xl bg-muted px-4 py-8 text-center text-sm text-muted-foreground">
+                       {search ? "Ningún rol coincide con la búsqueda." : "No hay roles todavía."}
+@@ -349,7 +349,9 @@ export function UsersPageContent() {
+ 
+                 <div className="space-y-3 pb-4">
+                   {loading ? (
+-                    <UserMobileSkeleton />
++                    ENTITY_PULSE_OPACITIES.map((opacity, i) => (
++                      <UserMobileCard key={i} loading opacity={opacity} />
++                    ))
+                   ) : filteredUsersInRole.length === 0 ? (
+                     <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+                       {search
+@@ -389,7 +391,9 @@ export function UsersPageContent() {
+                   <ScrollArea data-entity-table-scroll className="min-h-0 flex-1 p-1.5">
+                     <div className="flex flex-col gap-2.5">
+                       {loadingRoles ? (
+-                        <RoleDesktopRowSkeleton />
++                        ENTITY_PULSE_OPACITIES.slice(0, 5).map((opacity, i) => (
++                          <RoleDesktopRow key={i} loading opacity={opacity} />
++                        ))
+                       ) : filteredRoles.length === 0 ? (
+                         <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+                           {search ? "Ningún rol coincide con la búsqueda." : "No hay roles todavía."}
+@@ -445,7 +449,9 @@ export function UsersPageContent() {
+                   <ScrollArea data-entity-table-scroll className="min-h-0 flex-1 p-1.5">
+                     <div className="flex flex-col gap-2.5">
+                       {loading ? (
+-                        <UserDesktopRowSkeleton />
++                        ENTITY_PULSE_OPACITIES.slice(0, 5).map((opacity, i) => (
++                          <UserDesktopRow key={i} loading opacity={opacity} />
++                        ))
+                       ) : filteredUsersInRole.length === 0 ? (
+                         <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+                           {search
+diff --git a/src/features/admin/users/table/user-table.tsx b/src/features/admin/users/table/user-table.tsx
+index 8f0e902..227f1c0 100644
+--- a/src/features/admin/users/table/user-table.tsx
++++ b/src/features/admin/users/table/user-table.tsx
+@@ -13,6 +13,7 @@ import {
+   EntityTable,
+ } from "@/shared/ui/entity-table"
+ 
++import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
+ import {
+   EntityTableSkeleton,
+ } from "@/shared/ui/entity-table"
+@@ -25,9 +26,6 @@ import {
+   UserMobileCard,
+ } from "../components/cards/user-mobile-card"
+ 
+-import {
+-  UserMobileSkeleton,
+-} from "../components/cards/user-mobile-skeleton"
+ 
+ import {
+   useUserColumns,
+@@ -88,16 +86,17 @@ export function UserTable({
+     ])
+ 
+   if (loading) {
+-
+     if (isMobile) {
+-      return <UserMobileSkeleton />
++      return (
++        <div className="flex flex-col gap-3">
++          {ENTITY_PULSE_OPACITIES.map((opacity, i) => (
++            <UserMobileCard key={i} loading opacity={opacity} />
++          ))}
++        </div>
++      )
+     }
+ 
+-    return (
+-      <EntityTableSkeleton
+-        columns={columns}
+-      />
+-    )
++    return <EntityTableSkeleton columns={columns} />
+   }
+ 
+   if (isMobile) {
+diff --git a/src/features/processes/table/process-mobile-card.tsx b/src/features/processes/table/process-mobile-card.tsx
+index f22b40f..ff9b77b 100644
+--- a/src/features/processes/table/process-mobile-card.tsx
++++ b/src/features/processes/table/process-mobile-card.tsx
+@@ -41,12 +41,23 @@ function EntityIconBadge({
+   return <Icon size={size} strokeWidth={2.25} style={{ color }} className="shrink-0" />
+ }
+ 
+-type Props = {
+-  processTask: ProcessTask
+-  expanded: boolean
+-  dimOthers?: boolean
+-  onToggle: () => void
+-}
++type Props =
++  | {
++      loading: true
++      opacity?: number
++      processTask?: undefined
++      expanded?: boolean
++      dimOthers?: boolean
++      onToggle?: () => void
++    }
++  | {
++      loading?: false
++      opacity?: number
++      processTask: ProcessTask
++      expanded: boolean
++      dimOthers?: boolean
++      onToggle: () => void
++    }
+ 
+ 
+ function OperatorNameText({
+@@ -67,12 +78,53 @@ function OperatorNameText({
+ }
+ 
+ 
+-export function ProcessMobileCard({
++function ProcessMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
++  return (
++    <div
++      className="@container/prow overflow-hidden rounded-xl bg-foreground/5"
++      style={{ opacity }}
++      aria-hidden
++    >
++      <div className="flex animate-pulse items-start gap-2 px-3 py-3">
++        <div className="min-w-0 flex-1">
++          <div className="h-4 w-2/3 max-w-[12rem] rounded bg-foreground/10" />
++          <div className="mt-1.5 flex items-center gap-1.5">
++            <span className="h-3 w-14 rounded bg-foreground/5" />
++            <span className="h-3 w-10 rounded bg-foreground/5" />
++          </div>
++        </div>
++        <span className="h-8 w-16 shrink-0 rounded-lg bg-foreground/5" />
++      </div>
++    </div>
++  )
++}
++
++export function ProcessMobileCard(props: Props) {
++  if (props.loading) {
++    return <ProcessMobileCardPulse opacity={props.opacity} />
++  }
++
++  return (
++    <ProcessMobileCardReady
++      processTask={props.processTask}
++      expanded={props.expanded}
++      dimOthers={props.dimOthers}
++      onToggle={props.onToggle}
++    />
++  )
++}
++
++function ProcessMobileCardReady({
+   processTask,
+   expanded,
+   dimOthers = false,
+   onToggle,
+-}: Props) {
++}: {
++  processTask: ProcessTask
++  expanded: boolean
++  dimOthers?: boolean
++  onToggle: () => void
++}) {
+   const [showFields, setShowFields] = useState(false)
+ 
+   const { isMobile } = useResponsive()
+diff --git a/src/features/processes/table/process-table-card.tsx b/src/features/processes/table/process-table-card.tsx
+index e4f55b3..360e9c7 100644
+--- a/src/features/processes/table/process-table-card.tsx
++++ b/src/features/processes/table/process-table-card.tsx
+@@ -16,7 +16,7 @@ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
+ import { TaskProcessColumn } from "@/features/tasks/pipeline/table/task-process-column"
+ 
+ import { ProcessMobileCard } from "./process-mobile-card"
+-import { EntityListSkeleton } from "@/shared/ui/entity-table/entity-list-skeleton"
++import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
+ 
+ import { processAccess } from "../access/process-access"
+ 
+@@ -216,10 +216,11 @@ export function ProcessTableCard({
+ 
+   if (loading) {
+     return (
+-      <EntityListSkeleton
+-        variant="process"
+-        layout={isMobile ? "kanban" : "row"}
+-      />
++      <div className="flex flex-col gap-2 pb-2">
++        {ENTITY_PULSE_OPACITIES.map((opacity, i) => (
++          <ProcessMobileCard key={i} loading opacity={opacity} />
++        ))}
++      </div>
+     )
+   }
+ 
+diff --git a/src/features/projects/table/project-mobile-card.tsx b/src/features/projects/table/project-mobile-card.tsx
+index f27f29e..f4072e4 100644
+--- a/src/features/projects/table/project-mobile-card.tsx
++++ b/src/features/projects/table/project-mobile-card.tsx
+@@ -53,22 +53,80 @@ function EntityIconBadge({
+   return <Icon size={size} strokeWidth={2.25} style={{ color }} className="shrink-0" />
+ }
+ 
+-type Props = {
+-  project: Project
+-  tasks: Task[]
+-  expanded: boolean
+-  /** true = hay un row activo expandido: opacar hermanos activos */
+-  dimOthers?: boolean
+-  onToggle: () => void
++type Props =
++  | {
++      loading: true
++      opacity?: number
++      project?: undefined
++      tasks?: undefined
++      expanded?: boolean
++      dimOthers?: boolean
++      onToggle?: () => void
++    }
++  | {
++      loading?: false
++      opacity?: number
++      project: Project
++      tasks: Task[]
++      expanded: boolean
++      dimOthers?: boolean
++      onToggle: () => void
++    }
++
++function ProjectMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
++  return (
++    <div
++      className="@container/prow overflow-hidden rounded-xl bg-foreground/5"
++      style={{ opacity }}
++      aria-hidden
++    >
++      <div className="flex animate-pulse items-start gap-2 px-3 py-3">
++        <div className="min-w-0 flex-1">
++          <div className="flex items-center gap-1.5">
++            <span className="h-5 w-12 rounded-md bg-foreground/10" />
++          </div>
++          <div className="mt-1.5 h-4 w-2/3 max-w-[14rem] rounded bg-foreground/10" />
++          <div className="mt-1.5 flex items-center gap-1.5">
++            <span className="size-1.5 rounded-full bg-foreground/15" />
++            <span className="h-3 w-16 rounded bg-foreground/5" />
++            <span className="h-3 w-10 rounded bg-foreground/5" />
++          </div>
++        </div>
++        <span className="hidden h-3 w-10 shrink-0 rounded bg-foreground/5 md:block" />
++      </div>
++    </div>
++  )
+ }
+ 
+-export function ProjectMobileCard({
++export function ProjectMobileCard(props: Props) {
++  if (props.loading) {
++    return <ProjectMobileCardPulse opacity={props.opacity} />
++  }
++
++  return (
++    <ProjectMobileCardReady
++      project={props.project}
++      tasks={props.tasks}
++      expanded={props.expanded}
++      dimOthers={props.dimOthers}
++      onToggle={props.onToggle}
++    />
++  )
++}
++
++function ProjectMobileCardReady({
+   project,
+   tasks,
+   expanded,
+   dimOthers = false,
+   onToggle,
+-}: Props) {
++}: {
++  project: Project
++  tasks: Task[]
++  expanded: boolean
++  dimOthers?: boolean
++  onToggle: () => void
++}) {
+   const [showFields, setShowFields] = useState(false)
+   const [showPipeline, setShowPipeline] = useState(false)
+   const [newTaskOpen, setNewTaskOpen] = useState(false)
+diff --git a/src/features/projects/table/project-table.tsx b/src/features/projects/table/project-table.tsx
+index 7666f37..8682be1 100644
+--- a/src/features/projects/table/project-table.tsx
++++ b/src/features/projects/table/project-table.tsx
+@@ -16,7 +16,7 @@ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
+ import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
+ 
+ import { ProjectMobileCard } from "./project-mobile-card"
+-import { EntityListSkeleton } from "@/shared/ui/entity-table/entity-list-skeleton"
++import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
+ 
+ import { useProjectSearch } from "../hooks/use-project-search"
+ 
+@@ -153,7 +153,13 @@ export function ProjectTable({
+   })
+ 
+   if (loading) {
+-    return <EntityListSkeleton variant="project" />
++    return (
++      <div className="flex flex-col gap-2 pb-2">
++        {ENTITY_PULSE_OPACITIES.map((opacity, i) => (
++          <ProjectMobileCard key={i} loading opacity={opacity} />
++        ))}
++      </div>
++    )
+   }
+ 
+   // Solo al expandir un row ACTIVO (no histórico) se opacitan los demás activos.
+diff --git a/src/features/roles/components/role-permissions-page-content.tsx b/src/features/roles/components/role-permissions-page-content.tsx
+index 2c7ec24..78c1784 100644
+--- a/src/features/roles/components/role-permissions-page-content.tsx
++++ b/src/features/roles/components/role-permissions-page-content.tsx
+@@ -1,3 +1,5 @@
++import { RolePermissionsSkeleton } from "./role-permissions-skeleton"
++import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
+ "use client"
+ 
+ import { useQueryClient } from "@tanstack/react-query"
+@@ -17,7 +19,6 @@ import {
+   getPermissionGroupLabel,
+ } from "../utils/permission-groups"
+ 
+-import { RolePermissionsSkeleton } from "./role-permissions-skeleton"
+ import { PermissionGroup } from "./permissions/permission-group"
+ import { PermissionsModeTabs, type PermissionsMode } from "./permissions-mode-tabs"
+ import { UserDialog } from "@/features/admin/users/components/dialog/user-dialog"
+@@ -25,9 +26,7 @@ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+ import { usePermissions } from "@/features/permissions/hooks/use-permissions"
+ import {
+   RoleDesktopRow,
+-  RoleDesktopRowSkeleton,
+   RoleMobileCard,
+-  RoleMobileSkeleton,
+   UserDesktopRow,
+   UserMobileCard,
+ } from "../table"
+@@ -269,7 +268,10 @@ export function RolePermissionsPageContent() {
+             <div className="mt-2 space-y-3 pb-4">
+               {mode === "roles" ? (
+                 <>
+-                  {loadingRoles && <RoleMobileSkeleton />}
++                  {loadingRoles &&
++                    ENTITY_PULSE_OPACITIES.map((opacity, i) => (
++                      <RoleMobileCard key={i} loading opacity={opacity} />
++                    ))}
+ 
+                   {!loadingRoles && filteredRoles.length === 0 && (
+                     <div className="rounded-2xl bg-foreground/5 px-4 py-8 text-center text-sm text-muted-foreground">
+@@ -289,7 +291,10 @@ export function RolePermissionsPageContent() {
+                 </>
+               ) : (
+                 <>
+-                  {loadingUsers && <RoleMobileSkeleton />}
++                  {loadingUsers &&
++                    ENTITY_PULSE_OPACITIES.map((opacity, i) => (
++                      <UserMobileCard key={i} loading opacity={opacity} />
++                    ))}
+ 
+                   {!loadingUsers && filteredUsers.length === 0 && (
+                     <div className="rounded-2xl bg-foreground/5 px-4 py-8 text-center text-sm text-muted-foreground">
+@@ -327,7 +332,10 @@ export function RolePermissionsPageContent() {
+               <div className="flex flex-col gap-2.5">
+                 {mode === "roles" ? (
+                   <>
+-                    {loadingRoles && <RoleDesktopRowSkeleton />}
++                    {loadingRoles &&
++                      ENTITY_PULSE_OPACITIES.slice(0, 5).map((opacity, i) => (
++                        <RoleDesktopRow key={i} loading opacity={opacity} />
++                      ))}
+ 
+                     {!loadingRoles && filteredRoles.length === 0 && (
+                       <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+@@ -347,7 +355,10 @@ export function RolePermissionsPageContent() {
+                   </>
+                 ) : (
+                   <>
+-                    {loadingUsers && <RoleDesktopRowSkeleton />}
++                    {loadingUsers &&
++                      ENTITY_PULSE_OPACITIES.slice(0, 5).map((opacity, i) => (
++                        <UserDesktopRow key={i} loading opacity={opacity} />
++                      ))}
+ 
+                     {!loadingUsers && filteredUsers.length === 0 && (
+                       <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+diff --git a/src/features/roles/table/role-desktop-row.tsx b/src/features/roles/table/role-desktop-row.tsx
+index c2778ed..7454d8a 100644
+--- a/src/features/roles/table/role-desktop-row.tsx
++++ b/src/features/roles/table/role-desktop-row.tsx
+@@ -4,18 +4,44 @@ import { cn } from "@/shared/utils/utils"
+ 
+ import type { Role } from "../types/role.types"
+ 
+-type Props = {
+-  role: Role
+-  selected: boolean
+-  onSelect: () => void
++type Props =
++  | {
++      loading: true
++      opacity?: number
++      role?: undefined
++      selected?: boolean
++      onSelect?: () => void
++    }
++  | {
++      loading?: false
++      opacity?: number
++      role: Role
++      selected: boolean
++      onSelect: () => void
++    }
++
++function RoleDesktopRowPulse({ opacity = 1 }: { opacity?: number }) {
++  return (
++    <div
++      className="flex w-full animate-pulse items-center justify-between gap-3 px-3 py-2.5"
++      style={{ opacity }}
++      aria-hidden
++    >
++      <div className="flex min-w-0 items-center gap-2.5">
++        <span className="size-2.5 shrink-0 rounded-full bg-foreground/10" />
++        <span className="h-4 w-28 rounded bg-foreground/10" />
++      </div>
++    </div>
++  )
+ }
+ 
+-// Fila de rol en DESKTOP -- lista plana dentro del aside, sin card
+-// propia (el aside ya es el panel completo). A diferencia de
+-// Proyectos/Tareas/Usuarios, Roles no usa EntityTable en desktop:
+-// es un selector maestro-detalle (con el panel de Permisos al
+-// lado), no una tabla de varios campos por fila.
+-export function RoleDesktopRow({ role, selected, onSelect }: Props) {
++export function RoleDesktopRow(props: Props) {
++  if (props.loading) {
++    return <RoleDesktopRowPulse opacity={props.opacity} />
++  }
++
++  const { role, selected, onSelect } = props
++
+   return (
+     <button
+       type="button"
+diff --git a/src/features/roles/table/role-mobile-card.tsx b/src/features/roles/table/role-mobile-card.tsx
+index 4f56dd2..4c70129 100644
+--- a/src/features/roles/table/role-mobile-card.tsx
++++ b/src/features/roles/table/role-mobile-card.tsx
+@@ -4,19 +4,51 @@ import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
+ 
+ import type { Role } from "../types/role.types"
+ 
+-type Props = {
+-  role: Role
+-  index: number
+-  onSelect: () => void
++type Props =
++  | {
++      loading: true
++      opacity?: number
++      role?: undefined
++      index?: number
++      onSelect?: () => void
++    }
++  | {
++      loading?: false
++      opacity?: number
++      role: Role
++      index: number
++      onSelect: () => void
++    }
++
++function RoleMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
++  return (
++    <article
++      className="overflow-hidden rounded-xl bg-foreground/5"
++      style={{ opacity }}
++      aria-hidden
++    >
++      <div className="w-full text-left">
++        <header className="flex animate-pulse items-center justify-between gap-2.5 px-3 py-3">
++          <span className="h-4 w-24 rounded bg-foreground/10" />
++          <span className="h-4 w-14 rounded bg-foreground/10" />
++        </header>
++        <div className="flex animate-pulse items-center gap-2.5 px-3 pb-3">
++          <div className="min-w-0 flex-1">
++            <span className="block h-8 w-full rounded-full bg-foreground/5" />
++          </div>
++        </div>
++      </div>
++    </article>
++  )
+ }
+ 
+-// Card de rol en MOBILE -- copia exacta de la estructura de
+-// UserMobileCard: header con label chico ("ROL 001") + estado a la
+-// derecha, después una fila con el badge de color a ancho completo.
+-// Sin chevron: en Usuarios el chevron abre detalles inline (mismo
+-// card se expande), acá tocar la card ya navega directo al panel de
+-// Permisos -- no hay nada que expandir en el lugar.
+-export function RoleMobileCard({ role, index, onSelect }: Props) {
++export function RoleMobileCard(props: Props) {
++  if (props.loading) {
++    return <RoleMobileCardPulse opacity={props.opacity} />
++  }
++
++  const { role, index, onSelect } = props
++
+   return (
+     <article className="overflow-hidden rounded-xl bg-foreground/5">
+       <button
+diff --git a/src/features/roles/table/user-desktop-row.tsx b/src/features/roles/table/user-desktop-row.tsx
+index b78a5e8..bdf3209 100644
+--- a/src/features/roles/table/user-desktop-row.tsx
++++ b/src/features/roles/table/user-desktop-row.tsx
+@@ -4,16 +4,44 @@ import { cn } from "@/shared/utils/utils"
+ 
+ import type { User } from "@/features/users/types/user.types"
+ 
+-type Props = {
+-  user: User
+-  selected: boolean
+-  onSelect: () => void
++type Props =
++  | {
++      loading: true
++      opacity?: number
++      user?: undefined
++      selected?: boolean
++      onSelect?: () => void
++    }
++  | {
++      loading?: false
++      opacity?: number
++      user: User
++      selected: boolean
++      onSelect: () => void
++    }
++
++function UserDesktopRowPulse({ opacity = 1 }: { opacity?: number }) {
++  return (
++    <div
++      className="flex w-full animate-pulse items-center justify-between gap-3 px-3 py-2.5"
++      style={{ opacity }}
++      aria-hidden
++    >
++      <div className="flex min-w-0 items-center gap-2.5">
++        <span className="size-2.5 shrink-0 rounded-full bg-foreground/10" />
++        <span className="h-4 w-28 rounded bg-foreground/10" />
++      </div>
++    </div>
++  )
+ }
+ 
+-// Calco de RoleDesktopRow, pero para usuarios -- mismo selector
+-// maestro-detalle, solo que la lista de la izquierda son personas
+-// en vez de roles.
+-export function UserDesktopRow({ user, selected, onSelect }: Props) {
++export function UserDesktopRow(props: Props) {
++  if (props.loading) {
++    return <UserDesktopRowPulse opacity={props.opacity} />
++  }
++
++  const { user, selected, onSelect } = props
++
+   return (
+     <button
+       type="button"
+diff --git a/src/features/roles/table/user-mobile-card.tsx b/src/features/roles/table/user-mobile-card.tsx
+index 59091d0..d5f4de3 100644
+--- a/src/features/roles/table/user-mobile-card.tsx
++++ b/src/features/roles/table/user-mobile-card.tsx
+@@ -4,14 +4,51 @@ import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
+ 
+ import type { User } from "@/features/users/types/user.types"
+ 
+-type Props = {
+-  user: User
+-  index: number
+-  onSelect: () => void
++type Props =
++  | {
++      loading: true
++      opacity?: number
++      user?: undefined
++      index?: number
++      onSelect?: () => void
++    }
++  | {
++      loading?: false
++      opacity?: number
++      user: User
++      index: number
++      onSelect: () => void
++    }
++
++function RolesUserMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
++  return (
++    <article
++      className="overflow-hidden rounded-xl bg-foreground/5"
++      style={{ opacity }}
++      aria-hidden
++    >
++      <div className="w-full text-left">
++        <header className="flex animate-pulse items-center justify-between gap-2.5 px-3 py-3">
++          <span className="h-4 w-24 rounded bg-foreground/10" />
++          <span className="h-4 w-14 rounded bg-foreground/10" />
++        </header>
++        <div className="flex animate-pulse items-center gap-2.5 px-3 pb-3">
++          <div className="min-w-0 flex-1">
++            <span className="block h-8 w-full rounded-full bg-foreground/5" />
++          </div>
++        </div>
++      </div>
++    </article>
++  )
+ }
+ 
+-// Calco de RoleMobileCard, pero para usuarios.
+-export function UserMobileCard({ user, index, onSelect }: Props) {
++export function UserMobileCard(props: Props) {
++  if (props.loading) {
++    return <RolesUserMobileCardPulse opacity={props.opacity} />
++  }
++
++  const { user, index, onSelect } = props
++
+   return (
+     <article className="overflow-hidden rounded-xl bg-foreground/5">
+       <button
+diff --git a/src/features/tasks/table/task-mobile-card.tsx b/src/features/tasks/table/task-mobile-card.tsx
+index f20ba63..27bc90d 100644
+--- a/src/features/tasks/table/task-mobile-card.tsx
++++ b/src/features/tasks/table/task-mobile-card.tsx
+@@ -45,19 +45,76 @@ function EntityIconBadge({
+   return <Icon size={size} strokeWidth={2.25} style={{ color }} className="shrink-0" />
+ }
+ 
+-type Props = {
+-  task: Task
+-  expanded: boolean
+-  dimOthers?: boolean
+-  onToggle: () => void
++type Props =
++  | {
++      loading: true
++      opacity?: number
++      task?: undefined
++      expanded?: boolean
++      dimOthers?: boolean
++      onToggle?: () => void
++    }
++  | {
++      loading?: false
++      opacity?: number
++      task: Task
++      expanded: boolean
++      dimOthers?: boolean
++      onToggle: () => void
++    }
++
++function TaskMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
++  return (
++    <div
++      className="@container/trow overflow-hidden rounded-xl bg-foreground/5"
++      style={{ opacity }}
++      aria-hidden
++    >
++      <div className="flex animate-pulse items-start gap-2 px-3 py-3">
++        <div className="min-w-0 flex-1">
++          <div className="flex items-center gap-1.5">
++            <span className="h-5 w-10 rounded-md bg-foreground/10" />
++            <span className="h-5 w-14 rounded-md bg-foreground/10" />
++          </div>
++          <div className="mt-1.5 h-4 w-3/5 max-w-[12rem] rounded bg-foreground/10" />
++          <div className="mt-1.5 flex items-center gap-1.5">
++            <span className="size-1.5 rounded-full bg-foreground/15" />
++            <span className="h-3 w-20 rounded bg-foreground/5" />
++            <span className="h-3 w-10 rounded bg-foreground/5" />
++          </div>
++        </div>
++        <span className="hidden h-3 w-14 shrink-0 rounded bg-foreground/5 md:block" />
++      </div>
++    </div>
++  )
++}
++
++export function TaskMobileCard(props: Props) {
++  if (props.loading) {
++    return <TaskMobileCardPulse opacity={props.opacity} />
++  }
++
++  return (
++    <TaskMobileCardReady
++      task={props.task}
++      expanded={props.expanded}
++      dimOthers={props.dimOthers}
++      onToggle={props.onToggle}
++    />
++  )
+ }
+ 
+-export function TaskMobileCard({
++function TaskMobileCardReady({
+   task,
+   expanded,
+   dimOthers = false,
+   onToggle,
+-}: Props) {
++}: {
++  task: Task
++  expanded: boolean
++  dimOthers?: boolean
++  onToggle: () => void
++}) {
+   const [showFields, setShowFields] = useState(false)
+   const [showPipeline, setShowPipeline] = useState(false)
+ 
+diff --git a/src/features/tasks/table/task-table.tsx b/src/features/tasks/table/task-table.tsx
+index 20e0073..d4cc022 100644
+--- a/src/features/tasks/table/task-table.tsx
++++ b/src/features/tasks/table/task-table.tsx
+@@ -16,7 +16,7 @@ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
+ import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
+ 
+ import { TaskMobileCard } from "./task-mobile-card"
+-import { EntityListSkeleton } from "@/shared/ui/entity-table/entity-list-skeleton"
++import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
+ 
+ import { useTaskSearch } from "../hooks/use-task-search"
+ 
+@@ -169,7 +169,13 @@ export function TaskTable({
+   })
+ 
+   if (loading) {
+-    return <EntityListSkeleton variant="task" />
++    return (
++      <div className="flex flex-col gap-2 pb-2">
++        {ENTITY_PULSE_OPACITIES.map((opacity, i) => (
++          <TaskMobileCard key={i} loading opacity={opacity} />
++        ))}
++      </div>
++    )
+   }
+ 
+   const expandedTask = displayedTasks.find(t => t.id === expand.expandedRowId)
+diff --git a/src/shared/ui/entity-table/entity-list-skeleton.tsx b/src/shared/ui/entity-table/entity-list-skeleton.tsx
+deleted file mode 100644
+index e4cfc01..0000000
+--- a/src/shared/ui/entity-table/entity-list-skeleton.tsx
++++ /dev/null
+@@ -1,139 +0,0 @@
+-"use client"
+-
+-import { cn } from "@/shared/utils/utils"
+-
+-type Variant = "task" | "project" | "process"
+-/**
+- * row → mismo shell que TaskMobileCard / ProjectMobileCard / ProcessMobileCard
+- * kanban → mismo shell que KanbanCardView (process mobile via TaskProcessColumn)
+- */
+-type Layout = "row" | "kanban"
+-
+-type Props = {
+-  variant?: Variant
+-  layout?: Layout
+-  rows?: number
+-  className?: string
+-}
+-
+-const OPACITIES = [1, 0.85, 0.7, 0.55, 0.4, 0.3] as const
+-
+-/**
+- * Misma estructura que el row real:
+- * overflow-hidden rounded-xl bg-foreground/5
+- *   flex items-center gap-1 px-1
+- *     flex … gap-2.5 py-3 pr-2 pl-2
+- *       badge · (dot) · col título/meta · trailing
+- */
+-function RowCardSkeleton({
+-  variant,
+-  opacity,
+-}: {
+-  variant: Variant
+-  opacity: number
+-}) {
+-  return (
+-    <div
+-      className="overflow-hidden rounded-xl bg-foreground/5"
+-      style={{ opacity }}
+-    >
+-      <div className="flex items-center gap-1 px-1">
+-        <div className="flex min-w-0 flex-1 items-center gap-2.5 py-3 pr-2 pl-2">
+-          {/* displayProjectCode / taskNumber badge */}
+-          <span className="h-5 w-10 shrink-0 rounded-md bg-foreground/10 md:h-6 md:w-11" />
+-
+-          {variant === "process" && (
+-            <span className="size-1.5 shrink-0 rounded-full bg-foreground/15" />
+-          )}
+-
+-          <div className="flex min-w-0 flex-1 flex-col items-start">
+-            <div className="flex min-w-0 max-w-full items-center gap-1.5">
+-              <span className="h-3.5 w-28 max-w-full rounded bg-foreground/10 sm:w-36" />
+-              {/* md+: iconos prio/estado */}
+-              <span className="hidden size-4 shrink-0 rounded bg-foreground/10 md:block" />
+-              <span className="hidden size-4 shrink-0 rounded bg-foreground/10 md:block" />
+-            </div>
+-            {/* meta: cliente · … */}
+-            <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
+-              <span className="size-1.5 shrink-0 rounded-full bg-foreground/15" />
+-              <span className="h-3 w-16 rounded bg-foreground/5" />
+-              <span className="h-3 w-12 rounded bg-foreground/5 md:hidden" />
+-            </div>
+-          </div>
+-
+-          {/* fecha / chips desktop */}
+-          <span className="hidden h-3 w-14 shrink-0 rounded bg-foreground/5 md:block" />
+-        </div>
+-      </div>
+-    </div>
+-  )
+-}
+-
+-/**
+- * Misma estructura que KanbanCardView:
+- * flex h-43.5 w-full flex-col justify-between rounded-xl bg-foreground/5 p-4
+- */
+-function KanbanCardSkeleton({ opacity }: { opacity: number }) {
+-  return (
+-    <div
+-      className="flex h-43.5 w-full flex-col justify-between rounded-xl bg-foreground/5 p-4"
+-      style={{ opacity }}
+-    >
+-      <div>
+-        <div className="flex items-center justify-between">
+-          <div className="flex items-center gap-2.5">
+-            <span className="h-3.5 w-10 rounded bg-foreground/10" />
+-            <span className="size-1.5 rounded-full bg-foreground/15" />
+-            <span className="h-3.5 w-14 rounded bg-foreground/10" />
+-          </div>
+-          <span className="h-3.5 w-16 rounded bg-foreground/5" />
+-        </div>
+-
+-        <span className="mt-2 block h-4 w-3/4 max-w-[14rem] rounded bg-foreground/10" />
+-
+-        <div className="mt-2 flex flex-col gap-1">
+-          <div className="flex flex-wrap items-center gap-1.5">
+-            <span className="h-3.5 w-8 rounded bg-foreground/5" />
+-            <span className="h-3.5 w-12 rounded bg-foreground/5" />
+-            <span className="h-3.5 w-16 rounded bg-foreground/5" />
+-          </div>
+-        </div>
+-      </div>
+-
+-      <div className="flex items-center justify-between">
+-        <div className="flex flex-wrap items-center gap-2">
+-          <span className="h-5 w-16 rounded-md bg-foreground/10" />
+-          <span className="h-5 w-20 rounded-md bg-foreground/10" />
+-        </div>
+-      </div>
+-    </div>
+-  )
+-}
+-
+-export function EntityListSkeleton({
+-  variant = "task",
+-  layout = "row",
+-  rows = 6,
+-  className,
+-}: Props) {
+-  const opacities = OPACITIES.slice(0, rows)
+-
+-  return (
+-    <div
+-      className={cn(
+-        "flex animate-pulse flex-col gap-2",
+-        layout === "row" && "pb-2",
+-        className,
+-      )}
+-      aria-hidden
+-    >
+-      {opacities.map((opacity, i) =>
+-        layout === "kanban" ? (
+-          <KanbanCardSkeleton key={i} opacity={opacity} />
+-        ) : (
+-          <RowCardSkeleton key={i} variant={variant} opacity={opacity} />
+-        ),
+-      )}
+-    </div>
+-  )
+-}
+diff --git a/src/shared/ui/entity-table/entity-table.tsx b/src/shared/ui/entity-table/entity-table.tsx
+index 5a0765c..0d13bf1 100644
+--- a/src/shared/ui/entity-table/entity-table.tsx
++++ b/src/shared/ui/entity-table/entity-table.tsx
+@@ -6,6 +6,7 @@ import { useAnimatedPresence } from "@/shared/hooks/use-animated-presence"
+ import { cn } from "@/shared/utils/utils"
+ 
+ import { EntityTableCardRow } from "./entity-table-card-row"
++import { EntityTableSkeleton } from "./entity-table-skeleton"
+ import type { EntityTableProps } from "./types"
+ 
+ function ExpandedRowSlot({
+@@ -41,7 +42,14 @@ export function EntityTable<T>({
+   expandedRowId,
+   onExpandedRowChange,
+   renderExpandedRow,
++  loading = false,
++  loadingRows = 6,
+ }: EntityTableProps<T>) {
++  if (loading) {
++    // Mismo shell + filas pulse por columnas (sin árbol skeleton aparte).
++    return <EntityTableSkeleton columns={columns} rows={loadingRows} />
++  }
++
+   return (
+     <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl bg-foreground/5">
+       <div
+diff --git a/src/shared/ui/entity-table/pulse-rows.ts b/src/shared/ui/entity-table/pulse-rows.ts
+new file mode 100644
+index 0000000..212b70f
+--- /dev/null
++++ b/src/shared/ui/entity-table/pulse-rows.ts
+@@ -0,0 +1,2 @@
++/** Opacidades decrecientes del pulse de listas (una sola fuente). */
++export const ENTITY_PULSE_OPACITIES = [1, 0.85, 0.7, 0.55, 0.4, 0.3] as const
+diff --git a/src/shared/ui/entity-table/types.ts b/src/shared/ui/entity-table/types.ts
+index 5a26720..b7240b0 100644
+--- a/src/shared/ui/entity-table/types.ts
++++ b/src/shared/ui/entity-table/types.ts
+@@ -51,6 +51,8 @@ export type EntityColumn<T>={
+ }
+ 
+ export type EntityTableProps<T>={
++  loading?:boolean
++  loadingRows?:number
+   data:T[]
+   columns:EntityColumn<T>[]
+   rowId:(item:T)=>string

@@ -1,5 +1,7 @@
 "use client"
 
+import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
+
 import { useQueryClient } from "@tanstack/react-query"
 
 import { useMemo, useState } from "react"
@@ -8,6 +10,10 @@ import { ArrowLeft, Plus, Trash2, Save } from "lucide-react"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { useRoles } from "@/features/roles/hooks/use-roles"
+import {
+  RoleDesktopRow,
+  RoleMobileCard,
+} from "@/features/roles/table"
 import { useAreas } from "@/features/areas/hooks/use-areas"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { PrimaryAction } from "@/shared/ui/actions/primary-action"
@@ -23,21 +29,13 @@ import { useUserMutations } from "@/features/users/hooks/use-user-mutations"
 import { useUsers } from "@/features/users/hooks/use-users"
 import { validateUser } from "../hooks/validate-user"
 import { UserMobileCard } from "./cards/user-mobile-card"
-import { UserMobileSkeleton } from "./cards/user-mobile-skeleton"
 import { UserDesktopRow } from "./user-desktop-row"
-import { UserDesktopRowSkeleton } from "./user-desktop-row-skeleton"
 import { UserForm } from "./form/user-form"
 import { UserDialog } from "./dialog/user-dialog"
 
 import { generateUserDefaultsFromEmail } from "@/features/users/utils/generate-user-defaults-from-email"
 import { isLevelAllowedForRoles } from "@/features/users/utils/allowed-levels-for-roles"
 
-import {
-  RoleDesktopRow,
-  RoleDesktopRowSkeleton,
-  RoleMobileCard,
-  RoleMobileSkeleton,
-} from "@/features/roles/table"
 import type { Role } from "@/features/roles/types/role.types"
 import type { User } from "@/features/users/types/user.types"
 
@@ -289,7 +287,9 @@ export function UsersPageContent() {
                 {searchToolbar}
                 <div className="space-y-3 pb-4">
                   {loadingRoles ? (
-                    <RoleMobileSkeleton />
+                    ENTITY_PULSE_OPACITIES.map((opacity, i) => (
+                      <RoleMobileCard key={i} loading opacity={opacity} />
+                    ))
                   ) : filteredRoles.length === 0 ? (
                     <div className="rounded-2xl bg-muted px-4 py-8 text-center text-sm text-muted-foreground">
                       {search ? "Ningún rol coincide con la búsqueda." : "No hay roles todavía."}
@@ -349,7 +349,9 @@ export function UsersPageContent() {
 
                 <div className="space-y-3 pb-4">
                   {loading ? (
-                    <UserMobileSkeleton />
+                    ENTITY_PULSE_OPACITIES.map((opacity, i) => (
+                      <UserMobileCard key={i} loading opacity={opacity} />
+                    ))
                   ) : filteredUsersInRole.length === 0 ? (
                     <p className="px-3 py-6 text-center text-sm text-muted-foreground">
                       {search
@@ -389,7 +391,9 @@ export function UsersPageContent() {
                   <ScrollArea data-entity-table-scroll className="min-h-0 flex-1 p-1.5">
                     <div className="flex flex-col gap-2.5">
                       {loadingRoles ? (
-                        <RoleDesktopRowSkeleton />
+                        ENTITY_PULSE_OPACITIES.slice(0, 5).map((opacity, i) => (
+                          <RoleDesktopRow key={i} loading opacity={opacity} />
+                        ))
                       ) : filteredRoles.length === 0 ? (
                         <p className="px-3 py-6 text-center text-sm text-muted-foreground">
                           {search ? "Ningún rol coincide con la búsqueda." : "No hay roles todavía."}
@@ -445,7 +449,9 @@ export function UsersPageContent() {
                   <ScrollArea data-entity-table-scroll className="min-h-0 flex-1 p-1.5">
                     <div className="flex flex-col gap-2.5">
                       {loading ? (
-                        <UserDesktopRowSkeleton />
+                        ENTITY_PULSE_OPACITIES.slice(0, 5).map((opacity, i) => (
+                          <UserDesktopRow key={i} loading opacity={opacity} />
+                        ))
                       ) : filteredUsersInRole.length === 0 ? (
                         <p className="px-3 py-6 text-center text-sm text-muted-foreground">
                           {search

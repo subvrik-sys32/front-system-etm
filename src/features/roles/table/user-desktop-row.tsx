@@ -4,16 +4,44 @@ import { cn } from "@/shared/utils/utils"
 
 import type { User } from "@/features/users/types/user.types"
 
-type Props = {
-  user: User
-  selected: boolean
-  onSelect: () => void
+type Props =
+  | {
+      loading: true
+      opacity?: number
+      user?: undefined
+      selected?: boolean
+      onSelect?: () => void
+    }
+  | {
+      loading?: false
+      opacity?: number
+      user: User
+      selected: boolean
+      onSelect: () => void
+    }
+
+function UserDesktopRowPulse({ opacity = 1 }: { opacity?: number }) {
+  return (
+    <div
+      className="flex w-full animate-pulse items-center justify-between gap-3 px-3 py-2.5"
+      style={{ opacity }}
+      aria-hidden
+    >
+      <div className="flex min-w-0 items-center gap-2.5">
+        <span className="size-2.5 shrink-0 rounded-full bg-foreground/10" />
+        <span className="h-4 w-28 rounded bg-foreground/10" />
+      </div>
+    </div>
+  )
 }
 
-// Calco de RoleDesktopRow, pero para usuarios -- mismo selector
-// maestro-detalle, solo que la lista de la izquierda son personas
-// en vez de roles.
-export function UserDesktopRow({ user, selected, onSelect }: Props) {
+export function UserDesktopRow(props: Props) {
+  if (props.loading) {
+    return <UserDesktopRowPulse opacity={props.opacity} />
+  }
+
+  const { user, selected, onSelect } = props
+
   return (
     <button
       type="button"

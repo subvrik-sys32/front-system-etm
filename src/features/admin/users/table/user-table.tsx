@@ -13,6 +13,7 @@ import {
   EntityTable,
 } from "@/shared/ui/entity-table"
 
+import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
 import {
   EntityTableSkeleton,
 } from "@/shared/ui/entity-table"
@@ -25,9 +26,6 @@ import {
   UserMobileCard,
 } from "../components/cards/user-mobile-card"
 
-import {
-  UserMobileSkeleton,
-} from "../components/cards/user-mobile-skeleton"
 
 import {
   useUserColumns,
@@ -88,16 +86,17 @@ export function UserTable({
     ])
 
   if (loading) {
-
     if (isMobile) {
-      return <UserMobileSkeleton />
+      return (
+        <div className="flex flex-col gap-3">
+          {ENTITY_PULSE_OPACITIES.map((opacity, i) => (
+            <UserMobileCard key={i} loading opacity={opacity} />
+          ))}
+        </div>
+      )
     }
 
-    return (
-      <EntityTableSkeleton
-        columns={columns}
-      />
-    )
+    return <EntityTableSkeleton columns={columns} />
   }
 
   if (isMobile) {

@@ -4,18 +4,44 @@ import { cn } from "@/shared/utils/utils"
 
 import type { Role } from "../types/role.types"
 
-type Props = {
-  role: Role
-  selected: boolean
-  onSelect: () => void
+type Props =
+  | {
+      loading: true
+      opacity?: number
+      role?: undefined
+      selected?: boolean
+      onSelect?: () => void
+    }
+  | {
+      loading?: false
+      opacity?: number
+      role: Role
+      selected: boolean
+      onSelect: () => void
+    }
+
+function RoleDesktopRowPulse({ opacity = 1 }: { opacity?: number }) {
+  return (
+    <div
+      className="flex w-full animate-pulse items-center justify-between gap-3 px-3 py-2.5"
+      style={{ opacity }}
+      aria-hidden
+    >
+      <div className="flex min-w-0 items-center gap-2.5">
+        <span className="size-2.5 shrink-0 rounded-full bg-foreground/10" />
+        <span className="h-4 w-28 rounded bg-foreground/10" />
+      </div>
+    </div>
+  )
 }
 
-// Fila de rol en DESKTOP -- lista plana dentro del aside, sin card
-// propia (el aside ya es el panel completo). A diferencia de
-// Proyectos/Tareas/Usuarios, Roles no usa EntityTable en desktop:
-// es un selector maestro-detalle (con el panel de Permisos al
-// lado), no una tabla de varios campos por fila.
-export function RoleDesktopRow({ role, selected, onSelect }: Props) {
+export function RoleDesktopRow(props: Props) {
+  if (props.loading) {
+    return <RoleDesktopRowPulse opacity={props.opacity} />
+  }
+
+  const { role, selected, onSelect } = props
+
   return (
     <button
       type="button"

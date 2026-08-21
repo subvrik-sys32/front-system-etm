@@ -16,7 +16,7 @@ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 import { TaskProcessColumn } from "@/features/tasks/pipeline/table/task-process-column"
 
 import { ProcessMobileCard } from "./process-mobile-card"
-import { EntityListSkeleton } from "@/shared/ui/entity-table/entity-list-skeleton"
+import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
 
 import { processAccess } from "../access/process-access"
 
@@ -216,10 +216,11 @@ export function ProcessTableCard({
 
   if (loading) {
     return (
-      <EntityListSkeleton
-        variant="process"
-        layout={isMobile ? "kanban" : "row"}
-      />
+      <div className="flex flex-col gap-2 pb-2">
+        {ENTITY_PULSE_OPACITIES.map((opacity, i) => (
+          <ProcessMobileCard key={i} loading opacity={opacity} />
+        ))}
+      </div>
     )
   }
 

@@ -20,19 +20,56 @@ import {
   UserRowActions,
 } from "../actions/user-row-actions"
 
-type Props = {
-  user: User
-  index: number
-  expanded: boolean
-  onToggle: () => void
+type Props =
+  | {
+      loading: true
+      opacity?: number
+      user?: undefined
+      index?: number
+      expanded?: boolean
+      onToggle?: () => void
+    }
+  | {
+      loading?: false
+      opacity?: number
+      user: User
+      index: number
+      expanded: boolean
+      onToggle: () => void
+    }
+
+function UserMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
+  return (
+    <article
+      className="overflow-hidden rounded-xl bg-foreground/5"
+      style={{ opacity }}
+      aria-hidden
+    >
+      <div className="w-full text-left">
+        <header className="flex animate-pulse items-center justify-between gap-2.5 px-3 py-3">
+          <span className="h-4 w-24 rounded bg-foreground/10" />
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-foreground/10" />
+            <span className="h-4 w-16 rounded bg-foreground/10" />
+          </span>
+        </header>
+        <div className="flex animate-pulse items-center gap-2.5 px-3 pb-3">
+          <div className="min-w-0 flex-1">
+            <span className="block h-8 w-full rounded-full bg-foreground/5" />
+          </div>
+          <span className="h-4 w-4 shrink-0 rounded-sm bg-foreground/5" />
+        </div>
+      </div>
+    </article>
+  )
 }
 
-export function UserMobileCard({
-  user,
-  index,
-  expanded,
-  onToggle,
-}: Props) {
+export function UserMobileCard(props: Props) {
+  if (props.loading) {
+    return <UserMobileCardPulse opacity={props.opacity} />
+  }
+
+  const { user, index, expanded, onToggle } = props
 
   return (
 

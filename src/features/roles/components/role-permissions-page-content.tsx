@@ -1,3 +1,5 @@
+import { RolePermissionsSkeleton } from "./role-permissions-skeleton"
+import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
 "use client"
 
 import { useQueryClient } from "@tanstack/react-query"
@@ -17,7 +19,6 @@ import {
   getPermissionGroupLabel,
 } from "../utils/permission-groups"
 
-import { RolePermissionsSkeleton } from "./role-permissions-skeleton"
 import { PermissionGroup } from "./permissions/permission-group"
 import { PermissionsModeTabs, type PermissionsMode } from "./permissions-mode-tabs"
 import { UserDialog } from "@/features/admin/users/components/dialog/user-dialog"
@@ -25,9 +26,7 @@ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import {
   RoleDesktopRow,
-  RoleDesktopRowSkeleton,
   RoleMobileCard,
-  RoleMobileSkeleton,
   UserDesktopRow,
   UserMobileCard,
 } from "../table"
@@ -269,7 +268,10 @@ export function RolePermissionsPageContent() {
             <div className="mt-2 space-y-3 pb-4">
               {mode === "roles" ? (
                 <>
-                  {loadingRoles && <RoleMobileSkeleton />}
+                  {loadingRoles &&
+                    ENTITY_PULSE_OPACITIES.map((opacity, i) => (
+                      <RoleMobileCard key={i} loading opacity={opacity} />
+                    ))}
 
                   {!loadingRoles && filteredRoles.length === 0 && (
                     <div className="rounded-2xl bg-foreground/5 px-4 py-8 text-center text-sm text-muted-foreground">
@@ -289,7 +291,10 @@ export function RolePermissionsPageContent() {
                 </>
               ) : (
                 <>
-                  {loadingUsers && <RoleMobileSkeleton />}
+                  {loadingUsers &&
+                    ENTITY_PULSE_OPACITIES.map((opacity, i) => (
+                      <UserMobileCard key={i} loading opacity={opacity} />
+                    ))}
 
                   {!loadingUsers && filteredUsers.length === 0 && (
                     <div className="rounded-2xl bg-foreground/5 px-4 py-8 text-center text-sm text-muted-foreground">
@@ -327,7 +332,10 @@ export function RolePermissionsPageContent() {
               <div className="flex flex-col gap-2.5">
                 {mode === "roles" ? (
                   <>
-                    {loadingRoles && <RoleDesktopRowSkeleton />}
+                    {loadingRoles &&
+                      ENTITY_PULSE_OPACITIES.slice(0, 5).map((opacity, i) => (
+                        <RoleDesktopRow key={i} loading opacity={opacity} />
+                      ))}
 
                     {!loadingRoles && filteredRoles.length === 0 && (
                       <p className="px-3 py-6 text-center text-sm text-muted-foreground">
@@ -347,7 +355,10 @@ export function RolePermissionsPageContent() {
                   </>
                 ) : (
                   <>
-                    {loadingUsers && <RoleDesktopRowSkeleton />}
+                    {loadingUsers &&
+                      ENTITY_PULSE_OPACITIES.slice(0, 5).map((opacity, i) => (
+                        <UserDesktopRow key={i} loading opacity={opacity} />
+                      ))}
 
                     {!loadingUsers && filteredUsers.length === 0 && (
                       <p className="px-3 py-6 text-center text-sm text-muted-foreground">

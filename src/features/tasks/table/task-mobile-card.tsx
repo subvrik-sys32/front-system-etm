@@ -45,19 +45,76 @@ function EntityIconBadge({
   return <Icon size={size} strokeWidth={2.25} style={{ color }} className="shrink-0" />
 }
 
-type Props = {
-  task: Task
-  expanded: boolean
-  dimOthers?: boolean
-  onToggle: () => void
+type Props =
+  | {
+      loading: true
+      opacity?: number
+      task?: undefined
+      expanded?: boolean
+      dimOthers?: boolean
+      onToggle?: () => void
+    }
+  | {
+      loading?: false
+      opacity?: number
+      task: Task
+      expanded: boolean
+      dimOthers?: boolean
+      onToggle: () => void
+    }
+
+function TaskMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
+  return (
+    <div
+      className="@container/trow overflow-hidden rounded-xl bg-foreground/5"
+      style={{ opacity }}
+      aria-hidden
+    >
+      <div className="flex animate-pulse items-start gap-2 px-3 py-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className="h-5 w-10 rounded-md bg-foreground/10" />
+            <span className="h-5 w-14 rounded-md bg-foreground/10" />
+          </div>
+          <div className="mt-1.5 h-4 w-3/5 max-w-[12rem] rounded bg-foreground/10" />
+          <div className="mt-1.5 flex items-center gap-1.5">
+            <span className="size-1.5 rounded-full bg-foreground/15" />
+            <span className="h-3 w-20 rounded bg-foreground/5" />
+            <span className="h-3 w-10 rounded bg-foreground/5" />
+          </div>
+        </div>
+        <span className="hidden h-3 w-14 shrink-0 rounded bg-foreground/5 md:block" />
+      </div>
+    </div>
+  )
 }
 
-export function TaskMobileCard({
+export function TaskMobileCard(props: Props) {
+  if (props.loading) {
+    return <TaskMobileCardPulse opacity={props.opacity} />
+  }
+
+  return (
+    <TaskMobileCardReady
+      task={props.task}
+      expanded={props.expanded}
+      dimOthers={props.dimOthers}
+      onToggle={props.onToggle}
+    />
+  )
+}
+
+function TaskMobileCardReady({
   task,
   expanded,
   dimOthers = false,
   onToggle,
-}: Props) {
+}: {
+  task: Task
+  expanded: boolean
+  dimOthers?: boolean
+  onToggle: () => void
+}) {
   const [showFields, setShowFields] = useState(false)
   const [showPipeline, setShowPipeline] = useState(false)
 

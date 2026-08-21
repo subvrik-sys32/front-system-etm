@@ -6,6 +6,7 @@ import { useAnimatedPresence } from "@/shared/hooks/use-animated-presence"
 import { cn } from "@/shared/utils/utils"
 
 import { EntityTableCardRow } from "./entity-table-card-row"
+import { EntityTableSkeleton } from "./entity-table-skeleton"
 import type { EntityTableProps } from "./types"
 
 function ExpandedRowSlot({
@@ -41,7 +42,14 @@ export function EntityTable<T>({
   expandedRowId,
   onExpandedRowChange,
   renderExpandedRow,
+  loading = false,
+  loadingRows = 6,
 }: EntityTableProps<T>) {
+  if (loading) {
+    // Mismo shell + filas pulse por columnas (sin árbol skeleton aparte).
+    return <EntityTableSkeleton columns={columns} rows={loadingRows} />
+  }
+
   return (
     <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl bg-foreground/5">
       <div

@@ -4,19 +4,51 @@ import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
 
 import type { Role } from "../types/role.types"
 
-type Props = {
-  role: Role
-  index: number
-  onSelect: () => void
+type Props =
+  | {
+      loading: true
+      opacity?: number
+      role?: undefined
+      index?: number
+      onSelect?: () => void
+    }
+  | {
+      loading?: false
+      opacity?: number
+      role: Role
+      index: number
+      onSelect: () => void
+    }
+
+function RoleMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
+  return (
+    <article
+      className="overflow-hidden rounded-xl bg-foreground/5"
+      style={{ opacity }}
+      aria-hidden
+    >
+      <div className="w-full text-left">
+        <header className="flex animate-pulse items-center justify-between gap-2.5 px-3 py-3">
+          <span className="h-4 w-24 rounded bg-foreground/10" />
+          <span className="h-4 w-14 rounded bg-foreground/10" />
+        </header>
+        <div className="flex animate-pulse items-center gap-2.5 px-3 pb-3">
+          <div className="min-w-0 flex-1">
+            <span className="block h-8 w-full rounded-full bg-foreground/5" />
+          </div>
+        </div>
+      </div>
+    </article>
+  )
 }
 
-// Card de rol en MOBILE -- copia exacta de la estructura de
-// UserMobileCard: header con label chico ("ROL 001") + estado a la
-// derecha, después una fila con el badge de color a ancho completo.
-// Sin chevron: en Usuarios el chevron abre detalles inline (mismo
-// card se expande), acá tocar la card ya navega directo al panel de
-// Permisos -- no hay nada que expandir en el lugar.
-export function RoleMobileCard({ role, index, onSelect }: Props) {
+export function RoleMobileCard(props: Props) {
+  if (props.loading) {
+    return <RoleMobileCardPulse opacity={props.opacity} />
+  }
+
+  const { role, index, onSelect } = props
+
   return (
     <article className="overflow-hidden rounded-xl bg-foreground/5">
       <button

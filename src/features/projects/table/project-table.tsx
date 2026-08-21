@@ -16,7 +16,7 @@ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
 
 import { ProjectMobileCard } from "./project-mobile-card"
-import { EntityListSkeleton } from "@/shared/ui/entity-table/entity-list-skeleton"
+import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
 
 import { useProjectSearch } from "../hooks/use-project-search"
 
@@ -153,7 +153,13 @@ export function ProjectTable({
   })
 
   if (loading) {
-    return <EntityListSkeleton variant="project" />
+    return (
+      <div className="flex flex-col gap-2 pb-2">
+        {ENTITY_PULSE_OPACITIES.map((opacity, i) => (
+          <ProjectMobileCard key={i} loading opacity={opacity} />
+        ))}
+      </div>
+    )
   }
 
   // Solo al expandir un row ACTIVO (no histórico) se opacitan los demás activos.

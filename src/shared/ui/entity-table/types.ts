@@ -51,6 +51,8 @@ export type EntityColumn<T>={
 }
 
 export type EntityTableProps<T>={
+  loading?:boolean
+  loadingRows?:number
   data:T[]
   columns:EntityColumn<T>[]
   rowId:(item:T)=>string

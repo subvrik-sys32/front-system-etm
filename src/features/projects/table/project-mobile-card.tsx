@@ -53,22 +53,80 @@ function EntityIconBadge({
   return <Icon size={size} strokeWidth={2.25} style={{ color }} className="shrink-0" />
 }
 
-type Props = {
-  project: Project
-  tasks: Task[]
-  expanded: boolean
-  /** true = hay un row activo expandido: opacar hermanos activos */
-  dimOthers?: boolean
-  onToggle: () => void
+type Props =
+  | {
+      loading: true
+      opacity?: number
+      project?: undefined
+      tasks?: undefined
+      expanded?: boolean
+      dimOthers?: boolean
+      onToggle?: () => void
+    }
+  | {
+      loading?: false
+      opacity?: number
+      project: Project
+      tasks: Task[]
+      expanded: boolean
+      dimOthers?: boolean
+      onToggle: () => void
+    }
+
+function ProjectMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
+  return (
+    <div
+      className="@container/prow overflow-hidden rounded-xl bg-foreground/5"
+      style={{ opacity }}
+      aria-hidden
+    >
+      <div className="flex animate-pulse items-start gap-2 px-3 py-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className="h-5 w-12 rounded-md bg-foreground/10" />
+          </div>
+          <div className="mt-1.5 h-4 w-2/3 max-w-[14rem] rounded bg-foreground/10" />
+          <div className="mt-1.5 flex items-center gap-1.5">
+            <span className="size-1.5 rounded-full bg-foreground/15" />
+            <span className="h-3 w-16 rounded bg-foreground/5" />
+            <span className="h-3 w-10 rounded bg-foreground/5" />
+          </div>
+        </div>
+        <span className="hidden h-3 w-10 shrink-0 rounded bg-foreground/5 md:block" />
+      </div>
+    </div>
+  )
 }
 
-export function ProjectMobileCard({
+export function ProjectMobileCard(props: Props) {
+  if (props.loading) {
+    return <ProjectMobileCardPulse opacity={props.opacity} />
+  }
+
+  return (
+    <ProjectMobileCardReady
+      project={props.project}
+      tasks={props.tasks}
+      expanded={props.expanded}
+      dimOthers={props.dimOthers}
+      onToggle={props.onToggle}
+    />
+  )
+}
+
+function ProjectMobileCardReady({
   project,
   tasks,
   expanded,
   dimOthers = false,
   onToggle,
-}: Props) {
+}: {
+  project: Project
+  tasks: Task[]
+  expanded: boolean
+  dimOthers?: boolean
+  onToggle: () => void
+}) {
   const [showFields, setShowFields] = useState(false)
   const [showPipeline, setShowPipeline] = useState(false)
   const [newTaskOpen, setNewTaskOpen] = useState(false)

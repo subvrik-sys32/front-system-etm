@@ -41,12 +41,23 @@ function EntityIconBadge({
   return <Icon size={size} strokeWidth={2.25} style={{ color }} className="shrink-0" />
 }
 
-type Props = {
-  processTask: ProcessTask
-  expanded: boolean
-  dimOthers?: boolean
-  onToggle: () => void
-}
+type Props =
+  | {
+      loading: true
+      opacity?: number
+      processTask?: undefined
+      expanded?: boolean
+      dimOthers?: boolean
+      onToggle?: () => void
+    }
+  | {
+      loading?: false
+      opacity?: number
+      processTask: ProcessTask
+      expanded: boolean
+      dimOthers?: boolean
+      onToggle: () => void
+    }
 
 
 function OperatorNameText({
@@ -67,12 +78,53 @@ function OperatorNameText({
 }
 
 
-export function ProcessMobileCard({
+function ProcessMobileCardPulse({ opacity = 1 }: { opacity?: number }) {
+  return (
+    <div
+      className="@container/prow overflow-hidden rounded-xl bg-foreground/5"
+      style={{ opacity }}
+      aria-hidden
+    >
+      <div className="flex animate-pulse items-start gap-2 px-3 py-3">
+        <div className="min-w-0 flex-1">
+          <div className="h-4 w-2/3 max-w-[12rem] rounded bg-foreground/10" />
+          <div className="mt-1.5 flex items-center gap-1.5">
+            <span className="h-3 w-14 rounded bg-foreground/5" />
+            <span className="h-3 w-10 rounded bg-foreground/5" />
+          </div>
+        </div>
+        <span className="h-8 w-16 shrink-0 rounded-lg bg-foreground/5" />
+      </div>
+    </div>
+  )
+}
+
+export function ProcessMobileCard(props: Props) {
+  if (props.loading) {
+    return <ProcessMobileCardPulse opacity={props.opacity} />
+  }
+
+  return (
+    <ProcessMobileCardReady
+      processTask={props.processTask}
+      expanded={props.expanded}
+      dimOthers={props.dimOthers}
+      onToggle={props.onToggle}
+    />
+  )
+}
+
+function ProcessMobileCardReady({
   processTask,
   expanded,
   dimOthers = false,
   onToggle,
-}: Props) {
+}: {
+  processTask: ProcessTask
+  expanded: boolean
+  dimOthers?: boolean
+  onToggle: () => void
+}) {
   const [showFields, setShowFields] = useState(false)
 
   const { isMobile } = useResponsive()

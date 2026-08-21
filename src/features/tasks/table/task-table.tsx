@@ -16,7 +16,7 @@ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
 
 import { TaskMobileCard } from "./task-mobile-card"
-import { EntityListSkeleton } from "@/shared/ui/entity-table/entity-list-skeleton"
+import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
 
 import { useTaskSearch } from "../hooks/use-task-search"
 
@@ -169,7 +169,13 @@ export function TaskTable({
   })
 
   if (loading) {
-    return <EntityListSkeleton variant="task" />
+    return (
+      <div className="flex flex-col gap-2 pb-2">
+        {ENTITY_PULSE_OPACITIES.map((opacity, i) => (
+          <TaskMobileCard key={i} loading opacity={opacity} />
+        ))}
+      </div>
+    )
   }
 
   const expandedTask = displayedTasks.find(t => t.id === expand.expandedRowId)

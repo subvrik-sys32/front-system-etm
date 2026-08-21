@@ -31,40 +31,21 @@ export function SidebarItem({
 }: Props) {
   const closeDrawer = useMobileNavStore((s) => s.closeDrawer)
 
-  // Procesos usa /processes?code=xx (mismo pathname). Hay que cerrar en el
-  // click, no solo cuando cambia pathname — si no, en "producción" el
-  // drawer se queda abierto.
   const handleNavigate = () => {
     if (isDrawer) closeDrawer()
-  }
-
-  if (isDrawer) {
-    return (
-      <Link
-        href={href}
-        onClick={handleNavigate}
-        onMouseEnter={onMouseEnter}
-        onTouchStart={onTouchStart}
-        className={cn("w-full block", active && "pointer-events-none")}
-      >
-        <SidebarRow
-          icon={Icon}
-          label={label}
-          active={active}
-          count={count}
-          isDrawer
-        />
-      </Link>
-    )
   }
 
   return (
     <Link
       href={href}
-      title={collapsed ? label : undefined}
+      title={collapsed && !isDrawer ? label : undefined}
+      onClick={handleNavigate}
       onMouseEnter={onMouseEnter}
       onTouchStart={onTouchStart}
-      className={cn("w-full block", active && "pointer-events-none")}
+      className={cn(
+        "w-full block outline-none focus-visible:ring-2 focus-visible:ring-primary/20 rounded-xl",
+        active && "pointer-events-none"
+      )}
     >
       <SidebarRow
         icon={Icon}
@@ -72,6 +53,7 @@ export function SidebarItem({
         collapsed={collapsed}
         active={active}
         count={count}
+        isDrawer={isDrawer}
       />
     </Link>
   )

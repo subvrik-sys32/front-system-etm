@@ -134,31 +134,37 @@ html, body {
   --card-foreground: oklch(0.97 0.005 260);
   --popover: oklch(0.18 0.005 260);
   --popover-foreground: oklch(0.97 0.005 260);
-  --primary: oklch(0.72 0.12 220);
-  --primary-foreground: oklch(0.15 0.02 220);
+  
+  /* Azul corporativo industrial real (Matiz 250) */
+  --primary: oklch(0.65 0.16 250);
+  --primary-foreground: oklch(0.98 0 0);
+  
   --secondary: oklch(0.22 0.005 260);
   --secondary-foreground: oklch(0.95 0.005 260);
   --muted: oklch(0.22 0.005 260);
   --muted-foreground: oklch(0.65 0.01 260);
-  --accent: oklch(0.24 0.01 230);
-  --accent-foreground: oklch(0.95 0.01 230);
+  --accent: oklch(0.24 0.01 250);
+  --accent-foreground: oklch(0.95 0.01 250);
   --destructive: oklch(0.65 0.18 25);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.65 0.1 220);
-  --chart-1: oklch(0.75 0.12 220);
+  --ring: oklch(0.65 0.16 250);
+  --chart-1: oklch(0.70 0.16 250);
   --chart-2: oklch(0.7 0.12 160);
   --chart-3: oklch(0.75 0.12 50);
   --chart-4: oklch(0.7 0.14 300);
   --chart-5: oklch(0.65 0.12 20);
   --sidebar: oklch(0.14 0.005 260);
   --sidebar-foreground: oklch(0.95 0.005 260);
-  --sidebar-primary: oklch(0.72 0.12 220);
-  --sidebar-primary-foreground: oklch(0.15 0.02 220);
+  
+  /* Sincronizado para el sidebar */
+  --sidebar-primary: oklch(0.65 0.16 250);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  
   --sidebar-accent: oklch(0.2 0.005 260);
   --sidebar-accent-foreground: oklch(0.95 0.005 260);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.65 0.1 220);
+  --sidebar-ring: oklch(0.65 0.16 250);
   --surface: oklch(0.14 0.005 260);
   --surface-elevated: oklch(0.18 0.005 260);
   --chrome: oklch(0.12 0.005 260 / 0.85);
@@ -169,7 +175,6 @@ html, body {
   --chip-bg-alpha-hover: 0.60;
   --chip-bg-alpha-active: 0.68;
 
-  /* Sube a 0.72 (o hasta 0.80) para que la letra en .dark sea casi blanca */
   --chip-text-tint: 0.72;
 
   --process-card-end: oklch(0.14 0.012 260);

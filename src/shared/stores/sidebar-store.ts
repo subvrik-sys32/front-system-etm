@@ -1,18 +1,8 @@
-// sidebar-store.ts
 "use client"
 import { create } from "zustand"
 
 export type SidebarMode = "open" | "collapsed" | "closed"
 
-/**
- * Estado visual del shell desktop.
- *
- * Cierre/apertura: una sola fase de ~300ms (width + radius en paralelo).
- * Ya no hay `curve-closing` en serie después de width→0.
- *
- * `curve-closing` se mantiene en el tipo solo por compatibilidad con
- * transitionend residuales; el flujo nuevo no lo usa como paso obligatorio.
- */
 export type SidebarVisualState =
   | "visible"
   | "moving-out"
@@ -27,9 +17,7 @@ type SidebarStore = {
 
   toggleCollapsed: () => void
   toggleClosed: () => void
-  /** Logo ETM: open → collapsed → closed (reabrir desde topbar). */
   advanceLayoutMode: () => void
-  /** Split / viewport angosto: pasar a iconos sin toggle. */
   collapseIfOpen: () => void
   notifyContentTransitionEnd: () => void
   notifyClipTransitionEnd: () => void
@@ -40,28 +28,26 @@ function nextVisualState(
   current: SidebarVisualState,
 ): SidebarVisualState {
   if (nextMode === "closed") {
-    if (current === "hidden") return "hidden"
-    if (current === "moving-out") return "moving-out"
-    // visible | moving-in | curve-closing → un solo cierre (width+radius)
+    if (current === "hidden" || current === "moving-out") return current
     return "moving-out"
   }
 
-  // open | collapsed
   if (
     current === "hidden" ||
     current === "curve-closing" ||
     current === "moving-out"
   ) {
-    // Reabrir desde cualquier fase de cierre
     return "moving-in"
   }
 
-  if (current === "moving-in") {
-    return "moving-in"
-  }
+  if (current === "moving-in") return "moving-in"
 
   return "visible"
 }
+
+// Helpers puros para legibilidad arquitectónica
+export const isSidebarHiddenOrMovingOut = (state: SidebarVisualState) =>
+  state === "hidden" || state === "moving-out" || state === "curve-closing"
 
 export const useSidebarStore = create<SidebarStore>()(set => ({
   mode: "open",
@@ -71,9 +57,7 @@ export const useSidebarStore = create<SidebarStore>()(set => ({
   toggleCollapsed: () =>
     set(state => {
       if (state.mode === "closed") return state
-
       const next: SidebarMode = state.mode === "open" ? "collapsed" : "open"
-
       return {
         mode: next,
         lastVisibleMode: next,
@@ -95,7 +79,6 @@ export const useSidebarStore = create<SidebarStore>()(set => ({
     set(state => {
       const next: SidebarMode =
         state.mode === "closed" ? state.lastVisibleMode : "closed"
-
       return {
         mode: next,
         lastVisibleMode:
@@ -108,8 +91,6 @@ export const useSidebarStore = create<SidebarStore>()(set => ({
 
   advanceLayoutMode: () =>
     set(state => {
-      // Logo ETM: solo alterna open ↔ collapsed.
-      // closed se reabre desde el logo del topbar (mismo advance).
       if (state.mode === "closed") {
         const next = state.lastVisibleMode
         return {
@@ -117,8 +98,7 @@ export const useSidebarStore = create<SidebarStore>()(set => ({
           visualState: nextVisualState(next, state.visualState),
         }
       }
-      const next: SidebarMode =
-        state.mode === "open" ? "collapsed" : "open"
+      const next: SidebarMode = state.mode === "open" ? "collapsed" : "open"
       return {
         mode: next,
         lastVisibleMode: next,
@@ -128,13 +108,7 @@ export const useSidebarStore = create<SidebarStore>()(set => ({
 
   notifyContentTransitionEnd: () =>
     set(state => {
-      // Cierre: width terminó → hidden en el mismo ciclo de 300ms
-      // (radius ya iba en paralelo desde moving-out).
-      if (
-        state.mode === "closed" &&
-        (state.visualState === "moving-out" ||
-          state.visualState === "curve-closing")
-      ) {
+      if (state.mode === "closed" && isSidebarHiddenOrMovingOut(state.visualState)) {
         return { visualState: "hidden" }
       }
       if (state.mode !== "closed" && state.visualState === "moving-in") {
@@ -145,12 +119,7 @@ export const useSidebarStore = create<SidebarStore>()(set => ({
 
   notifyClipTransitionEnd: () =>
     set(state => {
-      // Fallback si solo llega el transitionend del radius
-      if (
-        state.mode === "closed" &&
-        (state.visualState === "curve-closing" ||
-          state.visualState === "moving-out")
-      ) {
+      if (state.mode === "closed" && isSidebarHiddenOrMovingOut(state.visualState)) {
         return { visualState: "hidden" }
       }
       return state

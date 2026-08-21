@@ -13,8 +13,8 @@ type Props = {
 }
 
 export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
-  const advanceLayoutMode = useSidebarStore(s => s.advanceLayoutMode)
-  const closeDrawer = useMobileNavStore(s => s.closeDrawer)
+  const advanceLayoutMode = useSidebarStore((s) => s.advanceLayoutMode)
+  const closeDrawer = useMobileNavStore((s) => s.closeDrawer)
 
   const onLogoClick = () => {
     if (isDrawer) {
@@ -33,40 +33,40 @@ export function SidebarHeader({ collapsed, isDrawer = false }: Props) {
   const isRail = collapsed && !isDrawer
 
   return (
-    // pl-3.5 fijo: mismo inset (14px) que el icono de las filas de navegación
-    // (px-2 del contenedor + pl-1.5 de la fila), en rail y en expandido. El
-    // logo nunca se mueve; solo el texto se desvanece.
-    <div className="flex h-12 w-full shrink-0 items-center gap-2.5 border-b border-border/40 pl-3.5 pr-3">
-      <button
-        type="button"
-        onClick={onLogoClick}
-        title={logoTitle}
-        aria-label={logoTitle}
-        className={cn(
-          TOOLBAR_CHROME_ICON_BTN,
-          "flex size-9 shrink-0 items-center justify-center rounded-xl p-1.5",
-        )}
-      >
-        <Image
-          src="/icon.svg"
-          alt="ETM S.A.C."
-          width={28}
-          height={28}
-          priority
-          draggable={false}
-          className="max-h-5 w-auto select-none object-contain"
-        />
-      </button>
+    <div className="flex h-12 w-full shrink-0 items-center border-b border-border/40 px-3">
+      {/* 
+        mx-auto mantiene todo el bloque centrado en el sidebar.
+        Cero transiciones de movimiento o ancho para evitar cualquier efecto de desplazamiento.
+      */}
+      <div className={cn("mx-auto flex items-center", isRail ? "gap-0" : "gap-2.5")}>
+        <button
+          type="button"
+          onClick={onLogoClick}
+          title={logoTitle}
+          aria-label={logoTitle}
+          className={cn(
+            TOOLBAR_CHROME_ICON_BTN,
+            "flex size-9 shrink-0 items-center justify-center rounded-xl p-1.5",
+          )}
+        >
+          <Image
+            src="/icon.svg"
+            alt="ETM COMPANY S.A.C."
+            width={28}
+            height={28}
+            priority
+            draggable={false}
+            className="max-h-5 w-auto select-none object-contain shrink-0"
+          />
+        </button>
 
-      <p
-        aria-hidden={isRail}
-        className={cn(
-          "min-w-0 flex-1 overflow-hidden truncate whitespace-nowrap text-xs font-bold tracking-tight text-primary transition-opacity duration-150 dark:text-white",
-          isRail ? "opacity-0 pointer-events-none" : "opacity-100",
+        {/* Si es rail, el texto se oculta inmediatamente sin animar su ancho ni deslizarse */}
+        {!isRail && (
+          <p className="overflow-hidden truncate whitespace-nowrap text-xs font-bold tracking-tight text-primary dark:text-white">
+            ETM COMPANY SAC
+          </p>
         )}
-      >
-        ETM S.A.C.
-      </p>
+      </div>
     </div>
   )
 }

@@ -28,12 +28,12 @@ export function SidebarSection({
       <div
         aria-hidden={isRail}
         className={cn(
-          "mb-1.5 flex h-3.5 items-center transition-opacity duration-200",
+          "mb-1.5 flex h-3.5 items-center transition-opacity duration-100",
           isDrawer ? "px-3" : "px-2.5",
           isRail && "opacity-0 pointer-events-none select-none"
         )}
       >
-        <span className="block max-w-full overflow-hidden truncate whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
+        <span className="block max-w-full overflow-hidden whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
           {title}
         </span>
       </div>

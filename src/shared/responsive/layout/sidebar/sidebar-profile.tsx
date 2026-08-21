@@ -88,8 +88,11 @@ export function SidebarProfile({
   if (collapsed) {
     return (
       <>
-        {/* El contenedor principal se blinda con shrink-0 */}
-        <div ref={containerRef} className="flex w-full shrink-0 flex-col items-center gap-1.5">
+        {/* Usamos p-2.5 idéntico al card expandido */}
+        <div 
+          ref={containerRef} 
+          className="flex w-full shrink-0 flex-col items-center p-2.5"
+        >
           <Popover open={profileOpen} onOpenChange={setProfileOpen} modal={false}>
             <PopoverTrigger asChild>
               <button
@@ -126,13 +129,16 @@ export function SidebarProfile({
             </PopoverContent>
           </Popover>
 
-          <button
-            onClick={handleLogoutClick}
-            className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
-            aria-label="Cerrar sesión"
-          >
-            <LogOut className="size-4" />
-          </button>
+          {/* Forzamos contenedor h-8 y mt-2 para igualar el estado expandido */}
+          <div className="mt-2 flex h-8 w-full shrink-0 items-center justify-center">
+            <button
+              onClick={handleLogoutClick}
+              className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+              aria-label="Cerrar sesión"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </div>
         </div>
         {logoutDialog}
       </>
@@ -141,7 +147,6 @@ export function SidebarProfile({
 
   return (
     <>
-      {/* Contenedor principal protegido contra compresión */}
       <div ref={containerRef} className="relative w-full shrink-0">
         <div
           aria-hidden={!profileOpen}
@@ -170,18 +175,17 @@ export function SidebarProfile({
           </div>
         </div>
 
+        {/* Usamos p-2.5 idéntico al contenedor colapsado */}
         <div
           ref={cardRef}
-          className="relative z-10 w-full overflow-hidden rounded-xl border-0 bg-card px-2.5 py-2.5 shadow-xs"
+          className="relative z-10 w-full overflow-hidden rounded-xl border-0 bg-card p-2.5 shadow-xs"
         >
           <div className="flex w-full items-center gap-2.5">
-            {/* Avatar de tamaño fijo */}
             <div className="relative size-9 shrink-0">
               {avatar}
               <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500" />
             </div>
             
-            {/* Contenedor fluido para texto */}
             <div className="min-w-0 flex-1">
               {user ? (
                 <>
@@ -201,13 +205,14 @@ export function SidebarProfile({
             </div>
           </div>
 
-          <div className="mt-2 flex w-full shrink-0 items-center gap-1">
+          {/* Forzamos h-8 y flex h-full en los botones para igualar alturas */}
+          <div className="mt-2 flex h-8 w-full shrink-0 items-center gap-1">
             <button
               type="button"
               onClick={toggleProfile}
               disabled={!canOpenProfile}
               className={cn(
-                "flex-1 truncate rounded-md px-2 py-1 text-xs transition",
+                "flex h-full flex-1 items-center justify-center truncate rounded-md px-2 text-xs transition",
                 canOpenProfile
                   ? "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
                   : "cursor-not-allowed text-muted-foreground/70",
@@ -218,7 +223,7 @@ export function SidebarProfile({
             <button
               type="button"
               onClick={handleLogoutClick}
-              className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+              className="flex h-full shrink-0 items-center justify-center rounded-md px-2 text-xs text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
             >
               Salir
             </button>

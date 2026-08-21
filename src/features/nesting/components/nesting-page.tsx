@@ -804,7 +804,7 @@ export function NestingPage() {
       {/* —— Mobile: tabs fijos + canvas con alto REAL (absolute) —— */}
       {isCompact && (
         <div className="absolute inset-0">
-          <div className="absolute inset-x-0 top-2 z-10 flex h-11 items-center gap-1.5 px-2">
+          <div className="absolute inset-x-0 top-1 z-10 flex h-11 items-center gap-1.5 px-2">
             <div className="min-w-0 flex-1">
               {project.sheetGroups.length > 0 ? (
                 <SheetTabs
@@ -832,7 +832,7 @@ export function NestingPage() {
           </div>
 
           {/* top-12 ≈ tabs; bottom-0 = todo el resto del slot immersive */}
-          <div className="absolute inset-x-0 bottom-0 top-12 mx-1 mb-1 overflow-hidden rounded-xl border-0 bg-zinc-100 shadow-xs dark:border-0 dark:bg-neutral-950">
+          <div className="absolute inset-x-0 bottom-0 top-[3.25rem] mx-1 mb-1 overflow-hidden rounded-xl border-0 bg-zinc-100 shadow-xs dark:border-0 dark:bg-neutral-950">
             <div className="absolute inset-px overflow-hidden rounded-4xl">
               {!project.sessionReady ? (
                 <WorkspaceSpinner />

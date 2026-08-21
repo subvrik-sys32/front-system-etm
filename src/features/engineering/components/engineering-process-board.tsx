@@ -5,6 +5,7 @@ import { Plus } from "lucide-react"
 
 import { EntityChip } from "@/shared/ui/entity-chip/entity-chip"
 import { cn } from "@/shared/utils/utils"
+import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
 
 import {
   ENGINEERING_PROCESS_ORDER,
@@ -96,12 +97,7 @@ export function EngineeringProcessBoard({
   const byProcess = useMemo(() => groupByProcess(tasks), [tasks])
 
   return (
-    <div
-      className={cn(
-        "flex w-full flex-col transition-opacity duration-200",
-        loading && "pointer-events-none select-none opacity-60 animate-pulse"
-      )}
-    >
+    <div className="flex w-full flex-col">
       {/* KPI en el flujo: scrollea junto con el grid. */}
       <div className="mb-4 shrink-0">
         <EngineeringKpiHeader tasks={tasks} />
@@ -130,21 +126,27 @@ export function EngineeringProcessBoard({
                 />
 
                 {/* Filtro de Operadores por Proceso */}
-                <EngineeringColumnOperators tasks={colTasks} />
+                {!loading && <EngineeringColumnOperators tasks={colTasks} />}
 
                 {/* Listado de Tareas */}
                 <div className="flex flex-col gap-1.5">
                   {loading && colTasks.length === 0 ? (
-                    <>
+                    ENTITY_PULSE_OPACITIES.slice(0, 3).map((opacity, i) => (
                       <div
+                        key={i}
                         aria-hidden
-                        className="h-11 rounded-xl bg-foreground/5 animate-pulse"
-                      />
-                      <div
-                        aria-hidden
-                        className="h-11 rounded-xl bg-foreground/5 animate-pulse opacity-70"
-                      />
-                    </>
+                        className="rounded-xl bg-foreground/5"
+                        style={{ opacity }}
+                      >
+                        <div className="flex animate-pulse items-center gap-2.5 px-2 py-3">
+                          <span className="inline-flex h-7 min-w-[2.75rem] shrink-0 rounded-md bg-foreground/10" />
+                          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                            <span className="h-3.5 w-[45%] max-w-[10rem] rounded bg-foreground/10" />
+                            <span className="h-3 w-16 rounded bg-foreground/5" />
+                          </div>
+                        </div>
+                      </div>
+                    ))
                   ) : colTasks.length === 0 ? (
                     <div className="flex h-24 items-center justify-center rounded-xl border border-dashed border-border/40 bg-background/20">
                       <p className="text-xs text-muted-foreground/60">

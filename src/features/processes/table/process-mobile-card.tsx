@@ -86,11 +86,15 @@ export function ProcessMobileCard(props: Props) {
       <div className="@container/prow rounded-xl bg-foreground/5" style={{ opacity }} aria-hidden>
         <div className="flex items-center gap-1 px-1">
           <div className="flex min-w-0 flex-1 animate-pulse items-center gap-2.5 py-3 pr-2">
+            <span className="inline-flex h-7 min-w-[2.75rem] shrink-0 items-center justify-center rounded-md bg-foreground/10 px-2" />
             <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
-              <span className="h-4 w-[50%] max-w-[12rem] rounded bg-foreground/10" />
-              <span className="h-3 w-20 rounded bg-foreground/5" />
+              <span className="h-4 w-[40%] max-w-[11rem] rounded bg-foreground/10" />
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-foreground/15" />
+                <span className="h-3 w-20 rounded bg-foreground/5" />
+              </span>
             </div>
-            <span className="h-8 w-16 shrink-0 rounded-lg bg-foreground/5" />
+            <span className="hidden h-3 w-14 shrink-0 rounded bg-foreground/5 md:block" />
           </div>
         </div>
       </div>
@@ -189,26 +193,26 @@ function ProcessMobileCardReady({
                   {task.reference}
                 </Link>
               )}
-              <span className="hidden shrink-0 self-center text-muted-foreground/80 md:inline">·</span>
+              <span className="shrink-0 self-center text-muted-foreground/80">·</span>
               <span
-                className="hidden size-5 shrink-0 items-center justify-center self-center md:inline-flex"
+                className="inline-flex size-5 shrink-0 items-center justify-center self-center"
                 title={priority.name}
               >
                 <EntityIconBadge
                   icon={priority.icon}
                   color={priority.color}
-                  size={16}
+                  size={isMobile ? 12 : 16}
                 />
               </span>
-              <span className="hidden shrink-0 self-center text-muted-foreground/80 md:inline">·</span>
+              <span className="shrink-0 self-center text-muted-foreground/80">·</span>
               <span
-                className="hidden size-5 shrink-0 items-center justify-center self-center md:inline-flex"
+                className="inline-flex size-5 shrink-0 items-center justify-center self-center"
                 title={statusLabel.label}
               >
                 <EntityIconBadge
                   icon={statusLabel.icon}
                   color={statusLabel.color}
-                  size={16}
+                  size={isMobile ? 12 : 16}
                 />
               </span>
             </div>

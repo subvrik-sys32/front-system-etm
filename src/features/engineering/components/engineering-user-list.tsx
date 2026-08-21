@@ -10,6 +10,7 @@ import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import type { User } from "@/features/users/types/user.types"
 import { useBadgeColors } from "@/shared/utils/use-badge-colors"
 import { cn } from "@/shared/utils/utils"
+import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
 
 import type { EngineeringTask } from "../types/engineering-task.types"
 import { useEngineeringProcessCatalog } from "../hooks/use-engineering-process-catalog"
@@ -50,16 +51,19 @@ function UserAvatar({
 }
 
 /** Mismo shell que la fila real — pulse inline, sin árbol skeleton aparte. */
-function UserRowSkeleton() {
+function UserRowSkeleton({ opacity = 1 }: { opacity?: number }) {
   return (
     <div
       aria-hidden
-      className="flex items-center gap-3 rounded-2xl bg-foreground/5 px-3 py-2.5 animate-pulse"
+      className="flex items-center gap-3 rounded-2xl bg-foreground/5 px-3 py-2.5"
+      style={{ opacity }}
     >
-      <div className="size-9 shrink-0 rounded-full bg-foreground/10" />
-      <div className="min-w-0 flex-1 space-y-1.5">
-        <div className="h-3.5 w-28 rounded-md bg-foreground/10" />
-        <div className="h-3 w-16 rounded-md bg-foreground/10" />
+      <div className="flex w-full animate-pulse items-center gap-3">
+        <div className="size-9 shrink-0 rounded-full bg-foreground/10" />
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="h-3.5 w-28 rounded-md bg-foreground/10" />
+          <div className="h-3 w-16 rounded-md bg-foreground/5" />
+        </div>
       </div>
     </div>
   )
@@ -88,8 +92,11 @@ export function EngineeringUserList({
               <span className="h-3 w-20 rounded bg-foreground/10 animate-pulse" />
             </div>
             <div className="flex flex-col gap-2">
-              {Array.from({ length: label === "ASIGNADOS" ? 3 : 4 }, (_, i) => (
-                <UserRowSkeleton key={i} />
+              {ENTITY_PULSE_OPACITIES.slice(
+                0,
+                label === "ASIGNADOS" ? 3 : 4,
+              ).map((opacity, i) => (
+                <UserRowSkeleton key={i} opacity={opacity} />
               ))}
             </div>
           </div>

@@ -4,6 +4,7 @@ import { useMemo, useState, useRef } from "react"
 import { Users, Search, ChevronDown, ChevronUp } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
+import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { useUsersDirectory } from "@/features/users/hooks/use-users-directory"
 import { formatNotificationDate } from "@/features/notifications/utils/format-notification-date"
@@ -156,7 +157,7 @@ export function SidebarPresence({
 
   if (!currentUser) {
     if (isTopbar) {
-      return <div className="size-10 shrink-0 rounded-full bg-foreground/10 animate-pulse" />
+      return <div className="h-9 w-9 shrink-0 rounded-full bg-foreground/10 animate-pulse" />
     }
     return (
       <div ref={presenceRef} className="mx-1 my-1 px-1">
@@ -186,14 +187,11 @@ export function SidebarPresence({
           type="button"
           aria-label="Usuarios en línea"
           onClick={() => handleOpenChange(!open)}
-          className={cn(
-            "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20",
-            open && "bg-foreground/20 text-foreground",
-          )}
+          className={cn(TOPBAR_ICON_BTN, open && TOPBAR_ICON_BTN_ACTIVE)}
         >
           <Users size={16} strokeWidth={2} />
           {onlineUsers.length > 0 && (
-            <span className={cn("absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px]", emeraldBadgeClass)}>
+            <span className={cn("absolute -right-1 -top-1 z-10 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px]", emeraldBadgeClass)}>
               {onlineUsers.length > 9 ? "9+" : onlineUsers.length}
             </span>
           )}
@@ -205,7 +203,7 @@ export function SidebarPresence({
       <button
         type="button"
         title={collapsed ? `${onlineUsers.length} en línea` : undefined}
-        className="w-full rounded-xl text-left"
+        className="w-full rounded-xl text-left bg-transparent border-0 p-0"
       >
         <SidebarRow
           icon={Users}
@@ -216,7 +214,6 @@ export function SidebarPresence({
           collapsedBadgeColor={open ? "bg-emerald-500 text-black font-bold" : "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold"}
           badgeColor={open ? "bg-emerald-500 text-black font-bold" : "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold"}
           badgeAnimated={onlineUsers.length > 0}
-          size="sm"
         />
       </button>
     )

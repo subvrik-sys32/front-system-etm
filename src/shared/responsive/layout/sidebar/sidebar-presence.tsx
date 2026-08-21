@@ -4,7 +4,6 @@ import { useMemo, useState, useRef } from "react"
 import { Users, Search, ChevronDown, ChevronUp } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
-import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { useUsersDirectory } from "@/features/users/hooks/use-users-directory"
 import { formatNotificationDate } from "@/features/notifications/utils/format-notification-date"
@@ -184,8 +183,8 @@ export function SidebarPresence({
           aria-label="Usuarios en línea"
           onClick={() => handleOpenChange(!open)}
           className={cn(
-            TOPBAR_ICON_BTN,
-            open && TOPBAR_ICON_BTN_ACTIVE,
+            "relative flex size-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-foreground/15 active:bg-foreground/20",
+            open && "bg-foreground/20 text-foreground",
           )}
         >
           <Users size={16} strokeWidth={2} />

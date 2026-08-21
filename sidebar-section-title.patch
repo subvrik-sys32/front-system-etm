@@ -1,0 +1,67 @@
+diff --git a/src/shared/responsive/layout/sidebar/sidebar-section.tsx b/src/shared/responsive/layout/sidebar/sidebar-section.tsx
+index 467eee5..912633b 100644
+--- a/src/shared/responsive/layout/sidebar/sidebar-section.tsx
++++ b/src/shared/responsive/layout/sidebar/sidebar-section.tsx
+@@ -17,51 +17,23 @@ export function SidebarSection({
+   collapsed,
+   isDrawer = false,
+ }: Props) {
+-
+-  if (isDrawer) {
+-
+-    return (
+-
+-      <section className="mb-3.5">
+-
+-        <div className="mb-1 px-3">
+-
+-          <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+-            {title}
+-          </span>
+-
+-        </div>
+-
+-        <div className="space-y-0.5">
+-          {children}
+-        </div>
+-
+-      </section>
+-
+-    )
+-
+-  }
+-
+   return (
+-
+-    <section className="mb-3">
+-
+-      <div className={cn("mb-1 px-2.5 h-3.5")}>
+-
+-        {!collapsed && (
+-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
++    <section className={cn(isDrawer ? "mb-2.5" : "mb-2")}>
++      <div
++        className={cn(
++          "flex items-center",
++          isDrawer ? "mb-1.5 px-3" : "mb-1.5 px-2.5",
++          collapsed && !isDrawer && "h-0 mb-0 overflow-hidden",
++        )}
++      >
++        {(!collapsed || isDrawer) && (
++          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
+             {title}
+           </span>
+         )}
+-
+-      </div>
+-
+-      <div className="space-y-0.5">
+-        {children}
+       </div>
+ 
++      <div className="space-y-0.5">{children}</div>
+     </section>
+-
+   )
+-
+ }

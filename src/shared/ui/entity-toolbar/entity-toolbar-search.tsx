@@ -68,7 +68,7 @@ export function EntityToolbarSearch({
         data-toolbar-search=""
         className={cn(
           "flex items-center overflow-hidden transition-all duration-200 ease-out",
-          open ? "w-60" : "w-9",
+          open ? "w-56" : "w-8",
         )}
       >
         <button
@@ -89,11 +89,11 @@ export function EntityToolbarSearch({
             }
           }}
           className={cn(
-            "flex size-9 shrink-0 touch-none items-center justify-center rounded-full bg-chrome text-muted-foreground shadow-xs backdrop-blur-xl transition-all duration-200 hover:text-foreground",
-            open && "bg-chrome text-foreground",
+            "flex size-8 shrink-0 touch-none items-center justify-center rounded-full bg-chrome text-muted-foreground shadow-xs backdrop-blur-xl transition-all duration-200 hover:text-foreground",
+            open && "text-foreground",
           )}
         >
-          <Search size={16} strokeWidth={2.25} />
+          <Search size={14} strokeWidth={2.25} />
         </button>
 
         <div

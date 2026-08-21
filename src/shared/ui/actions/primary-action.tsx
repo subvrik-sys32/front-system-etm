@@ -33,7 +33,7 @@ export function PrimaryAction({
       className={cn(
         "inline-flex shrink-0 items-center justify-center transition shadow-xs",
         iconOnly
-          ? "size-9 rounded-full"
+          ? "size-8 rounded-full"
           : "h-8 gap-1.5 whitespace-nowrap rounded-lg px-3.5 text-xs font-semibold",
         disabled
           ? "cursor-not-allowed bg-muted text-muted-foreground/50"
@@ -45,7 +45,7 @@ export function PrimaryAction({
         <Spinner size={14} />
       ) : (
         <>
-          {Icon ? <Icon size={iconOnly ? 16 : 14} strokeWidth={2.5} /> : null}
+          {Icon ? <Icon size={14} strokeWidth={2.25} /> : null}
           {!iconOnly && label}
         </>
       )}

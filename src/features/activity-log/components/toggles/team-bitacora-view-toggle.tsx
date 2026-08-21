@@ -2,7 +2,7 @@
 
 import { Eye, Sun, Grid3x3 } from "lucide-react"
 
-import { cn } from "@/shared/utils/utils"
+import { EntityToggle } from "@/shared/ui/entity-toggle/entity-toggle"
 import {
   useTeamBitacoraViewStore,
   type TeamBitacoraViewMode,
@@ -10,16 +10,16 @@ import {
 import { useSwipeSegment } from "./use-swipe-segment"
 
 const OPTIONS: {
-  key: TeamBitacoraViewMode
+  value: TeamBitacoraViewMode
   label: string
-  Icon: typeof Sun
+  icon: typeof Sun
 }[] = [
-  { key: "day", label: "Día", Icon: Sun },
-  { key: "month", label: "Mes", Icon: Grid3x3 },
-  { key: "supervision", label: "Supervisión", Icon: Eye },
+  { value: "day", label: "Día", icon: Sun },
+  { value: "month", label: "Mes", icon: Grid3x3 },
+  { value: "supervision", label: "Supervisión", icon: Eye },
 ]
 
-const KEYS = OPTIONS.map(o => o.key) as TeamBitacoraViewMode[]
+const KEYS = OPTIONS.map(o => o.value) as TeamBitacoraViewMode[]
 
 type Props = {
   compact?: boolean
@@ -31,39 +31,14 @@ export function TeamBitacoraViewToggle({ compact = false }: Props) {
   const swipe = useSwipeSegment(KEYS, value, onChange)
 
   return (
-    <div
-      className="inline-flex touch-pan-y items-center rounded-lg bg-foreground/5 p-0.5"
-      {...swipe}
-      role="group"
-      aria-label="Vista de bitácora del equipo"
-    >
-      {OPTIONS.map(option => {
-        const Icon = option.Icon
-        const active = value === option.key
-
-        return (
-          <button
-            key={option.key}
-            type="button"
-            onClick={() => onChange(option.key)}
-            title={option.label}
-            aria-label={option.label}
-            aria-pressed={active}
-            className={cn(
-              "flex items-center justify-center rounded-md transition",
-              compact
-                ? "size-11"
-                : "gap-1.5 px-3 py-0.5 text-sm font-semibold",
-              active
-                ? "bg-foreground/10 text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Icon size={compact ? 16 : 14} />
-            {!compact && <span>{option.label}</span>}
-          </button>
-        )
-      })}
+    <div className="inline-flex touch-pan-y" {...swipe}>
+      <EntityToggle
+        value={value}
+        onChange={onChange}
+        options={OPTIONS}
+        compact={compact}
+        aria-label="Vista de bitácora del equipo"
+      />
     </div>
   )
 }

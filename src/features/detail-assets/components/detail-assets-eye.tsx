@@ -19,6 +19,8 @@ type Props = {
   className?: string
   /** Si el padre ya sabe el total, evita query (opcional). */
   count?: number
+  /** @deprecated Prefer count; se acepta por compat con rows. */
+  hasAssets?: boolean
 }
 
 function countTaskAssets(data: TaskDetailAssetsResponse | undefined): number {
@@ -37,6 +39,7 @@ export function DetailAssetsEye({
   readOnly,
   className,
   count: countProp,
+  hasAssets,
 }: Props) {
   const [open, setOpen] = useState(false)
   const taskQ = useTaskDetailAssets(taskId, countProp === undefined && Boolean(taskId))
@@ -45,6 +48,7 @@ export function DetailAssetsEye({
     countProp === undefined && Boolean(projectId) && !taskId,
   )
 
+  void hasAssets
   if (!taskId && !projectId) return null
 
   const count =

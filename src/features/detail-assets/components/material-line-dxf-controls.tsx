@@ -18,6 +18,8 @@ type Props = {
   dxf?: DetailAsset | null
   pendingFile?: File | null
   onPendingFile?: (file: File | null) => void
+  /** Notifica al form padre tras subir/quitar (invalidar cache local). */
+  onChanged?: () => void
   disabled?: boolean
   className?: string
 }
@@ -34,6 +36,7 @@ export function MaterialLineDxfControls({
   dxf,
   pendingFile,
   onPendingFile,
+  onChanged,
   disabled,
   className,
 }: Props) {
@@ -57,11 +60,12 @@ export function MaterialLineDxfControls({
     }
     setBusy(true)
     try {
-      await detailAssetsApi.uploadDxf(lineId, file)
+      await detailAssetsApi.uploadMaterialLineDxf(lineId, file)
       if (taskId) {
         await qc.invalidateQueries({ queryKey: taskDetailAssetsKey(taskId) })
       }
       toast.success(`DXF guardado: ${file.name}`)
+      onChanged?.()
     } catch {
       toast.error("No se pudo subir el DXF")
     } finally {
@@ -82,6 +86,7 @@ export function MaterialLineDxfControls({
         await qc.invalidateQueries({ queryKey: taskDetailAssetsKey(taskId) })
       }
       toast.success("DXF eliminado")
+      onChanged?.()
     } catch {
       toast.error("No se pudo eliminar")
     } finally {

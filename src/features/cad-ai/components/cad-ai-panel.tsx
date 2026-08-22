@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from "react"
 import { Loader2, Layers, SlidersHorizontal } from "lucide-react"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
 import { cn } from "@/shared/utils/utils"
 import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
@@ -35,6 +36,7 @@ function useRingDotSize(variant: keyof typeof RING_DOT_SIZE) {
 }
 
 export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
+  const chromeInset = useChromeInset({ bottom: false })
   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
   const [dxf, setDxf] = useState<string>("")
   const [imagePath, setImagePath] = useState<string | null>(null)
@@ -165,7 +167,10 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
           </div>
         )}
 
-        <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col">
+        <div
+          className="relative z-10 flex min-h-0 w-full flex-1 flex-col"
+          style={{ paddingTop: chromeInset.paddingTop }}
+        >
           {error && (
             <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
               <span className="truncate">{error}</span>
@@ -251,7 +256,10 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
         </div>
       )}
 
-      <div className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col">
+      <div
+        className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col"
+        style={{ paddingTop: chromeInset.paddingTop }}
+      >
         {error && (
           <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
             <span className="truncate">{error}</span>

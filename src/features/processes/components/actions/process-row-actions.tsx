@@ -10,6 +10,7 @@ import { useWorkflow } from "@/features/workflow/hooks/use-workflow"
 import { useWorkflowRequirements } from "@/features/workflow/hooks/use-workflow-requirements"
 import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 import { canCompleteStep } from "@/features/workflow/selectors/can-complete"
+import { getCurrentStep } from "@/features/workflow/selectors/get-current-step"
 import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
 import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
 import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
@@ -123,13 +124,6 @@ export function ProcessRowActions({
   }
 
   if (status === "QUEUE") {
-    const currentIndex = task.workflowSteps.findIndex(s => s.id === stepId)
-    const prev =
-      currentIndex > 0 ? task.workflowSteps[currentIndex - 1] : null
-    const prevDef = prev
-      ? PROCESS_DEFINITIONS[prev.processCode as ProcessCode]
-      : null
-
     /** Navega entre procesos; un solo back (proceso cancela ← Tarea). */
     function openProcessRoute(targetCode: ProcessCode) {
       const label =
@@ -141,16 +135,20 @@ export function ProcessRowActions({
       )
     }
 
-    // Chip completo h-9 w-28 (mismo que Iniciar). Click → proceso previo.
-    if (prevDef && prev) {
+    // Chip = proceso ACTUAL de la tarea (dónde está ahora), no el paso previo.
+    const current = getCurrentStep(task.workflowSteps)
+    const currentCode = (current?.processCode ?? processCode) as ProcessCode
+    const currentDef = PROCESS_DEFINITIONS[currentCode]
+
+    if (currentDef) {
       return (
         <div className="flex w-full items-center justify-center">
           <QueueProcessChip
-            code={prev.processCode}
-            label={prevDef.label}
-            color={prevDef.color}
-            icon={prevDef.icon}
-            onClick={() => openProcessRoute(prev.processCode as ProcessCode)}
+            code={currentCode}
+            label={currentDef.label}
+            color={currentDef.color}
+            icon={currentDef.icon}
+            onClick={() => openProcessRoute(currentCode)}
           />
         </div>
       )
@@ -254,7 +252,7 @@ function QueueProcessChip({
     <button
       type="button"
       onClick={onClick}
-      title={`Viene de ${label} — ir a ese proceso`}
+      title={`En ${label} — ir a ese proceso`}
       className="inline-flex h-9 w-28 items-center justify-center transition-transform select-none hover:brightness-110 active:brightness-95"
     >
       <EntityChip label={code} color={color} icon={icon} />

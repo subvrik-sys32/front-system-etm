@@ -103,9 +103,9 @@ export function CommentHistoryDialog({
           onInteractOutside={preventNestedDialogClose}
         >
           {/* Header — mismo peso que CAD AI / FormDialog */}
-          <DialogHeader className="shrink-0 border-b border-foreground/5 px-4 py-3">
+          <DialogHeader className="shrink-0 px-4 py-3">
             <div className="flex items-center gap-3">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-foreground/5">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-foreground shadow-xs">
                 <MessageSquare size={18} strokeWidth={2.4} />
               </div>
               <div className="min-w-0 flex-1">
@@ -152,7 +152,7 @@ export function CommentHistoryDialog({
           </ScrollArea>
 
           {/* Composer abajo — contrato chat */}
-          <div className="shrink-0 border-t border-foreground/5 bg-card px-3 py-3">
+          <div className="shrink-0 bg-card px-3 py-3">
             {readOnly ? (
               <p className="rounded-xl bg-foreground/5 px-3 py-2.5 text-center text-xs text-muted-foreground">
                 Esta tarea ya está finalizada — se puede ver el historial, pero no agregar mensajes nuevos.

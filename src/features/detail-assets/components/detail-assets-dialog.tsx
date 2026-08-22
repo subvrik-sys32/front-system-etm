@@ -4,6 +4,7 @@ import { useRef, useState } from "react"
 import { Download, Eye, ImagePlus, MessageSquare, Trash2 } from "lucide-react"
 import { Spinner } from "@/shared/ui/spinner/spinner"
 import { toast } from "sonner"
+import { saveBlobWithPreferences } from "@/features/user-preferences"
 
 import {
   Dialog,

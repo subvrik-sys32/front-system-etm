@@ -4,6 +4,7 @@ import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
 import { Download, X } from "lucide-react"
 import { toast } from "sonner"
+import { saveBlobWithPreferences } from "@/features/user-preferences"
 
 import {
   Dialog,
@@ -94,11 +95,11 @@ export function DxfPreviewDialog({
     try {
       const res = await fetch(url)
       const blob = await res.blob()
-      const a = document.createElement("a")
-      a.href = URL.createObjectURL(blob)
-      a.download = fileName || "plano.dxf"
-      a.click()
-      URL.revokeObjectURL(a.href)
+      await saveBlobWithPreferences({
+        blob,
+        fileName: fileName || "plano.dxf",
+        mimeType: "application/dxf",
+      })
     } catch {
       toast.error("No se pudo descargar")
     }

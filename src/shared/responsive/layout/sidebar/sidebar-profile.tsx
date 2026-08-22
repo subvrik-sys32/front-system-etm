@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type RefObject } from "react"
 import { useRouter } from "next/navigation"
-import { User, LogOut } from "lucide-react"
+import { User, LogOut, Settings2 } from "lucide-react"
 
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { useOverlayStore } from "@/shared/stores/overlay-store"
@@ -20,6 +20,7 @@ import { cn } from "@/shared/utils/utils"
 type SidebarProfileProps = {
   collapsed?: boolean
   onEditProfile: () => void
+  onOpenPreferences?: () => void
   profileOpen: boolean
   setProfileOpen: (open: boolean) => void
   toggleProfile: () => void
@@ -36,6 +37,7 @@ const OVERLAP = 24
 export function SidebarProfile({
   collapsed,
   onEditProfile,
+  onOpenPreferences,
   profileOpen,
   setProfileOpen,
   toggleProfile,
@@ -221,6 +223,18 @@ export function SidebarProfile({
               <span className="truncate">Mi perfil</span>
             </button>
 
+            <button
+              type="button"
+              onClick={() => {
+                setProfileOpen(false)
+                onOpenPreferences?.()
+              }}
+              title="Ajustes"
+              aria-label="Ajustes"
+              className="flex h-full w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-all duration-200 hover:bg-sidebar-accent hover:text-foreground"
+            >
+              <Settings2 size={14} />
+            </button>
             <button
               type="button"
               onClick={handleLogoutClick}

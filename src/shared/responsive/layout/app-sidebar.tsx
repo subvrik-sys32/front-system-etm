@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { ProfileDialog } from "@/features/profile"
 import { useSidebarStore, isSidebarHiddenOrMovingOut } from "@/shared/stores/sidebar-store"
 import { cn } from "@/shared/utils/utils"
@@ -26,6 +27,7 @@ const SIDEBAR_ASIDE_OPEN_WIDTH = 220
  * Móvil (drawer): siempre layout expandido; visibilidad la controla SidebarDrawer.
  */
 export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
+  const router = useRouter()
   const { mode, lastVisibleMode, visualState, notifyContentTransitionEnd } = useSidebarStore()
 
   const visibleMode = mode === "closed" ? lastVisibleMode : mode
@@ -102,6 +104,7 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
             <SidebarProfile
               collapsed={collapsed}
               onEditProfile={() => setProfileEditOpen(true)}
+              onOpenPreferences={() => router.push("/settings")}
               profileOpen={profileOpen}
               setProfileOpen={setProfileOpen}
               toggleProfile={toggleProfile}

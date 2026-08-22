@@ -7,7 +7,6 @@ import { cn } from "@/shared/utils/utils"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import {
   TOOLBAR_CHROME_ICON_BTN,
-  TOOLBAR_CHROME_ICON_BTN_ACTIVE,
   TOOLBAR_CHROME_ICON_SIZE,
 } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 
@@ -20,9 +19,13 @@ type Props = {
   accentClassName?: string
 } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children">
 
+/** Selección: ring primary, sin cambiar el fill del botón. */
+const FAB_ACTIVE_RING =
+  "ring-2 ring-primary ring-offset-2 ring-offset-background"
+
 /**
- * - Desktop: pastilla ícono + label.
- * - Mobile FAB: mismo chrome que topbar (bg-muted text-foreground).
+ * - Desktop: chrome topbar.
+ * - Mobile FAB: mismo chrome; activo = ring, no translúcido.
  */
 export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
   (
@@ -49,7 +52,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
           className={cn(
             TOOLBAR_CHROME_ICON_BTN,
             "relative z-20 overflow-visible",
-            active && TOOLBAR_CHROME_ICON_BTN_ACTIVE,
+            active && FAB_ACTIVE_RING,
             className,
           )}
           {...props}
@@ -72,11 +75,8 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
         title={label}
         className={cn(
           "relative z-20 flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full shadow-xs transition active:scale-95",
-          accentClassName ??
-            cn(
-              "bg-muted text-foreground hover:bg-muted/80",
-              active && "bg-foreground/15 text-foreground",
-            ),
+          accentClassName ?? "bg-muted text-foreground hover:bg-muted/80",
+          active && FAB_ACTIVE_RING,
           className,
         )}
         {...props}

@@ -146,16 +146,16 @@ export function CommentItem({
   return (
     <div
       className={cn(
-        "group animate-comment-in flex w-full gap-2.5",
+        "group animate-comment-in flex w-full items-end gap-2.5",
         isOwner ? "flex-row-reverse" : "flex-row",
         isReply && !isOwner && "pl-6",
         (isPending || isDeleting) && "opacity-60",
       )}
     >
-      {/* Avatar chrome — sin ring, bg-muted / foreground sólido */}
+      {/* Avatar chrome — misma altura visual que burbuja 1 línea (size-8), alineado al borde inferior */}
       <div
         className={cn(
-          "flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full shadow-xs",
+          "flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full shadow-xs",
           isOwner ? "bg-foreground text-background" : "bg-muted text-foreground",
         )}
       >
@@ -228,7 +228,7 @@ export function CommentItem({
 
         <div
           className={cn(
-            "group/bubble flex min-w-0 flex-row items-center rounded-2xl py-1.5 shadow-xs",
+            "group/bubble flex min-h-8 min-w-0 flex-row items-center rounded-2xl py-1.5 shadow-xs",
             isOwner
               ? "bg-foreground pl-3 pr-1.5 text-background"
               : "bg-muted/80 pl-3 pr-1.5 text-foreground dark:bg-foreground/[0.06]",

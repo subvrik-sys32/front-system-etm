@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, KeyboardEvent, ChangeEvent } from "react"
-import { Camera, SendHorizontal, X } from "lucide-react"
+import { Camera, Send, X } from "lucide-react"
 import { IconAction } from "@/shared/ui/actions/icon-action"
 import { Popover, PopoverAnchor } from "@/components/ui/popover"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
@@ -262,9 +262,9 @@ export function CommentComposer({
               title={isEditing ? "Guardar" : "Enviar"}
               disabled={!canSubmit}
               onClick={handleSubmit}
-              className="flex size-9 shrink-0 items-center justify-center rounded-full bg-foreground text-background transition disabled:opacity-40"
+              className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-foreground text-background shadow-xs transition disabled:opacity-40"
             >
-              <SendHorizontal size={16} strokeWidth={0} fill="currentColor" className="translate-x-px" />
+              <Send className="size-4" />
             </button>
           </div>
         </PopoverAnchor>

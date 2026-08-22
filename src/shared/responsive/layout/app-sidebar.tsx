@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import { ProfileDialog } from "@/features/profile"
+import { SettingsDialog } from "@/features/settings/components/settings-dialog"
 import { useSidebarStore, isSidebarHiddenOrMovingOut } from "@/shared/stores/sidebar-store"
 import { cn } from "@/shared/utils/utils"
 
@@ -27,7 +27,6 @@ const SIDEBAR_ASIDE_OPEN_WIDTH = 220
  * Móvil (drawer): siempre layout expandido; visibilidad la controla SidebarDrawer.
  */
 export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
-  const router = useRouter()
   const { mode, lastVisibleMode, visualState, notifyContentTransitionEnd } = useSidebarStore()
 
   const visibleMode = mode === "closed" ? lastVisibleMode : mode
@@ -47,6 +46,7 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
         : SIDEBAR_ASIDE_OPEN_WIDTH
 
   const [profileEditOpen, setProfileEditOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const { projectsCount, activeTasksCount, processCounts } = useSidebarCounts()
   const { prefetchOnHover } = useSidebarPrefetch()
@@ -104,7 +104,7 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
             <SidebarProfile
               collapsed={collapsed}
               onEditProfile={() => setProfileEditOpen(true)}
-              onOpenPreferences={() => router.push("/settings")}
+              onOpenPreferences={() => setSettingsOpen(true)}
               profileOpen={profileOpen}
               setProfileOpen={setProfileOpen}
               toggleProfile={toggleProfile}
@@ -120,6 +120,7 @@ export function AppSidebar({ variant = "desktop", open = false }: Props = {}) {
       </aside>
 
       <ProfileDialog open={profileEditOpen} onClose={() => setProfileEditOpen(false)} />
+      <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </>
   )
 }

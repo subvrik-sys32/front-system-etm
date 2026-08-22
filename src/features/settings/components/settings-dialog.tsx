@@ -3,6 +3,7 @@
 import { useState } from "react"
 import {
   FileStack,
+  ListOrdered,
   Palette,
   Settings2,
   UserRound,
@@ -18,10 +19,11 @@ import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-he
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { ThemeToggle } from "@/shared/theme"
 import { FilesPreferencesSection } from "@/features/user-preferences"
+import { ListPreferencesSection } from "@/features/settings/components/list-preferences-section"
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { cn } from "@/shared/utils/utils"
 
-type SectionId = "account" | "appearance" | "files"
+type SectionId = "account" | "appearance" | "lists" | "files"
 
 const SECTIONS: {
   id: SectionId
@@ -31,6 +33,7 @@ const SECTIONS: {
 }[] = [
   { id: "account", label: "Cuenta", icon: UserRound, group: "General" },
   { id: "appearance", label: "Apariencia", icon: Palette, group: "General" },
+  { id: "lists", label: "Listas", icon: ListOrdered, group: "General" },
   { id: "files", label: "Archivos", icon: FileStack, group: "General" },
 ]
 
@@ -216,6 +219,10 @@ function SectionBody({
         <ThemeToggle />
       </div>
     )
+  }
+
+  if (section === "lists") {
+    return <ListPreferencesSection />
   }
 
   return <FilesPreferencesSection />

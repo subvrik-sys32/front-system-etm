@@ -10,49 +10,35 @@ import {
 } from "../store/user-preferences-store"
 import { clearDirectoryHandle } from "../utils/directory-handle-idb"
 import { pickAndRememberDownloadFolder } from "../utils/save-blob"
-import { applyFileNameTemplate } from "../utils/apply-file-name-template"
 
 const MODES: { id: DownloadMode; label: string; hint: string }[] = [
   {
     id: "ask",
     label: "Preguntar",
-    hint: "Guardar como… cada vez",
+    hint: "Elegir carpeta cada vez",
   },
   {
     id: "quick",
     label: "Rápida",
-    hint: "Carpeta del navegador",
+    hint: "Descargas del navegador",
   },
 ]
 
-/** Mismo contrato tipográfico que el composer CAD AI (text-sm + chrome). */
-const INPUT_CHROME =
-  "flex h-10 w-full items-center rounded-xl bg-foreground/5 px-3 transition focus-within:bg-foreground/8"
-const INPUT_FIELD =
-  "w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/70"
-
-/** Preferencias de descarga — panel Ajustes (último commit). */
+/** Preferencias de descarga: solo ubicación (sin plantilla de nombre). */
 export function FilesPreferencesSection() {
   const downloadMode = useUserPreferencesStore(s => s.downloadMode)
-  const fileNameTemplate = useUserPreferencesStore(s => s.fileNameTemplate)
   const rememberFolder = useUserPreferencesStore(s => s.rememberFolder)
   const setDownloadMode = useUserPreferencesStore(s => s.setDownloadMode)
-  const setFileNameTemplate = useUserPreferencesStore(s => s.setFileNameTemplate)
   const setRememberFolder = useUserPreferencesStore(s => s.setRememberFolder)
 
   const supportsFs =
     typeof window !== "undefined" && "showDirectoryPicker" in window
 
-  const exampleOut = applyFileNameTemplate(
-    fileNameTemplate || "{name}",
-    "97. OMEGA_DIFERENCIAL.dxf",
-  )
-
   return (
     <div className="flex w-full max-w-lg flex-col gap-5">
       <div className="flex flex-col gap-2">
         <label className="text-xs font-medium text-muted-foreground">
-          Al descargar
+          Al descargar planos y archivos
         </label>
         <div className="grid grid-cols-2 gap-1 rounded-xl bg-muted/60 p-1">
           {MODES.map(m => {
@@ -79,43 +65,6 @@ export function FilesPreferencesSection() {
             )
           })}
         </div>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <label
-          htmlFor="file-name-tpl"
-          className="text-xs font-medium text-muted-foreground"
-        >
-          Cómo se llama el archivo al guardar
-        </label>
-        <div className={INPUT_CHROME}>
-          <input
-            id="file-name-tpl"
-            value={fileNameTemplate}
-            onChange={e => setFileNameTemplate(e.target.value)}
-            placeholder="{name}"
-            className={INPUT_FIELD}
-            spellCheck={false}
-            autoComplete="off"
-          />
-        </div>
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          Es el <span className="text-foreground/80">patrón del nombre</span>, no
-          la carpeta.
-          <br />
-          <code className="rounded bg-foreground/8 px-1 text-[11px]">
-            {"{name}"}
-          </code>{" "}
-          = nombre original sin extensión ·{" "}
-          <code className="rounded bg-foreground/8 px-1 text-[11px]">
-            {"{ext}"}
-          </code>{" "}
-          = extensión (dxf, pdf…).
-          <br />
-          Ejemplo: plano{" "}
-          <span className="text-foreground/80">97. OMEGA_DIFERENCIAL.dxf</span> →{" "}
-          <span className="font-medium text-foreground">{exampleOut}</span>
-        </p>
       </div>
 
       {supportsFs && (

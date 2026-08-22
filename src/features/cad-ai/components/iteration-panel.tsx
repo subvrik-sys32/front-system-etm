@@ -100,7 +100,7 @@ export function IterationPanel({
                   )
                 }
               />
-              <ChatBubble own={isUser} centered={!msg.geometry}>
+              <ChatBubble own={isUser}>
                 <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                 {msg.geometry && (
                   <p

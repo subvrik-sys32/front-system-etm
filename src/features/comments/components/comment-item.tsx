@@ -169,7 +169,6 @@ export function CommentItem({
               isOwner
                 ? "bg-foreground text-background"
                 : "bg-muted/80 text-foreground dark:bg-foreground/[0.06]",
-              !comment.parent && !comment.imageUrl && "text-center",
             )}
           >
             {comment.parent && (

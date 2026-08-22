@@ -1,0 +1,168 @@
+diff --git a/src/features/processes/table/process-mobile-card.tsx b/src/features/processes/table/process-mobile-card.tsx
+index 0000000..1111111 100644
+--- a/src/features/processes/table/process-mobile-card.tsx
++++ b/src/features/processes/table/process-mobile-card.tsx
+@@ -133,11 +133,22 @@
+   const priority = processAccess.priority(processTask)
+   const operator = processAccess.operator(processTask)
+ 
+-  // Igual que tasks/projects: al expandir el row NO se abre el bloque de
+-  // operario/campos; queda colapsado hasta que el usuario lo abra.
++  // Al colapsar el row, resetear showFields al terminar la animación (no en el mismo frame).
+   useEffect(() => {
+-    if (!expanded) setShowFields(false)
++    if (expanded) return
++    const t = window.setTimeout(() => setShowFields(false), 200)
++    return () => window.clearTimeout(t)
+   }, [expanded])
++
++  /** Cierra campos primero (200ms) y recién después colapsa el row — evita salto de altura. */
++  function handleRowToggle() {
++    if (expanded && showFields) {
++      setShowFields(false)
++      window.setTimeout(() => onToggle(), 200)
++      return
++    }
++    onToggle()
++  }
+   const statusLabel = workflowAccess.statusLabel(processTask)
+   const priorityInk = useDomainInk(priority.color)
+   const statusInk = useDomainInk(statusLabel.color)
+@@ -154,10 +165,11 @@
+         <div
+           role="button"
+           tabIndex={0}
+-          onClick={onToggle}
++          onClick={handleRowToggle}
+           onKeyDown={e => {
+             if (e.key === "Enter" || e.key === " ") {
+-              onToggle()
++              e.preventDefault()
++              handleRowToggle()
+             }
+           }}
+           className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 pl-2 text-left"
+@@ -326,7 +338,7 @@
+ 
+         <button
+           type="button"
+-          onClick={onToggle}
++          onClick={handleRowToggle}
+           className="shrink-0 p-2"
+         >
+           <ChevronDown
+diff --git a/src/features/tasks/table/task-mobile-card.tsx b/src/features/tasks/table/task-mobile-card.tsx
+index 0000000..1111111 100644
+--- a/src/features/tasks/table/task-mobile-card.tsx
++++ b/src/features/tasks/table/task-mobile-card.tsx
+@@ -128,15 +128,28 @@
+   const isTarget = searchParams.get("taskId") === task.id
+   const projectChipBadge = useBadgeColors(task.project?.client?.color ?? "#64748B", "subtle")
+ 
++  // Al colapsar: no resetear campos/pipeline en el mismo frame (evita salto).
+   useEffect(() => {
+-    if (!expanded) {
++    if (expanded) {
++      setShowPipeline(true)
++      return
++    }
++    const t = window.setTimeout(() => {
+       setShowFields(false)
+       setShowPipeline(false)
++    }, 200)
++    return () => window.clearTimeout(t)
++  }, [expanded])
++
++  /** Si hay campos abiertos, ciérralos antes de colapsar el row. */
++  function handleRowToggle() {
++    if (expanded && showFields) {
++      setShowFields(false)
++      window.setTimeout(() => onToggle(), 200)
+       return
+     }
+-    // Móvil y desktop: al expandir el row se abre el detalle de una
+-    setShowPipeline(true)
+-  }, [expanded])
++    onToggle()
++  }
+ 
+   useEffect(() => {
+     if (expanded && isTarget) {
+@@ -162,11 +175,11 @@
+         <div
+           role="button"
+           tabIndex={0}
+-          onClick={onToggle}
++          onClick={handleRowToggle}
+           onKeyDown={(e) => {
+             if (e.key === "Enter" || e.key === " ") {
+               e.preventDefault()
+-              onToggle()
++              handleRowToggle()
+             }
+           }}
+           className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 text-left"
+@@ -355,7 +368,7 @@
+ 
+         <button
+           type="button"
+-          onClick={onToggle}
++          onClick={handleRowToggle}
+           className="shrink-0 p-2"
+           aria-label={expanded ? "Colapsar" : "Expandir"}
+         >
+diff --git a/src/features/projects/table/project-mobile-card.tsx b/src/features/projects/table/project-mobile-card.tsx
+index 0000000..1111111 100644
+--- a/src/features/projects/table/project-mobile-card.tsx
++++ b/src/features/projects/table/project-mobile-card.tsx
+@@ -130,15 +130,28 @@
+   const searchParams = useSearchParams()
+   const isTarget = searchParams.get("projectId") === project.id
+ 
++  // Al colapsar: no resetear campos/pipeline en el mismo frame (evita salto).
+   useEffect(() => {
+-    if (!expanded) {
++    if (expanded) {
++      setShowPipeline(true)
++      return
++    }
++    const t = window.setTimeout(() => {
+       setShowFields(false)
+       setShowPipeline(false)
++    }, 200)
++    return () => window.clearTimeout(t)
++  }, [expanded])
++
++  /** Si hay campos abiertos, ciérralos antes de colapsar el row. */
++  function handleRowToggle() {
++    if (expanded && showFields) {
++      setShowFields(false)
++      window.setTimeout(() => onToggle(), 200)
+       return
+     }
+-    // Móvil y desktop: al expandir el row se abre el detalle de una
+-    setShowPipeline(true)
+-  }, [expanded])
++    onToggle()
++  }
+ 
+   useEffect(() => {
+     if (expanded && isTarget) {
+@@ -162,7 +175,7 @@
+ 
+         <button
+           type="button"
+-          onClick={onToggle}
++          onClick={handleRowToggle}
+           className="flex min-w-0 flex-1 items-center gap-2.5 py-3 pr-1 text-left"
+         >
+           <ProjectCodeChip
+@@ -315,7 +328,7 @@
+ 
+         <button
+           type="button"
+-          onClick={onToggle}
++          onClick={handleRowToggle}
+           className="shrink-0 p-2"
+           aria-label={expanded ? "Colapsar" : "Expandir"}
+         >

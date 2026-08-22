@@ -133,11 +133,22 @@ function ProcessMobileCardReady({
   const priority = processAccess.priority(processTask)
   const operator = processAccess.operator(processTask)
 
-  // Igual que tasks/projects: al expandir el row NO se abre el bloque de
-  // operario/campos; queda colapsado hasta que el usuario lo abra.
+  // Al colapsar el row, resetear showFields al terminar la animación (no en el mismo frame).
   useEffect(() => {
-    if (!expanded) setShowFields(false)
+    if (expanded) return
+    const t = window.setTimeout(() => setShowFields(false), 200)
+    return () => window.clearTimeout(t)
   }, [expanded])
+
+  /** Cierra campos primero (200ms) y recién después colapsa el row — evita salto de altura. */
+  function handleRowToggle() {
+    if (expanded && showFields) {
+      setShowFields(false)
+      window.setTimeout(() => onToggle(), 200)
+      return
+    }
+    onToggle()
+  }
   const statusLabel = workflowAccess.statusLabel(processTask)
   const priorityInk = useDomainInk(priority.color)
   const statusInk = useDomainInk(statusLabel.color)
@@ -154,10 +165,11 @@ function ProcessMobileCardReady({
         <div
           role="button"
           tabIndex={0}
-          onClick={onToggle}
+          onClick={handleRowToggle}
           onKeyDown={e => {
             if (e.key === "Enter" || e.key === " ") {
-              onToggle()
+              e.preventDefault()
+              handleRowToggle()
             }
           }}
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 pl-2 text-left"
@@ -326,7 +338,7 @@ function ProcessMobileCardReady({
 
         <button
           type="button"
-          onClick={onToggle}
+          onClick={handleRowToggle}
           className="shrink-0 p-2"
         >
           <ChevronDown

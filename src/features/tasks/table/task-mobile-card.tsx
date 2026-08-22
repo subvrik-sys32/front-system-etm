@@ -128,15 +128,28 @@ function TaskMobileCardReady({
   const isTarget = searchParams.get("taskId") === task.id
   const projectChipBadge = useBadgeColors(task.project?.client?.color ?? "#64748B", "subtle")
 
+  // Al colapsar: no resetear campos/pipeline en el mismo frame (evita salto).
   useEffect(() => {
-    if (!expanded) {
-      setShowFields(false)
-      setShowPipeline(false)
+    if (expanded) {
+      setShowPipeline(true)
       return
     }
-    // Móvil y desktop: al expandir el row se abre el detalle de una
-    setShowPipeline(true)
+    const t = window.setTimeout(() => {
+      setShowFields(false)
+      setShowPipeline(false)
+    }, 200)
+    return () => window.clearTimeout(t)
   }, [expanded])
+
+  /** Si hay campos abiertos, ciérralos antes de colapsar el row. */
+  function handleRowToggle() {
+    if (expanded && showFields) {
+      setShowFields(false)
+      window.setTimeout(() => onToggle(), 200)
+      return
+    }
+    onToggle()
+  }
 
   useEffect(() => {
     if (expanded && isTarget) {
@@ -162,11 +175,11 @@ function TaskMobileCardReady({
         <div
           role="button"
           tabIndex={0}
-          onClick={onToggle}
+          onClick={handleRowToggle}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault()
-              onToggle()
+              handleRowToggle()
             }
           }}
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 text-left"
@@ -355,7 +368,7 @@ function TaskMobileCardReady({
 
         <button
           type="button"
-          onClick={onToggle}
+          onClick={handleRowToggle}
           className="shrink-0 p-2"
           aria-label={expanded ? "Colapsar" : "Expandir"}
         >

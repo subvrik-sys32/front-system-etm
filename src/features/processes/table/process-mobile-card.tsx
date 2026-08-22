@@ -300,16 +300,9 @@ function ProcessMobileCardReady({
             </span>
           )}
 
-          {/* Ojo ANTES de la fecha — no toca la columna Iniciar */}
-          <span
-            className="hidden shrink-0 items-center gap-1.5 @[40rem]/prow:inline-flex"
-            onClick={e => e.stopPropagation()}
-            onPointerDown={e => e.stopPropagation()}
-          >
-            <DetailAssetsEye taskId={task.id} readOnly />
-            <span className="text-xs tabular-nums text-muted-foreground">
-              {formatDate(task.deliveryDate)}
-            </span>
+          {/* Fecha — badge mensajes queda a la izquierda (shrink-0) */}
+          <span className="hidden shrink-0 text-xs tabular-nums text-muted-foreground @[40rem]/prow:inline">
+            {formatDate(task.deliveryDate)}
           </span>
         </div>
 
@@ -327,7 +320,7 @@ function ProcessMobileCardReady({
           </div>
         )}
 
-        {/* Info + materiales: solo colapsado y con ancho; al expandir van junto a la zona de acciones */}
+        {/* Info + materiales + ojo detalle: después de Iniciar */}
         {!expanded && (
           <div
             className="hidden shrink-0 items-center gap-1 pr-0.5 @[40rem]/prow:flex"
@@ -341,6 +334,7 @@ function ProcessMobileCardReady({
               updatedBy={task.updatedBy}
             />
             <TaskMaterialInfo task={task} alwaysShow />
+            <DetailAssetsEye taskId={task.id} readOnly />
           </div>
         )}
 

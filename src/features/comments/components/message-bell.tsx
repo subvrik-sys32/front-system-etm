@@ -335,7 +335,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
         side="right"
         align="start"
         sideOffset={8}
-        className="z-40 flex h-[min(32rem,75dvh)] w-full min-w-90 max-w-lg flex-col overflow-hidden border-none p-0 text-foreground shadow-xs select-none"
+        className="z-40 flex h-[min(32rem,75dvh)] w-90 max-w-[min(22.5rem,calc(100vw-1.5rem))] flex-col overflow-hidden border-none p-0 text-foreground shadow-xs select-none"
       >
         <div className="flex shrink-0 items-center px-3.5 pt-3">
           <span className="text-sm font-semibold text-foreground">Mensajes</span>

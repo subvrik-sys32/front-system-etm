@@ -182,7 +182,11 @@ function TaskMobileCardReady({
               handleRowToggle()
             }
           }}
-          className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 text-left"
+          className={cn(
+            "flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 text-left",
+            // Sin drag: misma holgura izquierda que process (pl-2)
+            !isManualMode && "pl-2",
+          )}
         >
           {/* Chip código: desktop click → proyecto; móvil long-press → proyecto */}
           <span

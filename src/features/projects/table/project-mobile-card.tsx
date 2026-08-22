@@ -176,7 +176,11 @@ function ProjectMobileCardReady({
         <button
           type="button"
           onClick={handleRowToggle}
-          className="flex min-w-0 flex-1 items-center gap-2.5 py-3 pr-1 text-left"
+          className={cn(
+            "flex min-w-0 flex-1 items-center gap-2.5 py-3 pr-1 text-left",
+            // Sin drag: misma holgura izquierda que process (pl-2)
+            !isManualMode && "pl-2",
+          )}
         >
           <ProjectCodeChip
             code={project.projectCode}

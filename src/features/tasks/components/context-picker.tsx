@@ -343,7 +343,8 @@ export function ContextPicker({
         <button
           type="button"
           className={cn(
-            "flex w-full items-center justify-between gap-2 rounded-xl bg-foreground/5 px-3 py-2.5 text-left text-sm outline-none transition-colors hover:bg-foreground/5",
+            // h-10 fijo: el chip seleccionado no debe agrandar la fila
+            "flex h-10 w-full items-center justify-between gap-2 rounded-xl bg-foreground/5 px-3 text-left text-sm leading-none outline-none transition-colors hover:bg-foreground/5",
             hasSelection
               ? "text-foreground"
               : "text-muted-foreground",
@@ -356,9 +357,9 @@ export function ContextPicker({
                 <ProjectCodeChip
                   code={selectedProject.projectCode}
                   color={selectedProject.client?.color}
-                  className="tabular-nums"
+                  className="tabular-nums py-0.5 leading-none"
                 />
-                <span className="min-w-0 truncate">
+                <span className="min-w-0 truncate text-sm font-normal leading-none">
                   {[
                     selectedProject.client?.name?.trim(),
                     selectedProject.name,

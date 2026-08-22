@@ -49,7 +49,8 @@ export function FilterBar({
 
   const { isMobile } = useResponsive()
 
-  const listoButton = (
+  /** Bottomsheet: CTA full width. */
+  const listoButtonSheet = (
     <button
       type="button"
       disabled={draft.length === 0}
@@ -57,6 +58,28 @@ export function FilterBar({
       className="flex h-11 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground transition enabled:active:scale-[0.99] disabled:opacity-40"
     >
       Listo{draft.length > 0 ? ` (${draft.length})` : ""}
+    </button>
+  )
+
+  /** Popover desktop: fila compacta (mismo peso visual que "Dirección" del sort). */
+  const listoButtonPopover = (
+    <button
+      type="button"
+      disabled={draft.length === 0}
+      onClick={handleValueConfirm}
+      className={
+        "mt-1 flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs transition " +
+        (draft.length === 0
+          ? "pointer-events-none opacity-40 text-muted-foreground"
+          : "text-muted-foreground hover:bg-foreground/5")
+      }
+    >
+      <span>Listo</span>
+      {draft.length > 0 ? (
+        <span className="font-semibold tabular-nums text-primary">
+          {draft.length}
+        </span>
+      ) : null}
     </button>
   )
 
@@ -79,7 +102,7 @@ export function FilterBar({
             floatingClassName="w-64"
             className="p-2"
             // Listo GLOBAL: visible en menú de campos Y dentro de cada lista
-            sheetFooter={isMobile ? listoButton : undefined}
+            sheetFooter={isMobile ? listoButtonSheet : undefined}
           >
             {!selectedField ? (
               <FilterFieldView module={module} onSelect={handleFieldSelect} />
@@ -92,14 +115,12 @@ export function FilterBar({
                   onBack={handleBack}
                   onToggle={handleDraftToggle}
                 />
-                {!isMobile && <div className="mt-3">{listoButton}</div>}
+                {!isMobile && listoButtonPopover}
               </>
             )}
 
             {/* Desktop: Listo también en el menú de campos si hay borrador */}
-            {!isMobile && !selectedField && draft.length > 0 && (
-              <div className="mt-3">{listoButton}</div>
-            )}
+            {!isMobile && !selectedField && draft.length > 0 && listoButtonPopover}
           </PopoverContent>
         </Popover>
       )}

@@ -169,7 +169,13 @@ function TaskMobileCardReady({
 
   return (
     <div className={cn("@container/trow rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
-      <div className="flex items-center gap-1 px-1">
+      <div
+        className={cn(
+          "flex items-center px-1",
+          // Con drag: gap handle↔chip. Sin drag: sin gap (como process).
+          isManualMode && "gap-1",
+        )}
+      >
         <DragCell hidden={!isManualMode} />
 
         <div

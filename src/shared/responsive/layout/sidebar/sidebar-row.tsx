@@ -50,10 +50,12 @@ export function SidebarRow({
     <div
       className={cn(
         "group relative flex w-full items-center rounded-xl font-medium select-none pl-1.5 pr-2",
+        "transition-colors duration-150",
         size === "sm" ? "h-8 text-xs" : "h-9 text-xs",
         active
           ? "bg-primary/10 text-primary font-semibold shadow-xs dark:bg-primary/15 dark:text-white"
-          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+          // hover sólido suave (no muted/60): evita parpadeo de pintura en dark
+          : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
         className,
       )}
       title={isRail ? label : undefined}
@@ -63,9 +65,8 @@ export function SidebarRow({
         <Icon
           className={cn(
             "size-4 shrink-0",
-            active
-              ? "text-primary dark:text-white"
-              : "text-muted-foreground group-hover:text-foreground",
+            // Hereda color del row (sin group-hover aparte → sin doble transición)
+            active && "text-primary dark:text-white",
           )}
           strokeWidth={active ? 2.25 : 2}
         />

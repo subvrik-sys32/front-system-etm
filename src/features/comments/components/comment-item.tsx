@@ -16,6 +16,7 @@ import { cn } from "@/shared/utils/utils"
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { formatCommentDate } from "../utils/format-comment-date"
 import { commentsService } from "../services/comments.service"
 import { CommentImageDialog } from "./comment-image-dialog"
@@ -29,7 +30,6 @@ type Props = {
   isReply?: boolean
 }
 
-/** Solo icono, al lado de la fecha. */
 function MetaIcon({
   icon: Icon,
   label,
@@ -64,8 +64,9 @@ function MetaIcon({
 }
 
 /**
- * Misma receta que sidebar-profile + isolate/transform para AA limpio
- * (evita sierra en pantallas retina / compositing).
+ * Avatar circular sin “sierra”:
+ * clip-path:circle evita el alias de border-radius+overflow en GPU;
+ * img ligeramente ampliado (-inset) cubre el borde del bitmap.
  */
 function CommentAvatar({
   name,
@@ -79,25 +80,25 @@ function CommentAvatar({
   return (
     <div
       className={cn(
-        "relative size-9 shrink-0 isolate overflow-hidden rounded-full",
+        "relative size-9 shrink-0",
+        "[clip-path:circle(50%_at_50%_50%)]",
         isOwner ? "bg-foreground text-background" : "bg-muted text-foreground",
       )}
     >
-      {/* Capa interna: gradient + shadow-inner (sidebar-profile) */}
-      <div className="flex size-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-foreground/5 shadow-inner">
-        {avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={avatarUrl}
-            alt={name}
-            // scale mínimo + rounded-full: el browser antialias el borde del bitmap
-            className="size-full rounded-full object-cover [transform:translateZ(0)]"
-            draggable={false}
-          />
-        ) : (
+      <div className="absolute inset-0 bg-linear-to-br from-white/10 to-foreground/5" />
+      {avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={avatarUrl}
+          alt={name}
+          className="absolute -inset-px size-[calc(100%+2px)] max-w-none object-cover"
+          draggable={false}
+        />
+      ) : (
+        <span className="absolute inset-0 flex items-center justify-center">
           <User className="size-4" strokeWidth={2.2} />
-        )}
-      </div>
+        </span>
+      )}
     </div>
   )
 }
@@ -111,6 +112,7 @@ export function CommentItem({
 }: Props) {
   const currentUser = useAuthStore(s => s.user)
   const { has } = usePermissions()
+  const { isMobile } = useResponsive()
   const { user } = comment
   const isPending = Boolean(comment.pending)
   const isDeleting = Boolean(comment.deleting)
@@ -119,6 +121,7 @@ export function CommentItem({
   const canEdit = isOwner && !isPending && !isDeleting
   const canDelete = (isOwner || canDeleteAny) && !isPending && !isDeleting
   const canReply = has(PermissionCode.COMMENT_CREATE) && !isPending && !isDeleting
+  const showOwnerActions = canEdit || canDelete
 
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
 
@@ -149,13 +152,8 @@ export function CommentItem({
           isOwner ? "items-end" : "items-start",
         )}
       >
-        {/* Meta: fecha + checks + iconos de acción */}
-        <div
-          className={cn(
-            "flex items-center gap-1 px-0.5",
-            isOwner && "flex-row-reverse",
-          )}
-        >
+        {/* Meta: solo identidad + tiempo + estado */}
+        <div className="flex items-center gap-1 px-0.5">
           {!isOwner && (
             <span className="truncate text-[11px] font-medium tracking-tight text-muted-foreground">
               {user.name}
@@ -196,22 +194,68 @@ export function CommentItem({
               )}
             </span>
           )}
+        </div>
 
-          {/* Solo iconos junto a la fecha */}
-          {(canReply || canEdit || canDelete) && (
-            <span
+        {/* Burbuja + edit/delete en hover (desktop); siempre en móvil */}
+        <div className="group/bubble relative">
+          <div
+            className={cn(
+              "w-fit max-w-full min-h-9 rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed shadow-xs",
+              isOwner
+                ? "bg-foreground text-background"
+                : "bg-muted/80 text-foreground dark:bg-foreground/[0.06]",
+              !comment.parent && !comment.imageUrl && "text-center",
+            )}
+          >
+            {comment.parent && (
+              <div
+                className={cn(
+                  "mb-1.5 flex items-start gap-1.5 rounded-lg px-2 py-1 text-left text-[11px]",
+                  isOwner
+                    ? "bg-background/10 text-background/70"
+                    : "bg-foreground/5 text-muted-foreground",
+                )}
+              >
+                <Reply size={11} className="mt-0.5 shrink-0 -scale-x-100" />
+                <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">
+                  {comment.parent.deletedAt
+                    ? "Comentario eliminado"
+                    : `${comment.parent.user.name}: ${comment.parent.message || "Foto"}`}
+                </span>
+              </div>
+            )}
+
+            {comment.message ? (
+              <p className="whitespace-pre-wrap break-words">{comment.message}</p>
+            ) : null}
+
+            {comment.imageUrl ? (
+              <button
+                type="button"
+                onClick={() => setImageDialogOpen(true)}
+                disabled={isDeleting}
+                className="mt-2 block max-w-[min(100%,16rem)] overflow-hidden rounded-xl text-left disabled:opacity-60"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={comment.imageUrl}
+                  alt="Foto adjunta"
+                  className="aspect-[4/5] max-h-64 w-full object-cover"
+                />
+              </button>
+            ) : null}
+          </div>
+
+          {showOwnerActions && (
+            <div
               className={cn(
-                "inline-flex items-center gap-0.5",
-                isOwner && "flex-row-reverse",
+                "absolute top-1/2 z-10 flex -translate-y-1/2 items-center gap-0.5 rounded-lg bg-card/95 px-0.5 py-0.5 shadow-xs backdrop-blur-sm",
+                isOwner ? "right-full mr-1.5" : "left-full ml-1.5",
+                isMobile
+                  ? "opacity-100"
+                  : "opacity-0 transition-opacity group-hover/bubble:opacity-100",
               )}
             >
-              {canReply && (
-                <MetaIcon
-                  icon={Reply}
-                  label="Responder"
-                  onClick={() => onReply?.(comment)}
-                />
-              )}
               {canEdit && (
                 <MetaIcon
                   icon={Pencil}
@@ -227,57 +271,21 @@ export function CommentItem({
                   onClick={() => onDelete?.(comment)}
                 />
               )}
-            </span>
-          )}
-        </div>
-
-        <div
-          className={cn(
-            "w-fit max-w-full min-h-9 rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed shadow-xs",
-            isOwner
-              ? "bg-foreground text-background"
-              : "bg-muted/80 text-foreground dark:bg-foreground/[0.06]",
-            !comment.parent && !comment.imageUrl && "text-center",
-          )}
-        >
-          {comment.parent && (
-            <div
-              className={cn(
-                "mb-1.5 flex items-start gap-1.5 rounded-lg px-2 py-1 text-left text-[11px]",
-                isOwner
-                  ? "bg-background/10 text-background/70"
-                  : "bg-foreground/5 text-muted-foreground",
-              )}
-            >
-              <Reply size={11} className="mt-0.5 shrink-0 -scale-x-100" />
-              <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">
-                {comment.parent.deletedAt
-                  ? "Comentario eliminado"
-                  : `${comment.parent.user.name}: ${comment.parent.message || "Foto"}`}
-              </span>
             </div>
           )}
-
-          {comment.message ? (
-            <p className="whitespace-pre-wrap break-words">{comment.message}</p>
-          ) : null}
-
-          {comment.imageUrl ? (
-            <button
-              type="button"
-              onClick={() => setImageDialogOpen(true)}
-              disabled={isDeleting}
-              className="mt-2 block max-w-[min(100%,16rem)] overflow-hidden rounded-xl text-left disabled:opacity-60"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={comment.imageUrl}
-                alt="Foto adjunta"
-                className="aspect-[4/5] max-h-64 w-full object-cover"
-              />
-            </button>
-          ) : null}
         </div>
+
+        {/* Responder debajo de la burbuja */}
+        {canReply && (
+          <button
+            type="button"
+            onClick={() => onReply?.(comment)}
+            className="inline-flex items-center gap-1 px-0.5 text-[11px] font-medium text-muted-foreground/70 transition-colors hover:text-foreground"
+          >
+            <Reply size={12} strokeWidth={2.2} />
+            Responder
+          </button>
+        )}
       </div>
 
       <CommentImageDialog

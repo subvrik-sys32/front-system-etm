@@ -12,7 +12,7 @@ export const TOOLBAR_CHROME_ICON_BTN_ACTIVE =
 
 /** TopBar móvil (y triggers topbar): 40×40, mismo contraste */
 export const TOPBAR_ICON_BTN =
-  "relative flex size-10 shrink-0 items-center justify-center overflow-visible rounded-full bg-muted text-foreground shadow-xs backdrop-blur-xl transition-colors duration-150 hover:bg-muted/80 hover:text-foreground active:bg-foreground/10"
+  "relative flex size-10 shrink-0 items-center justify-center overflow-visible rounded-full bg-muted text-foreground shadow-xs backdrop-blur-xl transition-colors duration-150 hover:bg-muted/80 hover:text-foreground"
 
 export const TOPBAR_ICON_BTN_ACTIVE =
   "bg-foreground/15 text-foreground"

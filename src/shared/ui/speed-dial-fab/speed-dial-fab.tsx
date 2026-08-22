@@ -125,33 +125,36 @@ export function SpeedDialFab({ actions, className }: Props) {
       }}
       aria-hidden={hidden}
     >
-      {dialOpen ? (
-        <div className="pointer-events-auto relative flex flex-col items-center gap-2">
-          {actions.map((action, i) => (
-            <div key={i} className="flex items-center justify-center">
-              {action}
-            </div>
-          ))}
-        </div>
-      ) : null}
-
-      <button
-        type="button"
-        aria-label={dialOpen ? "Cerrar acciones" : "Más acciones"}
-        aria-expanded={dialOpen}
-        onClick={() => setDialOpen(v => !v)}
-        className={cn(
-          "pointer-events-auto flex size-12 items-center justify-center rounded-full shadow-xs",
-          "bg-muted text-foreground hover:bg-muted/80 active:scale-95 active:bg-foreground/10",
-          "transition-transform duration-150 hover:scale-105",
-        )}
-      >
+      {/* relative: acciones absolute arriba → el FAB principal no se desplaza */}
+      <div className="pointer-events-auto relative flex size-12 items-center justify-center">
         {dialOpen ? (
-          <X size={20} strokeWidth={2.5} />
-        ) : (
-          <SlidersHorizontal size={18} strokeWidth={2.4} />
-        )}
-      </button>
+          <div className="absolute bottom-full mb-2 flex flex-col items-center gap-2">
+            {actions.map((action, i) => (
+              <div key={i} className="flex items-center justify-center">
+                {action}
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          aria-label={dialOpen ? "Cerrar acciones" : "Más acciones"}
+          aria-expanded={dialOpen}
+          onClick={() => setDialOpen(v => !v)}
+          className={cn(
+            "flex size-12 items-center justify-center rounded-full shadow-xs",
+            "bg-muted text-foreground",
+            dialOpen && "bg-foreground/15 ring-2 ring-primary ring-offset-2 ring-offset-background",
+          )}
+        >
+          {dialOpen ? (
+            <X size={20} strokeWidth={2.5} />
+          ) : (
+            <SlidersHorizontal size={18} strokeWidth={2.4} />
+          )}
+        </button>
+      </div>
     </div>,
     document.body,
   )

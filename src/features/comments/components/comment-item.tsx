@@ -8,6 +8,7 @@ import {
   Trash2,
 } from "lucide-react"
 import { useState } from "react"
+import { cn } from "@/shared/utils/utils"
 import { useQuery } from "@tanstack/react-query"
 import { IconAction } from "@/shared/ui/actions/icon-action"
 import { useAuthStore } from "@/features/auth/store/auth-store"
@@ -69,11 +70,15 @@ export function CommentItem({
 
   return(
     <div
-      className={`group animate-comment-in flex gap-2.5 rounded-lg bg-foreground/5 px-3 py-2.5 transition-colors hover:bg-foreground/5 ${
-        isPending||isDeleting?"opacity-60":""
-      } ${
-        isReply?"ml-8 border-l-2 border-border pl-3":""
-      }`}
+      className={cn(
+        "group animate-comment-in flex gap-2.5 rounded-2xl px-3.5 py-2.5 shadow-xs",
+        // Burbuja chat (paridad CAD AI): propios a la derecha
+        isOwner
+          ? "ml-auto max-w-[85%] flex-row-reverse bg-foreground text-background"
+          : "mr-auto max-w-[85%] bg-foreground/[0.05] text-foreground",
+        (isPending || isDeleting) && "opacity-60",
+        isReply && !isOwner && "ml-8 border-l-2 border-border pl-3",
+      )}
     >
         <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-white/5 ring-1 ring-border text-xs font-semibold text-foreground shadow-inner">
         {user.avatarUrl ? (
@@ -90,7 +95,7 @@ export function CommentItem({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="truncate text-sm font-semibold text-foreground">
+              <span className={cn("truncate text-sm font-semibold", isOwner ? "text-background" : "text-foreground")}>
                 {user.name}
               </span>
               {isPending ? (
@@ -207,7 +212,7 @@ export function CommentItem({
 
         {comment.message && (
 
-          <p className="mt-1 whitespace-pre-wrap wrap-break-word text-sm leading-6 text-muted-foreground">
+          <p className={cn("mt-1 whitespace-pre-wrap wrap-break-word text-sm leading-6", isOwner ? "text-background/90" : "text-muted-foreground")}>
             {comment.message}
           </p>
 

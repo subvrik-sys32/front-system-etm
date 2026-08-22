@@ -98,30 +98,63 @@ export function CommentHistoryDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           size="large"
-          className="flex h-[min(40rem,85dvh)] max-h-[85dvh] w-full max-w-180 flex-col overflow-hidden rounded-2xl p-0 text-foreground shadow-xs"
+          className="flex h-[min(40rem,85dvh)] max-h-[85dvh] w-full max-w-180 flex-col gap-0 overflow-hidden rounded-2xl p-0 text-foreground shadow-xs"
           onPointerDownOutside={preventNestedDialogClose}
           onInteractOutside={preventNestedDialogClose}
         >
-          <DialogHeader className="shrink-0 px-5 py-4">
-            <div className="flex items-start gap-4">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
+          {/* Header — mismo peso que CAD AI / FormDialog */}
+          <DialogHeader className="shrink-0 border-b border-foreground/5 px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-foreground/5">
                 <MessageSquare size={18} strokeWidth={2.4} />
               </div>
-          
               <div className="min-w-0 flex-1">
-                <DialogTitle className="text-lg font-bold text-foreground">
+                <DialogTitle className="text-base font-semibold text-foreground">
                   Mensajes
                 </DialogTitle>
                 <DialogDescription className="sr-only">
-                  Lista completa de mensajes
+                  Conversación e historial de mensajes
                 </DialogDescription>
               </div>
             </div>
+            <div className="mt-2 flex items-center gap-2 rounded-xl bg-foreground/5 px-3 py-2">
+              <Search size={15} className="shrink-0 text-muted-foreground" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar en mensajes..."
+                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/80"
+              />
+            </div>
           </DialogHeader>
 
-          <div className="shrink-0 px-5 py-3">
+          {/* Thread — área de burbujas (como iteration-panel CAD) */}
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="flex flex-col gap-3 px-4 py-4">
+              {loading ? (
+                <div className="flex min-h-48 flex-col items-center justify-center gap-2.5">
+                  <Spinner size={18} />
+                  <p className="text-sm text-muted-foreground">Cargando...</p>
+                </div>
+              ) : filteredComments.length === 0 ? (
+                <div className="flex min-h-48 flex-col items-center justify-center">
+                  <EmptyComments />
+                </div>
+              ) : (
+                <CommentList
+                  comments={filteredComments}
+                  onEdit={readOnly ? undefined : handleEdit}
+                  onDelete={readOnly ? undefined : setPendingDelete}
+                  onReply={readOnly ? undefined : setReplyingTo}
+                />
+              )}
+            </div>
+          </ScrollArea>
+
+          {/* Composer abajo — contrato chat */}
+          <div className="shrink-0 border-t border-foreground/5 bg-card px-3 py-3">
             {readOnly ? (
-              <p className="rounded-lg bg-foreground/5 px-3 py-2.5 text-center text-xs text-muted-foreground">
+              <p className="rounded-xl bg-foreground/5 px-3 py-2.5 text-center text-xs text-muted-foreground">
                 Esta tarea ya está finalizada — se puede ver el historial, pero no agregar mensajes nuevos.
               </p>
             ) : (
@@ -134,40 +167,6 @@ export function CommentHistoryDialog({
               />
             )}
           </div>
-
-          <div className="shrink-0 px-5 py-3">
-            <div className="flex items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2">
-              <Search size={15} className="shrink-0 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar en mensajes..."
-                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/80"
-              />
-            </div>
-          </div>
-
-          <ScrollArea className="min-h-0 flex-1">
-          <div className="px-5 py-4">
-            {loading ? (
-              <div className="flex min-h-65 flex-col items-center justify-center gap-2.5">
-                <Spinner size={18} />
-                <p className="text-sm text-muted-foreground">Cargando...</p>
-              </div>
-            ) : filteredComments.length === 0 ? (
-              <div className="flex min-h-65 flex-col items-center justify-center">
-                <EmptyComments />
-              </div>
-            ) : (
-              <CommentList
-                comments={filteredComments}
-                onEdit={readOnly ? undefined : handleEdit}
-                onDelete={readOnly ? undefined : setPendingDelete}
-                onReply={readOnly ? undefined : setReplyingTo}
-              />
-            )}
-          </div>
-          </ScrollArea>
         </DialogContent>
       </Dialog>
 

@@ -15,18 +15,17 @@ type Props = {
   label: string
   active?: boolean
   badge?: React.ReactNode
-  /** Acento del círculo FAB — clases de tema, no hex. */
+  /** Fondo del círculo FAB (clases de tema). Default: bg-muted sólido. */
   accentClassName?: string
 } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children">
 
-/** Selección: ring primary, sin cambiar el fill del botón. */
-const FAB_ACTIVE_RING =
-  "ring-2 ring-primary ring-offset-2 ring-offset-background"
-
 /**
- * - Desktop: chrome topbar.
- * - Mobile FAB: mismo chrome; activo = ring, no translúcido.
+ * Activo = ring primary + fill sólido (bg-foreground/15).
+ * Nunca opacity / bg translúcido al press.
  */
+const FAB_ACTIVE =
+  "ring-2 ring-primary ring-offset-2 ring-offset-background bg-foreground/15 text-foreground"
+
 export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
   (
     {
@@ -52,7 +51,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
           className={cn(
             TOOLBAR_CHROME_ICON_BTN,
             "relative z-20 overflow-visible",
-            active && FAB_ACTIVE_RING,
+            active && FAB_ACTIVE,
             className,
           )}
           {...props}
@@ -74,9 +73,11 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
         aria-label={label}
         title={label}
         className={cn(
-          "relative z-20 flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full shadow-xs transition active:scale-95",
-          accentClassName ?? "bg-muted text-foreground hover:bg-muted/80",
-          active && FAB_ACTIVE_RING,
+          "relative z-20 flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full shadow-xs",
+          "bg-muted text-foreground",
+          // sin hover:opacity / active:bg translucido / scale (no “corre”)
+          accentClassName,
+          active && FAB_ACTIVE,
           className,
         )}
         {...props}

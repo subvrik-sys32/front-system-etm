@@ -127,7 +127,7 @@ export function NotificationBell({
                 "absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs",
                 // Burbuja en rojo sólido cuando está activo o por defecto según tu diseño
                 open
-                  ? "bg-destructive text-destructive-foreground"
+                  ? "bg-destructive text-white"
                   : ALERT_COUNT_BADGE,
               )}
             >
@@ -150,8 +150,8 @@ export function NotificationBell({
           collapsed={collapsed}
           active={open}
           count={count > 0 ? (count > 9 ? "9+" : count) : undefined}
-          badgeColor={open ? "bg-destructive text-destructive-foreground" : ALERT_COUNT_BADGE}
-          collapsedBadgeColor={open ? "bg-destructive text-destructive-foreground" : ALERT_COUNT_BADGE}
+          badgeColor={open ? "bg-destructive text-white" : ALERT_COUNT_BADGE}
+          collapsedBadgeColor={open ? "bg-destructive text-white" : ALERT_COUNT_BADGE}
           badgeAnimated={count > 0}
         />
       </button>

@@ -65,6 +65,16 @@ type Props =
     }
 
 /** Loading = mismo shell que la fila real (estilo bitácora). */
+
+function taskDetailAssetCount(task: Task): number {
+  if (typeof task.detailAssetCount === "number") return task.detailAssetCount
+  const dxf = task.materialLines?.reduce(
+    (n, l) => n + (l.detailAssets?.length ?? 0),
+    0,
+  ) ?? 0
+  return dxf
+}
+
 export function TaskMobileCard(props: Props) {
   if (props.loading) {
     const opacity = props.opacity ?? 1
@@ -358,12 +368,7 @@ function TaskMobileCardReady({
               createdBy={task.createdBy}
               updatedBy={task.updatedBy}
             />
-            <DetailAssetsEye
-              taskId={task.id}
-              hasAssets={Boolean(
-                task.materialLines?.some(l => (l.detailAssets?.length ?? 0) > 0),
-              )}
-            />
+            <DetailAssetsEye taskId={task.id} count={taskDetailAssetCount(task)} />
           </div>
         )}
 
@@ -373,12 +378,7 @@ function TaskMobileCardReady({
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
-            <DetailAssetsEye
-              taskId={task.id}
-              hasAssets={Boolean(
-                task.materialLines?.some(l => (l.detailAssets?.length ?? 0) > 0),
-              )}
-            />
+            <DetailAssetsEye taskId={task.id} count={taskDetailAssetCount(task)} />
             <TaskRowActions task={task} className="gap-1" showAudit />
           </div>
         )}
@@ -448,7 +448,7 @@ function TaskMobileCardReady({
         {/* Desktop: acciones en el panel. Móvil: van en el row al expandir. */}
         {!isMobile && (
           <div className="flex items-center justify-start gap-1">
-            <DetailAssetsEye taskId={task.id} />
+            <DetailAssetsEye taskId={task.id} count={taskDetailAssetCount(task)} />
             <TaskRowActions task={task} showAudit />
           </div>
         )}

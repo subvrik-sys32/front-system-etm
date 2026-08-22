@@ -43,5 +43,7 @@ export interface Project{
 
   /** Tareas activas del proyecto (viene del listado vía _count). */
   taskCount?: number
+  /** Badge ojo: fotos + notas del proyecto (listado). */
+  detailAssetCount?: number
 
 }

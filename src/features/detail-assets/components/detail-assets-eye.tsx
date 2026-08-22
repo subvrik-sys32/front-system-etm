@@ -5,11 +5,6 @@ import { Eye } from "lucide-react"
 
 import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
 import { cn } from "@/shared/utils/utils"
-import {
-  useProjectDetailAssets,
-  useTaskDetailAssets,
-} from "../hooks/use-detail-assets"
-import type { TaskDetailAssetsResponse } from "../types"
 import { DetailAssetsDialog } from "./detail-assets-dialog"
 
 type Props = {
@@ -17,21 +12,19 @@ type Props = {
   projectId?: string
   readOnly?: boolean
   className?: string
-  /** Si el padre ya sabe el total, evita query (opcional). */
+  /**
+   * Contador del listado (SSOT del badge).
+   * NO se hace GET por fila: el dialog carga al abrir.
+   */
   count?: number
-  /** @deprecated Prefer count; se acepta por compat con rows. */
+  /** @deprecated Prefer `count`. */
   hasAssets?: boolean
 }
 
-function countTaskAssets(data: TaskDetailAssetsResponse | undefined): number {
-  if (!data) return 0
-  const photosNotes = data.taskAssets?.length ?? 0
-  const dxfs = data.materialLines?.filter(l => l.dxf).length ?? 0
-  return photosNotes + dxfs
-}
-
 /**
- * Ojo de archivos/detalle — mismo chrome que materiales, con contador.
+ * Ojo de archivos/detalle en filas.
+ * Sin N+1: el badge usa `count` del padre; los datos se piden
+ * solo cuando el dialog abre.
  */
 export function DetailAssetsEye({
   taskId,
@@ -42,21 +35,11 @@ export function DetailAssetsEye({
   hasAssets,
 }: Props) {
   const [open, setOpen] = useState(false)
-  const taskQ = useTaskDetailAssets(taskId, countProp === undefined && Boolean(taskId))
-  const projectQ = useProjectDetailAssets(
-    projectId,
-    countProp === undefined && Boolean(projectId) && !taskId,
-  )
 
-  void hasAssets
   if (!taskId && !projectId) return null
 
   const count =
-    countProp !== undefined
-      ? countProp
-      : taskId
-        ? countTaskAssets(taskQ.data)
-        : (projectQ.data?.length ?? 0)
+    countProp !== undefined ? countProp : hasAssets ? 1 : 0
 
   return (
     <>

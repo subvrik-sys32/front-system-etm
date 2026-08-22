@@ -325,7 +325,7 @@ function ProcessMobileCardReady({
               updatedBy={task.updatedBy}
             />
             <TaskMaterialInfo task={task} alwaysShow />
-            <DetailAssetsEye taskId={task.id} readOnly />
+            <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
           </div>
         )}
 
@@ -411,7 +411,7 @@ function ProcessMobileCardReady({
             updatedBy={task.updatedBy}
           />
           <TaskMaterialInfo task={task} alwaysShow />
-          <DetailAssetsEye taskId={task.id} readOnly />
+          <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
         </div>
 
         <ProcessExpandedRow processTask={processTask} />

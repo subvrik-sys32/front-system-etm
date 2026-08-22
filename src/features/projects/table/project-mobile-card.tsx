@@ -310,7 +310,7 @@ function ProjectMobileCardReady({
               createdBy={project.createdBy}
               updatedBy={project.updatedBy}
             />
-            <DetailAssetsEye projectId={project.id} />
+            <DetailAssetsEye projectId={project.id} count={project.detailAssetCount ?? 0} />
           </div>
         )}
 
@@ -320,7 +320,7 @@ function ProjectMobileCardReady({
             className="flex shrink-0 items-center gap-1 pr-0.5"
             onClick={e => e.stopPropagation()}
           >
-            <DetailAssetsEye projectId={project.id} />
+            <DetailAssetsEye projectId={project.id} count={project.detailAssetCount ?? 0} />
             <ProjectRowActions project={project} className="gap-1" showAudit />
             <IconAction
               icon={Plus}
@@ -387,7 +387,7 @@ function ProjectMobileCardReady({
         {/* Desktop: acciones en el panel expandido. Móvil: ya están en el row. */}
         {!isMobile && (
           <div className="flex items-center justify-start gap-1">
-            <DetailAssetsEye projectId={project.id} />
+            <DetailAssetsEye projectId={project.id} count={project.detailAssetCount ?? 0} />
             <ProjectRowActions project={project} showAudit />
           </div>
         )}

@@ -95,5 +95,7 @@ export interface Task{
 
   /** Comentarios activos de la tarea (listado). */
   commentCount?: number
+  /** Badge ojo: fotos + notas + DXF de materiales (listado). */
+  detailAssetCount?: number
 
 }

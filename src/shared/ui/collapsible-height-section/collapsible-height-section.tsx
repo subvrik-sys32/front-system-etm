@@ -9,20 +9,14 @@ type Props = {
   className?: string
   /**
    * Si true (default), desmonta children al cerrar (tras la animación).
-   * Evita que hooks pesados (useComments, etc.) corran en filas colapsadas.
+   * Evita que hooks pesados corran en filas colapsadas.
    */
   unmountOnExit?: boolean
 }
 
 /**
- * Collapse por grid 0fr/1fr (patrón CSS estándar).
- *
- * No anima height en px: esa medición se vuelve stale si el shell
- * cambia de ancho a mitad de animación. El ajuste de scrollTop
- * cuando el contenido encoge (ej. al cerrar una sección con el
- * scroll abajo del todo) lo maneja el navegador solo, nativo — no
- * hace falta (ni conviene) clampearlo a mano; eso fue justo lo que
- * rompía el rebote nativo en ScrollArea/vertical-scroll antes.
+ * Collapse por grid 0fr/1fr.
+ * Duración corta (150ms) para tablet/gamas bajas; respeta prefers-reduced-motion.
  */
 export function CollapsibleHeightSection({
   open,
@@ -41,21 +35,21 @@ export function CollapsibleHeightSection({
       setRendered(true)
       return
     }
-    const t = window.setTimeout(() => setRendered(false), 220)
+    const t = window.setTimeout(() => setRendered(false), 160)
     return () => window.clearTimeout(t)
   }, [open, unmountOnExit])
 
   return (
     <div
       className={cn(
-        "grid overflow-hidden transition-[grid-template-rows] duration-200 ease-out",
+        "grid overflow-hidden transition-[grid-template-rows] duration-150 ease-out motion-reduce:transition-none",
         open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
       )}
     >
       <div className="min-h-0 overflow-hidden">
         <div
           className={cn(
-            "max-w-full transition-opacity duration-150 ease-out",
+            "max-w-full transition-opacity duration-100 ease-out motion-reduce:transition-none",
             open ? "opacity-100" : "opacity-0",
             className,
           )}

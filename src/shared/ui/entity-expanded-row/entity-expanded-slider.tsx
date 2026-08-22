@@ -46,7 +46,7 @@ export function EntityExpandedSlider<T extends string>({
 
   return (
     <div
-      className="min-w-0 overflow-hidden rounded-2xl transition-[height] duration-300 ease-out"
+      className="min-w-0 overflow-hidden rounded-2xl transition-[height] duration-150 ease-out motion-reduce:transition-none"
       style={{ height: activeHeight }}
     >
       <div ref={panelRef} className="w-full min-w-0 self-start">

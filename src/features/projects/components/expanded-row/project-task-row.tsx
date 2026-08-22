@@ -342,7 +342,7 @@ export function ProjectTaskRow({
         activeProcessCode ? (
           <div
             key="expanded"
-            className={cn(!isDimmed && "animate-comment-in")}
+            className={cn(!isDimmed && "animate-comment-in motion-reduce:animate-none")}
           >
             <div
               className={cn(
@@ -409,7 +409,7 @@ export function ProjectTaskRow({
             key="compact"
             className={cn(
               // Completadas: opacas desde el primer frame (sin comment-in a opacity 1)
-              !isDimmed && "animate-comment-in",
+              !isDimmed && "animate-comment-in motion-reduce:animate-none",
               isDimmed && "opacity-50",
             )}
           >

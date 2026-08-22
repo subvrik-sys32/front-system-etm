@@ -28,6 +28,10 @@ import type{
   RealtimeEvent,
 }from"../types/realtime-event"
 
+import {
+  propagateUserUpdate,
+} from "@/features/users/cache/propagate-user-update"
+
 type PresencePayload={
   id:string
   online:boolean

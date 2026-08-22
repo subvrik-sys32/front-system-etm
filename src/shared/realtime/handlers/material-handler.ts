@@ -8,6 +8,8 @@ import {
   cacheRemoveEntity,
 } from "@/shared/core/entity/cache/entity-cache"
 
+import { propagateMaterialUpdate } from "@/features/materials/cache/propagate-material-update"
+
 import type { RealtimeEvent } from "../types/realtime-event"
 
 export function materialHandler(
@@ -37,6 +39,11 @@ export function materialHandler(
         queryClient,
         "materials",
         "material",
+        event.payload as Material,
+      )
+
+      propagateMaterialUpdate(
+        queryClient,
         event.payload as Material,
       )
 

@@ -8,6 +8,8 @@ import {
   cacheRemoveEntity,
 } from "@/shared/core/entity/cache/entity-cache"
 
+import { propagateStageUpdate } from "@/features/stages/cache/propagate-stage-update"
+
 import type { RealtimeEvent } from "../types/realtime-event"
 
 export function stageHandler(
@@ -37,6 +39,11 @@ export function stageHandler(
         queryClient,
         "stages",
         "stage",
+        event.payload as Stage,
+      )
+
+      propagateStageUpdate(
+        queryClient,
         event.payload as Stage,
       )
 

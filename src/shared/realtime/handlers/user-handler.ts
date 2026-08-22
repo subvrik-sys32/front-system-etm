@@ -158,6 +158,11 @@ export function userHandler(
 
       )
 
+      propagateUserUpdate(
+        queryClient,
+        event.payload as User,
+      )
+
       // El payload trae al usuario ya actualizado (nuevos roleIds,
       // active, etc). Si el usuario editado es UNO MISMO, hay que
       // reemitir el JWT: el backend arma request.user.permissions

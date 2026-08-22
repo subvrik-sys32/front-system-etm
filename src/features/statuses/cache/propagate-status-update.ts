@@ -1,44 +1,35 @@
 import type { QueryClient } from "@tanstack/react-query"
 
 import type { Status } from "../types/status.types"
-import type { Project } from "@/features/projects/types/project.types"
-import type { Task } from "@/features/tasks/types/task.types"
+import {
+  mapProjectCaches,
+  mapTaskCaches,
+  patchEntityLists,
+} from "@/shared/core/entity/cache/patch-query-lists"
 
-/**
- * Status vive en project.status y en task.project.status (no en Task raíz).
- */
 export function propagateStatusUpdate(
   queryClient: QueryClient,
   status: Status,
 ) {
-  queryClient.setQueryData<Status>(["status", status.id], status)
+  queryClient.setQueryData<Status>(["status", status.id], prev =>
+    prev ? { ...prev, ...status } : status,
+  )
+  patchEntityLists(queryClient, "statuses", status.id, status)
 
-  queryClient.setQueryData<Project[]>(["projects"], current =>
-    (current ?? []).map(project =>
-      project.status?.id === status.id
-        ? { ...project, status }
-        : project,
-    ),
+  mapProjectCaches(queryClient, project =>
+    project.status?.id === status.id
+      ? { ...project, status: { ...project.status, ...status } }
+      : project,
   )
 
-  for (const [key, project] of queryClient.getQueriesData<Project>({
-    queryKey: ["project"],
-  })) {
-    if (project?.status?.id === status.id) {
-      queryClient.setQueryData<Project>(key, { ...project, status })
+  mapTaskCaches(queryClient, task => {
+    if (task.project?.status?.id !== status.id) return task
+    return {
+      ...task,
+      project: {
+        ...task.project,
+        status: { ...task.project.status, ...status },
+      },
     }
-  }
-
-  queryClient.setQueryData<Task[]>(["tasks"], current =>
-    (current ?? []).map(task => {
-      if (task.project?.status?.id !== status.id) return task
-      return {
-        ...task,
-        project: {
-          ...task.project,
-          status,
-        },
-      }
-    }),
-  )
+  })
 }

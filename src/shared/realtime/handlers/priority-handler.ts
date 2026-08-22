@@ -8,6 +8,8 @@ import {
   cacheRemoveEntity,
 } from "@/shared/core/entity/cache/entity-cache"
 
+import { propagatePriorityUpdate } from "@/features/priorities/cache/propagate-priority-update"
+
 import type { RealtimeEvent } from "../types/realtime-event"
 
 export function priorityHandler(
@@ -37,6 +39,11 @@ export function priorityHandler(
         queryClient,
         "priorities",
         "priority",
+        event.payload as Priority,
+      )
+
+      propagatePriorityUpdate(
+        queryClient,
         event.payload as Priority,
       )
 

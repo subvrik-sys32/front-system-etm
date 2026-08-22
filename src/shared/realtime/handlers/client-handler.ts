@@ -8,6 +8,8 @@ import {
   cacheRemoveEntity,
 } from "@/shared/core/entity/cache/entity-cache"
 
+import { propagateClientUpdate } from "@/features/clients/cache/propagate-client-update"
+
 import type { RealtimeEvent } from "../types/realtime-event"
 
 export function clientHandler(
@@ -38,6 +40,11 @@ export function clientHandler(
         queryClient,
         "clients",
         "client",
+        event.payload as Client,
+      )
+
+      propagateClientUpdate(
+        queryClient,
         event.payload as Client,
       )
 

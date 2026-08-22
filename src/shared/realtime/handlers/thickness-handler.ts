@@ -8,6 +8,8 @@ import {
   cacheRemoveEntity,
 } from "@/shared/core/entity/cache/entity-cache"
 
+import { propagateThicknessUpdate } from "@/features/thicknesses/cache/propagate-thickness-update"
+
 import type { RealtimeEvent } from "../types/realtime-event"
 
 export function thicknessHandler(
@@ -37,6 +39,11 @@ export function thicknessHandler(
         queryClient,
         "thicknesses",
         "thickness",
+        event.payload as Thickness,
+      )
+
+      propagateThicknessUpdate(
+        queryClient,
         event.payload as Thickness,
       )
 

@@ -8,6 +8,8 @@ import {
   cacheRemoveEntity,
 } from "@/shared/core/entity/cache/entity-cache"
 
+import { propagateStatusUpdate } from "@/features/statuses/cache/propagate-status-update"
+
 import type { RealtimeEvent } from "../types/realtime-event"
 
 export function statusHandler(
@@ -37,6 +39,11 @@ export function statusHandler(
         queryClient,
         "statuses",
         "status",
+        event.payload as Status,
+      )
+
+      propagateStatusUpdate(
+        queryClient,
         event.payload as Status,
       )
 

@@ -8,6 +8,8 @@ import {
   cacheRemoveEntity,
 } from "@/shared/core/entity/cache/entity-cache"
 
+import { propagateColorUpdate } from "@/features/colors/cache/propagate-color-update"
+
 import type { RealtimeEvent } from "../types/realtime-event"
 
 export function colorHandler(
@@ -37,6 +39,11 @@ export function colorHandler(
         queryClient,
         "colors",
         "color",
+        event.payload as Color,
+      )
+
+      propagateColorUpdate(
+        queryClient,
         event.payload as Color,
       )
 

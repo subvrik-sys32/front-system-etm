@@ -6,6 +6,7 @@ import { useTasks } from "./use-tasks"
 import type { Task, ProcessCode } from "../types/task.types"
 
 export type TaskMaterialLineForm = {
+  id?: string
   materialId: string
   thicknessId: string
   pieces: number

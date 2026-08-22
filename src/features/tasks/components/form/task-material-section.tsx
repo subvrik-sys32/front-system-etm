@@ -13,12 +13,22 @@ import { cn } from "@/shared/utils/utils"
 
 import type { TaskFormSectionProps } from "./types"
 import type { TaskMaterialLineForm } from "../../hooks/use-task-form"
+import { MaterialLineDxfControls } from "@/features/detail-assets/components/material-line-dxf-controls"
+import type { DetailAsset } from "@/features/detail-assets/types"
+
+type MaterialSectionExtra = {
+  /** id de línea → DXF (tras guardar / include del task). */
+  lineDxfById?: Record<string, DetailAsset | null | undefined>
+  onDxfChanged?: () => void
+}
 
 export function TaskMaterialSection({
   form,
   update,
   errors,
-}: TaskFormSectionProps) {
+  lineDxfById,
+  onDxfChanged,
+}: TaskFormSectionProps & MaterialSectionExtra) {
   const { isMobile } = useResponsive()
 
   const {
@@ -174,6 +184,15 @@ export function TaskMaterialSection({
                 >
                   <Trash2 size={15} strokeWidth={2} />
                 </button>
+              <MaterialLineDxfControls
+                lineId={(lines[index] as TaskMaterialLineForm & { id?: string }).id}
+                dxf={
+                  (lines[index] as TaskMaterialLineForm & { id?: string }).id
+                    ? lineDxfById?.[(lines[index] as TaskMaterialLineForm & { id?: string }).id!]
+                    : null
+                }
+                onChanged={onDxfChanged}
+              />
               </div>
             </div>
           )

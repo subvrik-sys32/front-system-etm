@@ -80,6 +80,13 @@ export interface Task{
     sortOrder: number
     material: Material
     thickness: Thickness
+    detailAssets?: Array<{
+      id: string
+      kind: string
+      publicUrl?: string | null
+      originalName?: string
+      storageKey?: string | null
+    }>
   }>
 
   color:Color | null

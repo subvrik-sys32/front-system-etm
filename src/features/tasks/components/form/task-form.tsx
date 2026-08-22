@@ -9,6 +9,7 @@ import { TaskInfoSection } from "./task-info-section"
 import { TaskMaterialSection } from "./task-material-section"
 
 import type { TaskFormSectionProps } from "./types"
+import type { DetailAsset } from "@/features/detail-assets/types"
 
 export const TASK_FORM_STEPS = [
   { label: "Proyecto" },
@@ -24,6 +25,10 @@ export function TaskFormWizardProgress({ step }: { step: number }) {
 
 type Props = TaskFormSectionProps & {
   step?: number
+  lineDxfById?: Record<string, DetailAsset | null | undefined>
+  pendingDxfByIndex?: Record<number, File | null | undefined>
+  onPendingDxf?: (index: number, file: File | null) => void
+  onDxfChanged?: () => void
 }
 
 export function TaskForm({
@@ -34,6 +39,10 @@ export function TaskForm({
   lockedRouteCodes,
   errors,
   step = 0,
+  lineDxfById,
+  pendingDxfByIndex,
+  onPendingDxf,
+  onDxfChanged,
 }: Props) {
 
   const { isMobile } = useResponsive()
@@ -64,6 +73,10 @@ export function TaskForm({
           form={form}
           update={update}
           errors={errors}
+          lineDxfById={lineDxfById}
+          pendingDxfByIndex={pendingDxfByIndex}
+          onPendingDxf={onPendingDxf}
+          onDxfChanged={onDxfChanged}
         />
 
       </div>
@@ -105,6 +118,10 @@ export function TaskForm({
           form={form}
           update={update}
           errors={errors}
+          lineDxfById={lineDxfById}
+          pendingDxfByIndex={pendingDxfByIndex}
+          onPendingDxf={onPendingDxf}
+          onDxfChanged={onDxfChanged}
         />
 
       )}

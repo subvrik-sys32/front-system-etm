@@ -9,40 +9,42 @@ import { detailAssetsApi } from "@/features/detail-assets/api/detail-assets.api"
 import type { DetailAsset } from "@/features/detail-assets/types"
 
 type Props = {
-  /** Id real de TaskMaterialLine (solo tras guardar la tarea). */
   lineId?: string
-  /** DXF ya persistido (include del task). */
   dxf?: DetailAsset | null
+  pendingFile?: File | null
   disabled?: boolean
   onChanged?: () => void
+  onPendingFile?: (file: File | null) => void
 }
 
-/**
- * Subir / ver / borrar DXF de una línea de material.
- * Sin lineId: muestra hint "Guardá la tarea para adjuntar DXF".
- */
+/** Misma caja size-9 que el botón borrar de la fila. */
 export function MaterialLineDxfControls({
   lineId,
   dxf,
+  pendingFile,
   disabled,
   onChanged,
+  onPendingFile,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
+  const hasDxf = Boolean(dxf?.publicUrl) || Boolean(pendingFile)
 
   const upload = async (file: File) => {
-    if (!lineId) {
-      toast.message("Guardá la tarea primero para adjuntar el DXF")
-      return
-    }
     if (!file.name.toLowerCase().endsWith(".dxf")) {
       toast.error("Solo archivos .dxf")
+      return
+    }
+    if (!lineId) {
+      onPendingFile?.(file)
+      toast.message("DXF listo — se subirá al guardar la tarea")
       return
     }
     setBusy(true)
     try {
       await detailAssetsApi.uploadMaterialLineDxf(lineId, file)
       toast.success("DXF adjuntado")
+      onPendingFile?.(null)
       onChanged?.()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No se pudo subir el DXF")
@@ -52,6 +54,10 @@ export function MaterialLineDxfControls({
   }
 
   const remove = async () => {
+    if (pendingFile && !dxf?.id) {
+      onPendingFile?.(null)
+      return
+    }
     if (!dxf?.id) return
     setBusy(true)
     try {
@@ -65,14 +71,17 @@ export function MaterialLineDxfControls({
     }
   }
 
+  const btn =
+    "flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+
   return (
-    <div className="flex shrink-0 items-center gap-1">
+    <div className="flex shrink-0 items-center gap-0.5">
       <input
         ref={inputRef}
         type="file"
         accept=".dxf,application/dxf"
         className="hidden"
-        disabled={disabled || busy || !lineId}
+        disabled={disabled || busy}
         onChange={e => {
           const f = e.target.files?.[0]
           e.target.value = ""
@@ -81,39 +90,45 @@ export function MaterialLineDxfControls({
       />
       <button
         type="button"
-        title={lineId ? "Subir DXF" : "Guardá la tarea para adjuntar DXF"}
-        disabled={disabled || busy || !lineId}
+        title={lineId ? "Subir DXF" : "Elegir DXF (se sube al guardar)"}
+        disabled={disabled || busy}
         onClick={() => inputRef.current?.click()}
-        className={cn(
-          "flex size-8 items-center justify-center rounded-lg text-muted-foreground transition",
-          "hover:bg-foreground/10 hover:text-foreground",
-          "disabled:pointer-events-none disabled:opacity-40",
-        )}
+        className={btn}
       >
-        {busy ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />}
+        {busy ? (
+          <Loader2 size={15} strokeWidth={2} className="animate-spin" />
+        ) : (
+          <FileUp size={15} strokeWidth={2} />
+        )}
       </button>
-      {dxf?.publicUrl ? (
+      {hasDxf && (
         <>
-          <a
-            href={dxf.publicUrl}
-            target="_blank"
-            rel="noreferrer"
-            title={dxf.originalName || "Ver DXF"}
-            className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
-          >
-            <Eye size={14} />
-          </a>
+          {dxf?.publicUrl ? (
+            <a
+              href={dxf.publicUrl}
+              target="_blank"
+              rel="noreferrer"
+              title={dxf.originalName || "Ver DXF"}
+              className={btn}
+            >
+              <Eye size={15} strokeWidth={2} />
+            </a>
+          ) : pendingFile ? (
+            <span title={pendingFile.name} className={cn(btn, "cursor-default text-sky-400")}>
+              <Eye size={15} strokeWidth={2} />
+            </span>
+          ) : null}
           <button
             type="button"
             title="Quitar DXF"
             disabled={disabled || busy}
             onClick={() => void remove()}
-            className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-red-500/10 hover:text-red-500"
+            className={cn(btn, "hover:bg-red-500/15 hover:text-red-500")}
           >
-            <Trash2 size={14} />
+            <Trash2 size={15} strokeWidth={2} />
           </button>
         </>
-      ) : null}
+      )}
     </div>
   )
 }

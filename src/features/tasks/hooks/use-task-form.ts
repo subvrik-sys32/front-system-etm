@@ -47,6 +47,7 @@ export function useTaskForm(initialTask?: Task, initialProjectId?: string) {
     thicknessId: initialTask?.thickness?.id || "",
     materials: initialTask?.materialLines?.length
       ? initialTask.materialLines.map(l => ({
+          id: l.id,
           materialId: l.material.id,
           thicknessId: l.thickness.id,
           pieces: l.pieces,

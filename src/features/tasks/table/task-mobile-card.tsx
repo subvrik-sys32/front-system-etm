@@ -25,6 +25,7 @@ import { taskAccess } from "../access/task-access"
 
 import { TaskPriorityCell } from "../components/cells/task-priority-cell"
 import { TaskRowActions } from "../components/actions/task-row-actions"
+import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { TaskExpandedRow } from "../components/expanded-row/task-expanded-row"
 import { DragCell } from "@/shared/ui/entity-table-common/drag-cell"
 import { useSortStore } from "@/shared/sorting/store/sort-store"
@@ -372,6 +373,12 @@ function TaskMobileCardReady({
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
+            <DetailAssetsEye
+              taskId={task.id}
+              hasAssets={Boolean(
+                task.materialLines?.some(l => (l.detailAssets?.length ?? 0) > 0),
+              )}
+            />
             <TaskRowActions task={task} className="gap-0.5" showAudit />
           </div>
         )}
@@ -441,6 +448,7 @@ function TaskMobileCardReady({
         {/* Desktop: acciones en el panel. Móvil: van en el row al expandir. */}
         {!isMobile && (
           <div className="flex items-center justify-start gap-1">
+            <DetailAssetsEye taskId={task.id} />
             <TaskRowActions task={task} showAudit />
           </div>
         )}

@@ -15,6 +15,9 @@ import { useTasks } from "../../hooks/use-tasks"
 import { TaskForm, TASK_FORM_STEP_COUNT, TaskFormWizardProgress } from "../form/task-form"
 
 import type { Task } from "../../types/task.types"
+import type { DetailAsset } from "@/features/detail-assets/types"
+import { detailAssetsApi } from "@/features/detail-assets/api/detail-assets.api"
+import { toast } from "sonner"
 import type { TaskFormErrors } from "../form/types"
 
 type Props={
@@ -218,13 +221,17 @@ export function TaskDialog({
 
         const data=buildTask()
 
-        await updateTask({
+        const updated = await updateTask({
 
           id:task.id,
 
           dto:data,
 
         })
+
+        await uploadPendingDxfs(
+          (updated as Task | undefined)?.materialLines ?? task.materialLines,
+        )
 
         close()
 
@@ -234,6 +241,10 @@ export function TaskDialog({
 
       const createdTask=
         await create(buildTask())
+
+      await uploadPendingDxfs(
+        (createdTask as Task)?.materialLines,
+      )
 
       if(promptOpenAfterCreate){
 
@@ -332,6 +343,49 @@ export function TaskDialog({
 
 
   const [materialQty, setMaterialQty] = useState(1)
+  const [pendingDxfByIndex, setPendingDxfByIndex] = useState<
+    Record<number, File | null>
+  >({})
+
+  const lineDxfById: Record<string, DetailAsset | null> = {}
+  if (task?.materialLines) {
+    for (const line of task.materialLines) {
+      const raw = line.detailAssets?.find(a => a.kind === "DXF")
+      if (line.id) {
+        lineDxfById[line.id] = raw
+          ? {
+              id: raw.id,
+              kind: "DXF",
+              publicUrl: raw.publicUrl ?? null,
+              storageKey: raw.storageKey ?? null,
+              originalName: raw.originalName ?? "",
+              mimeType: "application/dxf",
+              sizeBytes: 0,
+              meta: null,
+              sortOrder: 0,
+              createdAt: "",
+            }
+          : null
+      }
+    }
+  }
+
+  const uploadPendingDxfs = async (
+    materialLines: { id: string }[] | undefined,
+  ) => {
+    if (!materialLines?.length) return
+    for (const [idxStr, file] of Object.entries(pendingDxfByIndex)) {
+      if (!(file instanceof File)) continue
+      const line = materialLines[Number(idxStr)]
+      if (!line?.id) continue
+      try {
+        await detailAssetsApi.uploadMaterialLineDxf(line.id, file)
+      } catch {
+        toast.error(`No se pudo subir DXF de la línea ${Number(idxStr) + 1}`)
+      }
+    }
+    setPendingDxfByIndex({})
+  }
 
   const addMaterialLine = () => {
     const qty = Math.min(20, Math.max(1, Math.floor(materialQty) || 1))
@@ -458,6 +512,12 @@ export function TaskDialog({
           lockedRouteCodes={lockedRouteCodes}
           step={step}
           errors={visibleErrors}
+        
+          lineDxfById={lineDxfById}
+          pendingDxfByIndex={pendingDxfByIndex}
+          onPendingDxf={(index, file) =>
+            setPendingDxfByIndex(prev => ({ ...prev, [index]: file }))
+          }
         />
 
       </FormDialog>

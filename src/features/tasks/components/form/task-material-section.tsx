@@ -17,8 +17,9 @@ import { MaterialLineDxfControls } from "@/features/detail-assets/components/mat
 import type { DetailAsset } from "@/features/detail-assets/types"
 
 type MaterialSectionExtra = {
-  /** id de línea → DXF (tras guardar / include del task). */
   lineDxfById?: Record<string, DetailAsset | null | undefined>
+  pendingDxfByIndex?: Record<number, File | null | undefined>
+  onPendingDxf?: (index: number, file: File | null) => void
   onDxfChanged?: () => void
 }
 
@@ -27,6 +28,8 @@ export function TaskMaterialSection({
   update,
   errors,
   lineDxfById,
+  pendingDxfByIndex,
+  onPendingDxf,
   onDxfChanged,
 }: TaskFormSectionProps & MaterialSectionExtra) {
   const { isMobile } = useResponsive()
@@ -170,13 +173,13 @@ export function TaskMaterialSection({
                 />
               </FormField>
 
-              <div className="flex items-end pb-0.5">
+              <div className="flex items-center gap-0.5 self-end pb-0.5">
                 <button
                   type="button"
                   disabled={lines.length <= 1}
                   onClick={() => removeLine(index)}
                   className={cn(
-                    "flex size-9 items-center justify-center rounded-lg text-muted-foreground transition",
+                    "flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition",
                     "hover:bg-red-500/15 hover:text-red-500",
                     "disabled:pointer-events-none disabled:opacity-30",
                   )}
@@ -184,15 +187,13 @@ export function TaskMaterialSection({
                 >
                   <Trash2 size={15} strokeWidth={2} />
                 </button>
-              <MaterialLineDxfControls
-                lineId={(lines[index] as TaskMaterialLineForm & { id?: string }).id}
-                dxf={
-                  (lines[index] as TaskMaterialLineForm & { id?: string }).id
-                    ? lineDxfById?.[(lines[index] as TaskMaterialLineForm & { id?: string }).id!]
-                    : null
-                }
-                onChanged={onDxfChanged}
-              />
+                <MaterialLineDxfControls
+                  lineId={line.id}
+                  dxf={line.id ? lineDxfById?.[line.id] : null}
+                  pendingFile={pendingDxfByIndex?.[index]}
+                  onPendingFile={file => onPendingDxf?.(index, file)}
+                  onChanged={onDxfChanged}
+                />
               </div>
             </div>
           )

@@ -27,6 +27,7 @@ import { ProjectStageCell } from "../components/cells/project-stage-cell"
 import { ProjectStatusCell } from "../components/cells/project-status-cell"
 import { ProjectPmCell } from "../components/cells/project-pm-cell"
 import { ProjectRowActions } from "../components/actions/project-row-actions"
+import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { ProjectExpandedRow } from "../components/expanded-row/project-expanded-row"
 import { IconAction } from "@/shared/ui/actions/icon-action"
 import { DragCell } from "@/shared/ui/entity-table-common/drag-cell"
@@ -324,6 +325,7 @@ function ProjectMobileCardReady({
             className="flex shrink-0 items-center gap-0.5 pr-0.5"
             onClick={e => e.stopPropagation()}
           >
+            <DetailAssetsEye projectId={project.id} />
             <ProjectRowActions project={project} className="gap-0.5" showAudit />
             <IconAction
               icon={Plus}
@@ -390,6 +392,7 @@ function ProjectMobileCardReady({
         {/* Desktop: acciones en el panel expandido. Móvil: ya están en el row. */}
         {!isMobile && (
           <div className="flex items-center justify-start gap-1">
+            <DetailAssetsEye projectId={project.id} />
             <ProjectRowActions project={project} showAudit />
           </div>
         )}

@@ -22,6 +22,7 @@ import { processAccess } from "../access/process-access"
 
 import { ProcessOperatorCell } from "../components/cells/process-operator-cell"
 import { ProcessRowActions } from "../components/actions/process-row-actions"
+import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { EntityAuditInfo } from "@/shared/ui/entity-audit-info/entity-audit-info"
 import { TaskMaterialInfo } from "@/features/tasks/components/task-material-info"
 import { ProcessExpandedRow } from "../components/expanded-row/process-expanded-row"
@@ -310,6 +311,7 @@ function ProcessMobileCardReady({
             className="w-30 shrink-0"
             onClick={e => e.stopPropagation()}
           >
+            <DetailAssetsEye taskId={task.id} readOnly />
             <ProcessRowActions
               task={task}
               stepId={stepId}

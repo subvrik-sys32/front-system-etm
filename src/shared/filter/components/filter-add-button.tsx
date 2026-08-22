@@ -22,9 +22,12 @@ import {
 
 import {
   TOOLBAR_CHROME_ICON_BTN,
-  TOOLBAR_CHROME_ICON_BTN_ACTIVE,
   TOOLBAR_CHROME_ICON_SIZE,
 } from "@/shared/ui/entity-toolbar/toolbar-chrome"
+
+/** Mismo ring de selección que FabTrigger — se mantiene con filtros activos. */
+const FILTER_ACTIVE_RING =
+  "ring-2 ring-primary ring-offset-2 ring-offset-background"
 
 type Props={
   expanded?:boolean
@@ -80,7 +83,7 @@ export const FilterAddButton=
           title="Filtros"
           className={cn(
             TOOLBAR_CHROME_ICON_BTN,
-            (active || hasActiveFilters) && TOOLBAR_CHROME_ICON_BTN_ACTIVE,
+            (active || hasActiveFilters) && FILTER_ACTIVE_RING,
             className,
           )}
           {...props}

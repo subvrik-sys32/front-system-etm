@@ -126,9 +126,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
             <span
               className={cn(
                 "absolute -right-1.5 -top-1.5 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs",
-                open
-                  ? "bg-destructive text-white"
-                  : ALERT_COUNT_BADGE,
+                ALERT_COUNT_BADGE,
               )}
             >
               {count > 9 ? "9+" : count}
@@ -150,8 +148,8 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
           collapsed={collapsed}
           active={open}
           count={count > 0 ? (count > 9 ? "9+" : count) : undefined}
-          collapsedBadgeColor={open ? "bg-destructive text-white" : ALERT_COUNT_BADGE}
-          badgeColor={open ? "bg-destructive text-white" : ALERT_COUNT_BADGE}
+          collapsedBadgeColor={ALERT_COUNT_BADGE}
+          badgeColor={ALERT_COUNT_BADGE}
           badgeAnimated={count > 0}
         />
       </button>

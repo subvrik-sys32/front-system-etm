@@ -177,9 +177,8 @@ export function SidebarPresence({
   }
 
   const renderTriggerContent = () => {
-    const emeraldBadgeClass = open
-      ? "bg-emerald-500 text-black font-bold"
-      : "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold"
+    const emeraldBadgeClass =
+      "bg-emerald-500 text-white font-bold shadow-xs"
 
     if (isTopbar) {
       return (
@@ -191,7 +190,7 @@ export function SidebarPresence({
         >
           <Users size={16} strokeWidth={2} />
           {onlineUsers.length > 0 && (
-            <span className={cn("absolute -right-1.5 -top-1.5 z-10 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px]", emeraldBadgeClass)}>
+            <span className={cn("absolute -right-1.5 -top-1.5 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs", emeraldBadgeClass)}>
               {onlineUsers.length > 9 ? "9+" : onlineUsers.length}
             </span>
           )}
@@ -210,9 +209,9 @@ export function SidebarPresence({
           label="Activos"
           collapsed={collapsed}
           active={open}
-          count={onlineUsers.length >= 0 ? (onlineUsers.length > 9 ? "9+" : String(onlineUsers.length)) : undefined}
-          collapsedBadgeColor={open ? "bg-emerald-500 text-black font-bold" : "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold"}
-          badgeColor={open ? "bg-emerald-500 text-black font-bold" : "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 font-bold"}
+          count={onlineUsers.length > 0 ? (onlineUsers.length > 9 ? "9+" : String(onlineUsers.length)) : undefined}
+          collapsedBadgeColor="bg-emerald-500 text-white font-bold"
+          badgeColor="bg-emerald-500 text-white font-bold"
           badgeAnimated={onlineUsers.length > 0}
         />
       </button>

@@ -170,13 +170,7 @@ function TaskMobileCardReady({
 
   return (
     <div className={cn("@container/trow rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
-      <div
-        className={cn(
-          "flex items-center px-1",
-          // Con drag: gap handle↔chip. Sin drag: sin gap (como process).
-          isManualMode && "gap-1",
-        )}
-      >
+      <div className="flex items-center gap-1 px-1">
         <DragCell hidden={!isManualMode} />
 
         <div
@@ -346,7 +340,7 @@ function TaskMobileCardReady({
             </span>
           )}
 
-          <span className="hidden shrink-0 text-xs tabular-nums text-muted-foreground md:inline">
+          <span className="hidden shrink-0 text-xs tabular-nums text-muted-foreground @[40rem]/trow:inline">
             {formatDate(task.deliveryDate)}
           </span>
         </div>
@@ -354,7 +348,7 @@ function TaskMobileCardReady({
         {/* Auditoría + ojo: solo colapsado; al expandir van al panel / row móvil */}
         {!expanded && (
           <div
-            className="hidden shrink-0 items-center gap-1 @[40rem]/trow:flex"
+            className="hidden shrink-0 items-center gap-1 pr-0.5 @[40rem]/trow:flex"
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
@@ -375,7 +369,7 @@ function TaskMobileCardReady({
 
         {isMobile && expanded && (
           <div
-            className="flex shrink-0 items-center gap-0.5 pr-0.5"
+            className="flex shrink-0 items-center gap-1 pr-0.5"
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
@@ -385,7 +379,7 @@ function TaskMobileCardReady({
                 task.materialLines?.some(l => (l.detailAssets?.length ?? 0) > 0),
               )}
             />
-            <TaskRowActions task={task} className="gap-0.5" showAudit />
+            <TaskRowActions task={task} className="gap-1" showAudit />
           </div>
         )}
 

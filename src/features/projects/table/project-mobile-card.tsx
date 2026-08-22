@@ -171,20 +171,14 @@ function ProjectMobileCardReady({
 
   return (
     <div className={cn("@container/prow rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
-      <div
-        className={cn(
-          "flex items-center px-1",
-          // Con drag: gap handle↔chip. Sin drag: sin gap (como process).
-          isManualMode && "gap-1",
-        )}
-      >
+      <div className="flex items-center gap-1 px-1">
         <DragCell hidden={!isManualMode} />
 
         <button
           type="button"
           onClick={handleRowToggle}
           className={cn(
-            "flex min-w-0 flex-1 items-center gap-2.5 py-3 pr-1 text-left",
+            "flex min-w-0 flex-1 items-center gap-2.5 py-3 pr-2 text-left",
             // Sin drag: misma holgura izquierda que process (pl-2)
             !isManualMode && "pl-2",
           )}
@@ -298,7 +292,7 @@ function ProjectMobileCardReady({
             </span>
           )}
 
-          <span className="hidden shrink-0 text-xs tabular-nums text-muted-foreground md:inline">
+          <span className="hidden shrink-0 text-xs tabular-nums text-muted-foreground @[40rem]/prow:inline">
             {formatDate(project.deliveryDate)}
           </span>
         </button>
@@ -306,7 +300,7 @@ function ProjectMobileCardReady({
         {/* Auditoría + ojo: solo colapsado; al expandir van al panel / row móvil */}
         {!expanded && (
           <div
-            className="hidden shrink-0 items-center gap-1 @[40rem]/prow:flex"
+            className="hidden shrink-0 items-center gap-1 pr-0.5 @[40rem]/prow:flex"
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
@@ -323,11 +317,11 @@ function ProjectMobileCardReady({
         {/* Móvil expandido: lápiz / borrar + nueva tarea en el row */}
         {actionsOnRow && (
           <div
-            className="flex shrink-0 items-center gap-0.5 pr-0.5"
+            className="flex shrink-0 items-center gap-1 pr-0.5"
             onClick={e => e.stopPropagation()}
           >
             <DetailAssetsEye projectId={project.id} />
-            <ProjectRowActions project={project} className="gap-0.5" showAudit />
+            <ProjectRowActions project={project} className="gap-1" showAudit />
             <IconAction
               icon={Plus}
               disabled={!canCreateTask}

@@ -74,39 +74,75 @@ export function IterationPanel({
       >
         {messages.length === 0 && !loading && (
           <div className="flex h-full flex-col items-center justify-center gap-2 py-12 text-center">
-            <Bot className="size-7 text-muted-foreground/40" />
+            <Bot className="size-8 text-muted-foreground/40" />
             <p className="text-[13px] text-muted-foreground">Los cambios que pidas aparecerán aquí</p>
           </div>
         )}
 
-        {messages.map((msg, i) => (
-          <div key={i} className={cn("flex items-center gap-2.5", msg.role === "user" && "flex-row-reverse")}>
-            <div className={cn(
-              "flex size-9 shrink-0 items-center justify-center rounded-full shadow-xs",
-              msg.role === "user" ? "bg-foreground text-background" : "bg-muted text-foreground"
-            )}>
-              {msg.role === "user" ? <User className="size-3.5" strokeWidth={2.2} /> : <Bot className="size-3.5" strokeWidth={2.2} />}
-            </div>
-            <div className={cn(
-              "max-w-[85%] min-h-9 min-w-0 rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed shadow-xs",
-              msg.role === "user" ? "bg-foreground text-background" : "bg-muted/80 text-foreground dark:bg-foreground/[0.06]"
-            )}>
-              <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-              {msg.geometry && (
-                <p className={`mt-1.5 text-[11px] ${msg.role === "user" ? "text-background/60" : "text-muted-foreground"}`}>
-                  {msg.geometry.entities.length} entidades · {msg.geometry.dimensions.width}×{msg.geometry.dimensions.height} {msg.geometry.units}
-                </p>
+        {messages.map((msg, i) => {
+          const isUser = msg.role === "user"
+          const shortOnly = !msg.geometry
+          return (
+            <div
+              key={i}
+              className={cn(
+                "flex w-full items-center gap-2",
+                isUser && "flex-row-reverse",
               )}
+            >
+              {/* Avatar — clip-path circle (mismo AA que comments) */}
+              <div
+                className={cn(
+                  "relative size-9 shrink-0 [clip-path:circle(50%_at_50%_50%)]",
+                  isUser ? "bg-foreground text-background" : "bg-muted text-foreground",
+                )}
+              >
+                <div className="absolute inset-0 bg-linear-to-br from-white/10 to-foreground/5" />
+                <span className="absolute inset-0 flex items-center justify-center">
+                  {isUser ? (
+                    <User className="size-4" strokeWidth={2.2} />
+                  ) : (
+                    <Bot className="size-4" strokeWidth={2.2} />
+                  )}
+                </span>
+              </div>
+
+              <div
+                className={cn(
+                  "w-fit max-w-[min(85%,22rem)] min-h-9 rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed shadow-xs",
+                  isUser
+                    ? "bg-foreground text-background"
+                    : "bg-muted/80 text-foreground dark:bg-foreground/[0.06]",
+                  shortOnly && "text-center",
+                )}
+              >
+                <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                {msg.geometry && (
+                  <p
+                    className={cn(
+                      "mt-1.5 text-left text-[11px]",
+                      isUser ? "text-background/60" : "text-muted-foreground",
+                    )}
+                  >
+                    {msg.geometry.entities.length} entidades ·{" "}
+                    {msg.geometry.dimensions.width}×{msg.geometry.dimensions.height}{" "}
+                    {msg.geometry.units}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
 
         {loading && (
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-foreground shadow-xs">
-              <Loader2 className="size-3.5 animate-spin" />
+          <div className="flex items-center gap-2">
+            <div className="relative size-9 shrink-0 bg-muted text-foreground [clip-path:circle(50%_at_50%_50%)]">
+              <div className="absolute inset-0 bg-linear-to-br from-white/10 to-foreground/5" />
+              <span className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="size-4 animate-spin" />
+              </span>
             </div>
-            <div className="min-h-9 rounded-2xl bg-muted/80 px-3.5 py-2 text-[13px] text-muted-foreground shadow-xs dark:bg-foreground/[0.06]">
+            <div className="w-fit min-h-9 rounded-2xl bg-muted/80 px-3.5 py-2 text-[13px] text-muted-foreground shadow-xs dark:bg-foreground/[0.06]">
               Procesando…
             </div>
           </div>
@@ -173,25 +209,33 @@ export function IterationPanel({
           </button>
         </div>
 
-        <div className="flex items-end gap-2">
+        {/* Composer — mismo lenguaje visual que comment-composer */}
+        <div className="flex items-center gap-1 rounded-2xl bg-foreground/[0.06] px-2 py-1.5">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault()
+                handleSend()
+              }
+            }}
             placeholder="Describe qué cambiar…"
             rows={1}
             className={cn(
-              "min-h-10 max-h-24 flex-1 resize-none rounded-[10px] bg-foreground/[0.05] px-3.5 py-2.5 text-[13px] outline-none [scrollbar-width:none] [-webkit-overflow-scrolling:touch] shadow-xs transition-colors focus:bg-foreground/[0.08] disabled:opacity-50",
+              "max-h-24 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 [scrollbar-width:none] disabled:opacity-50",
               EASE
             )}
             disabled={loading}
           />
           <button
+            type="button"
             onClick={handleSend}
             disabled={loading || !input.trim()}
+            aria-label="Enviar"
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-foreground text-background shadow-xs transition-all",
-              "hover:opacity-85 active:scale-95 disabled:opacity-30 disabled:pointer-events-none",
+              "flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-foreground text-background shadow-xs transition",
+              "disabled:opacity-40",
               EASE
             )}
           >

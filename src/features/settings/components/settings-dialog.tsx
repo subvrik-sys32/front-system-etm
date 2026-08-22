@@ -218,12 +218,5 @@ function SectionBody({
     )
   }
 
-  return (
-    <div className="flex flex-col gap-3">
-      <p className="text-xs text-muted-foreground">
-        Cómo se guardan planos DXF y otras descargas.
-      </p>
-      <FilesPreferencesSection />
-    </div>
-  )
+  return <FilesPreferencesSection />
 }

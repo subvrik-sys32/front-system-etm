@@ -76,7 +76,7 @@ export function CommentItem({
 }: Props) {
   const currentUser = useAuthStore(s => s.user)
   const { has } = usePermissions()
-  const { isMobile } = useResponsive()
+  const { isMobile, isCompact } = useResponsive()
   const { user } = comment
   const isPending = Boolean(comment.pending)
   const isDeleting = Boolean(comment.deleting)
@@ -210,14 +210,13 @@ export function CommentItem({
             ) : null}
           </div>
 
-          {showOwnerActions && (
+          {/* Desktop / ancho suficiente: actions al lado de la burbuja en hover */}
+          {showOwnerActions && !isCompact && (
             <div
               className={cn(
                 "absolute top-1/2 z-10 flex -translate-y-1/2 items-center gap-0.5 rounded-lg bg-card/95 px-0.5 py-0.5 shadow-xs backdrop-blur-sm",
+                "opacity-0 transition-opacity group-hover/bubble:opacity-100 group-focus-within/bubble:opacity-100",
                 isOwner ? "right-full mr-1.5" : "left-full ml-1.5",
-                isMobile
-                  ? "opacity-100"
-                  : "opacity-0 transition-opacity group-hover/bubble:opacity-100",
               )}
             >
               {canEdit && (
@@ -239,16 +238,45 @@ export function CommentItem({
           )}
         </div>
 
-        {/* Responder debajo de la burbuja */}
-        {canReply && (
-          <button
-            type="button"
-            onClick={() => onReply?.(comment)}
-            className="inline-flex items-center gap-1 px-0.5 text-[11px] font-medium text-muted-foreground/70 transition-colors hover:text-foreground"
+        {/* Footer alineado al extremo de la burbuja (misma columna items-end/start) */}
+        {(canReply || (showOwnerActions && isCompact)) && (
+          <div
+            className={cn(
+              "flex w-fit max-w-full flex-wrap items-center gap-x-1.5 gap-y-1",
+              isOwner ? "justify-end" : "justify-start",
+            )}
           >
-            <Reply size={12} strokeWidth={2.2} />
-            Responder
-          </button>
+            {canReply && (
+              <button
+                type="button"
+                onClick={() => onReply?.(comment)}
+                className="inline-flex shrink-0 items-center gap-1 px-0.5 text-[11px] font-medium text-muted-foreground/70 transition-colors hover:text-foreground"
+              >
+                <Reply size={12} strokeWidth={2.2} />
+                Responder
+              </button>
+            )}
+            {/* Compacto: actions junto a Responder (no se cortan) */}
+            {showOwnerActions && isCompact && (
+              <div className="flex items-center gap-0.5 rounded-lg bg-card/95 px-0.5 py-0.5 shadow-xs backdrop-blur-sm">
+                {canEdit && (
+                  <MetaIcon
+                    icon={Pencil}
+                    label="Editar"
+                    onClick={() => onEdit?.(comment)}
+                  />
+                )}
+                {canDelete && (
+                  <MetaIcon
+                    icon={Trash2}
+                    label="Eliminar"
+                    danger
+                    onClick={() => onDelete?.(comment)}
+                  />
+                )}
+              </div>
+            )}
+          </div>
         )}
       </div>
 

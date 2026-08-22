@@ -7,6 +7,7 @@ import { cn } from "@/shared/utils/utils"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import {
   TOOLBAR_CHROME_ICON_BTN,
+  TOOLBAR_CHROME_ICON_BTN_ACTIVE,
   TOOLBAR_CHROME_ICON_SIZE,
 } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 
@@ -51,7 +52,8 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
           className={cn(
             TOOLBAR_CHROME_ICON_BTN,
             "relative z-20 overflow-visible",
-            active && FAB_ACTIVE,
+            // Ring primary solo en FAB móvil — topbar usa chrome activo
+            active && TOOLBAR_CHROME_ICON_BTN_ACTIVE,
             className,
           )}
           {...props}

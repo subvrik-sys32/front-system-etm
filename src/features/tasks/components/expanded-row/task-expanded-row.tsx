@@ -31,6 +31,7 @@ import {
 import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
 import { useActiveCommentContextStore } from "@/features/comments/store/active-comment-context-store"
 import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 
 type Props = {
   task: Task
@@ -203,6 +204,7 @@ options={[
         target={{ scope: "task", taskId: task.id }}
         open={commentsDialogOpen}
         onOpenChange={setCommentsDialogOpen}
+        readOnly={isWorkflowCompleted(task.workflowSteps)}
       />
     </EntityExpandedRow>
   )

@@ -297,6 +297,7 @@ export function ProcessExpandedRow({
           target={{ scope: "workflowStep", workflowStepId }}
           open={commentsDialogOpen}
           onOpenChange={setCommentsDialogOpen}
+          readOnly={processTask.workflowStep?.status === "REVIEWED"}
         />
       ) : null}
     </EntityExpandedRow>

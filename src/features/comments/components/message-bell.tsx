@@ -227,7 +227,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
                       <button
                         type="button"
                         onClick={() => openComment(c)}
-                        className="w-full rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-foreground/5"
+                        className="w-full max-w-full overflow-hidden rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-foreground/5"
                       >
                         <div className="flex min-w-0 items-center gap-1.5 text-xs">
                           <span className="min-w-0 flex-1 truncate text-foreground">
@@ -259,7 +259,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
                             </span>
                           </div>
                         )}
-                        <div className="mt-1 flex gap-2">
+                        <div className="mt-1 flex min-w-0 gap-2">
                           {c.imageUrl && (
                             <div className="relative size-10 shrink-0 overflow-hidden rounded-md bg-muted ring-1 ring-border">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -267,7 +267,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
                             </div>
                           )}
                           {c.message ? (
-                            <p className="line-clamp-1 min-w-0 flex-1 text-xs text-muted-foreground">
+                            <p className="line-clamp-1 min-w-0 flex-1 overflow-hidden break-all text-xs text-muted-foreground">
                               {c.message}
                             </p>
                           ) : c.imageUrl ? (

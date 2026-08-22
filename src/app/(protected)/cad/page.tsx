@@ -15,7 +15,7 @@ type Tab = "ai" | "templates"
 
 /**
  * CAD = superficie fill-height (lienzo + panel), no lista.
- * Inset del chrome: PageShell mode="bleed" (SSOT).
+ * Inset del chrome: PageShell mode="fill" (SSOT, mismo que nesting desktop).
  */
 export default function CadPage() {
   usePageTitle("CAD")
@@ -39,7 +39,7 @@ export default function CadPage() {
   usePageToolbar(isMobile ? null : <TabsNav />)
 
   return (
-    <PageShell mode={isMobile ? "fill" : "bleed"}>
+    <PageShell mode="fill">
       <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
         {isMobile ? (
           <div className="mb-2 flex shrink-0 justify-center px-1">

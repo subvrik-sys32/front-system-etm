@@ -3,10 +3,6 @@
 import { useState, useCallback, useRef } from "react"
 import { Loader2, Layers, SlidersHorizontal } from "lucide-react"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
-import {
-  TOP_BAR_HEIGHT_PX,
-  DESKTOP_TOP_BAR_HEIGHT_PX,
-} from "@/shared/responsive/layout/chrome-constants"
 import { cn } from "@/shared/utils/utils"
 import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
@@ -169,15 +165,7 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
           </div>
         )}
 
-        <div
-          className="relative z-10 flex min-h-0 w-full flex-1 flex-col"
-          style={{
-            // Bleed shell no trae paddingTop: el overlay del topbar tapa el hero.
-            paddingTop: isMobile
-              ? TOP_BAR_HEIGHT_PX + 8
-              : DESKTOP_TOP_BAR_HEIGHT_PX + 8,
-          }}
-        >
+        <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col">
           {error && (
             <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
               <span className="truncate">{error}</span>

@@ -1,0 +1,41 @@
+diff --git a/src/app/(protected)/processes/page.tsx b/src/app/(protected)/processes/page.tsx
+index 5012ef0..e50a9d3 100644
+--- a/src/app/(protected)/processes/page.tsx
++++ b/src/app/(protected)/processes/page.tsx
+@@ -24,6 +24,7 @@ export default function ProcessPage() {
+     <PageShell mode="list">
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+         <ProcessPageContent
++          key={processCode}
+           processCode={processCode}
+           focusedTaskId={taskId}
+           focusToken={focusToken}
+diff --git a/src/features/processes/components/process-page-content.tsx b/src/features/processes/components/process-page-content.tsx
+index 70bca0a..523fa73 100644
+--- a/src/features/processes/components/process-page-content.tsx
++++ b/src/features/processes/components/process-page-content.tsx
+@@ -113,7 +113,7 @@ export function ProcessPageContent({
+       <AppListScroll>
+         {isMobile ? <div className="mb-1">{toolbar}</div> : null}
+ 
+-        <EntityExpandProvider key={processCode}>
++        <EntityExpandProvider>
+           <ProcessTableCard
+             processDefinition={processDefinition}
+             processTasks={processTasks}
+diff --git a/src/features/processes/table/process-table-card.tsx b/src/features/processes/table/process-table-card.tsx
+index 360e9c7..eebf4ab 100644
+--- a/src/features/processes/table/process-table-card.tsx
++++ b/src/features/processes/table/process-table-card.tsx
+@@ -107,11 +107,6 @@ export function ProcessTableCard({
+ 
+   const markSettled = useFocusSettleStore(s => s.markSettled)
+ 
+-  // Cambio de proceso (tabs / deep-link code): no heredar expand del anterior
+-  useEffect(() => {
+-    setMobileExpandedKey(null)
+-  }, [processDefinition.code])
+-
+   useFocusedRow({
+     focusedId: focusedTaskId,
+     expandedRowId: expand.expandedRowId,

@@ -24,6 +24,7 @@ export default function ProcessPage() {
     <PageShell mode="list">
       <section className="flex min-h-0 w-full flex-1 flex-col">
         <ProcessPageContent
+          key={processCode}
           processCode={processCode}
           focusedTaskId={taskId}
           focusToken={focusToken}

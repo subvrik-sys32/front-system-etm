@@ -107,11 +107,6 @@ export function ProcessTableCard({
 
   const markSettled = useFocusSettleStore(s => s.markSettled)
 
-  // Cambio de proceso (tabs / deep-link code): no heredar expand del anterior
-  useEffect(() => {
-    setMobileExpandedKey(null)
-  }, [processDefinition.code])
-
   useFocusedRow({
     focusedId: focusedTaskId,
     expandedRowId: expand.expandedRowId,

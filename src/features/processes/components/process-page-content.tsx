@@ -113,7 +113,7 @@ export function ProcessPageContent({
       <AppListScroll>
         {isMobile ? <div className="mb-1">{toolbar}</div> : null}
 
-        <EntityExpandProvider key={processCode}>
+        <EntityExpandProvider>
           <ProcessTableCard
             processDefinition={processDefinition}
             processTasks={processTasks}

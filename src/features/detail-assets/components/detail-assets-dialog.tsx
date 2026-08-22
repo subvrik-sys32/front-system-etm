@@ -223,14 +223,28 @@ export function DetailAssetsDialog({
                               >
                                 <Eye size={14} />
                               </button>
-                              <a
-                                href={line.dxf.publicUrl}
-                                download={line.dxf.originalName || "plano.dxf"}
+                              <button
+                                type="button"
                                 title="Descargar"
                                 className="flex size-8 items-center justify-center rounded-lg hover:bg-foreground/10"
+                                onClick={async () => {
+                                  try {
+                                    const res = await fetch(line.dxf!.publicUrl!)
+                                    if (!res.ok) throw new Error("fetch")
+                                    const blob = await res.blob()
+                                    await saveBlobWithPreferences({
+                                      blob,
+                                      fileName:
+                                        line.dxf!.originalName || "plano.dxf",
+                                      mimeType: "application/dxf",
+                                    })
+                                  } catch {
+                                    toast.error("No se pudo descargar")
+                                  }
+                                }}
                               >
                                 <Download size={14} />
-                              </a>
+                              </button>
                             </div>
                           ) : (
                             <span className="text-[11px] text-muted-foreground">—</span>

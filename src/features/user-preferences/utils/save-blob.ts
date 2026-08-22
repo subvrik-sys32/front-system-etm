@@ -1,7 +1,6 @@
 "use client"
 
 import { useUserPreferencesStore } from "../store/user-preferences-store"
-import { applyFileNameTemplate } from "./apply-file-name-template"
 import {
   clearDirectoryHandle,
   loadDirectoryHandle,
@@ -10,15 +9,25 @@ import {
 
 type SaveBlobOpts = {
   blob: Blob
+  /** Nombre original del archivo (se respeta tal cual, solo se sanitizan caracteres ilegales). */
   fileName: string
   mimeType?: string
+}
+
+/** Conserva el nombre original; solo limpia caracteres ilegales en FS. */
+function sanitizeDownloadName(originalName: string): string {
+  const trimmed = (originalName || "archivo").trim() || "archivo"
+  return trimmed.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_").slice(0, 180)
 }
 
 function classicDownload(blob: Blob, fileName: string) {
   const a = document.createElement("a")
   a.href = URL.createObjectURL(blob)
   a.download = fileName
+  a.rel = "noopener"
+  document.body.appendChild(a)
   a.click()
+  a.remove()
   URL.revokeObjectURL(a.href)
 }
 
@@ -38,14 +47,17 @@ async function ensurePermission(
   return state === "granted"
 }
 
+/**
+ * Guarda blob respetando preferencias de ubicación.
+ * El nombre es SIEMPRE el original del archivo (no plantillas).
+ */
 export async function saveBlobWithPreferences({
   blob,
   fileName,
   mimeType,
 }: SaveBlobOpts): Promise<void> {
-  const { downloadMode, fileNameTemplate, rememberFolder } =
-    useUserPreferencesStore.getState()
-  const name = applyFileNameTemplate(fileNameTemplate, fileName)
+  const { downloadMode, rememberFolder } = useUserPreferencesStore.getState()
+  const name = sanitizeDownloadName(fileName)
   const type = mimeType || blob.type || "application/octet-stream"
 
   if (downloadMode === "quick") {

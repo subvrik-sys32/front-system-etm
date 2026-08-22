@@ -10,7 +10,7 @@ import { Spinner } from "@/shared/ui/spinner/spinner"
 import { cn } from "@/shared/utils/utils"
 import { detailAssetsApi } from "@/features/detail-assets/api/detail-assets.api"
 import type { DetailAsset } from "@/features/detail-assets/types"
-import { taskDetailAssetsKey } from "@/features/detail-assets/hooks/use-detail-assets"
+import { invalidateDetailAssetCaches } from "@/features/detail-assets/hooks/use-detail-assets"
 import { DxfPreviewDialog } from "./dxf-preview-dialog"
 
 type Props = {
@@ -62,9 +62,7 @@ export function MaterialLineDxfControls({
     setBusy(true)
     try {
       await detailAssetsApi.uploadMaterialLineDxf(lineId, file)
-      if (taskId) {
-        await qc.invalidateQueries({ queryKey: taskDetailAssetsKey(taskId) })
-      }
+      invalidateDetailAssetCaches(qc, { taskId: taskId ?? undefined })
       toast.success(`DXF guardado: ${file.name}`)
       onChanged?.()
     } catch {
@@ -83,9 +81,7 @@ export function MaterialLineDxfControls({
     setBusy(true)
     try {
       await detailAssetsApi.remove(dxf.id)
-      if (taskId) {
-        await qc.invalidateQueries({ queryKey: taskDetailAssetsKey(taskId) })
-      }
+      invalidateDetailAssetCaches(qc, { taskId: taskId ?? undefined })
       toast.success("DXF eliminado")
       onChanged?.()
     } catch {
@@ -96,23 +92,24 @@ export function MaterialLineDxfControls({
   }
 
   async function download() {
-    if (pendingFile) {
-      const a = document.createElement("a")
-      a.href = URL.createObjectURL(pendingFile)
-      a.download = pendingFile.name
-      a.click()
-      URL.revokeObjectURL(a.href)
-      return
-    }
-    if (!dxf?.publicUrl) return
     try {
+      if (pendingFile) {
+        await saveBlobWithPreferences({
+          blob: pendingFile,
+          fileName: pendingFile.name,
+          mimeType: "application/dxf",
+        })
+        return
+      }
+      if (!dxf?.publicUrl) return
       const res = await fetch(dxf.publicUrl)
+      if (!res.ok) throw new Error("fetch")
       const blob = await res.blob()
-      const a = document.createElement("a")
-      a.href = URL.createObjectURL(blob)
-      a.download = dxf.originalName || "plano.dxf"
-      a.click()
-      URL.revokeObjectURL(a.href)
+      await saveBlobWithPreferences({
+        blob,
+        fileName: dxf.originalName || "plano.dxf",
+        mimeType: "application/dxf",
+      })
     } catch {
       toast.error("No se pudo descargar")
     }

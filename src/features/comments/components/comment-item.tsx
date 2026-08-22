@@ -111,8 +111,8 @@ export function CommentItem({
       className={cn(
         "flex shrink-0 items-center gap-0.5 overflow-hidden transition-[max-width,opacity,padding] duration-200 ease-out",
         isMobile
-          ? "max-w-20 opacity-100 pl-1.5"
-          : "max-w-0 opacity-0 group-hover/bubble:max-w-20 group-hover/bubble:opacity-100 group-hover/bubble:pl-1.5",
+          ? "ml-2 max-w-20 opacity-100"
+          : "max-w-0 opacity-0 group-hover/bubble:ml-2 group-hover/bubble:max-w-20 group-hover/bubble:opacity-100",
       )}
     >
       <span
@@ -145,7 +145,7 @@ export function CommentItem({
   return (
     <div
       className={cn(
-        "group animate-comment-in flex w-full items-center gap-2.5",
+        "group animate-comment-in flex w-full items-center gap-2",
         isOwner ? "flex-row-reverse" : "flex-row",
         isReply && !isOwner && "pl-6",
         (isPending || isDeleting) && "opacity-60",
@@ -227,13 +227,19 @@ export function CommentItem({
 
         <div
           className={cn(
-            "group/bubble flex w-fit max-w-full min-h-9 flex-row items-center rounded-2xl py-2 shadow-xs",
+            "group/bubble flex w-fit max-w-full min-h-9 flex-row items-center rounded-2xl px-3.5 py-2 shadow-xs",
             isOwner
-              ? "bg-foreground pl-3 pr-1.5 text-background"
-              : "bg-muted/80 pl-3 pr-1.5 text-foreground dark:bg-foreground/[0.06]",
+              ? "bg-foreground text-background"
+              : "bg-muted/80 text-foreground dark:bg-foreground/[0.06]",
           )}
         >
-          <div className="min-w-0 max-w-full py-0.5 text-[13px] leading-relaxed">
+          <div
+            className={cn(
+              "min-w-0 max-w-full text-[13px] leading-relaxed",
+              // Mensaje solo (sin quote/foto): centrado en la burbuja
+              !comment.parent && !comment.imageUrl && "text-center",
+            )}
+          >
             {comment.parent && (
               <div
                 className={cn(

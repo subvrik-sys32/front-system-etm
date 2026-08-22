@@ -116,7 +116,6 @@ function Field({
 }
 
 export function CadWorkspacePanel({ embedded = false }: { embedded?: boolean } = {}) {
-  void embedded
   const chromeInset = useChromeInset({ bottom: false })
 
   const router = useRouter()
@@ -235,7 +234,7 @@ export function CadWorkspacePanel({ embedded = false }: { embedded?: boolean } =
   const plate = mode === "plate"
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3" style={{ paddingTop: chromeInset.paddingTop }}>
+    <div className="flex h-full min-h-0 flex-col gap-3" style={embedded ? undefined : { paddingTop: chromeInset.paddingTop }}>
       {/* Toolbar */}
       <div className="flex shrink-0 flex-wrap items-center gap-2">
         <div className="inline-flex items-center rounded-lg bg-foreground/5 p-0.5">

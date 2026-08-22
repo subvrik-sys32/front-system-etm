@@ -40,10 +40,10 @@ export default function CadPage() {
   usePageToolbar(isMobile ? null : <TabsNav />)
 
   return (
-    <PageShell mode="bleed">
+    <PageShell mode={isMobile ? "fill" : "bleed"}>
       <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
         {isMobile ? (
-          <div className="mb-2 flex shrink-0 justify-center px-1">
+          <div className="mb-1.5 flex shrink-0 justify-center px-1 pt-0.5">
             <TabsNav />
           </div>
         ) : null}

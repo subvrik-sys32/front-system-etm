@@ -224,8 +224,7 @@ export function CommentComposer({
           <img
             src={selectedImage}
             alt="Foto adjunta"
-            // Se añadieron 'transform-gpu backface-hidden' para forzar el anti-aliasing por GPU y evitar dientes de sierra si fuera un avatar/imagen redondeada
-            className="size-12 rounded-lg object-cover transform-gpu backface-hidden"
+            className="size-12 rounded-lg object-cover"
           />
           <button
             type="button"

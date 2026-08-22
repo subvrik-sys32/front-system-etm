@@ -59,12 +59,11 @@ function BubbleAction({
       }}
       className={cn(
         "flex size-6 shrink-0 items-center justify-center rounded-md transition-colors",
-        isOwner
-          ? danger
-            ? "text-background/80 hover:bg-red-500/25 hover:text-red-300"
-            : "text-background/80 hover:bg-background/15 hover:text-background"
-          : danger
-            ? "text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+        // danger = mismo contrato IconAction rows (rojo, no rosado)
+        danger
+          ? "text-muted-foreground hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400"
+          : isOwner
+            ? "text-background/70 hover:bg-background/15 hover:text-background"
             : "text-muted-foreground hover:bg-foreground/8 hover:text-foreground",
       )}
     >
@@ -146,16 +145,16 @@ export function CommentItem({
   return (
     <div
       className={cn(
-        "group animate-comment-in flex w-full items-end gap-2.5",
+        "group animate-comment-in flex w-full items-center gap-2.5",
         isOwner ? "flex-row-reverse" : "flex-row",
         isReply && !isOwner && "pl-6",
         (isPending || isDeleting) && "opacity-60",
       )}
     >
-      {/* Avatar chrome — misma altura visual que burbuja 1 línea (size-8), alineado al borde inferior */}
+      {/* Avatar chrome — centrado a la burbuja, size-9 (evita pixelado) */}
       <div
         className={cn(
-          "flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full shadow-xs",
+          "flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full shadow-xs",
           isOwner ? "bg-foreground text-background" : "bg-muted text-foreground",
         )}
       >
@@ -168,7 +167,7 @@ export function CommentItem({
             draggable={false}
           />
         ) : (
-          <User className="size-3.5" strokeWidth={2.2} />
+          <User className="size-4" strokeWidth={2.2} />
         )}
       </div>
 
@@ -228,7 +227,7 @@ export function CommentItem({
 
         <div
           className={cn(
-            "group/bubble flex min-h-8 min-w-0 flex-row items-center rounded-2xl py-1.5 shadow-xs",
+            "group/bubble flex min-h-9 min-w-0 flex-row items-center rounded-2xl py-2 shadow-xs",
             isOwner
               ? "bg-foreground pl-3 pr-1.5 text-background"
               : "bg-muted/80 pl-3 pr-1.5 text-foreground dark:bg-foreground/[0.06]",

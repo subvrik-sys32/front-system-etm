@@ -330,108 +330,39 @@ function ProjectMobileCardReady({
       </div>
 
       <CollapsibleHeightSection open={expanded} className="space-y-3 px-3 pb-3 pt-3">
-        {showFields ? (
-          <div className="flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => setShowFields(false)}
-              className="flex w-full items-center justify-between rounded-lg bg-foreground/5 px-3 py-2 text-xs font-medium text-muted-foreground transition hover:bg-foreground/5"
-            >
+        <button
+          type="button"
+          onClick={() => setShowFields(v => !v)}
+          className="flex w-full items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2.5 transition hover:bg-foreground/5"
+        >
+          {showFields ? (
+            <span className="min-w-0 flex-1 text-left text-xs font-medium text-muted-foreground">
               Ocultar campos
-              <ChevronDown
-                size={14}
-                className="shrink-0 rotate-180 text-muted-foreground"
-              />
-            </button>
-
-            <ProjectClientCell project={project} triggerVariant="row" rowLabel="Cliente" />
-            <ProjectStageCell project={project} triggerVariant="row" rowLabel="Etapa" />
-            <ProjectStatusCell project={project} triggerVariant="row" rowLabel="Estado" />
-            <ProjectPmCell project={project} triggerVariant="row" rowLabel="PM" />
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setShowFields(true)}
-            className="flex w-full items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2.5 transition hover:bg-foreground/5"
-          >
+            </span>
+          ) : (
             <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground">
               <span
                 className="size-1.5 shrink-0 rounded-full"
                 style={{ backgroundColor: project.client.color }}
               />
               <span className="shrink-0 truncate">{project.client.name}</span>
-
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-
-              <span className="flex shrink-0 items-center gap-1">
-                <span className="md:hidden">
-                  <EntityIconBadge
-                    icon={project.stage.icon}
-                    color={project.stage.color}
-                    size={13}
-                  />
-                </span>
-                <span
-                  className="hidden truncate md:inline"
-                  style={{ color: stageInk }}
-                >
-                  {project.stage.name}
-                </span>
-              </span>
-
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-
-              <span className="flex shrink-0 items-center gap-1">
-                <span className="md:hidden">
-                  <EntityIconBadge
-                    icon={project.status.icon}
-                    color={project.status.color}
-                    size={13}
-                  />
-                </span>
-                <span
-                  className="hidden truncate md:inline"
-                  style={{ color: statusInk }}
-                >
-                  {project.status.name}
-                </span>
-              </span>
-
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-
-              <span className="flex shrink-0 items-center gap-1">
-                <span className="md:hidden">
-                  {project.pm.icon ? (
-                    <EntityIconBadge
-                      icon={project.pm.icon}
-                      color={project.pm.color ?? "#a3a3a3"}
-                      size={13}
-                    />
-                  ) : (
-                    <span className="text-[11px] font-medium text-muted-foreground">
-                      {project.pm.name.charAt(0)}
-                    </span>
-                  )}
-                </span>
-                <span className="hidden min-w-0 truncate text-muted-foreground md:inline">
-                  {project.pm.name}
-                </span>
-              </span>
             </span>
+          )}
+          <ChevronDown
+            size={14}
+            className={cn(
+              "shrink-0 text-muted-foreground transition-transform duration-200",
+              showFields && "rotate-180",
+            )}
+          />
+        </button>
 
-            <span className="flex shrink-0 items-center gap-1.5 md:hidden">
-              <span className="text-xs text-muted-foreground">
-                {formatDate(project.deliveryDate)}
-              </span>
-            </span>
-
-            <ChevronDown
-              size={14}
-              className="shrink-0 text-muted-foreground"
-            />
-          </button>
-        )}
+        <CollapsibleHeightSection open={showFields} className="flex flex-col gap-2">
+          <ProjectClientCell project={project} triggerVariant="row" rowLabel="Cliente" />
+            <ProjectStageCell project={project} triggerVariant="row" rowLabel="Etapa" />
+            <ProjectStatusCell project={project} triggerVariant="row" rowLabel="Estado" />
+            <ProjectPmCell project={project} triggerVariant="row" rowLabel="PM" />
+        </CollapsibleHeightSection>
 
         {/* Desktop: acciones en el panel expandido. Móvil: ya están en el row. */}
         {!isMobile && (

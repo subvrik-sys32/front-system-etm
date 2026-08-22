@@ -340,109 +340,58 @@ function ProcessMobileCardReady({
       </div>
 
       <CollapsibleHeightSection open={expanded} className="space-y-3 px-3 pb-3 pt-3">
-        {showFields ? (
-          <div className="flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => setShowFields(false)}
-              className="flex w-full items-center justify-between rounded-lg bg-foreground/5 px-3 py-2 text-xs font-medium text-muted-foreground transition hover:bg-foreground/5"
-            >
+        <button
+          type="button"
+          onClick={() => setShowFields(v => !v)}
+          className="flex w-full items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2.5 transition hover:bg-foreground/5"
+        >
+          {showFields ? (
+            <span className="min-w-0 flex-1 text-left text-xs font-medium text-muted-foreground">
               Ocultar campos
-              <ChevronDown
-                size={14}
-                className="shrink-0 rotate-180 text-muted-foreground"
-              />
-            </button>
-<ProcessOperatorCell
-              processTask={processTask}
-              triggerVariant="row"
-              rowLabel="Asignar operario"
-            />
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setShowFields(true)}
-            className="flex w-full items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2.5 transition hover:bg-foreground/5"
-          >
+            </span>
+          ) : (
             <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground">
               <span
                 className="size-1.5 shrink-0 rounded-full"
                 style={{ backgroundColor: project.client.color }}
               />
               <span className="shrink-0 truncate">{project.client.name}</span>
-
               <span className="shrink-0 text-muted-foreground/80">·</span>
-
               <span className="flex shrink-0 items-center gap-1">
                 <span className="md:hidden">
-                  <EntityIconBadge
-                    icon={priority.icon}
-                    color={priority.color}
-                    size={13}
-                  />
+                  <EntityIconBadge icon={priority.icon} color={priority.color} size={13} />
                 </span>
-                <span
-                  className="hidden truncate md:inline"
-                  style={{ color: priorityInk }}
-                >
+                <span className="hidden truncate md:inline" style={{ color: priorityInk }}>
                   {priority.name}
                 </span>
               </span>
-
               <span className="shrink-0 text-muted-foreground/80">·</span>
-
               <span className="flex shrink-0 items-center gap-1">
                 <span className="md:hidden">
-                  <EntityIconBadge
-                    icon={statusLabel.icon}
-                    color={statusLabel.color}
-                    size={13}
-                  />
+                  <EntityIconBadge icon={statusLabel.icon} color={statusLabel.color} size={13} />
                 </span>
-                <span
-                  className="hidden truncate md:inline"
-                  style={{ color: statusInk }}
-                >
+                <span className="hidden truncate md:inline" style={{ color: statusInk }}>
                   {statusLabel.label}
                 </span>
               </span>
-
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-
-              <span className="flex shrink-0 items-center gap-1">
-                <span className="md:hidden">
-                  <EntityIconBadge
-                    icon={operator?.icon} 
-                    color={operator?.color ?? "#a3a3a3"}
-                    size={13}
-                  />
-                </span>
-                {operator ? (
-                  <OperatorNameText
-                    name={operator.name}
-                    color={operator.color}
-                    className="hidden truncate md:inline"
-                  />
-                ) : (
-                  <span className="hidden truncate md:inline text-muted-foreground">
-                    Sin asignar operario
-                  </span>
-                )}
-              </span>
             </span>
+          )}
+          <ChevronDown
+            size={14}
+            className={cn(
+              "shrink-0 text-muted-foreground transition-transform duration-200",
+              showFields && "rotate-180",
+            )}
+          />
+        </button>
 
-            {/* Fecha: visible en selector cuando el row principal la ocultó (<40rem) */}
-            <span className="shrink-0 text-xs text-muted-foreground @[40rem]/prow:hidden">
-              {formatDate(task.deliveryDate)}
-            </span>
-
-            <ChevronDown
-              size={14}
-              className="shrink-0 text-muted-foreground"
+        <CollapsibleHeightSection open={showFields} className="flex flex-col gap-2">
+          <ProcessOperatorCell
+              processTask={processTask}
+              triggerVariant="row"
+              rowLabel="Asignar operario"
             />
-          </button>
-        )}
+        </CollapsibleHeightSection>
 
         {/* Debajo del selector de campos: auditoría + materiales */}
         <div

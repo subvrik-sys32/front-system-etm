@@ -82,9 +82,9 @@ export function CommentItem({
   const isDeleting = Boolean(comment.deleting)
   const isOwner = currentUser?.id === user.id
   const canDeleteAny = has(PermissionCode.COMMENT_DELETE_ANY)
-  const canEdit = isOwner && !isPending && !isDeleting
-  const canDelete = (isOwner || canDeleteAny) && !isPending && !isDeleting
-  const canReply = has(PermissionCode.COMMENT_CREATE) && !isPending && !isDeleting
+  const canEdit = Boolean(onEdit) && isOwner && !isPending && !isDeleting
+  const canDelete = Boolean(onDelete) && (isOwner || canDeleteAny) && !isPending && !isDeleting
+  const canReply = Boolean(onReply) && has(PermissionCode.COMMENT_CREATE) && !isPending && !isDeleting
   const showOwnerActions = canEdit || canDelete
 
   const [imageDialogOpen, setImageDialogOpen] = useState(false)

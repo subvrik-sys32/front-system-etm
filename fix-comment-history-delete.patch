@@ -1,0 +1,52 @@
+diff --git a/src/features/comments/components/comment-history-dialog.tsx b/src/features/comments/components/comment-history-dialog.tsx
+index 0000000..1111111 100644
+--- a/src/features/comments/components/comment-history-dialog.tsx
++++ b/src/features/comments/components/comment-history-dialog.tsx
+@@ -143,8 +143,10 @@
+               ) : (
+                 <CommentList
+                   comments={filteredComments}
+-                  onEdit={readOnly ? undefined : handleEdit}
+-                  onDelete={readOnly ? undefined : setPendingDelete}
++                  // Historial/finalizada: no crear ni responder, pero sí borrar/editar lo propio
++                  // (el backend ya lo permite; antes onDelete quedaba undefined y el ícono no hacía nada).
++                  onEdit={handleEdit}
++                  onDelete={setPendingDelete}
+                   onReply={readOnly ? undefined : setReplyingTo}
+                 />
+               )}
+@@ -153,7 +155,7 @@
+ 
+           {/* Composer abajo — contrato chat */}
+           <div className="shrink-0 bg-card px-3 py-3">
+-            {readOnly ? (
++            {readOnly && !editingComment ? (
+               <p className="rounded-xl bg-foreground/5 px-3 py-2.5 text-center text-xs text-muted-foreground">
+                 Esta tarea ya está finalizada — se puede ver el historial, pero no agregar mensajes nuevos.
+               </p>
+@@ -162,7 +164,7 @@
+                 target={target}
+                 editingComment={editingComment}
+                 onCancelEdit={() => setEditingComment(null)}
+-                replyingTo={replyingTo}
++                replyingTo={readOnly ? null : replyingTo}
+                 onCancelReply={() => setReplyingTo(null)}
+               />
+             )}
+diff --git a/src/features/comments/components/comment-item.tsx b/src/features/comments/components/comment-item.tsx
+index 0000000..1111111 100644
+--- a/src/features/comments/components/comment-item.tsx
++++ b/src/features/comments/components/comment-item.tsx
+@@ -82,9 +82,9 @@
+   const isDeleting = Boolean(comment.deleting)
+   const isOwner = currentUser?.id === user.id
+   const canDeleteAny = has(PermissionCode.COMMENT_DELETE_ANY)
+-  const canEdit = isOwner && !isPending && !isDeleting
+-  const canDelete = (isOwner || canDeleteAny) && !isPending && !isDeleting
+-  const canReply = has(PermissionCode.COMMENT_CREATE) && !isPending && !isDeleting
++  const canEdit = Boolean(onEdit) && isOwner && !isPending && !isDeleting
++  const canDelete = Boolean(onDelete) && (isOwner || canDeleteAny) && !isPending && !isDeleting
++  const canReply = Boolean(onReply) && has(PermissionCode.COMMENT_CREATE) && !isPending && !isDeleting
+   const showOwnerActions = canEdit || canDelete
+ 
+   const [imageDialogOpen, setImageDialogOpen] = useState(false)

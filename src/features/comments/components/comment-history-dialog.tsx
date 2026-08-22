@@ -143,8 +143,10 @@ export function CommentHistoryDialog({
               ) : (
                 <CommentList
                   comments={filteredComments}
-                  onEdit={readOnly ? undefined : handleEdit}
-                  onDelete={readOnly ? undefined : setPendingDelete}
+                  // Historial/finalizada: no crear ni responder, pero sí borrar/editar lo propio
+                  // (el backend ya lo permite; antes onDelete quedaba undefined y el ícono no hacía nada).
+                  onEdit={handleEdit}
+                  onDelete={setPendingDelete}
                   onReply={readOnly ? undefined : setReplyingTo}
                 />
               )}
@@ -153,7 +155,7 @@ export function CommentHistoryDialog({
 
           {/* Composer abajo — contrato chat */}
           <div className="shrink-0 bg-card px-3 py-3">
-            {readOnly ? (
+            {readOnly && !editingComment ? (
               <p className="rounded-xl bg-foreground/5 px-3 py-2.5 text-center text-xs text-muted-foreground">
                 Esta tarea ya está finalizada — se puede ver el historial, pero no agregar mensajes nuevos.
               </p>
@@ -162,7 +164,7 @@ export function CommentHistoryDialog({
                 target={target}
                 editingComment={editingComment}
                 onCancelEdit={() => setEditingComment(null)}
-                replyingTo={replyingTo}
+                replyingTo={readOnly ? null : replyingTo}
                 onCancelReply={() => setReplyingTo(null)}
               />
             )}

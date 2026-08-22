@@ -108,9 +108,9 @@ export function DxfPreviewDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         size="large"
-        className="flex h-[75vh] w-full max-w-3xl flex-col gap-0 overflow-hidden p-0 [&>button]:hidden"
+        className="flex h-[75vh] w-full max-w-3xl flex-col gap-0 overflow-hidden rounded-2xl border-none p-0 shadow-xs [&>button]:hidden"
       >
-        <DialogHeader className="flex shrink-0 flex-row items-center justify-between gap-3 border-b border-border px-4 py-3">
+        <DialogHeader className="z-20 flex shrink-0 flex-row items-center justify-between gap-3 border-b border-border/60 bg-popover px-4 py-3">
           <DialogTitle className="min-w-0 truncate text-sm font-semibold">
             {fileName || "Plano DXF"}
           </DialogTitle>
@@ -133,7 +133,14 @@ export function DxfPreviewDialog({
             </button>
           </div>
         </DialogHeader>
-        <div className="relative min-h-0 flex-1 bg-background">
+        {/* Lienzo a sangre: sin padding ni rounded interno (el dialog ya recorta) */}
+        <div
+          className={
+            "relative min-h-0 flex-1 overflow-hidden bg-neutral-950 " +
+            // anula rounded/borde del DxfCanvas anidado
+            "[&>*]:h-full [&>*]:w-full [&>*]:rounded-none [&>*]:border-0"
+          }
+        >
           {loading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
               <Spinner size={28} />
@@ -145,7 +152,7 @@ export function DxfPreviewDialog({
             </div>
           )}
           {!loading && !error && pieces.length > 0 && (
-            <DxfCanvas pieces={pieces} />
+            <DxfCanvas pieces={pieces} className="h-full w-full rounded-none border-0" />
           )}
         </div>
       </DialogContent>

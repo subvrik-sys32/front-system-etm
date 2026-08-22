@@ -82,7 +82,8 @@ export function DetailAssetsDialog({
               </div>
             ) : (
               <>
-                {/* Fotos */}
+                {/* Fotos: en solo lectura no mostrar bloque vacío */}
+                {(!readOnly || photos.length > 0) && (
                 <section className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -117,55 +118,71 @@ export function DetailAssetsDialog({
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {photos.map(p => (
-                      <div key={p.id} className="relative size-20 overflow-hidden rounded-xl bg-foreground/5">
+                      <div
+                        key={p.id}
+                        className="group relative size-20 overflow-hidden rounded-xl bg-muted/50"
+                      >
                         {p.publicUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={p.publicUrl} alt="" className="size-full object-cover" />
+                          <img
+                            src={p.publicUrl}
+                            alt=""
+                            className="size-full object-cover"
+                          />
                         ) : null}
                         {!readOnly && (
                           <button
                             type="button"
+                            title="Eliminar foto"
                             onClick={() => mutations.remove.mutate(p.id)}
-                            className="absolute right-1 top-1 rounded-md bg-black/50 p-0.5 text-white"
+                            className="absolute right-1.5 top-1.5 rounded-lg bg-background/90 p-1.5 text-muted-foreground shadow-xs backdrop-blur-xs transition hover:bg-destructive/10 hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
                           >
-                            <Trash2 size={12} />
+                            <Trash2 className="size-3.5" />
                           </button>
                         )}
                       </div>
                     ))}
-                    {photos.length === 0 && (
+                    {photos.length === 0 && !readOnly && (
                       <p className="text-xs text-muted-foreground">Sin fotos</p>
                     )}
                   </div>
                 </section>
+                )}
 
-                {/* Nota */}
-                <section className="flex flex-col gap-2">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Nota
-                  </h3>
-                  <textarea
-                    value={note || noteText}
-                    onChange={e => setNote(e.target.value)}
-                    readOnly={readOnly}
-                    rows={3}
-                    placeholder="Detalle libre..."
-                    className="w-full resize-none rounded-xl bg-foreground/5 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60"
-                  />
-                  {!readOnly && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        mutations.saveNote.mutate(note || noteText, {
-                          onSuccess: () => toast.success("Nota guardada"),
-                        })
-                      }
-                      className="self-end rounded-lg bg-foreground/10 px-3 py-1.5 text-xs font-semibold"
-                    >
-                      Guardar nota
-                    </button>
-                  )}
-                </section>
+                {/* Nota: en solo lectura no se muestra si está vacía */}
+                {(!readOnly || Boolean((note || noteText).trim())) && (
+                  <section className="flex flex-col gap-2">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Nota
+                    </h3>
+                    {readOnly ? (
+                      <p className="rounded-xl bg-foreground/5 px-3 py-2 text-sm whitespace-pre-wrap">
+                        {(note || noteText).trim()}
+                      </p>
+                    ) : (
+                      <>
+                        <textarea
+                          value={note || noteText}
+                          onChange={e => setNote(e.target.value)}
+                          rows={3}
+                          placeholder="Detalle libre..."
+                          className="w-full resize-none rounded-xl bg-foreground/5 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            mutations.saveNote.mutate(note || noteText, {
+                              onSuccess: () => toast.success("Nota guardada"),
+                            })
+                          }
+                          className="self-end rounded-lg bg-foreground/10 px-3 py-1.5 text-xs font-semibold"
+                        >
+                          Guardar nota
+                        </button>
+                      </>
+                    )}
+                  </section>
+                )}
 
                 {/* DXF por material (solo tarea) */}
                 {isTask && (

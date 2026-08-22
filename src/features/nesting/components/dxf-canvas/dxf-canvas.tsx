@@ -26,6 +26,7 @@ import { useCanvasView } from "./hooks/use-canvas-view"
 import { useMeasurements, measurementsFromBBox, applyOrthoConstraint } from "./hooks/use-measurements"
 import { useSimulation } from "./hooks/use-simulation"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { cn } from "@/shared/utils/utils"
 
 export type { NestingPieceInput, LayerInfo, DxfCanvasProps } from "./types/types"
 export { computeLayerList } from "./utils/entities"
@@ -63,6 +64,7 @@ export function DxfCanvas({
   onTransformModeChange,
   rotationStep = 90,
   sheetKey,
+  className,
 }: DxfCanvasProps) {
   const { isCompact, isMobile } = useResponsive()
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -1078,7 +1080,7 @@ export function DxfCanvas({
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden rounded-xl border border-border bg-background"
+      className={cn("relative h-full w-full overflow-hidden rounded-xl border border-border bg-background", className)}
       style={{ backgroundColor: "var(--background, #0a0a0c)" }}
     >
       <canvas ref={canvasRef} className="h-full w-full touch-none select-none" style={{ cursor: "default" }} />

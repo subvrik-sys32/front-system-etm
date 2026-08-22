@@ -169,7 +169,7 @@ function ProcessMobileCardReady({
               handleRowToggle()
             }
           }}
-          className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 pl-2 text-left"
+          className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 pl-3 text-left"
         >
           {/* Chip = mismo componente/contrato que proyectos (padding + color) */}
           <ProjectCodeChip

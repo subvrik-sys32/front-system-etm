@@ -1,0 +1,196 @@
+diff --git a/src/features/detail-assets/components/detail-assets-dialog.tsx b/src/features/detail-assets/components/detail-assets-dialog.tsx
+index 034eee9..5ee10c5 100644
+--- a/src/features/detail-assets/components/detail-assets-dialog.tsx
++++ b/src/features/detail-assets/components/detail-assets-dialog.tsx
+@@ -82,7 +82,8 @@ export function DetailAssetsDialog({
+               </div>
+             ) : (
+               <>
+-                {/* Fotos */}
++                {/* Fotos: en solo lectura no mostrar bloque vacío */}
++                {(!readOnly || photos.length > 0) && (
+                 <section className="flex flex-col gap-2">
+                   <div className="flex items-center justify-between">
+                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+@@ -117,18 +118,26 @@ export function DetailAssetsDialog({
+                   </div>
+                   <div className="flex flex-wrap gap-2">
+                     {photos.map(p => (
+-                      <div key={p.id} className="relative size-20 overflow-hidden rounded-xl bg-foreground/5">
++                      <div
++                        key={p.id}
++                        className="group relative size-20 overflow-hidden rounded-xl bg-muted/50"
++                      >
+                         {p.publicUrl ? (
+                           // eslint-disable-next-line @next/next/no-img-element
+-                          <img src={p.publicUrl} alt="" className="size-full object-cover" />
++                          <img
++                            src={p.publicUrl}
++                            alt=""
++                            className="size-full object-cover"
++                          />
+                         ) : null}
+                         {!readOnly && (
+                           <button
+                             type="button"
++                            title="Eliminar foto"
+                             onClick={() => mutations.remove.mutate(p.id)}
+-                            className="absolute right-1 top-1 rounded-md bg-black/50 p-0.5 text-white"
++                            className="absolute right-1.5 top-1.5 rounded-lg bg-background/90 p-1.5 text-muted-foreground shadow-xs backdrop-blur-xs transition hover:bg-destructive/10 hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
+                           >
+-                            <Trash2 size={12} />
++                            <Trash2 className="size-3.5" />
+                           </button>
+                         )}
+                       </div>
+@@ -139,33 +148,40 @@ export function DetailAssetsDialog({
+                   </div>
+                 </section>
+ 
+-                {/* Nota */}
+-                <section className="flex flex-col gap-2">
+-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+-                    Nota
+-                  </h3>
+-                  <textarea
+-                    value={note || noteText}
+-                    onChange={e => setNote(e.target.value)}
+-                    readOnly={readOnly}
+-                    rows={3}
+-                    placeholder="Detalle libre..."
+-                    className="w-full resize-none rounded-xl bg-foreground/5 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60"
+-                  />
+-                  {!readOnly && (
+-                    <button
+-                      type="button"
+-                      onClick={() =>
+-                        mutations.saveNote.mutate(note || noteText, {
+-                          onSuccess: () => toast.success("Nota guardada"),
+-                        })
+-                      }
+-                      className="self-end rounded-lg bg-foreground/10 px-3 py-1.5 text-xs font-semibold"
+-                    >
+-                      Guardar nota
+-                    </button>
+-                  )}
+-                </section>
++                {/* Nota: en solo lectura no se muestra si está vacía */}
++                {(!readOnly || Boolean((note || noteText).trim())) && (
++                  <section className="flex flex-col gap-2">
++                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
++                      Nota
++                    </h3>
++                    {readOnly ? (
++                      <p className="rounded-xl bg-foreground/5 px-3 py-2 text-sm whitespace-pre-wrap">
++                        {(note || noteText).trim()}
++                      </p>
++                    ) : (
++                      <>
++                        <textarea
++                          value={note || noteText}
++                          onChange={e => setNote(e.target.value)}
++                          rows={3}
++                          placeholder="Detalle libre..."
++                          className="w-full resize-none rounded-xl bg-foreground/5 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60"
++                        />
++                        <button
++                          type="button"
++                          onClick={() =>
++                            mutations.saveNote.mutate(note || noteText, {
++                              onSuccess: () => toast.success("Nota guardada"),
++                            })
++                          }
++                          className="self-end rounded-lg bg-foreground/10 px-3 py-1.5 text-xs font-semibold"
++                        >
++                          Guardar nota
++                        </button>
++                      </>
++                    )}
++                  </section>
++                )}
+ 
+                 {/* DXF por material (solo tarea) */}
+                 {isTask && (
+diff --git a/src/features/detail-assets/components/dxf-preview-dialog.tsx b/src/features/detail-assets/components/dxf-preview-dialog.tsx
+index 41d6248..43c683a 100644
+--- a/src/features/detail-assets/components/dxf-preview-dialog.tsx
++++ b/src/features/detail-assets/components/dxf-preview-dialog.tsx
+@@ -108,9 +108,9 @@ export function DxfPreviewDialog({
+     <Dialog open={open} onOpenChange={onOpenChange}>
+       <DialogContent
+         size="large"
+-        className="flex h-[75vh] w-full max-w-3xl flex-col gap-0 overflow-hidden p-0 [&>button]:hidden"
++        className="flex h-[75vh] w-full max-w-3xl flex-col gap-0 overflow-hidden rounded-2xl border-none p-0 shadow-xs [&>button]:hidden"
+       >
+-        <DialogHeader className="flex shrink-0 flex-row items-center justify-between gap-3 border-b border-border px-4 py-3">
++        <DialogHeader className="z-20 flex shrink-0 flex-row items-center justify-between gap-3 border-b border-border/60 bg-popover px-4 py-3">
+           <DialogTitle className="min-w-0 truncate text-sm font-semibold">
+             {fileName || "Plano DXF"}
+           </DialogTitle>
+@@ -133,7 +133,14 @@ export function DxfPreviewDialog({
+             </button>
+           </div>
+         </DialogHeader>
+-        <div className="relative min-h-0 flex-1 bg-background">
++        {/* Lienzo a sangre: sin padding ni rounded interno (el dialog ya recorta) */}
++        <div
++          className={
++            "relative min-h-0 flex-1 overflow-hidden bg-neutral-950 " +
++            // anula rounded/borde del DxfCanvas anidado
++            "[&>*]:h-full [&>*]:w-full [&>*]:rounded-none [&>*]:border-0"
++          }
++        >
+           {loading && (
+             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
+               <Spinner size={28} />
+@@ -145,7 +152,7 @@ export function DxfPreviewDialog({
+             </div>
+           )}
+           {!loading && !error && pieces.length > 0 && (
+-            <DxfCanvas pieces={pieces} />
++            <DxfCanvas pieces={pieces} className="h-full w-full rounded-none border-0" />
+           )}
+         </div>
+       </DialogContent>
+diff --git a/src/features/nesting/components/dxf-canvas/dxf-canvas.tsx b/src/features/nesting/components/dxf-canvas/dxf-canvas.tsx
+index 0a49757..789adcd 100644
+--- a/src/features/nesting/components/dxf-canvas/dxf-canvas.tsx
++++ b/src/features/nesting/components/dxf-canvas/dxf-canvas.tsx
+@@ -26,6 +26,7 @@ import { useCanvasView } from "./hooks/use-canvas-view"
+ import { useMeasurements, measurementsFromBBox, applyOrthoConstraint } from "./hooks/use-measurements"
+ import { useSimulation } from "./hooks/use-simulation"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
++import { cn } from "@/shared/utils/utils"
+ 
+ export type { NestingPieceInput, LayerInfo, DxfCanvasProps } from "./types/types"
+ export { computeLayerList } from "./utils/entities"
+@@ -63,6 +64,7 @@ export function DxfCanvas({
+   onTransformModeChange,
+   rotationStep = 90,
+   sheetKey,
++  className,
+ }: DxfCanvasProps) {
+   const { isCompact, isMobile } = useResponsive()
+   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+@@ -1078,7 +1080,7 @@ export function DxfCanvas({
+   return (
+     <div
+       ref={containerRef}
+-      className="relative h-full w-full overflow-hidden rounded-xl border border-border bg-background"
++      className={cn("relative h-full w-full overflow-hidden rounded-xl border border-border bg-background", className)}
+       style={{ backgroundColor: "var(--background, #0a0a0c)" }}
+     >
+       <canvas ref={canvasRef} className="h-full w-full touch-none select-none" style={{ cursor: "default" }} />
+diff --git a/src/features/nesting/components/dxf-canvas/types/types.ts b/src/features/nesting/components/dxf-canvas/types/types.ts
+index b29c08b..832fd7f 100644
+--- a/src/features/nesting/components/dxf-canvas/types/types.ts
++++ b/src/features/nesting/components/dxf-canvas/types/types.ts
+@@ -88,6 +88,8 @@ export type TransformMode = "free" | "geometric"
+ export type RotationStep = 15 | 45 | 90 | 180
+ 
+ export interface DxfCanvasProps {
++  /** Clases extra del contenedor (p. ej. visor embebido sin borde). */
++  className?: string
+   pieces: NestingPieceInput[]
+   sheetSize?: { width: number; height: number }
+   selectedPieceIndices?: number[]

@@ -88,6 +88,8 @@ export type TransformMode = "free" | "geometric"
 export type RotationStep = 15 | 45 | 90 | 180
 
 export interface DxfCanvasProps {
+  /** Clases extra del contenedor (p. ej. visor embebido sin borde). */
+  className?: string
   pieces: NestingPieceInput[]
   sheetSize?: { width: number; height: number }
   selectedPieceIndices?: number[]

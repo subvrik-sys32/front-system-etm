@@ -29,8 +29,8 @@ type Props = {
   isReply?: boolean
 }
 
-/** Acción textual compacta bajo la burbuja (misma fila que Responder). */
-function FooterAction({
+/** Solo icono, al lado de la fecha. */
+function MetaIcon({
   icon: Icon,
   label,
   danger,
@@ -44,28 +44,28 @@ function FooterAction({
   return (
     <button
       type="button"
+      aria-label={label}
+      title={label}
       onClick={e => {
         e.preventDefault()
         e.stopPropagation()
         onClick()
       }}
       className={cn(
-        "inline-flex items-center gap-1 px-1 text-[11px] font-medium transition-colors",
+        "inline-flex size-5 items-center justify-center rounded-md transition-colors",
         danger
-          ? "text-muted-foreground/70 hover:text-red-500 dark:hover:text-red-400"
-          : "text-muted-foreground/70 hover:text-foreground",
+          ? "text-muted-foreground/70 hover:bg-red-500/10 hover:text-red-500 dark:hover:text-red-400"
+          : "text-muted-foreground/70 hover:bg-foreground/8 hover:text-foreground",
       )}
     >
       <Icon size={12} strokeWidth={2.2} />
-      {label}
     </button>
   )
 }
 
 /**
- * Avatar = mismo contrato que sidebar-profile:
- * overflow-hidden + rounded-full + gradient + shadow-inner
- * (evita “sierra” de shadow-xs en el círculo externo).
+ * Misma receta que sidebar-profile + isolate/transform para AA limpio
+ * (evita sierra en pantallas retina / compositing).
  */
 function CommentAvatar({
   name,
@@ -79,22 +79,19 @@ function CommentAvatar({
   return (
     <div
       className={cn(
-        "relative size-9 shrink-0 overflow-hidden rounded-full",
+        "relative size-9 shrink-0 isolate overflow-hidden rounded-full",
         isOwner ? "bg-foreground text-background" : "bg-muted text-foreground",
       )}
     >
-      <div
-        className={cn(
-          "flex size-full items-center justify-center overflow-hidden rounded-full",
-          "bg-linear-to-br from-white/10 to-foreground/5 shadow-inner",
-        )}
-      >
+      {/* Capa interna: gradient + shadow-inner (sidebar-profile) */}
+      <div className="flex size-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/10 to-foreground/5 shadow-inner">
         {avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={avatarUrl}
             alt={name}
-            className="size-full rounded-full object-cover"
+            // scale mínimo + rounded-full: el browser antialias el borde del bitmap
+            className="size-full rounded-full object-cover [transform:translateZ(0)]"
             draggable={false}
           />
         ) : (
@@ -105,10 +102,6 @@ function CommentAvatar({
   )
 }
 
-/**
- * Chat: burbuja = solo contenido (paridad CAD AI).
- * Acciones (Responder / Editar / Eliminar) en footer bajo la burbuja.
- */
 export function CommentItem({
   comment,
   onEdit,
@@ -126,7 +119,6 @@ export function CommentItem({
   const canEdit = isOwner && !isPending && !isDeleting
   const canDelete = (isOwner || canDeleteAny) && !isPending && !isDeleting
   const canReply = has(PermissionCode.COMMENT_CREATE) && !isPending && !isDeleting
-  const showFooter = canReply || canEdit || canDelete
 
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
 
@@ -157,9 +149,10 @@ export function CommentItem({
           isOwner ? "items-end" : "items-start",
         )}
       >
+        {/* Meta: fecha + checks + iconos de acción */}
         <div
           className={cn(
-            "flex items-center gap-1.5 px-1",
+            "flex items-center gap-1 px-0.5",
             isOwner && "flex-row-reverse",
           )}
         >
@@ -203,9 +196,41 @@ export function CommentItem({
               )}
             </span>
           )}
+
+          {/* Solo iconos junto a la fecha */}
+          {(canReply || canEdit || canDelete) && (
+            <span
+              className={cn(
+                "inline-flex items-center gap-0.5",
+                isOwner && "flex-row-reverse",
+              )}
+            >
+              {canReply && (
+                <MetaIcon
+                  icon={Reply}
+                  label="Responder"
+                  onClick={() => onReply?.(comment)}
+                />
+              )}
+              {canEdit && (
+                <MetaIcon
+                  icon={Pencil}
+                  label="Editar"
+                  onClick={() => onEdit?.(comment)}
+                />
+              )}
+              {canDelete && (
+                <MetaIcon
+                  icon={Trash2}
+                  label="Eliminar"
+                  danger
+                  onClick={() => onDelete?.(comment)}
+                />
+              )}
+            </span>
+          )}
         </div>
 
-        {/* Burbuja: solo contenido — padding simétrico, texto centrado si es corto */}
         <div
           className={cn(
             "w-fit max-w-full min-h-9 rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed shadow-xs",
@@ -253,39 +278,6 @@ export function CommentItem({
             </button>
           ) : null}
         </div>
-
-        {/* Footer: Responder + Editar + Eliminar — fuera de la burbuja */}
-        {showFooter && (
-          <div
-            className={cn(
-              "flex flex-wrap items-center gap-x-1 gap-y-0.5 px-0.5",
-              isOwner && "flex-row-reverse",
-            )}
-          >
-            {canReply && (
-              <FooterAction
-                icon={Reply}
-                label="Responder"
-                onClick={() => onReply?.(comment)}
-              />
-            )}
-            {canEdit && (
-              <FooterAction
-                icon={Pencil}
-                label="Editar"
-                onClick={() => onEdit?.(comment)}
-              />
-            )}
-            {canDelete && (
-              <FooterAction
-                icon={Trash2}
-                label="Eliminar"
-                danger
-                onClick={() => onDelete?.(comment)}
-              />
-            )}
-          </div>
-        )}
       </div>
 
       <CommentImageDialog

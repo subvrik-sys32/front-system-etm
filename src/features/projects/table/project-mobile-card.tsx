@@ -303,10 +303,10 @@ function ProjectMobileCardReady({
           </span>
         </button>
 
-        {/* Auditoría en row solo colapsado + ancho; si no, junto al lápiz al expandir */}
+        {/* Auditoría + ojo: solo colapsado; al expandir van al panel / row móvil */}
         {!expanded && (
           <div
-            className="hidden shrink-0 items-center @[40rem]/prow:flex"
+            className="hidden shrink-0 items-center gap-1 @[40rem]/prow:flex"
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
@@ -316,6 +316,7 @@ function ProjectMobileCardReady({
               createdBy={project.createdBy}
               updatedBy={project.updatedBy}
             />
+            <DetailAssetsEye projectId={project.id} />
           </div>
         )}
 

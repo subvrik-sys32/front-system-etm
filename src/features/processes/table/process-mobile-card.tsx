@@ -407,7 +407,7 @@ function ProcessMobileCardReady({
             />
         </CollapsibleHeightSection>
 
-        {/* Debajo del selector de campos: auditoría + materiales */}
+        {/* Al expandir: auditoría + materiales + ojo (mismas que el row colapsado) */}
         <div
           className="flex items-center justify-start gap-1"
           onClick={e => e.stopPropagation()}
@@ -420,6 +420,7 @@ function ProcessMobileCardReady({
             updatedBy={task.updatedBy}
           />
           <TaskMaterialInfo task={task} alwaysShow />
+          <DetailAssetsEye taskId={task.id} readOnly />
         </div>
 
         <ProcessExpandedRow processTask={processTask} />

@@ -351,10 +351,10 @@ function TaskMobileCardReady({
           </span>
         </div>
 
-        {/* Auditoría en row solo colapsado + ancho; si no, junto al lápiz al expandir */}
+        {/* Auditoría + ojo: solo colapsado; al expandir van al panel / row móvil */}
         {!expanded && (
           <div
-            className="hidden shrink-0 items-center @[40rem]/trow:flex"
+            className="hidden shrink-0 items-center gap-1 @[40rem]/trow:flex"
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
@@ -363,6 +363,12 @@ function TaskMobileCardReady({
               updatedAt={task.updatedAt}
               createdBy={task.createdBy}
               updatedBy={task.updatedBy}
+            />
+            <DetailAssetsEye
+              taskId={task.id}
+              hasAssets={Boolean(
+                task.materialLines?.some(l => (l.detailAssets?.length ?? 0) > 0),
+              )}
             />
           </div>
         )}

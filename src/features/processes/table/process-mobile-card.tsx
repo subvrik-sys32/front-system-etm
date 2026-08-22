@@ -300,9 +300,16 @@ function ProcessMobileCardReady({
             </span>
           )}
 
-          {/* Fecha entrega — después de mensajes */}
-          <span className="hidden shrink-0 text-xs tabular-nums text-muted-foreground @[40rem]/prow:inline">
-            {formatDate(task.deliveryDate)}
+          {/* Fecha + ojo detalle (no desplaza Iniciar) */}
+          <span
+            className="hidden shrink-0 items-center gap-1.5 @[40rem]/prow:inline-flex"
+            onClick={e => e.stopPropagation()}
+            onPointerDown={e => e.stopPropagation()}
+          >
+            <span className="text-xs tabular-nums text-muted-foreground">
+              {formatDate(task.deliveryDate)}
+            </span>
+            <DetailAssetsEye taskId={task.id} readOnly />
           </span>
         </div>
 
@@ -311,7 +318,6 @@ function ProcessMobileCardReady({
             className="w-30 shrink-0"
             onClick={e => e.stopPropagation()}
           >
-            <DetailAssetsEye taskId={task.id} readOnly />
             <ProcessRowActions
               task={task}
               stepId={stepId}

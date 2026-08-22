@@ -121,11 +121,8 @@ export function ProjectExpandedRow({
       }
 
       setActiveView("comments")
-
-      if (isMobile) {
-        setCommentsDialogOpen(true)
-      }
-
+      // Dialog en todos los breakpoints (paridad con processes).
+      setCommentsDialogOpen(true)
       return
     }
 

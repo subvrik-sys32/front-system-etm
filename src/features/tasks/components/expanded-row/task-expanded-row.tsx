@@ -88,19 +88,14 @@ export function TaskExpandedRow({
     }
 
     if (tabParam === "comments") {
-      // Recién cuando el scroll+expand terminaron — si no, el panel
-      // de mensajes saltaba a mitad del scroll, antes de que el
-      // usuario viera a qué tarea pertenece.
+      // Esperar scroll+expand del deep-link; luego abrir dialog en
+      // todos los breakpoints (ya no hay panel inline de mensajes).
       if (!focusSettled) {
         return
       }
 
       setActiveView("comments")
-
-      if (isMobile) {
-        setCommentsDialogOpen(true)
-      }
-
+      setCommentsDialogOpen(true)
       return
     }
 

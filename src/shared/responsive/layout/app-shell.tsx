@@ -56,7 +56,7 @@ function DesktopTopBar() {
           {title ? (
             <div
               title={title}
-              className="inline-flex max-w-[10rem] items-center rounded-full bg-chrome px-2.5 py-1.5 shadow-xs backdrop-blur-xl desktop:max-w-[14rem]"
+              className="inline-flex max-w-[10rem] items-center rounded-full bg-muted px-2.5 py-1.5 shadow-xs backdrop-blur-xl desktop:max-w-[14rem]"
             >
               <span className="truncate text-sm font-semibold text-foreground">
                 {title}

@@ -22,7 +22,7 @@ type Props = {
 
 /**
  * - Desktop: pastilla ícono + label.
- * - Mobile FAB: círculo neutro = bg-foreground / text-background (tema).
+ * - Mobile FAB: mismo chrome que topbar (bg-muted text-foreground).
  */
 export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
   (
@@ -74,8 +74,8 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
           "relative z-20 flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full shadow-xs transition active:scale-95",
           accentClassName ??
             cn(
-              "bg-foreground text-background",
-              active && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+              "bg-muted text-foreground hover:bg-muted/80",
+              active && "bg-foreground/15 text-foreground",
             ),
           className,
         )}

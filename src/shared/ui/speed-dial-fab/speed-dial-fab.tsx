@@ -152,7 +152,7 @@ export function SpeedDialFab({ actions, className }: Props) {
         onClick={toggleDial}
         className={cn(
           "pointer-events-auto flex size-12 items-center justify-center rounded-full transition-transform duration-150",
-          "bg-foreground text-background hover:scale-105 hover:bg-foreground/90 active:scale-95",
+          "bg-muted text-foreground hover:scale-105 hover:bg-muted/80 active:scale-95 active:bg-foreground/10",
           "shadow-xs",
         )}
       >

@@ -77,7 +77,7 @@ export function TopBar() {
         <div className="min-w-0 flex-1">
           <div
             title={title}
-            className="inline-flex max-w-full items-center rounded-full bg-chrome px-2.5 py-1.5 shadow-xs backdrop-blur-xl"
+            className="inline-flex max-w-full items-center rounded-full bg-muted px-2.5 py-1.5 shadow-xs backdrop-blur-xl"
           >
             <span className="truncate text-sm font-semibold text-foreground">
               {title}

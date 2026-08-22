@@ -25,7 +25,7 @@ export function HistoryToggleButton({ count, active, onClick }: Props) {
           // Activo: sólido (no se pierde sobre el chrome)
           // Inactivo: misma burbuja del sidebar
           active
-            ? "bg-primary text-primary-foreground"
+            ? "bg-primary text-white"
             : SIDEBAR_COUNT_BADGE,
           isMobile && !active && "ring-1 ring-primary/20",
           active && "animate-history-bounce",
@@ -43,9 +43,9 @@ export function HistoryToggleButton({ count, active, onClick }: Props) {
       onClick={onClick}
       badge={badge}
       className={cn(
-        // Evita que el activo se vea lavado / translúcido
+        // Activo: sólido (mismo criterio que notis/mensajes seleccionados)
         active &&
-          "bg-primary/15 text-primary hover:text-primary dark:bg-primary/25 dark:text-primary-foreground",
+          "bg-primary text-white hover:bg-primary hover:text-white shadow-xs",
       )}
     />
   )

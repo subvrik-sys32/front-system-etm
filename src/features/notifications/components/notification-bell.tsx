@@ -124,7 +124,7 @@ export function NotificationBell({
           {count > 0 && (
             <span
               className={cn(
-                "absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs",
+                "absolute -right-1.5 -top-1.5 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs",
                 // Burbuja en rojo sólido cuando está activo o por defecto según tu diseño
                 open
                   ? "bg-destructive text-white"

@@ -56,7 +56,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
         >
           <Icon size={TOOLBAR_CHROME_ICON_SIZE} strokeWidth={2.25} className="shrink-0" />
           {badge && (
-            <span className="pointer-events-none absolute -bottom-0.5 -right-0.5 z-[60]">
+            <span className="pointer-events-none absolute -right-1.5 -top-1.5 z-[60]">
               {badge}
             </span>
           )}
@@ -83,7 +83,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
       >
         <Icon size={17} strokeWidth={2.2} />
         {badge && (
-          <span className="pointer-events-none absolute -bottom-0.5 -right-0.5 z-[60]">
+          <span className="pointer-events-none absolute -right-1.5 -top-1.5 z-[60]">
             {badge}
           </span>
         )}

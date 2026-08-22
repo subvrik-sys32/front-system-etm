@@ -74,7 +74,7 @@ export function SidebarRow({
         {hasCount && isRail && (
           <span
             className={cn(
-              "absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs pointer-events-none transition-opacity duration-150 opacity-100",
+              "absolute -right-1.5 -top-1.5 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs pointer-events-none transition-opacity duration-150 opacity-100",
               collapsedBadgeColor || badgeColor,
               badgeAnimated && "animate-pulse",
             )}

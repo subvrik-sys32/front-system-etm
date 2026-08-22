@@ -125,7 +125,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
           {count > 0 && (
             <span
               className={cn(
-                "absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs",
+                "absolute -right-1.5 -top-1.5 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs",
                 open
                   ? "bg-destructive text-white"
                   : ALERT_COUNT_BADGE,

@@ -1,0 +1,99 @@
+diff --git a/src/features/comments/components/message-bell.tsx b/src/features/comments/components/message-bell.tsx
+index bcf12cb..cedb195 100644
+--- a/src/features/comments/components/message-bell.tsx
++++ b/src/features/comments/components/message-bell.tsx
+@@ -125,7 +125,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
+           {count > 0 && (
+             <span
+               className={cn(
+-                "absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs",
++                "absolute -right-1.5 -top-1.5 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs",
+                 open
+                   ? "bg-destructive text-white"
+                   : ALERT_COUNT_BADGE,
+diff --git a/src/features/notifications/components/notification-bell.tsx b/src/features/notifications/components/notification-bell.tsx
+index 258148a..6681cd1 100644
+--- a/src/features/notifications/components/notification-bell.tsx
++++ b/src/features/notifications/components/notification-bell.tsx
+@@ -124,7 +124,7 @@ export function NotificationBell({
+           {count > 0 && (
+             <span
+               className={cn(
+-                "absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs",
++                "absolute -right-1.5 -top-1.5 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs",
+                 // Burbuja en rojo sólido cuando está activo o por defecto según tu diseño
+                 open
+                   ? "bg-destructive text-white"
+diff --git a/src/shared/history/components/history-toggle-button.tsx b/src/shared/history/components/history-toggle-button.tsx
+index 83c35fd..6b2215a 100644
+--- a/src/shared/history/components/history-toggle-button.tsx
++++ b/src/shared/history/components/history-toggle-button.tsx
+@@ -25,7 +25,7 @@ export function HistoryToggleButton({ count, active, onClick }: Props) {
+           // Activo: sólido (no se pierde sobre el chrome)
+           // Inactivo: misma burbuja del sidebar
+           active
+-            ? "bg-primary text-primary-foreground"
++            ? "bg-primary text-white"
+             : SIDEBAR_COUNT_BADGE,
+           isMobile && !active && "ring-1 ring-primary/20",
+           active && "animate-history-bounce",
+@@ -43,9 +43,9 @@ export function HistoryToggleButton({ count, active, onClick }: Props) {
+       onClick={onClick}
+       badge={badge}
+       className={cn(
+-        // Evita que el activo se vea lavado / translúcido
++        // Activo: sólido (mismo criterio que notis/mensajes seleccionados)
+         active &&
+-          "bg-primary/15 text-primary hover:text-primary dark:bg-primary/25 dark:text-primary-foreground",
++          "bg-primary text-white hover:bg-primary hover:text-white shadow-xs",
+       )}
+     />
+   )
+diff --git a/src/shared/responsive/layout/sidebar/sidebar-presence.tsx b/src/shared/responsive/layout/sidebar/sidebar-presence.tsx
+index 5ead4b2..c84f643 100644
+--- a/src/shared/responsive/layout/sidebar/sidebar-presence.tsx
++++ b/src/shared/responsive/layout/sidebar/sidebar-presence.tsx
+@@ -191,7 +191,7 @@ export function SidebarPresence({
+         >
+           <Users size={16} strokeWidth={2} />
+           {onlineUsers.length > 0 && (
+-            <span className={cn("absolute -right-1 -top-1 z-10 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px]", emeraldBadgeClass)}>
++            <span className={cn("absolute -right-1.5 -top-1.5 z-10 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px]", emeraldBadgeClass)}>
+               {onlineUsers.length > 9 ? "9+" : onlineUsers.length}
+             </span>
+           )}
+diff --git a/src/shared/responsive/layout/sidebar/sidebar-row.tsx b/src/shared/responsive/layout/sidebar/sidebar-row.tsx
+index c47033e..7938625 100644
+--- a/src/shared/responsive/layout/sidebar/sidebar-row.tsx
++++ b/src/shared/responsive/layout/sidebar/sidebar-row.tsx
+@@ -74,7 +74,7 @@ export function SidebarRow({
+         {hasCount && isRail && (
+           <span
+             className={cn(
+-              "absolute -right-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs pointer-events-none transition-opacity duration-150 opacity-100",
++              "absolute -right-1.5 -top-1.5 z-10 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none shadow-xs pointer-events-none transition-opacity duration-150 opacity-100",
+               collapsedBadgeColor || badgeColor,
+               badgeAnimated && "animate-pulse",
+             )}
+diff --git a/src/shared/ui/speed-dial-fab/fab-trigger.tsx b/src/shared/ui/speed-dial-fab/fab-trigger.tsx
+index 3798cb1..b83a643 100644
+--- a/src/shared/ui/speed-dial-fab/fab-trigger.tsx
++++ b/src/shared/ui/speed-dial-fab/fab-trigger.tsx
+@@ -56,7 +56,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
+         >
+           <Icon size={TOOLBAR_CHROME_ICON_SIZE} strokeWidth={2.25} className="shrink-0" />
+           {badge && (
+-            <span className="pointer-events-none absolute -bottom-0.5 -right-0.5 z-[60]">
++            <span className="pointer-events-none absolute -right-1.5 -top-1.5 z-[60]">
+               {badge}
+             </span>
+           )}
+@@ -83,7 +83,7 @@ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
+       >
+         <Icon size={17} strokeWidth={2.2} />
+         {badge && (
+-          <span className="pointer-events-none absolute -bottom-0.5 -right-0.5 z-[60]">
++          <span className="pointer-events-none absolute -right-1.5 -top-1.5 z-[60]">
+             {badge}
+           </span>
+         )}

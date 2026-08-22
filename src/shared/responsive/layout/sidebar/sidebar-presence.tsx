@@ -191,7 +191,7 @@ export function SidebarPresence({
         >
           <Users size={16} strokeWidth={2} />
           {onlineUsers.length > 0 && (
-            <span className={cn("absolute -right-1 -top-1 z-10 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px]", emeraldBadgeClass)}>
+            <span className={cn("absolute -right-1.5 -top-1.5 z-10 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px]", emeraldBadgeClass)}>
               {onlineUsers.length > 9 ? "9+" : onlineUsers.length}
             </span>
           )}

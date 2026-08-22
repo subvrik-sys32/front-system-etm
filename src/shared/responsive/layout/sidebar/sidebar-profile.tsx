@@ -88,10 +88,9 @@ export function SidebarProfile({
   if (collapsed) {
     return (
       <>
-        {/* Mismo padding p-2.5 para mantener idéntico contenedor que el estado expandido */}
         <div 
           ref={containerRef} 
-          className="flex w-full shrink-0 flex-col items-center p-2.5"
+          className="flex w-full shrink-0 flex-col items-center p-2.5 gap-2"
         >
           <Popover open={profileOpen} onOpenChange={setProfileOpen} modal={false}>
             <PopoverTrigger asChild>
@@ -129,16 +128,16 @@ export function SidebarProfile({
             </PopoverContent>
           </Popover>
 
-          {/* Usamos exactamente mt-2 y h-8 para igualar la altura y separación de la botonera inferior expandida */}
-          <div className="mt-2 flex h-8 w-full shrink-0 items-center justify-center">
+          {/* Botón Salir colapsado con idéntico contenedor y estilo que el de la versión expandida */}
+          <div className="flex h-8 w-full items-center justify-center p-1 bg-sidebar-accent/30 rounded-lg backdrop-blur-sm">
             <button
               type="button"
               onClick={handleLogoutClick}
               title="Cerrar sesión"
               aria-label="Cerrar sesión"
-              className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
+              className="flex h-full w-full items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
             >
-              <LogOut className="size-4" />
+              <LogOut size={14} />
             </button>
           </div>
         </div>
@@ -206,7 +205,6 @@ export function SidebarProfile({
             </div>
           </div>
 
-          {/* Contenedor unificado con altura y espaciado rigurosos para evitar saltos */}
           <div className="mt-2 flex h-8 items-center gap-1.5 p-1 bg-sidebar-accent/30 rounded-lg backdrop-blur-sm">
             <button
               type="button"

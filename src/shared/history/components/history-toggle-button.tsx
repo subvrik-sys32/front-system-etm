@@ -13,17 +13,16 @@ type Props = {
 }
 
 /**
- * Activo: ring vía FabTrigger (no cambia el fill / no translúcido).
- * Counter: primary sólido al activo, soft al inactivo.
+ * Counter: cambio de clase instantáneo (sin transition-colors → sin barrido).
+ * Activo del botón: ring vía FabTrigger.
  */
 export function HistoryToggleButton({ count, active, onClick }: Props) {
   const badge =
     count > 0 ? (
       <span
         className={cn(
-          "flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold select-none transition-colors duration-200 shadow-xs",
+          "flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none shadow-xs select-none",
           active ? "bg-primary text-white" : SIDEBAR_COUNT_BADGE,
-          active && "animate-history-bounce",
         )}
       >
         {count > 9 ? "9+" : count}

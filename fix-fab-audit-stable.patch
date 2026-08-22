@@ -1,0 +1,134 @@
+diff --git a/src/shared/history/components/history-toggle-button.tsx b/src/shared/history/components/history-toggle-button.tsx
+index a55955e..0f5aacd 100644
+--- a/src/shared/history/components/history-toggle-button.tsx
++++ b/src/shared/history/components/history-toggle-button.tsx
+@@ -13,17 +13,16 @@ type Props = {
+ }
+ 
+ /**
+- * Activo: ring vía FabTrigger (no cambia el fill / no translúcido).
+- * Counter: primary sólido al activo, soft al inactivo.
++ * Counter: cambio de clase instantáneo (sin transition-colors → sin barrido).
++ * Activo del botón: ring vía FabTrigger.
+  */
+ export function HistoryToggleButton({ count, active, onClick }: Props) {
+   const badge =
+     count > 0 ? (
+       <span
+         className={cn(
+-          "flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold select-none transition-colors duration-200 shadow-xs",
++          "flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none shadow-xs select-none",
+           active ? "bg-primary text-white" : SIDEBAR_COUNT_BADGE,
+-          active && "animate-history-bounce",
+         )}
+       >
+         {count > 9 ? "9+" : count}
+diff --git a/src/shared/ui/speed-dial-fab/speed-dial-fab.tsx b/src/shared/ui/speed-dial-fab/speed-dial-fab.tsx
+index e08d3db..06cd7a5 100644
+--- a/src/shared/ui/speed-dial-fab/speed-dial-fab.tsx
++++ b/src/shared/ui/speed-dial-fab/speed-dial-fab.tsx
+@@ -8,7 +8,6 @@ import { SlidersHorizontal, X } from "lucide-react"
+ import { cn } from "@/shared/utils/utils"
+ import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
+ import {
+-  FAB_CHROME_FADE_MS,
+   FAB_RIGHT_OFFSET_PX,
+   FAB_Z_CLASS,
+ } from "./fab-layout"
+@@ -29,38 +28,34 @@ function isInsideSheetOrPopover(target: EventTarget | null) {
+ }
+ 
+ /**
+- * FAB mobile.
+- * - Acciones: montar/desmontar sin animación de salida (evita el
+- *   "desvanecido lag" al cambiar de página por bottom-nav).
+- * - Cierre inmediato en pathname / drawer.
++ * FAB mobile — reglas de visibilidad (SSOT):
++ * 1. Oculto solo con drawer de navegación abierto.
++ * 2. Show/hide instantáneo (sin opacity fade → sin parpadeo).
++ * 3. Dial se cierra al cambiar pathname o al ocultar chrome.
++ * 4. Sheet/popover no ocultan el FAB (solo cierran el dial si tocas fuera).
+  */
+ export function SpeedDialFab({ actions, className }: Props) {
+   const [dialOpen, setDialOpen] = useState(false)
+-  const [mounted, setMounted] = useState(
+-    () => typeof document !== "undefined",
+-  )
++  const [mounted, setMounted] = useState(false)
+   const rootRef = useRef<HTMLDivElement>(null)
+   const pathname = usePathname()
+ 
+   const drawerOpen = useMobileNavStore(s => s.mode === "open")
+-  const chromeHidden = drawerOpen
++  const hidden = drawerOpen
+ 
+   useEffect(() => {
+     setMounted(true)
+   }, [])
+ 
+-  // Cierre instantáneo: no hay exit animation que “laggee”.
+   useEffect(() => {
+     setDialOpen(false)
+   }, [pathname])
+ 
+   useEffect(() => {
+-    if (chromeHidden) setDialOpen(false)
+-  }, [chromeHidden])
++    if (hidden) setDialOpen(false)
++  }, [hidden])
+ 
+-  // Scroll: solo cierra si el dedo/pointer SIGUE abajo.
+-  // El momentum post finger-up sigue emitiendo "scroll"; no debe
+-  // impedir abrir el FAB ni cerrarlo si el usuario ya soltó.
++  // Scroll con pointer abajo → cierra dial (no momentum post finger-up).
+   const pointerDownRef = useRef(false)
+   useEffect(() => {
+     const onDown = () => {
+@@ -111,10 +106,6 @@ export function SpeedDialFab({ actions, className }: Props) {
+     }
+   }, [dialOpen])
+ 
+-  function toggleDial() {
+-    setDialOpen(v => !v)
+-  }
+-
+   if (actions.length === 0 || !mounted) return null
+ 
+   return createPortal(
+@@ -124,16 +115,15 @@ export function SpeedDialFab({ actions, className }: Props) {
+       className={cn(
+         "pointer-events-none fixed bottom-22 flex flex-col items-center gap-2",
+         FAB_Z_CLASS,
+-        "transition-opacity ease-out",
+-        chromeHidden ? "opacity-0" : "opacity-100",
++        // Instantáneo: no transition-opacity (evita parpadeo al abrir drawer / route).
++        hidden ? "invisible" : "visible",
+         className,
+       )}
+       style={{
+         right: FAB_RIGHT_OFFSET_PX,
+-        transitionDuration: `${FAB_CHROME_FADE_MS}ms`,
+-        pointerEvents: chromeHidden ? "none" : undefined,
++        pointerEvents: hidden ? "none" : undefined,
+       }}
+-      aria-hidden={chromeHidden}
++      aria-hidden={hidden}
+     >
+       {dialOpen ? (
+         <div className="pointer-events-auto relative flex flex-col items-center gap-2">
+@@ -149,11 +139,11 @@ export function SpeedDialFab({ actions, className }: Props) {
+         type="button"
+         aria-label={dialOpen ? "Cerrar acciones" : "Más acciones"}
+         aria-expanded={dialOpen}
+-        onClick={toggleDial}
++        onClick={() => setDialOpen(v => !v)}
+         className={cn(
+-          "pointer-events-auto flex size-12 items-center justify-center rounded-full transition-transform duration-150",
+-          "bg-muted text-foreground hover:scale-105 hover:bg-muted/80 active:scale-95 active:bg-foreground/10",
+-          "shadow-xs",
++          "pointer-events-auto flex size-12 items-center justify-center rounded-full shadow-xs",
++          "bg-muted text-foreground hover:bg-muted/80 active:scale-95 active:bg-foreground/10",
++          "transition-transform duration-150 hover:scale-105",
+         )}
+       >
+         {dialOpen ? (

@@ -1,98 +1,72 @@
 "use client"
 
-import {
-  forwardRef,
-} from "react"
+import { forwardRef } from "react"
+import { Funnel } from "lucide-react"
 
-import {
-  Funnel,
-} from "lucide-react"
-
-import {
-  cn,
-} from "@/shared/utils/utils"
-
-import {
-  useResponsive,
-} from "@/shared/responsive/hooks/use-responsive"
-
-import {
-  FabTrigger,
-} from "@/shared/ui/speed-dial-fab/fab-trigger"
-
+import { cn } from "@/shared/utils/utils"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { FabTrigger } from "@/shared/ui/speed-dial-fab/fab-trigger"
 import {
   TOOLBAR_CHROME_ICON_BTN,
+  TOOLBAR_CHROME_ICON_BTN_ACTIVE,
   TOOLBAR_CHROME_ICON_SIZE,
 } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 
-/** Mismo ring de selección que FabTrigger — se mantiene con filtros activos. */
-const FILTER_ACTIVE_RING =
-  "ring-2 ring-primary ring-offset-2 ring-offset-background"
-
-type Props={
-  expanded?:boolean
-  active?:boolean
+type Props = {
+  expanded?: boolean
+  active?: boolean
   /**
-   * true = hay chips activos. Solo afecta el look en mobile (FAB):
-   * el círculo se pinta distinto para que se note DENTRO de la
-   * lista del FAB que hay filtros aplicados, no solo arriba al lado
-   * de la lupa. Vuelve a verse neutro en cuanto chips.length llega
-   * a 0 (se borra el último filtro) — sin estado propio de "visto".
+   * Solo afecta mobile FAB: ring vía FabTrigger mientras haya chips.
+   * Desktop topbar no usa ring.
    */
-  hasActiveFilters?:boolean
+  hasActiveFilters?: boolean
 } & React.ButtonHTMLAttributes<HTMLButtonElement>
 
-export const FilterAddButton=
-  forwardRef<
-    HTMLButtonElement,
-    Props
-  >(
-    (
-      {
-        expanded:_expanded,
-        active=false,
-        hasActiveFilters=false,
-        className,
-        ...props
-      },
-      ref
-    )=>{
+export const FilterAddButton = forwardRef<HTMLButtonElement, Props>(
+  (
+    {
+      expanded: _expanded,
+      active = false,
+      hasActiveFilters = false,
+      className,
+      ...props
+    },
+    ref,
+  ) => {
+    const { isMobile } = useResponsive()
 
-      const { isMobile } = useResponsive()
-
-      // Mobile (fila del FAB): se actualiza accentClassName para que coincida 
-      // exactamente con el estilo de la burbuja verde del history button.
-      if (isMobile) {
-        return (
-          <FabTrigger
-            ref={ref}
-            icon={Funnel}
-            label="FILTROS"
-            active={active || hasActiveFilters}
-            className={className}
-            {...props}
-          />
-        )
-      }
-
+    // Solo FAB móvil: ring de selección mientras hay filtros (FabTrigger).
+    if (isMobile) {
       return (
-        <button
+        <FabTrigger
           ref={ref}
-          type="button"
-          aria-label="Filtros"
-          title="Filtros"
-          className={cn(
-            TOOLBAR_CHROME_ICON_BTN,
-            (active || hasActiveFilters) && FILTER_ACTIVE_RING,
-            className,
-          )}
+          icon={Funnel}
+          label="FILTROS"
+          active={active || hasActiveFilters}
+          className={className}
           {...props}
-        >
-          <Funnel size={TOOLBAR_CHROME_ICON_SIZE} strokeWidth={2.25} />
-        </button>
+        />
       )
     }
-  )
 
-FilterAddButton.displayName=
-  "FilterAddButton"
+    // Desktop / topbar: chrome normal (sin ring de FAB).
+    return (
+      <button
+        ref={ref}
+        type="button"
+        aria-label="Filtros"
+        title="Filtros"
+        className={cn(
+          TOOLBAR_CHROME_ICON_BTN,
+          (active || hasActiveFilters) && TOOLBAR_CHROME_ICON_BTN_ACTIVE,
+          className,
+        )}
+        {...props}
+      >
+        <Funnel size={TOOLBAR_CHROME_ICON_SIZE} strokeWidth={2.25} />
+      </button>
+    )
+  },
+)
+
+FilterAddButton.displayName = "FilterAddButton"

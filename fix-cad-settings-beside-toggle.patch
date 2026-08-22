@@ -1,0 +1,136 @@
+diff --git a/src/app/(protected)/cad/page.tsx b/src/app/(protected)/cad/page.tsx
+index a243e27..9426861 100644
+--- a/src/app/(protected)/cad/page.tsx
++++ b/src/app/(protected)/cad/page.tsx
+@@ -1,7 +1,7 @@
+ "use client"
+ 
+ import { useState } from "react"
+-import { Sparkles, Boxes } from "lucide-react"
++import { Boxes, SlidersHorizontal, Sparkles } from "lucide-react"
+ 
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+ import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
+@@ -10,18 +10,19 @@ import { PageShell } from "@/shared/responsive/layout/page-shell"
+ import { CadWorkspacePanel } from "@/features/cad/components/cad-workspace-panel"
+ import { CadAiPanel } from "@/features/cad-ai/components/cad-ai-panel"
+ import { EntityToggle } from "@/shared/ui/entity-toggle/entity-toggle"
++import { cn } from "@/shared/utils/utils"
+ 
+ type Tab = "ai" | "templates"
+ 
+ /**
+- * CAD = superficie fill-height (lienzo + panel), no lista.
+- * Bleed: contenido puede pasar bajo el blur del topbar (fade).
+- * Inset: CadAiPanel / workspace aplican useChromeInset (SSOT).
++ * CAD = superficie fill-height.
++ * Móvil: toggle + botón panel IA en la misma fila (debajo del topbar).
+  */
+ export default function CadPage() {
+   usePageTitle("CAD")
+   const { isMobile } = useResponsive()
+   const [tab, setTab] = useState<Tab>("ai")
++  const [aiPanelOpen, setAiPanelOpen] = useState(false)
+ 
+   function TabsNav() {
+     return (
+@@ -43,15 +44,37 @@ export default function CadPage() {
+     <PageShell mode={isMobile ? "fill" : "bleed"}>
+       <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+         {isMobile ? (
+-          <div className="mb-1.5 flex shrink-0 justify-center px-1 pt-0.5">
++          <div className="relative mb-1.5 flex h-11 shrink-0 items-center justify-center px-2">
+             <TabsNav />
++            {tab === "ai" && (
++              <button
++                type="button"
++                aria-label="Abrir panel de IA"
++                title="Opciones de IA"
++                onClick={() => setAiPanelOpen(true)}
++                className={cn(
++                  "absolute right-2 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center",
++                  "rounded-xl bg-foreground/5 text-foreground shadow-xs backdrop-blur-xl",
++                )}
++              >
++                <SlidersHorizontal size={16} strokeWidth={2.2} />
++              </button>
++            )}
+           </div>
+         ) : null}
+ 
+         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+-          {tab === "ai" ? <CadAiPanel embedded /> : <CadWorkspacePanel embedded />}
++          {tab === "ai" ? (
++            <CadAiPanel
++              embedded
++              mobilePanelOpen={aiPanelOpen}
++              onMobilePanelOpenChange={setAiPanelOpen}
++            />
++          ) : (
++            <CadWorkspacePanel embedded />
++          )}
+         </div>
+       </section>
+     </PageShell>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/features/cad-ai/components/cad-ai-panel.tsx b/src/features/cad-ai/components/cad-ai-panel.tsx
+index 0fdbc23..f633108 100644
+--- a/src/features/cad-ai/components/cad-ai-panel.tsx
++++ b/src/features/cad-ai/components/cad-ai-panel.tsx
+@@ -35,7 +35,16 @@ function useRingDotSize(variant: keyof typeof RING_DOT_SIZE) {
+   return scale.desktop
+ }
+ 
+-export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
++export function CadAiPanel({
++  embedded = false,
++  mobilePanelOpen,
++  onMobilePanelOpenChange,
++}: {
++  embedded?: boolean
++  /** Controlado desde la página (botón junto al toggle). */
++  mobilePanelOpen?: boolean
++  onMobilePanelOpenChange?: (open: boolean) => void
++} = {}) {
+   const chromeInset = useChromeInset({ bottom: false })
+   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
+   const [dxf, setDxf] = useState<string>("")
+@@ -50,7 +59,13 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
+   const [skillParams, setSkillParams] = useState<Record<string, number | string> | null>(null)
+   const [skillGenerator, setSkillGenerator] = useState<Skill | null>(null)
+   
+-  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false)
++  const [internalMobilePanelOpen, setInternalMobilePanelOpen] = useState(false)
++  const isMobilePanelOpen =
++    mobilePanelOpen !== undefined ? mobilePanelOpen : internalMobilePanelOpen
++  const setIsMobilePanelOpen = (open: boolean) => {
++    onMobilePanelOpenChange?.(open)
++    if (mobilePanelOpen === undefined) setInternalMobilePanelOpen(open)
++  }
+ 
+   const { isMobile, isCompact } = useResponsive()
+   const geometryRef = useRef<PlanGeometry | null>(null)
+@@ -267,7 +282,8 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
+           </div>
+         )}
+ 
+-        {isCompact && (
++        {/* Botón settings: en embedded lo pone CadPage junto al toggle (misma Y). */}
++        {isCompact && !embedded && (
+           <div className="absolute inset-x-0 top-2 z-10 flex h-11 items-center justify-end gap-1.5 px-2">
+             <button
+               type="button"
+@@ -320,9 +336,7 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
+ 
+         <Dialog
+           open={isCompact && isMobilePanelOpen}
+-          onOpenChange={(open) => {
+-            if (!open) setIsMobilePanelOpen(false)
+-          }}
++          onOpenChange={(open) => setIsMobilePanelOpen(open)}
+         >
+           <DialogContent
+             size="large"

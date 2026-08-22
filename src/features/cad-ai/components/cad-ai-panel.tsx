@@ -35,7 +35,16 @@ function useRingDotSize(variant: keyof typeof RING_DOT_SIZE) {
   return scale.desktop
 }
 
-export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
+export function CadAiPanel({
+  embedded = false,
+  mobilePanelOpen,
+  onMobilePanelOpenChange,
+}: {
+  embedded?: boolean
+  /** Controlado desde la página (botón junto al toggle). */
+  mobilePanelOpen?: boolean
+  onMobilePanelOpenChange?: (open: boolean) => void
+} = {}) {
   const chromeInset = useChromeInset({ bottom: false })
   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
   const [dxf, setDxf] = useState<string>("")
@@ -50,7 +59,13 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
   const [skillParams, setSkillParams] = useState<Record<string, number | string> | null>(null)
   const [skillGenerator, setSkillGenerator] = useState<Skill | null>(null)
   
-  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false)
+  const [internalMobilePanelOpen, setInternalMobilePanelOpen] = useState(false)
+  const isMobilePanelOpen =
+    mobilePanelOpen !== undefined ? mobilePanelOpen : internalMobilePanelOpen
+  const setIsMobilePanelOpen = (open: boolean) => {
+    onMobilePanelOpenChange?.(open)
+    if (mobilePanelOpen === undefined) setInternalMobilePanelOpen(open)
+  }
 
   const { isMobile, isCompact } = useResponsive()
   const geometryRef = useRef<PlanGeometry | null>(null)
@@ -267,7 +282,8 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
           </div>
         )}
 
-        {isCompact && (
+        {/* Botón settings: en embedded lo pone CadPage junto al toggle (misma Y). */}
+        {isCompact && !embedded && (
           <div className="absolute inset-x-0 top-2 z-10 flex h-11 items-center justify-end gap-1.5 px-2">
             <button
               type="button"
@@ -320,9 +336,7 @@ export function CadAiPanel({ embedded = false }: { embedded?: boolean } = {}) {
 
         <Dialog
           open={isCompact && isMobilePanelOpen}
-          onOpenChange={(open) => {
-            if (!open) setIsMobilePanelOpen(false)
-          }}
+          onOpenChange={(open) => setIsMobilePanelOpen(open)}
         >
           <DialogContent
             size="large"

@@ -5,6 +5,7 @@ import { Send, Loader2, User, Bot, Save, Download, RotateCcw, X, MousePointerCli
 import type { PlanGeometry, ChatMessage, Entity, Skill } from "../types"
 import { SkillParameters } from "./skill-parameters"
 import { cn } from "@/shared/utils/utils"
+import { ChatAvatar, ChatBubble, ChatComposerShell } from "@/shared/ui/chat"
 
 interface IterationPanelProps {
   geometry: PlanGeometry
@@ -81,7 +82,6 @@ export function IterationPanel({
 
         {messages.map((msg, i) => {
           const isUser = msg.role === "user"
-          const shortOnly = !msg.geometry
           return (
             <div
               key={i}
@@ -90,32 +90,17 @@ export function IterationPanel({
                 isUser && "flex-row-reverse",
               )}
             >
-              {/* Avatar — clip-path circle (mismo AA que comments) */}
-              <div
-                className={cn(
-                  "relative size-9 shrink-0 [clip-path:circle(50%_at_50%_50%)]",
-                  isUser ? "bg-foreground text-background" : "bg-muted text-foreground",
-                )}
-              >
-                <div className="absolute inset-0 bg-linear-to-br from-white/10 to-foreground/5" />
-                <span className="absolute inset-0 flex items-center justify-center">
-                  {isUser ? (
+              <ChatAvatar
+                tone={isUser ? "inverse" : "muted"}
+                fallback={
+                  isUser ? (
                     <User className="size-4" strokeWidth={2.2} />
                   ) : (
                     <Bot className="size-4" strokeWidth={2.2} />
-                  )}
-                </span>
-              </div>
-
-              <div
-                className={cn(
-                  "w-fit max-w-[min(85%,22rem)] min-h-9 rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed shadow-xs",
-                  isUser
-                    ? "bg-foreground text-background"
-                    : "bg-muted/80 text-foreground dark:bg-foreground/[0.06]",
-                  shortOnly && "text-center",
-                )}
-              >
+                  )
+                }
+              />
+              <ChatBubble own={isUser} centered={!msg.geometry}>
                 <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                 {msg.geometry && (
                   <p
@@ -129,22 +114,19 @@ export function IterationPanel({
                     {msg.geometry.units}
                   </p>
                 )}
-              </div>
+              </ChatBubble>
             </div>
           )
         })}
 
         {loading && (
           <div className="flex items-center gap-2">
-            <div className="relative size-9 shrink-0 bg-muted text-foreground [clip-path:circle(50%_at_50%_50%)]">
-              <div className="absolute inset-0 bg-linear-to-br from-white/10 to-foreground/5" />
-              <span className="absolute inset-0 flex items-center justify-center">
-                <Loader2 className="size-4 animate-spin" />
-              </span>
-            </div>
-            <div className="w-fit min-h-9 rounded-2xl bg-muted/80 px-3.5 py-2 text-[13px] text-muted-foreground shadow-xs dark:bg-foreground/[0.06]">
-              Procesando…
-            </div>
+            <ChatAvatar
+              fallback={<Loader2 className="size-4 animate-spin" />}
+            />
+            <ChatBubble>
+              <span className="text-muted-foreground">Procesando…</span>
+            </ChatBubble>
           </div>
         )}
       </div>
@@ -209,8 +191,8 @@ export function IterationPanel({
           </button>
         </div>
 
-        {/* Composer — mismo lenguaje visual que comment-composer */}
-        <div className="flex items-center gap-1 rounded-2xl bg-foreground/[0.06] px-2 py-1.5">
+        {/* Composer — ChatComposerShell = comment-composer */}
+        <ChatComposerShell>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -245,7 +227,7 @@ export function IterationPanel({
               <Send className="size-4" />
             )}
           </button>
-        </div>
+        </ChatComposerShell>
       </div>
     </div>
   )

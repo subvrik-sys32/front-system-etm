@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type RefObject } from "react"
 import { useRouter } from "next/navigation"
-import { LogOut } from "lucide-react"
+import { User, LogOut } from "lucide-react"
 
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { useOverlayStore } from "@/shared/stores/overlay-store"
@@ -88,7 +88,7 @@ export function SidebarProfile({
   if (collapsed) {
     return (
       <>
-        {/* Usamos p-2.5 idéntico al card expandido */}
+        {/* Mismo padding p-2.5 para mantener idéntico contenedor que el estado expandido */}
         <div 
           ref={containerRef} 
           className="flex w-full shrink-0 flex-col items-center p-2.5"
@@ -99,13 +99,13 @@ export function SidebarProfile({
                 onClick={toggleProfile}
                 disabled={!canOpenProfile}
                 className={cn(
-                  "relative size-9 shrink-0 rounded-full",
+                  "relative size-9 shrink-0 rounded-full transition-transform hover:scale-105",
                   !canOpenProfile && "cursor-not-allowed opacity-60",
                 )}
                 aria-label="Mi perfil"
               >
                 {avatar}
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-sidebar" />
                 <ProfileMentionBadge className="absolute -top-1 -right-1" />
               </button>
             </PopoverTrigger>
@@ -113,7 +113,7 @@ export function SidebarProfile({
               side="right"
               align="end"
               sideOffset={12}
-              className="w-72 border-none p-0"
+              className="w-72 border-none p-0 shadow-xl"
             >
               <div ref={panelRef} className="overflow-hidden rounded-xl">
                 <div ref={contentRef}>
@@ -129,12 +129,14 @@ export function SidebarProfile({
             </PopoverContent>
           </Popover>
 
-          {/* Forzamos contenedor h-8 y mt-2 para igualar el estado expandido */}
+          {/* Usamos exactamente mt-2 y h-8 para igualar la altura y separación de la botonera inferior expandida */}
           <div className="mt-2 flex h-8 w-full shrink-0 items-center justify-center">
             <button
+              type="button"
               onClick={handleLogoutClick}
-              className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+              title="Cerrar sesión"
               aria-label="Cerrar sesión"
+              className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
             >
               <LogOut className="size-4" />
             </button>
@@ -151,7 +153,7 @@ export function SidebarProfile({
         <div
           aria-hidden={!profileOpen}
           className={cn(
-            "absolute inset-x-0 bottom-full z-0 overflow-hidden rounded-xl bg-popover",
+            "absolute inset-x-0 bottom-full z-0 overflow-hidden rounded-xl bg-popover shadow-xl",
             "transition-opacity duration-150 ease-out",
             profileOpen ? "opacity-100" : "pointer-events-none opacity-0",
           )}
@@ -175,7 +177,6 @@ export function SidebarProfile({
           </div>
         </div>
 
-        {/* Usamos p-2.5 idéntico al contenedor colapsado */}
         <div
           ref={cardRef}
           className="relative z-10 w-full overflow-hidden rounded-xl border-0 bg-card p-2.5 shadow-xs"
@@ -183,7 +184,7 @@ export function SidebarProfile({
           <div className="flex w-full items-center gap-2.5">
             <div className="relative size-9 shrink-0">
               {avatar}
-              <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500" />
+              <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
             </div>
             
             <div className="min-w-0 flex-1">
@@ -205,27 +206,31 @@ export function SidebarProfile({
             </div>
           </div>
 
-          {/* Forzamos h-8 y flex h-full en los botones para igualar alturas */}
-          <div className="mt-2 flex h-8 w-full shrink-0 items-center gap-1">
+          {/* Contenedor unificado con altura y espaciado rigurosos para evitar saltos */}
+          <div className="mt-2 flex h-8 items-center gap-1.5 p-1 bg-sidebar-accent/30 rounded-lg backdrop-blur-sm">
             <button
               type="button"
               onClick={toggleProfile}
               disabled={!canOpenProfile}
               className={cn(
-                "flex h-full flex-1 items-center justify-center truncate rounded-md px-2 text-xs transition",
+                "flex h-full flex-1 items-center justify-center gap-2 truncate rounded-md px-2 text-xs font-medium transition-all duration-200",
                 canOpenProfile
-                  ? "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+                  ? "bg-sidebar-accent/50 hover:bg-sidebar-accent text-foreground"
                   : "cursor-not-allowed text-muted-foreground/70",
               )}
             >
-              Mi perfil
+              <User size={13} className="text-muted-foreground shrink-0" />
+              <span className="truncate">Mi perfil</span>
             </button>
+
             <button
               type="button"
               onClick={handleLogoutClick}
-              className="flex h-full shrink-0 items-center justify-center rounded-md px-2 text-xs text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+              title="Cerrar sesión"
+              aria-label="Cerrar sesión"
+              className="flex h-full w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
             >
-              Salir
+              <LogOut size={14} />
             </button>
           </div>
         </div>

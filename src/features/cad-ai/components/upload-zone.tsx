@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
+import { ChatAvatar, ChatBubble, ChatComposerShell } from "@/shared/ui/chat"
 import { EntityToggle } from "@/shared/ui/entity-toggle/entity-toggle"
 import type { ChatMessage } from "../types"
 
@@ -248,81 +249,92 @@ export function UploadZone({
                 </div>
               )}
 
-              {messages.map((msg, i) => (
-                <div key={i} className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-                  <div className={cn(
-                    "flex size-7 shrink-0 items-center justify-center rounded-full shadow-xs",
-                    msg.role === "user" ? "bg-foreground text-background" : "bg-foreground/[0.06] text-foreground"
-                  )}>
-                    {msg.role === "user" ? <User className="size-3.5" /> : <Bot className="size-3.5" />}
-                  </div>
-                  <div className={cn(
-                    "max-w-[85%] min-w-0 rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed shadow-xs",
-                    msg.role === "user" ? "bg-foreground text-background" : "bg-foreground/[0.05] text-foreground"
-                  )}>
-                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                    {msg.geometry && (
-                      <p className={`mt-1.5 text-[11px] ${msg.role === "user" ? "text-background/60" : "text-muted-foreground"}`}>
-                        {msg.geometry.entities.length} entidades · {msg.geometry.dimensions.width}×{msg.geometry.dimensions.height} {msg.geometry.units}
-                      </p>
+              {messages.map((msg, i) => {
+                const isUser = msg.role === "user"
+                return (
+                  <div
+                    key={i}
+                    className={cn(
+                      "flex w-full items-center gap-2",
+                      isUser && "flex-row-reverse",
                     )}
+                  >
+                    <ChatAvatar
+                      tone={isUser ? "inverse" : "muted"}
+                      fallback={
+                        isUser ? (
+                          <User className="size-4" strokeWidth={2.2} />
+                        ) : (
+                          <Bot className="size-4" strokeWidth={2.2} />
+                        )
+                      }
+                    />
+                    <ChatBubble own={isUser} centered={!msg.geometry}>
+                      <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                      {msg.geometry && (
+                        <p
+                          className={cn(
+                            "mt-1.5 text-left text-[11px]",
+                            isUser ? "text-background/60" : "text-muted-foreground",
+                          )}
+                        >
+                          {msg.geometry.entities.length} entidades ·{" "}
+                          {msg.geometry.dimensions.width}×{msg.geometry.dimensions.height}{" "}
+                          {msg.geometry.units}
+                        </p>
+                      )}
+                    </ChatBubble>
                   </div>
-                </div>
-              ))}
+                )
+              })}
 
               {loading && (
-                <div className="flex gap-2.5">
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] shadow-xs">
-                    <Loader2 className="size-3.5 animate-spin" />
-                  </div>
-                  <div className="rounded-2xl bg-foreground/[0.05] px-3.5 py-2.5 text-[13px] text-muted-foreground shadow-xs">
-                    Procesando…
-                  </div>
+                <div className="flex items-center gap-2">
+                  <ChatAvatar
+                    fallback={<Loader2 className="size-4 animate-spin" />}
+                  />
+                  <ChatBubble>
+                    <span className="text-muted-foreground">Procesando…</span>
+                  </ChatBubble>
                 </div>
               )}
             </div>
 
-            {/* Input inferior con botón de enviar actualizado a shadow-xs */}
+            {/* Composer — mismo shell que comment-composer */}
             <div className="shrink-0 bg-card p-3 sm:p-4">
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault()
-                        handleSend()
-                      }
-                    }}
-                    placeholder="Ej: Plato circular de 120mm con 6 perforaciones..."
-                    disabled={loading}
-                    style={{ fontSize: "12px" }}
-                    className={cn(
-                      "input-compact h-9 w-full rounded-xl bg-background px-3.5 py-2 text-xs text-foreground placeholder:text-muted-foreground/70 outline-none transition-all shadow-xs",
-                      "disabled:opacity-50"
-                    )}
-                  />
-                </div>
+              <ChatComposerShell>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSend()
+                    }
+                  }}
+                  placeholder="Ej: Plato circular de 120mm con 6 perforaciones..."
+                  disabled={loading}
+                  className="min-h-9 flex-1 bg-transparent px-2 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 disabled:opacity-50"
+                />
                 <button
                   type="button"
                   onClick={handleSend}
                   disabled={!input.trim() || loading}
+                  aria-label="Enviar"
                   className={cn(
-                    "flex size-9 shrink-0 items-center justify-center rounded-xl bg-foreground text-background transition-all shadow-xs",
-                    "hover:opacity-85 active:scale-95 disabled:opacity-30 disabled:pointer-events-none",
-                    EASE
+                    "flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-foreground text-background shadow-xs transition disabled:opacity-40",
+                    EASE,
                   )}
                 >
                   {loading ? (
-                    <Loader2 className="size-3.5 animate-spin" />
+                    <Loader2 className="size-4 animate-spin" />
                   ) : (
-                    <Send className="size-3.5" />
+                    <Send className="size-4" />
                   )}
                 </button>
-              </div>
+              </ChatComposerShell>
             </div>
 
           </div>

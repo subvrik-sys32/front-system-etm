@@ -13,6 +13,7 @@ import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 
 import { cn } from "@/shared/utils/utils"
+import { ChatAvatar } from "@/shared/ui/chat"
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
@@ -64,45 +65,8 @@ function MetaIcon({
 }
 
 /**
- * Avatar circular sin “sierra”:
- * clip-path:circle evita el alias de border-radius+overflow en GPU;
- * img ligeramente ampliado (-inset) cubre el borde del bitmap.
+ * Mensaje de chat — avatar vía ChatAvatar estándar del design system.
  */
-function CommentAvatar({
-  name,
-  avatarUrl,
-  isOwner,
-}: {
-  name: string
-  avatarUrl?: string | null
-  isOwner: boolean
-}) {
-  return (
-    <div
-      className={cn(
-        "relative size-9 shrink-0",
-        "[clip-path:circle(50%_at_50%_50%)]",
-        isOwner ? "bg-foreground text-background" : "bg-muted text-foreground",
-      )}
-    >
-      <div className="absolute inset-0 bg-linear-to-br from-white/10 to-foreground/5" />
-      {avatarUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={avatarUrl}
-          alt={name}
-          className="absolute -inset-px size-[calc(100%+2px)] max-w-none object-cover"
-          draggable={false}
-        />
-      ) : (
-        <span className="absolute inset-0 flex items-center justify-center">
-          <User className="size-4" strokeWidth={2.2} />
-        </span>
-      )}
-    </div>
-  )
-}
-
 export function CommentItem({
   comment,
   onEdit,
@@ -140,10 +104,11 @@ export function CommentItem({
         (isPending || isDeleting) && "opacity-60",
       )}
     >
-      <CommentAvatar
-        name={user.name}
-        avatarUrl={user.avatarUrl}
-        isOwner={isOwner}
+      <ChatAvatar
+        src={user.avatarUrl}
+        alt={user.name}
+        tone={isOwner ? "inverse" : "muted"}
+        fallback={<User className="size-4" strokeWidth={2.2} />}
       />
 
       <div

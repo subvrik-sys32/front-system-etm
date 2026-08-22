@@ -30,18 +30,19 @@ type Props = {
   isReply?: boolean
 }
 
-/** Chrome de acción adaptado al fill de la burbuja (owner = invertido). */
-function bubbleActionClass(isOwner: boolean) {
+/** Chrome en burbuja owner (fill invertido). Danger usa hover rojo nativo de IconAction. */
+function bubbleChromeClass(isOwner: boolean) {
   return isOwner
     ? "bg-background/12 text-background hover:bg-background/20 hover:text-background active:bg-background/25"
     : undefined
 }
 
 /**
- * Mensaje estilo chat premium (CAD AI + rows):
- * - Avatar con ring (sidebar profile) y clipping limpio (sin sierra).
- * - Acciones chrome **dentro** de la burbuja, expansión en X al hover.
- * - Separador sutil y gap entre texto y actions.
+ * Chat premium:
+ * - Avatar con ring (sidebar profile).
+ * - Burbuja: texto primero, luego edit/delete expanden en X.
+ * - Reply debajo de la burbuja (no inline).
+ * - Delete: hover rojo como rows (variant danger de IconAction).
  */
 export function CommentItem({
   comment,
@@ -61,7 +62,7 @@ export function CommentItem({
   const canEdit = isOwner && !isPending && !isDeleting
   const canDelete = (isOwner || canDeleteAny) && !isPending && !isDeleting
   const canReply = has(PermissionCode.COMMENT_CREATE) && !isPending && !isDeleting
-  const showActions = canEdit || canDelete || canReply
+  const showInlineActions = canEdit || canDelete
 
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
 
@@ -71,44 +72,29 @@ export function CommentItem({
     enabled: isOwner && !isPending && !isDeleting,
   })
 
-  const actionCls = bubbleActionClass(isOwner)
+  const chrome = bubbleChromeClass(isOwner)
 
-  const actions = showActions ? (
+  /** Edit + delete al final del mensaje (eje X). Nunca reply aquí. */
+  const trailingActions = showInlineActions ? (
     <div
       className={cn(
-        "flex shrink-0 items-center gap-1 overflow-hidden transition-[max-width,opacity,margin,padding] duration-200 ease-out",
+        "flex shrink-0 items-center gap-1 overflow-hidden transition-[max-width,opacity,padding] duration-200 ease-out",
         isMobile
-          ? "max-w-32 opacity-100"
-          : "max-w-0 opacity-0 group-hover/bubble:max-w-32 group-hover/bubble:opacity-100",
-        // padding interno solo cuando abierto → la burbuja crece en X con aire
-        isMobile
-          ? isOwner
-            ? "pr-2"
-            : "pl-2"
-          : isOwner
-            ? "group-hover/bubble:pr-2"
-            : "group-hover/bubble:pl-2",
+          ? "max-w-24 opacity-100 pl-2"
+          : "max-w-0 opacity-0 group-hover/bubble:max-w-24 group-hover/bubble:opacity-100 group-hover/bubble:pl-2",
       )}
     >
-      {/* hairline entre texto y actions */}
       <span
         className={cn(
-          "mx-0.5 h-4 w-px shrink-0",
+          "mr-0.5 h-4 w-px shrink-0",
           isOwner ? "bg-background/20" : "bg-foreground/10",
         )}
         aria-hidden
       />
-      {canReply && (
-        <IconAction
-          icon={Reply}
-          className={actionCls}
-          onClick={() => onReply?.(comment)}
-        />
-      )}
       {canEdit && (
         <IconAction
           icon={Pencil}
-          className={actionCls}
+          className={chrome}
           onClick={() => onEdit?.(comment)}
         />
       )}
@@ -116,7 +102,12 @@ export function CommentItem({
         <IconAction
           icon={Trash2}
           variant="danger"
-          className={actionCls}
+          // danger de IconAction ya pone rojo al hover; en owner
+          // reforzamos fondo rojo suave sin anular el color del icono.
+          className={cn(
+            isOwner &&
+              "bg-background/12 text-background hover:bg-red-500/20 hover:text-red-400 active:bg-red-500/25",
+          )}
           onClick={() => onDelete?.(comment)}
         />
       )}
@@ -132,19 +123,12 @@ export function CommentItem({
         (isPending || isDeleting) && "opacity-60",
       )}
     >
-      {/* Avatar — ring como sidebar-profile, doble clip anti-sierra */}
-      <div
-        className={cn(
-          "relative size-8 shrink-0 rounded-full shadow-xs",
-          "ring-2 ring-background",
-        )}
-      >
+      {/* Avatar — ring sidebar-profile, clip limpio */}
+      <div className="relative size-8 shrink-0 rounded-full shadow-xs ring-2 ring-background">
         <div
           className={cn(
             "size-full overflow-hidden rounded-full",
-            isOwner
-              ? "bg-foreground text-background"
-              : "bg-muted text-foreground",
+            isOwner ? "bg-foreground text-background" : "bg-muted text-foreground",
           )}
         >
           {user.avatarUrl ? (
@@ -152,7 +136,7 @@ export function CommentItem({
             <img
               src={user.avatarUrl}
               alt={user.name}
-              className="size-full object-cover [image-rendering:auto]"
+              className="size-full object-cover"
               draggable={false}
             />
           ) : (
@@ -169,7 +153,6 @@ export function CommentItem({
           isOwner ? "items-end" : "items-start",
         )}
       >
-        {/* Meta — tipografía discreta, fuera de la burbuja */}
         <div
           className={cn(
             "flex items-center gap-1.5 px-1",
@@ -218,12 +201,12 @@ export function CommentItem({
           )}
         </div>
 
-        {/* Burbuja + expansión X de actions (contrato rows) */}
+        {/* Burbuja: contenido → luego actions (siempre LTR dentro) */}
         <div
           className={cn(
-            "group/bubble flex min-w-0 items-center rounded-2xl py-2 shadow-xs",
+            "group/bubble flex min-w-0 flex-row items-center rounded-2xl py-2 shadow-xs",
             isOwner
-              ? "flex-row-reverse bg-foreground pl-2 pr-3.5 text-background"
+              ? "bg-foreground pl-3.5 pr-2 text-background"
               : "bg-muted/80 pl-3.5 pr-2 text-foreground dark:bg-foreground/[0.06]",
           )}
         >
@@ -267,8 +250,26 @@ export function CommentItem({
             ) : null}
           </div>
 
-          {actions}
+          {trailingActions}
         </div>
+
+        {/* Reply debajo de la burbuja */}
+        {canReply && (
+          <button
+            type="button"
+            onClick={() => onReply?.(comment)}
+            className={cn(
+              "inline-flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors",
+              "hover:bg-foreground/5 hover:text-foreground",
+              isMobile
+                ? "opacity-100"
+                : "opacity-0 group-hover:opacity-100",
+            )}
+          >
+            <Reply size={12} strokeWidth={2.2} />
+            Responder
+          </button>
+        )}
       </div>
 
       <CommentImageDialog

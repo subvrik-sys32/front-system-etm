@@ -165,7 +165,8 @@ export function CommentItem({
         <div className="group/bubble relative">
           <div
             className={cn(
-              "w-fit max-w-full min-h-9 rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed shadow-xs",
+              // max-w + min-w-0 + break-all: evita que "sssss..." sin espacios desborde el dialog
+              "w-fit max-w-[min(100%,22rem)] min-w-0 min-h-9 overflow-hidden rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed shadow-xs",
               isOwner
                 ? "bg-foreground text-background"
                 : "bg-muted/80 text-foreground dark:bg-foreground/[0.06]",
@@ -190,7 +191,7 @@ export function CommentItem({
             )}
 
             {comment.message ? (
-              <p className="whitespace-pre-wrap break-words">{comment.message}</p>
+              <p className="min-w-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{comment.message}</p>
             ) : null}
 
             {comment.imageUrl ? (

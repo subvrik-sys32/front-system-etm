@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Send, Loader2, User, Bot, Save, Download, RotateCcw, X, MousePointerClick } from "lucide-react"
+import { Send, User, Bot, Save, Download, RotateCcw, X, MousePointerClick } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 import type { PlanGeometry, ChatMessage, Entity, Skill } from "../types"
 import { SkillParameters } from "./skill-parameters"
 import { cn } from "@/shared/utils/utils"
@@ -130,7 +131,7 @@ export function IterationPanel({
         {loading && (
           <div className="flex items-center gap-2">
             <ChatAvatar
-              fallback={<Loader2 className="size-4 animate-spin" />}
+              fallback={<Spinner size={16} />}
             />
             <ChatBubble>
               <span className="text-muted-foreground">Procesando…</span>
@@ -230,7 +231,7 @@ export function IterationPanel({
             )}
           >
             {loading ? (
-              <Loader2 className="size-4 animate-spin" />
+              <Spinner size={16} />
             ) : (
               <Send className="size-4" />
             )}

@@ -1,7 +1,8 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Eye, ImagePlus, Loader2, MessageSquare, Trash2 } from "lucide-react"
+import { Eye, ImagePlus, MessageSquare, Trash2 } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 import { toast } from "sonner"
 
 import {
@@ -75,7 +76,7 @@ export function DetailAssetsDialog({
           <div className="flex flex-col gap-4 px-4 py-3">
             {loading ? (
               <div className="flex h-32 items-center justify-center">
-                <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                <Spinner size={20} className="text-muted-foreground" />
               </div>
             ) : (
               <>

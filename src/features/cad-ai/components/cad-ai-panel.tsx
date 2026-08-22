@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useCallback, useRef, useEffect } from "react"
-import { Loader2, Layers, SlidersHorizontal } from "lucide-react"
+import { Layers, SlidersHorizontal } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
 import { cn } from "@/shared/utils/utils"
@@ -309,7 +310,7 @@ export function CadAiPanel({
             <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-muted/30 shadow-xs backdrop-blur-[2px]">
               {loading && (
                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <Spinner size={32} className="text-muted-foreground" />
                 </div>
               )}
               <DxfViewer
@@ -328,7 +329,7 @@ export function CadAiPanel({
             <div className="absolute inset-0 overflow-hidden">
               {loading && (
                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <Spinner size={32} className="text-muted-foreground" />
                 </div>
               )}
               <DxfViewer

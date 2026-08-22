@@ -1,0 +1,174 @@
+diff --git a/src/features/detail-assets/components/detail-assets-dialog.tsx b/src/features/detail-assets/components/detail-assets-dialog.tsx
+index 0000000..1111111 100644
+--- a/src/features/detail-assets/components/detail-assets-dialog.tsx
++++ b/src/features/detail-assets/components/detail-assets-dialog.tsx
+@@ -1,7 +1,8 @@
+ "use client"
+ 
+ import { useRef, useState } from "react"
+-import { Eye, ImagePlus, Loader2, MessageSquare, Trash2 } from "lucide-react"
++import { Eye, ImagePlus, MessageSquare, Trash2 } from "lucide-react"
++import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { toast } from "sonner"
+ 
+ import {
+@@ -75,7 +76,7 @@
+           <div className="flex flex-col gap-4 px-4 py-3">
+             {loading ? (
+               <div className="flex h-32 items-center justify-center">
+-                <Loader2 className="size-5 animate-spin text-muted-foreground" />
++                <Spinner size={20} className="text-muted-foreground" />
+               </div>
+             ) : (
+               <>
+diff --git a/src/features/detail-assets/components/material-line-dxf-controls.tsx b/src/features/detail-assets/components/material-line-dxf-controls.tsx
+index 0000000..1111111 100644
+--- a/src/features/detail-assets/components/material-line-dxf-controls.tsx
++++ b/src/features/detail-assets/components/material-line-dxf-controls.tsx
+@@ -1,7 +1,8 @@
+ "use client"
+ 
+ import { useRef, useState } from "react"
+-import { Eye, FileUp, Loader2, Trash2 } from "lucide-react"
++import { Eye, FileUp, Trash2 } from "lucide-react"
++import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { toast } from "sonner"
+ 
+ import { cn } from "@/shared/utils/utils"
+@@ -96,7 +97,7 @@
+         className={btn}
+       >
+         {busy ? (
+-          <Loader2 size={15} strokeWidth={2} className="animate-spin" />
++          <Spinner size={15} />
+         ) : (
+           <FileUp size={15} strokeWidth={2} />
+         )}
+diff --git a/src/features/cad-ai/components/cad-ai-panel.tsx b/src/features/cad-ai/components/cad-ai-panel.tsx
+index 0000000..1111111 100644
+--- a/src/features/cad-ai/components/cad-ai-panel.tsx
++++ b/src/features/cad-ai/components/cad-ai-panel.tsx
+@@ -1,7 +1,8 @@
+ "use client"
+ 
+ import { useState, useCallback, useRef, useEffect } from "react"
+-import { Loader2, Layers, SlidersHorizontal } from "lucide-react"
++import { Layers, SlidersHorizontal } from "lucide-react"
++import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
+ import { cn } from "@/shared/utils/utils"
+@@ -309,7 +310,7 @@
+             <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-muted/30 shadow-xs backdrop-blur-[2px]">
+               {loading && (
+                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
++                  <Spinner size={32} className="text-muted-foreground" />
+                 </div>
+               )}
+               <DxfViewer
+@@ -328,7 +329,7 @@
+             <div className="absolute inset-0 overflow-hidden">
+               {loading && (
+                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
++                  <Spinner size={32} className="text-muted-foreground" />
+                 </div>
+               )}
+               <DxfViewer
+diff --git a/src/features/cad-ai/components/upload-zone.tsx b/src/features/cad-ai/components/upload-zone.tsx
+index 0000000..1111111 100644
+--- a/src/features/cad-ai/components/upload-zone.tsx
++++ b/src/features/cad-ai/components/upload-zone.tsx
+@@ -1,10 +1,11 @@
+ "use client"
++
++import { Spinner } from "@/shared/ui/spinner/spinner"
+ 
+ import { useCallback, useState, useRef, useEffect } from "react"
+ import { useDropzone } from "react-dropzone"
+ import {
+   ImageIcon,
+-  Loader2,
+   ScanSearch,
+   MessageSquareText,
+   Layers,
+@@ -127,7 +128,7 @@
+             >
+               <input {...getInputProps()} />
+               {loading ? (
+-                <Loader2 className="size-8 animate-spin text-muted-foreground" />
++                <Spinner size={32} className="text-muted-foreground" />
+               ) : (
+                 <>
+                   <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-secondary/30 sm:size-14">
+@@ -291,7 +292,7 @@
+               {loading && (
+                 <div className="flex items-center gap-2">
+                   <ChatAvatar
+-                    fallback={<Loader2 className="size-4 animate-spin" />}
++                    fallback={<Spinner size={16} />}
+                   />
+                   <ChatBubble>
+                     <span className="text-muted-foreground">Procesando…</span>
+@@ -329,7 +330,7 @@
+                   )}
+                 >
+                   {loading ? (
+-                    <Loader2 className="size-4 animate-spin" />
++                    <Spinner size={16} />
+                   ) : (
+                     <Send className="size-4" />
+                   )}
+diff --git a/src/features/cad-ai/components/iteration-panel.tsx b/src/features/cad-ai/components/iteration-panel.tsx
+index 0000000..1111111 100644
+--- a/src/features/cad-ai/components/iteration-panel.tsx
++++ b/src/features/cad-ai/components/iteration-panel.tsx
+@@ -1,7 +1,8 @@
+ "use client"
+ 
+ import { useState, useRef, useEffect } from "react"
+-import { Send, Loader2, User, Bot, Save, Download, RotateCcw, X, MousePointerClick } from "lucide-react"
++import { Send, User, Bot, Save, Download, RotateCcw, X, MousePointerClick } from "lucide-react"
++import { Spinner } from "@/shared/ui/spinner/spinner"
+ import type { PlanGeometry, ChatMessage, Entity, Skill } from "../types"
+ import { SkillParameters } from "./skill-parameters"
+ import { cn } from "@/shared/utils/utils"
+@@ -130,7 +131,7 @@
+         {loading && (
+           <div className="flex items-center gap-2">
+             <ChatAvatar
+-              fallback={<Loader2 className="size-4 animate-spin" />}
++              fallback={<Spinner size={16} />}
+             />
+             <ChatBubble>
+               <span className="text-muted-foreground">Procesando…</span>
+@@ -230,7 +231,7 @@
+             )}
+           >
+             {loading ? (
+-              <Loader2 className="size-4 animate-spin" />
++              <Spinner size={16} />
+             ) : (
+               <Send className="size-4" />
+             )}
+diff --git a/src/features/cad/components/cad-workspace-panel.tsx b/src/features/cad/components/cad-workspace-panel.tsx
+index 0000000..1111111 100644
+--- a/src/features/cad/components/cad-workspace-panel.tsx
++++ b/src/features/cad/components/cad-workspace-panel.tsx
+@@ -1,4 +1,6 @@
+ "use client"
++
++import { Spinner } from "@/shared/ui/spinner/spinner"
+ 
+ import { useCallback, useEffect, useMemo, useState } from "react"
+ import {
+@@ -280,7 +282,7 @@
+             disabled={loading}
+             className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-foreground/10 px-2.5 text-xs font-medium hover:bg-foreground/15 disabled:opacity-50"
+           >
+-            <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
++            {loading ? <Spinner size={13} /> : <RefreshCw size={13} />}
+             Generar
+           </button>
+           <button

@@ -1,5 +1,7 @@
 "use client"
 
+import { Spinner } from "@/shared/ui/spinner/spinner"
+
 import { useCallback, useEffect, useMemo, useState } from "react"
 import {
   Boxes,
@@ -280,7 +282,7 @@ export function CadWorkspacePanel({ embedded = false }: { embedded?: boolean } =
             disabled={loading}
             className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-foreground/10 px-2.5 text-xs font-medium hover:bg-foreground/15 disabled:opacity-50"
           >
-            <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
+            {loading ? <Spinner size={13} /> : <RefreshCw size={13} />}
             Generar
           </button>
           <button

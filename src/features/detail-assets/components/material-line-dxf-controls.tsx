@@ -1,7 +1,8 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Eye, FileUp, Loader2, Trash2 } from "lucide-react"
+import { Eye, FileUp, Trash2 } from "lucide-react"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 import { toast } from "sonner"
 
 import { cn } from "@/shared/utils/utils"
@@ -96,7 +97,7 @@ export function MaterialLineDxfControls({
         className={btn}
       >
         {busy ? (
-          <Loader2 size={15} strokeWidth={2} className="animate-spin" />
+          <Spinner size={15} />
         ) : (
           <FileUp size={15} strokeWidth={2} />
         )}

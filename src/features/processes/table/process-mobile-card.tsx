@@ -300,16 +300,16 @@ function ProcessMobileCardReady({
             </span>
           )}
 
-          {/* Fecha + ojo detalle (no desplaza Iniciar) */}
+          {/* Ojo ANTES de la fecha — no toca la columna Iniciar */}
           <span
             className="hidden shrink-0 items-center gap-1.5 @[40rem]/prow:inline-flex"
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
+            <DetailAssetsEye taskId={task.id} readOnly />
             <span className="text-xs tabular-nums text-muted-foreground">
               {formatDate(task.deliveryDate)}
             </span>
-            <DetailAssetsEye taskId={task.id} readOnly />
           </span>
         </div>
 

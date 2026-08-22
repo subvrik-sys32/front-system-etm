@@ -1,10 +1,11 @@
 "use client"
 
+import { Spinner } from "@/shared/ui/spinner/spinner"
+
 import { useCallback, useState, useRef, useEffect } from "react"
 import { useDropzone } from "react-dropzone"
 import {
   ImageIcon,
-  Loader2,
   ScanSearch,
   MessageSquareText,
   Layers,
@@ -127,7 +128,7 @@ export function UploadZone({
             >
               <input {...getInputProps()} />
               {loading ? (
-                <Loader2 className="size-8 animate-spin text-muted-foreground" />
+                <Spinner size={32} className="text-muted-foreground" />
               ) : (
                 <>
                   <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-secondary/30 sm:size-14">
@@ -291,7 +292,7 @@ export function UploadZone({
               {loading && (
                 <div className="flex items-center gap-2">
                   <ChatAvatar
-                    fallback={<Loader2 className="size-4 animate-spin" />}
+                    fallback={<Spinner size={16} />}
                   />
                   <ChatBubble>
                     <span className="text-muted-foreground">Procesando…</span>
@@ -329,7 +330,7 @@ export function UploadZone({
                   )}
                 >
                   {loading ? (
-                    <Loader2 className="size-4 animate-spin" />
+                    <Spinner size={16} />
                   ) : (
                     <Send className="size-4" />
                   )}

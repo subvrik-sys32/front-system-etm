@@ -14,22 +14,20 @@ import { cn } from "@/shared/utils/utils"
 
 type Tab = "ai" | "templates"
 
-/**
- * CAD = superficie fill-height.
- * Móvil: toggle + botón panel IA en la misma fila (debajo del topbar).
- */
 export default function CadPage() {
   usePageTitle("CAD")
   const { isMobile } = useResponsive()
   const [tab, setTab] = useState<Tab>("ai")
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
+  const [hasAiChat, setHasAiChat] = useState(false)
 
-  function TabsNav() {
+  function TabsNav({ compact = false }: { compact?: boolean }) {
     return (
       <EntityToggle
         value={tab}
         onChange={setTab}
         aria-label="Vista CAD"
+        compact={compact}
         options={[
           { value: "ai" as const, label: "IA", icon: Sparkles },
           { value: "templates" as const, label: "Plantillas", icon: Boxes },
@@ -45,8 +43,8 @@ export default function CadPage() {
       <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
         {isMobile ? (
           <div className="relative mb-1.5 flex h-11 shrink-0 items-center justify-center px-2">
-            <TabsNav />
-            {tab === "ai" && (
+            <TabsNav compact />
+            {tab === "ai" && hasAiChat && (
               <button
                 type="button"
                 aria-label="Abrir panel de IA"
@@ -69,6 +67,7 @@ export default function CadPage() {
               embedded
               mobilePanelOpen={aiPanelOpen}
               onMobilePanelOpenChange={setAiPanelOpen}
+              onHasChatChange={setHasAiChat}
             />
           ) : (
             <CadWorkspacePanel embedded />

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { Loader2, Layers, SlidersHorizontal } from "lucide-react"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
@@ -39,11 +39,14 @@ export function CadAiPanel({
   embedded = false,
   mobilePanelOpen,
   onMobilePanelOpenChange,
+  onHasChatChange,
 }: {
   embedded?: boolean
   /** Controlado desde la página (botón junto al toggle). */
   mobilePanelOpen?: boolean
   onMobilePanelOpenChange?: (open: boolean) => void
+  /** Hay mensajes de chat IA → mostrar settings en la page. */
+  onHasChatChange?: (has: boolean) => void
 } = {}) {
   const chromeInset = useChromeInset({ bottom: false })
   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
@@ -52,6 +55,10 @@ export function CadAiPanel({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
+
+  useEffect(() => {
+    onHasChatChange?.(messages.length > 0)
+  }, [messages.length, onHasChatChange])
   const [selectedForAI, setSelectedForAI] = useState<Entity[] | null>(null)
   const [showSaveSkill, setShowSaveSkill] = useState(false)
   const [showSkillLibrary, setShowSkillLibrary] = useState(false)

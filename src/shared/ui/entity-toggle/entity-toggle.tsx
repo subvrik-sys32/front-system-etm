@@ -14,17 +14,25 @@ type Props<T extends string> = {
   value: T
   onChange: (value: T) => void
   options: EntityToggleOption<T>[]
+  /** Altura/radio densos (móvil). */
   compact?: boolean
+  /** Oculta labels — solo iconos (Día/Semana/Mes en móvil). */
+  iconsOnly?: boolean
   fullWidth?: boolean
   className?: string
   "aria-label"?: string
 }
 
+/**
+ * SSOT de toggles segmentados (bitácora, ingeniería, CAD).
+ * compact = misma huella visual que Producción/Ingeniería/Equipo en móvil.
+ */
 export function EntityToggle<T extends string>({
   value,
   onChange,
   options,
   compact = false,
+  iconsOnly = false,
   fullWidth = false,
   className,
   "aria-label": ariaLabel,
@@ -36,8 +44,9 @@ export function EntityToggle<T extends string>({
       role="group"
       aria-label={ariaLabel}
       className={cn(
-        "grid items-center gap-1 rounded-2xl bg-muted/60 p-1 shadow-xs backdrop-blur-md dark:bg-muted/40",
-        compact ? "rounded-xl" : "h-9 rounded-2xl",
+        "grid items-center gap-1 bg-muted/60 p-1 shadow-xs backdrop-blur-md dark:bg-muted/40",
+        // compact y default: misma altura h-9 + rounded-xl (estilo bitácora móvil)
+        compact ? "h-auto rounded-xl" : "h-9 rounded-2xl",
         fullWidth && "w-full",
         className,
       )}
@@ -48,6 +57,7 @@ export function EntityToggle<T extends string>({
       {options.map(option => {
         const Icon = option.icon
         const active = value === option.value
+        const showLabel = !iconsOnly
 
         return (
           <button
@@ -58,10 +68,16 @@ export function EntityToggle<T extends string>({
             aria-label={option.label}
             aria-pressed={active}
             className={cn(
-              "relative z-10 flex min-w-0 items-center justify-center gap-1.5 font-semibold select-none transition-colors duration-200",
+              "relative z-10 flex min-w-0 items-center justify-center font-semibold select-none transition-colors duration-200",
               compact
-                ? "h-9 rounded-lg px-2 text-xs"
-                : "h-full rounded-xl px-3 text-xs tracking-tight",
+                ? cn(
+                    "h-9 rounded-lg text-xs",
+                    iconsOnly ? "min-w-9 px-2" : "gap-1.5 px-2.5",
+                  )
+                : cn(
+                    "h-full rounded-xl text-xs tracking-tight",
+                    iconsOnly ? "min-w-9 px-2.5" : "gap-1.5 px-3",
+                  ),
               active
                 ? "bg-background text-foreground shadow-xs ring-1 ring-border/5"
                 : "text-muted-foreground hover:bg-background/40 hover:text-foreground",
@@ -77,7 +93,9 @@ export function EntityToggle<T extends string>({
                 )}
               />
             ) : null}
-            <span className="min-w-0 truncate">{option.label}</span>
+            {showLabel && (
+              <span className="min-w-0 truncate">{option.label}</span>
+            )}
           </button>
         )
       })}

@@ -37,6 +37,7 @@ export function BitacoraViewToggle({ compact = false }: Props) {
         onChange={onChange}
         options={OPTIONS}
         compact={compact}
+        iconsOnly={compact}
         aria-label="Vista de bitácora"
       />
     </div>

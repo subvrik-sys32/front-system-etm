@@ -5,6 +5,7 @@ import { Send, Loader2, User, Bot, Save, Download, RotateCcw, X, MousePointerCli
 import type { PlanGeometry, ChatMessage, Entity, Skill } from "../types"
 import { SkillParameters } from "./skill-parameters"
 import { cn } from "@/shared/utils/utils"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { ChatAvatar, ChatBubble, ChatComposerShell } from "@/shared/ui/chat"
 
 interface IterationPanelProps {
@@ -46,6 +47,7 @@ export function IterationPanel({
 }: IterationPanelProps) {
   const [input, setInput] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
+  const { isCompact } = useResponsive()
 
   useEffect(() => {
     const el = scrollRef.current
@@ -60,14 +62,20 @@ export function IterationPanel({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-card">
+    <div
+      className={cn(
+        "flex h-full min-h-0 flex-col overflow-hidden",
+        // Móvil/dialog: sin card ni líneas — igual que composer de mensajes
+        !isCompact && "bg-card",
+      )}
+    >
       {/* Header: misma altura (h-14) que la toolbar del canvas para que ambos paneles respiren igual */}
-      <div className="flex h-14 shrink-0 flex-col justify-center px-5">
+      <div className={cn("flex shrink-0 flex-col justify-center", isCompact ? "px-1 pb-2 pt-0" : "h-14 px-5")}>
         <h2 className="text-[15px] font-semibold tracking-tight text-foreground">Conversación</h2>
         <p className="text-[12px] text-muted-foreground">Brinda instrucciones y conversa con tu asistente IA</p>
       </div>
 
-      <div className="h-px shrink-0 bg-foreground/[0.06]" />
+      {!isCompact && <div className="h-px shrink-0 bg-foreground/[0.06]" />}
 
       <div
         ref={scrollRef}
@@ -131,9 +139,9 @@ export function IterationPanel({
         )}
       </div>
 
-      <div className="h-px shrink-0 bg-foreground/[0.06]" />
+      {!isCompact && <div className="h-px shrink-0 bg-foreground/[0.06]" />}
 
-      <div className="shrink-0 space-y-3 bg-card p-4">
+      <div className={cn("shrink-0 space-y-3 p-4", !isCompact && "bg-card")}>
         {activeSkill && skillParams && onSkillParamsChange && onSkillRegenerate && (
           <SkillParameters
             skill={activeSkill}

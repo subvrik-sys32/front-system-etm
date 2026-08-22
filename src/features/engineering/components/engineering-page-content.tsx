@@ -108,8 +108,7 @@ export function EngineeringPageContent() {
     <div className="flex w-full shrink-0 select-none flex-col gap-2">
       {/* Mobile: toggle + badge en la misma fila; picker debajo */}
       <div className="flex items-center gap-1.5 tablet:hidden">
-        <EngineeringViewToggle />
-        <div className="min-w-0 flex-1" />
+        <EngineeringViewToggle compact fullWidth />
         <EntryCountBadge count={tasks.length} compact />
       </div>
       <div className="tablet:hidden">

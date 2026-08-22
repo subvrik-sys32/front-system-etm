@@ -17,9 +17,16 @@ const OPTIONS: {
   { value: "list", label: "Lista", icon: Users },
 ]
 
-type Props = { compact?: boolean }
+type Props = {
+  compact?: boolean
+  fullWidth?: boolean
+}
 
-export function EngineeringViewToggle({ compact = false }: Props) {
+/** Mismo EntityToggle / visual que tabs de Bitácora (Producción…). */
+export function EngineeringViewToggle({
+  compact = false,
+  fullWidth = false,
+}: Props) {
   const value = useEngineeringViewStore(s => s.viewMode)
   const onChange = useEngineeringViewStore(s => s.setViewMode)
 
@@ -29,6 +36,7 @@ export function EngineeringViewToggle({ compact = false }: Props) {
       onChange={onChange}
       options={OPTIONS}
       compact={compact}
+      fullWidth={fullWidth}
       aria-label="Vista de ingeniería"
     />
   )

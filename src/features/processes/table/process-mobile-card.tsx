@@ -6,9 +6,9 @@ import { ChevronDown, MessageSquare } from "lucide-react"
 
 import { CollapsibleHeightSection } from "@/shared/ui/collapsible-height-section"
 import { cn } from "@/shared/utils/utils"
-import { useBadgeColors, useDomainInk } from "@/shared/utils/use-badge-colors"
+import { useDomainInk } from "@/shared/utils/use-badge-colors"
 import { formatDate } from "@/shared/utils/date-format"
-import { displayProjectCode } from "@/features/projects/utils/display-project-code"
+import { ProjectCodeChip } from "@/features/projects/components/project-code-chip"
 import {
   ENTITY_ICONS,
   type EntityIcon,
@@ -127,10 +127,6 @@ function ProcessMobileCardReady({
   const { isMobile } = useResponsive()
   const task = processAccess.task(processTask)
   const project = processAccess.project(processTask)
-  const projectChipBadge = useBadgeColors(
-    project.client?.color ?? "#64748B",
-    "subtle",
-  )
   const priority = processAccess.priority(processTask)
   const operator = processAccess.operator(processTask)
 
@@ -175,16 +171,11 @@ function ProcessMobileCardReady({
           }}
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 pl-2 text-left"
         >
-          {/* Código del proyecto YY-NNN — más grande solo en desktop */}
-          <span
-            className="shrink-0 rounded-md px-2 py-1 text-[11px] font-semibold tracking-wide"
-            style={{
-              backgroundColor: projectChipBadge.background,
-              color: projectChipBadge.text,
-            }}
-          >
-            {displayProjectCode(project.projectCode)}
-          </span>
+          {/* Chip = mismo componente/contrato que proyectos (padding + color) */}
+          <ProjectCodeChip
+            code={project.projectCode}
+            color={project.client.color}
+          />
 
           <div className="flex min-w-0 flex-1 flex-col items-start">
             {/* md+: referencia · iconos prio/estado. Mobile: solo nombre */}

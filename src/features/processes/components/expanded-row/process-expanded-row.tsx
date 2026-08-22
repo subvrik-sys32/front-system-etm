@@ -259,9 +259,10 @@ export function ProcessExpandedRow({
                       value: "comments",
                       label: "Mensajes",
                       icon: MessageSquare,
-                      count: totalComments,
+                      // Badge solo con mensajes reales — no “composer” vacío
+                      ...(totalComments > 0 ? { count: totalComments } : {}),
                     },
-                  ] satisfies { value: ProcessView; label: string; icon: typeof MessageSquare; count: number }[])
+                  ] as { value: ProcessView; label: string; icon: typeof MessageSquare; count?: number }[])
                 : []),
             ]}
           />

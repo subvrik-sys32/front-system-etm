@@ -1,0 +1,514 @@
+diff --git a/src/features/detail-assets/components/detail-assets-dialog.tsx b/src/features/detail-assets/components/detail-assets-dialog.tsx
+index 9cd61b4..034eee9 100644
+--- a/src/features/detail-assets/components/detail-assets-dialog.tsx
++++ b/src/features/detail-assets/components/detail-assets-dialog.tsx
+@@ -1,7 +1,7 @@
+ "use client"
+ 
+ import { useRef, useState } from "react"
+-import { Eye, ImagePlus, MessageSquare, Trash2 } from "lucide-react"
++import { Download, Eye, ImagePlus, MessageSquare, Trash2 } from "lucide-react"
+ import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { toast } from "sonner"
+ 
+@@ -19,6 +19,7 @@ import {
+   useTaskDetailAssets,
+ } from "../hooks/use-detail-assets"
+ import type { DetailAsset } from "../types"
++import { DxfPreviewDialog } from "./dxf-preview-dialog"
+ 
+ type Props = {
+   open: boolean
+@@ -42,6 +43,7 @@ export function DetailAssetsDialog({
+   const mutations = useDetailAssetMutations({ taskId, projectId })
+ 
+   const fileRef = useRef<HTMLInputElement>(null)
++  const [previewDxf, setPreviewDxf] = useState<{ url: string; name: string } | null>(null)
+   const [note, setNote] = useState("")
+ 
+   const photos: DetailAsset[] = isTask
+@@ -189,14 +191,29 @@ export function DetailAssetsDialog({
+                             </p>
+                           </div>
+                           {line.dxf?.publicUrl ? (
+-                            <a
+-                              href={line.dxf.publicUrl}
+-                              target="_blank"
+-                              rel="noreferrer"
+-                              className="flex size-8 items-center justify-center rounded-lg hover:bg-foreground/10"
+-                            >
+-                              <Eye size={14} />
+-                            </a>
++                            <div className="flex items-center gap-1">
++                              <button
++                                type="button"
++                                title="Ver plano"
++                                className="flex size-8 items-center justify-center rounded-lg hover:bg-foreground/10"
++                                onClick={() =>
++                                  setPreviewDxf({
++                                    url: line.dxf!.publicUrl!,
++                                    name: line.dxf!.originalName || "plano.dxf",
++                                  })
++                                }
++                              >
++                                <Eye size={14} />
++                              </button>
++                              <a
++                                href={line.dxf.publicUrl}
++                                download={line.dxf.originalName || "plano.dxf"}
++                                title="Descargar"
++                                className="flex size-8 items-center justify-center rounded-lg hover:bg-foreground/10"
++                              >
++                                <Download size={14} />
++                              </a>
++                            </div>
+                           ) : (
+                             <span className="text-[11px] text-muted-foreground">—</span>
+                           )}
+@@ -210,6 +227,12 @@ export function DetailAssetsDialog({
+           </div>
+         </ScrollArea>
+       </DialogContent>
++      <DxfPreviewDialog
++        open={!!previewDxf}
++        onOpenChange={o => !o && setPreviewDxf(null)}
++        url={previewDxf?.url ?? null}
++        fileName={previewDxf?.name}
++      />
+     </Dialog>
+   )
+ }
+diff --git a/src/features/detail-assets/components/dxf-preview-dialog.tsx b/src/features/detail-assets/components/dxf-preview-dialog.tsx
+new file mode 100644
+index 0000000..41d6248
+--- /dev/null
++++ b/src/features/detail-assets/components/dxf-preview-dialog.tsx
+@@ -0,0 +1,154 @@
++"use client"
++
++import dynamic from "next/dynamic"
++import { useEffect, useState } from "react"
++import { Download, X } from "lucide-react"
++import { toast } from "sonner"
++
++import {
++  Dialog,
++  DialogContent,
++  DialogHeader,
++  DialogTitle,
++} from "@/components/ui/dialog"
++import { Spinner } from "@/shared/ui/spinner/spinner"
++import { cadParseApi } from "@/features/nesting/api/cad-parse.api"
++import type { NestingPieceInput } from "@/features/nesting/components/dxf-canvas/dxf-canvas"
++
++const DxfCanvas = dynamic(
++  () =>
++    import("@/features/nesting/components/dxf-canvas/dxf-canvas").then(
++      m => m.DxfCanvas,
++    ),
++  { ssr: false },
++)
++
++type Props = {
++  open: boolean
++  onOpenChange: (open: boolean) => void
++  /** URL pública del DXF */
++  url: string | null
++  fileName?: string | null
++}
++
++/**
++ * Visor DXF = mismo canvas que nesting (solo lectura).
++ * Descarga aparte del ojito.
++ */
++export function DxfPreviewDialog({
++  open,
++  onOpenChange,
++  url,
++  fileName,
++}: Props) {
++  const [pieces, setPieces] = useState<NestingPieceInput[]>([])
++  const [loading, setLoading] = useState(false)
++  const [error, setError] = useState<string | null>(null)
++
++  useEffect(() => {
++    if (!open || !url) {
++      setPieces([])
++      setError(null)
++      return
++    }
++    const ac = new AbortController()
++    setLoading(true)
++    setError(null)
++    ;(async () => {
++      try {
++        const res = await fetch(url, { signal: ac.signal })
++        if (!res.ok) throw new Error("No se pudo descargar el DXF")
++        const blob = await res.blob()
++        const name = fileName?.endsWith(".dxf")
++          ? fileName
++          : `${fileName || "plano"}.dxf`
++        const file = new File([blob], name, {
++          type: "application/dxf",
++        })
++        const parsed = await cadParseApi.parseFile(file, ac.signal)
++        if (!parsed.valid || !parsed.pieces?.length) {
++          throw new Error("Geometría inválida")
++        }
++        setPieces(
++          parsed.pieces.map(p => ({
++            outline: p.outline.points,
++            subOutlines: (p.subEntities ?? []).map(s => ({
++              points: s.outline.points,
++              color: s.color,
++            })),
++          })),
++        )
++      } catch (e) {
++        if ((e as Error).name === "AbortError") return
++        setError((e as Error).message || "Error al cargar DXF")
++        setPieces([])
++      } finally {
++        setLoading(false)
++      }
++    })()
++    return () => ac.abort()
++  }, [open, url, fileName])
++
++  const handleDownload = async () => {
++    if (!url) return
++    try {
++      const res = await fetch(url)
++      const blob = await res.blob()
++      const a = document.createElement("a")
++      a.href = URL.createObjectURL(blob)
++      a.download = fileName || "plano.dxf"
++      a.click()
++      URL.revokeObjectURL(a.href)
++    } catch {
++      toast.error("No se pudo descargar")
++    }
++  }
++
++  return (
++    <Dialog open={open} onOpenChange={onOpenChange}>
++      <DialogContent
++        size="large"
++        className="flex h-[75vh] w-full max-w-3xl flex-col gap-0 overflow-hidden p-0 [&>button]:hidden"
++      >
++        <DialogHeader className="flex shrink-0 flex-row items-center justify-between gap-3 border-b border-border px-4 py-3">
++          <DialogTitle className="min-w-0 truncate text-sm font-semibold">
++            {fileName || "Plano DXF"}
++          </DialogTitle>
++          <div className="flex shrink-0 items-center gap-1">
++            <button
++              type="button"
++              title="Descargar"
++              onClick={() => void handleDownload()}
++              className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
++            >
++              <Download size={16} strokeWidth={2} />
++            </button>
++            <button
++              type="button"
++              title="Cerrar"
++              onClick={() => onOpenChange(false)}
++              className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
++            >
++              <X size={16} strokeWidth={2} />
++            </button>
++          </div>
++        </DialogHeader>
++        <div className="relative min-h-0 flex-1 bg-background">
++          {loading && (
++            <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
++              <Spinner size={28} />
++            </div>
++          )}
++          {error && (
++            <div className="flex h-full items-center justify-center px-6 text-center text-sm text-muted-foreground">
++              {error}
++            </div>
++          )}
++          {!loading && !error && pieces.length > 0 && (
++            <DxfCanvas pieces={pieces} />
++          )}
++        </div>
++      </DialogContent>
++    </Dialog>
++  )
++}
+diff --git a/src/features/detail-assets/components/material-line-dxf-controls.tsx b/src/features/detail-assets/components/material-line-dxf-controls.tsx
+index a8465ca..5723ace 100644
+--- a/src/features/detail-assets/components/material-line-dxf-controls.tsx
++++ b/src/features/detail-assets/components/material-line-dxf-controls.tsx
+@@ -1,60 +1,75 @@
+ "use client"
+ 
+ import { useRef, useState } from "react"
+-import { Eye, FileUp, Trash2 } from "lucide-react"
+-import { Spinner } from "@/shared/ui/spinner/spinner"
++import { Download, Eye, FileUp, Trash2 } from "lucide-react"
+ import { toast } from "sonner"
++import { useQueryClient } from "@tanstack/react-query"
+ 
++import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { cn } from "@/shared/utils/utils"
+ import { detailAssetsApi } from "@/features/detail-assets/api/detail-assets.api"
+ import type { DetailAsset } from "@/features/detail-assets/types"
++import { taskDetailAssetsKey } from "@/features/detail-assets/hooks/use-detail-assets"
++import { DxfPreviewDialog } from "./dxf-preview-dialog"
+ 
+ type Props = {
+-  lineId?: string
++  lineId?: string | null
++  taskId?: string | null
+   dxf?: DetailAsset | null
+   pendingFile?: File | null
+-  disabled?: boolean
+-  onChanged?: () => void
+   onPendingFile?: (file: File | null) => void
++  disabled?: boolean
++  className?: string
+ }
+ 
+-/** Misma caja size-9 que el botón borrar de la fila. */
++const btn =
++  "inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-foreground/5 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground disabled:opacity-40"
++
++/**
++ * Subir / ver (visor nesting) / descargar / quitar DXF de una línea de material.
++ */
+ export function MaterialLineDxfControls({
+   lineId,
++  taskId,
+   dxf,
+   pendingFile,
+-  disabled,
+-  onChanged,
+   onPendingFile,
++  disabled,
++  className,
+ }: Props) {
+   const inputRef = useRef<HTMLInputElement>(null)
++  const qc = useQueryClient()
+   const [busy, setBusy] = useState(false)
++  const [previewOpen, setPreviewOpen] = useState(false)
++
+   const hasDxf = Boolean(dxf?.publicUrl) || Boolean(pendingFile)
++  const displayName = dxf?.originalName || pendingFile?.name || "plano.dxf"
+ 
+-  const upload = async (file: File) => {
++  async function upload(file: File) {
+     if (!file.name.toLowerCase().endsWith(".dxf")) {
+       toast.error("Solo archivos .dxf")
+       return
+     }
+     if (!lineId) {
+       onPendingFile?.(file)
+-      toast.message("DXF listo — se subirá al guardar la tarea")
++      toast.success(`DXF listo: ${file.name}`)
+       return
+     }
+     setBusy(true)
+     try {
+-      await detailAssetsApi.uploadMaterialLineDxf(lineId, file)
+-      toast.success("DXF adjuntado")
+-      onPendingFile?.(null)
+-      onChanged?.()
+-    } catch (e) {
+-      toast.error(e instanceof Error ? e.message : "No se pudo subir el DXF")
++      await detailAssetsApi.uploadDxf(lineId, file)
++      if (taskId) {
++        await qc.invalidateQueries({ queryKey: taskDetailAssetsKey(taskId) })
++      }
++      toast.success(`DXF guardado: ${file.name}`)
++    } catch {
++      toast.error("No se pudo subir el DXF")
+     } finally {
+       setBusy(false)
+     }
+   }
+ 
+-  const remove = async () => {
++  async function remove() {
+     if (pendingFile && !dxf?.id) {
+       onPendingFile?.(null)
+       return
+@@ -63,8 +78,10 @@ export function MaterialLineDxfControls({
+     setBusy(true)
+     try {
+       await detailAssetsApi.remove(dxf.id)
++      if (taskId) {
++        await qc.invalidateQueries({ queryKey: taskDetailAssetsKey(taskId) })
++      }
+       toast.success("DXF eliminado")
+-      onChanged?.()
+     } catch {
+       toast.error("No se pudo eliminar")
+     } finally {
+@@ -72,11 +89,31 @@ export function MaterialLineDxfControls({
+     }
+   }
+ 
+-  const btn =
+-    "flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
++  async function download() {
++    if (pendingFile) {
++      const a = document.createElement("a")
++      a.href = URL.createObjectURL(pendingFile)
++      a.download = pendingFile.name
++      a.click()
++      URL.revokeObjectURL(a.href)
++      return
++    }
++    if (!dxf?.publicUrl) return
++    try {
++      const res = await fetch(dxf.publicUrl)
++      const blob = await res.blob()
++      const a = document.createElement("a")
++      a.href = URL.createObjectURL(blob)
++      a.download = dxf.originalName || "plano.dxf"
++      a.click()
++      URL.revokeObjectURL(a.href)
++    } catch {
++      toast.error("No se pudo descargar")
++    }
++  }
+ 
+   return (
+-    <div className="flex shrink-0 items-center gap-0.5">
++    <div className={cn("flex items-center gap-1", className)}>
+       <input
+         ref={inputRef}
+         type="file"
+@@ -96,29 +133,38 @@ export function MaterialLineDxfControls({
+         onClick={() => inputRef.current?.click()}
+         className={btn}
+       >
+-        {busy ? (
+-          <Spinner size={15} />
+-        ) : (
+-          <FileUp size={15} strokeWidth={2} />
+-        )}
++        {busy ? <Spinner size={15} /> : <FileUp size={15} strokeWidth={2} />}
+       </button>
+       {hasDxf && (
+         <>
++          {/* Ojo = solo visor (nesting canvas) */}
+           {dxf?.publicUrl ? (
+-            <a
+-              href={dxf.publicUrl}
+-              target="_blank"
+-              rel="noreferrer"
+-              title={dxf.originalName || "Ver DXF"}
++            <button
++              type="button"
++              title={`Ver ${displayName}`}
+               className={btn}
++              onClick={() => setPreviewOpen(true)}
+             >
+               <Eye size={15} strokeWidth={2} />
+-            </a>
++            </button>
+           ) : pendingFile ? (
+-            <span title={pendingFile.name} className={cn(btn, "cursor-default text-sky-400")}>
++            <span
++              title={pendingFile.name}
++              className={cn(btn, "cursor-default text-sky-400")}
++            >
+               <Eye size={15} strokeWidth={2} />
+             </span>
+           ) : null}
++          {/* Descarga aparte del ojo */}
++          <button
++            type="button"
++            title="Descargar DXF"
++            disabled={busy}
++            onClick={() => void download()}
++            className={btn}
++          >
++            <Download size={15} strokeWidth={2} />
++          </button>
+           <button
+             type="button"
+             title="Quitar DXF"
+@@ -130,6 +176,12 @@ export function MaterialLineDxfControls({
+           </button>
+         </>
+       )}
++      <DxfPreviewDialog
++        open={previewOpen}
++        onOpenChange={setPreviewOpen}
++        url={dxf?.publicUrl ?? null}
++        fileName={displayName}
++      />
+     </div>
+   )
+ }
+diff --git a/src/features/processes/components/expanded-row/process-expanded-row.tsx b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+index 78ed435..2034723 100644
+--- a/src/features/processes/components/expanded-row/process-expanded-row.tsx
++++ b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+@@ -259,9 +259,10 @@ export function ProcessExpandedRow({
+                       value: "comments",
+                       label: "Mensajes",
+                       icon: MessageSquare,
+-                      count: totalComments,
++                      // Badge solo con mensajes reales — no “composer” vacío
++                      ...(totalComments > 0 ? { count: totalComments } : {}),
+                     },
+-                  ] satisfies { value: ProcessView; label: string; icon: typeof MessageSquare; count: number }[])
++                  ] as { value: ProcessView; label: string; icon: typeof MessageSquare; count?: number }[])
+                 : []),
+             ]}
+           />
+diff --git a/src/features/processes/table/process-mobile-card.tsx b/src/features/processes/table/process-mobile-card.tsx
+index 2c6acf4..be53a94 100644
+--- a/src/features/processes/table/process-mobile-card.tsx
++++ b/src/features/processes/table/process-mobile-card.tsx
+@@ -6,9 +6,9 @@ import { ChevronDown, MessageSquare } from "lucide-react"
+ 
+ import { CollapsibleHeightSection } from "@/shared/ui/collapsible-height-section"
+ import { cn } from "@/shared/utils/utils"
+-import { useBadgeColors, useDomainInk } from "@/shared/utils/use-badge-colors"
++import { useDomainInk } from "@/shared/utils/use-badge-colors"
+ import { formatDate } from "@/shared/utils/date-format"
+-import { displayProjectCode } from "@/features/projects/utils/display-project-code"
++import { ProjectCodeChip } from "@/features/projects/components/project-code-chip"
+ import {
+   ENTITY_ICONS,
+   type EntityIcon,
+@@ -127,10 +127,6 @@ function ProcessMobileCardReady({
+   const { isMobile } = useResponsive()
+   const task = processAccess.task(processTask)
+   const project = processAccess.project(processTask)
+-  const projectChipBadge = useBadgeColors(
+-    project.client?.color ?? "#64748B",
+-    "subtle",
+-  )
+   const priority = processAccess.priority(processTask)
+   const operator = processAccess.operator(processTask)
+ 
+@@ -175,16 +171,11 @@ function ProcessMobileCardReady({
+           }}
+           className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 pl-2 text-left"
+         >
+-          {/* Código del proyecto YY-NNN — más grande solo en desktop */}
+-          <span
+-            className="shrink-0 rounded-md px-2 py-1 text-[11px] font-semibold tracking-wide"
+-            style={{
+-              backgroundColor: projectChipBadge.background,
+-              color: projectChipBadge.text,
+-            }}
+-          >
+-            {displayProjectCode(project.projectCode)}
+-          </span>
++          {/* Chip = mismo componente/contrato que proyectos (padding + color) */}
++          <ProjectCodeChip
++            code={project.projectCode}
++            color={project.client.color}
++          />
+ 
+           <div className="flex min-w-0 flex-1 flex-col items-start">
+             {/* md+: referencia · iconos prio/estado. Mobile: solo nombre */}

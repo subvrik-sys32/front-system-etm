@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Eye, ImagePlus, MessageSquare, Trash2 } from "lucide-react"
+import { Download, Eye, ImagePlus, MessageSquare, Trash2 } from "lucide-react"
 import { Spinner } from "@/shared/ui/spinner/spinner"
 import { toast } from "sonner"
 
@@ -19,6 +19,7 @@ import {
   useTaskDetailAssets,
 } from "../hooks/use-detail-assets"
 import type { DetailAsset } from "../types"
+import { DxfPreviewDialog } from "./dxf-preview-dialog"
 
 type Props = {
   open: boolean
@@ -42,6 +43,7 @@ export function DetailAssetsDialog({
   const mutations = useDetailAssetMutations({ taskId, projectId })
 
   const fileRef = useRef<HTMLInputElement>(null)
+  const [previewDxf, setPreviewDxf] = useState<{ url: string; name: string } | null>(null)
   const [note, setNote] = useState("")
 
   const photos: DetailAsset[] = isTask
@@ -189,14 +191,29 @@ export function DetailAssetsDialog({
                             </p>
                           </div>
                           {line.dxf?.publicUrl ? (
-                            <a
-                              href={line.dxf.publicUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="flex size-8 items-center justify-center rounded-lg hover:bg-foreground/10"
-                            >
-                              <Eye size={14} />
-                            </a>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                title="Ver plano"
+                                className="flex size-8 items-center justify-center rounded-lg hover:bg-foreground/10"
+                                onClick={() =>
+                                  setPreviewDxf({
+                                    url: line.dxf!.publicUrl!,
+                                    name: line.dxf!.originalName || "plano.dxf",
+                                  })
+                                }
+                              >
+                                <Eye size={14} />
+                              </button>
+                              <a
+                                href={line.dxf.publicUrl}
+                                download={line.dxf.originalName || "plano.dxf"}
+                                title="Descargar"
+                                className="flex size-8 items-center justify-center rounded-lg hover:bg-foreground/10"
+                              >
+                                <Download size={14} />
+                              </a>
+                            </div>
                           ) : (
                             <span className="text-[11px] text-muted-foreground">—</span>
                           )}
@@ -210,6 +227,12 @@ export function DetailAssetsDialog({
           </div>
         </ScrollArea>
       </DialogContent>
+      <DxfPreviewDialog
+        open={!!previewDxf}
+        onOpenChange={o => !o && setPreviewDxf(null)}
+        url={previewDxf?.url ?? null}
+        fileName={previewDxf?.name}
+      />
     </Dialog>
   )
 }

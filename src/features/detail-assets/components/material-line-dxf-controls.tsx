@@ -1,60 +1,75 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Eye, FileUp, Trash2 } from "lucide-react"
-import { Spinner } from "@/shared/ui/spinner/spinner"
+import { Download, Eye, FileUp, Trash2 } from "lucide-react"
 import { toast } from "sonner"
+import { useQueryClient } from "@tanstack/react-query"
 
+import { Spinner } from "@/shared/ui/spinner/spinner"
 import { cn } from "@/shared/utils/utils"
 import { detailAssetsApi } from "@/features/detail-assets/api/detail-assets.api"
 import type { DetailAsset } from "@/features/detail-assets/types"
+import { taskDetailAssetsKey } from "@/features/detail-assets/hooks/use-detail-assets"
+import { DxfPreviewDialog } from "./dxf-preview-dialog"
 
 type Props = {
-  lineId?: string
+  lineId?: string | null
+  taskId?: string | null
   dxf?: DetailAsset | null
   pendingFile?: File | null
-  disabled?: boolean
-  onChanged?: () => void
   onPendingFile?: (file: File | null) => void
+  disabled?: boolean
+  className?: string
 }
 
-/** Misma caja size-9 que el botón borrar de la fila. */
+const btn =
+  "inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-foreground/5 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground disabled:opacity-40"
+
+/**
+ * Subir / ver (visor nesting) / descargar / quitar DXF de una línea de material.
+ */
 export function MaterialLineDxfControls({
   lineId,
+  taskId,
   dxf,
   pendingFile,
-  disabled,
-  onChanged,
   onPendingFile,
+  disabled,
+  className,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const qc = useQueryClient()
   const [busy, setBusy] = useState(false)
-  const hasDxf = Boolean(dxf?.publicUrl) || Boolean(pendingFile)
+  const [previewOpen, setPreviewOpen] = useState(false)
 
-  const upload = async (file: File) => {
+  const hasDxf = Boolean(dxf?.publicUrl) || Boolean(pendingFile)
+  const displayName = dxf?.originalName || pendingFile?.name || "plano.dxf"
+
+  async function upload(file: File) {
     if (!file.name.toLowerCase().endsWith(".dxf")) {
       toast.error("Solo archivos .dxf")
       return
     }
     if (!lineId) {
       onPendingFile?.(file)
-      toast.message("DXF listo — se subirá al guardar la tarea")
+      toast.success(`DXF listo: ${file.name}`)
       return
     }
     setBusy(true)
     try {
-      await detailAssetsApi.uploadMaterialLineDxf(lineId, file)
-      toast.success("DXF adjuntado")
-      onPendingFile?.(null)
-      onChanged?.()
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "No se pudo subir el DXF")
+      await detailAssetsApi.uploadDxf(lineId, file)
+      if (taskId) {
+        await qc.invalidateQueries({ queryKey: taskDetailAssetsKey(taskId) })
+      }
+      toast.success(`DXF guardado: ${file.name}`)
+    } catch {
+      toast.error("No se pudo subir el DXF")
     } finally {
       setBusy(false)
     }
   }
 
-  const remove = async () => {
+  async function remove() {
     if (pendingFile && !dxf?.id) {
       onPendingFile?.(null)
       return
@@ -63,8 +78,10 @@ export function MaterialLineDxfControls({
     setBusy(true)
     try {
       await detailAssetsApi.remove(dxf.id)
+      if (taskId) {
+        await qc.invalidateQueries({ queryKey: taskDetailAssetsKey(taskId) })
+      }
       toast.success("DXF eliminado")
-      onChanged?.()
     } catch {
       toast.error("No se pudo eliminar")
     } finally {
@@ -72,11 +89,31 @@ export function MaterialLineDxfControls({
     }
   }
 
-  const btn =
-    "flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+  async function download() {
+    if (pendingFile) {
+      const a = document.createElement("a")
+      a.href = URL.createObjectURL(pendingFile)
+      a.download = pendingFile.name
+      a.click()
+      URL.revokeObjectURL(a.href)
+      return
+    }
+    if (!dxf?.publicUrl) return
+    try {
+      const res = await fetch(dxf.publicUrl)
+      const blob = await res.blob()
+      const a = document.createElement("a")
+      a.href = URL.createObjectURL(blob)
+      a.download = dxf.originalName || "plano.dxf"
+      a.click()
+      URL.revokeObjectURL(a.href)
+    } catch {
+      toast.error("No se pudo descargar")
+    }
+  }
 
   return (
-    <div className="flex shrink-0 items-center gap-0.5">
+    <div className={cn("flex items-center gap-1", className)}>
       <input
         ref={inputRef}
         type="file"
@@ -96,29 +133,38 @@ export function MaterialLineDxfControls({
         onClick={() => inputRef.current?.click()}
         className={btn}
       >
-        {busy ? (
-          <Spinner size={15} />
-        ) : (
-          <FileUp size={15} strokeWidth={2} />
-        )}
+        {busy ? <Spinner size={15} /> : <FileUp size={15} strokeWidth={2} />}
       </button>
       {hasDxf && (
         <>
+          {/* Ojo = solo visor (nesting canvas) */}
           {dxf?.publicUrl ? (
-            <a
-              href={dxf.publicUrl}
-              target="_blank"
-              rel="noreferrer"
-              title={dxf.originalName || "Ver DXF"}
+            <button
+              type="button"
+              title={`Ver ${displayName}`}
               className={btn}
+              onClick={() => setPreviewOpen(true)}
             >
               <Eye size={15} strokeWidth={2} />
-            </a>
+            </button>
           ) : pendingFile ? (
-            <span title={pendingFile.name} className={cn(btn, "cursor-default text-sky-400")}>
+            <span
+              title={pendingFile.name}
+              className={cn(btn, "cursor-default text-sky-400")}
+            >
               <Eye size={15} strokeWidth={2} />
             </span>
           ) : null}
+          {/* Descarga aparte del ojo */}
+          <button
+            type="button"
+            title="Descargar DXF"
+            disabled={busy}
+            onClick={() => void download()}
+            className={btn}
+          >
+            <Download size={15} strokeWidth={2} />
+          </button>
           <button
             type="button"
             title="Quitar DXF"
@@ -130,6 +176,12 @@ export function MaterialLineDxfControls({
           </button>
         </>
       )}
+      <DxfPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        url={dxf?.publicUrl ?? null}
+        fileName={displayName}
+      />
     </div>
   )
 }

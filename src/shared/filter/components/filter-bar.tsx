@@ -61,24 +61,22 @@ export function FilterBar({
     </button>
   )
 
-  /** Popover desktop: fila compacta (mismo peso visual que "Dirección" del sort). */
+  /** Popover desktop: botón claro pero compacto (soft primary, no CTA h-11). */
   const listoButtonPopover = (
     <button
       type="button"
       disabled={draft.length === 0}
       onClick={handleValueConfirm}
       className={
-        "mt-1 flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs transition " +
+        "mt-2 flex h-9 w-full items-center justify-center gap-1.5 rounded-lg text-xs font-semibold shadow-xs transition " +
         (draft.length === 0
-          ? "pointer-events-none opacity-40 text-muted-foreground"
-          : "text-muted-foreground hover:bg-foreground/5")
+          ? "cursor-not-allowed bg-muted text-muted-foreground/50"
+          : "bg-primary/10 text-primary hover:bg-primary/15 active:bg-primary/20 dark:bg-primary/20 dark:text-primary-foreground dark:hover:bg-primary/25")
       }
     >
-      <span>Listo</span>
+      Listo
       {draft.length > 0 ? (
-        <span className="font-semibold tabular-nums text-primary">
-          {draft.length}
-        </span>
+        <span className="tabular-nums opacity-80">({draft.length})</span>
       ) : null}
     </button>
   )

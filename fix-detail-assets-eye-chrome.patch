@@ -1,0 +1,59 @@
+diff --git a/src/features/detail-assets/components/detail-assets-eye.tsx b/src/features/detail-assets/components/detail-assets-eye.tsx
+index 0000000..1111111 100644
+--- a/src/features/detail-assets/components/detail-assets-eye.tsx
++++ b/src/features/detail-assets/components/detail-assets-eye.tsx
+@@ -3,7 +3,7 @@
+ import { useState } from "react"
+ import { Eye } from "lucide-react"
+ 
+-import { cn } from "@/shared/utils/utils"
++import { IconAction } from "@/shared/ui/actions/icon-action"
+ import { DetailAssetsDialog } from "./detail-assets-dialog"
+ 
+ type Props = {
+@@ -11,37 +11,28 @@
+   projectId?: string
+   readOnly?: boolean
+   className?: string
++  /** Reservado: resalte futuro si hay assets */
+   hasAssets?: boolean
+ }
+ 
++/** Mismo chrome que info / editar / borrar (IconAction + CHROME_ICON_BTN). */
+ export function DetailAssetsEye({
+   taskId,
+   projectId,
+   readOnly,
+   className,
+-  hasAssets,
+ }: Props) {
+   const [open, setOpen] = useState(false)
+   if (!taskId && !projectId) return null
+ 
+   return (
+     <>
+-      <button
+-        type="button"
+-        title="Archivos y detalle"
+-        onClick={e => {
+-          e.stopPropagation()
+-          setOpen(true)
+-        }}
+-        className={cn(
+-          "flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition",
+-          "hover:bg-foreground/10 hover:text-foreground",
+-          hasAssets && "text-sky-400",
+-          className,
+-        )}
+-      >
+-        <Eye size={15} strokeWidth={2} />
+-      </button>
++      <IconAction
++        icon={Eye}
++        aria-label="Archivos y detalle"
++        className={className}
++        onClick={() => setOpen(true)}
++      />
+       <DetailAssetsDialog
+         open={open}
+         onOpenChange={setOpen}

@@ -1,0 +1,106 @@
+diff --git a/public/icon.svg b/public/icon.svg
+new file mode 100644
+index 0000000..587357b
+--- /dev/null
++++ b/public/icon.svg
+@@ -0,0 +1,17 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<svg id="ETM_SAC" data-name="ETM SAC" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 211.19 135.1">
++  <defs>
++    <style>
++      .cls-1 {
++        fill: #266cae;
++      }
++
++      .cls-2 {
++        fill: #fcbd16;
++      }
++    </style>
++  </defs>
++  <polygon class="cls-2" points="140.35 0 140.35 0 166.82 85.22 182.9 35.87 211.19 135.1 189.86 135.1 179.24 93.14 154.72 135.1 140.35 0"/>
++  <path class="cls-1" d="M121.47,41.51v27.05s-21,0-21,0v66.21s-27.41,0-27.41,0v-66.56h-40.42c-2.84,0-5.14,2.3-5.14,5.14v.1c0,2.42,1.96,4.38,4.38,4.38h18.4v20.62h-19.79c-2.64,0-4.78,2.14-4.78,4.78v.08c0,2.64,2.14,4.78,4.78,4.78l19.85-.12v26.7l-25.91.12c-13.49,0-24.43-10.94-24.43-24.43v-43.86c0-13.79,11.18-24.97,24.97-24.97h96.5Z"/>
++  <polygon class="cls-1" points="107.94 135.09 132.96 135.1 146.37 96.04 140.64 41.8 107.94 135.09"/>
++</svg>
+\ No newline at end of file
+diff --git a/src/shared/responsive/layout/app-shell.tsx b/src/shared/responsive/layout/app-shell.tsx
+index a949d75..6db363b 100644
+--- a/src/shared/responsive/layout/app-shell.tsx
++++ b/src/shared/responsive/layout/app-shell.tsx
+@@ -31,10 +31,10 @@ function DesktopTopBar() {
+ 
+   // Overlay como mobile: contenido scrollea debajo con blur.
+   return (
+-    <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-11 items-center gap-2 overflow-visible px-3">
++    <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-14 items-center gap-2 overflow-visible px-3">
+       <div
+         aria-hidden
+-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-14 backdrop-blur-xl"
++        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-16 backdrop-blur-xl"
+         style={{
+           maskImage: "linear-gradient(to bottom, black 40%, transparent)",
+           WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent)",
+@@ -42,7 +42,7 @@ function DesktopTopBar() {
+       />
+       <div
+         aria-hidden
+-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-14 bg-background/65"
++        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-16 bg-background/65"
+         style={{
+           maskImage: "linear-gradient(to bottom, black 30%, transparent)",
+           WebkitMaskImage: "linear-gradient(to bottom, black 30%, transparent)",
+diff --git a/src/shared/responsive/layout/chrome-constants.ts b/src/shared/responsive/layout/chrome-constants.ts
+index 749de92..eaed429 100644
+--- a/src/shared/responsive/layout/chrome-constants.ts
++++ b/src/shared/responsive/layout/chrome-constants.ts
+@@ -14,5 +14,5 @@ export const BOTTOM_NAV_HEIGHT_PX = 80
+ /** pt-1 + h-10 input + mb-2 (mismo gap que empty mt-2). */
+ export const PAGE_SEARCH_BAR_HEIGHT_PX = 52
+ 
+-/** Alto del DesktopTopBar overlay (h-11 = 2.75rem). */
+-export const DESKTOP_TOP_BAR_HEIGHT_PX = 44
++/** Alto del DesktopTopBar overlay (h-14 = 3.5rem) + aire bajo blur. */
++export const DESKTOP_TOP_BAR_HEIGHT_PX = 64
+diff --git a/src/shared/responsive/mobile/top-bar.tsx b/src/shared/responsive/mobile/top-bar.tsx
+index a779741..f0f0a45 100644
+--- a/src/shared/responsive/mobile/top-bar.tsx
++++ b/src/shared/responsive/mobile/top-bar.tsx
+@@ -69,7 +69,7 @@ export function TopBar() {
+           type="button"
+           onClick={toggleDrawer}
+           aria-label="Abrir navegación"
+-          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-chrome text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-chrome active:bg-popover"
++          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-foreground shadow-xs backdrop-blur-xl transition hover:bg-muted/80 active:bg-foreground/10"
+         >
+           <Menu size={18} strokeWidth={2.2} />
+         </button>
+diff --git a/src/shared/ui/entity-toolbar/toolbar-chrome.ts b/src/shared/ui/entity-toolbar/toolbar-chrome.ts
+index 73ad695..6ddbe46 100644
+--- a/src/shared/ui/entity-toolbar/toolbar-chrome.ts
++++ b/src/shared/ui/entity-toolbar/toolbar-chrome.ts
+@@ -1,21 +1,21 @@
+ /**
+  * SSOT — botones de chrome del EntityToolbar / DesktopTopBar / TopBar móvil.
+- * Contraste legible en light y dark (no text-muted lavado).
++ * Contraste legible en light y dark (bg-muted, no bg-chrome que se funde en dark).
+  */
+ 
+ /** Desktop / toolbar: 32×32 */
+ export const TOOLBAR_CHROME_ICON_BTN =
+-  "relative flex size-8 shrink-0 touch-none items-center justify-center overflow-visible rounded-full bg-chrome text-foreground/80 shadow-xs backdrop-blur-xl transition-colors duration-150 hover:bg-muted hover:text-foreground"
++  "relative flex size-8 shrink-0 touch-none items-center justify-center overflow-visible rounded-full bg-muted text-foreground shadow-xs backdrop-blur-xl transition-colors duration-150 hover:bg-muted/80 hover:text-foreground"
+ 
+ export const TOOLBAR_CHROME_ICON_BTN_ACTIVE =
+-  "bg-muted text-foreground"
++  "bg-foreground/15 text-foreground"
+ 
+ /** TopBar móvil (y triggers topbar): 40×40, mismo contraste */
+ export const TOPBAR_ICON_BTN =
+-  "relative flex size-10 shrink-0 items-center justify-center overflow-visible rounded-full bg-chrome text-foreground/80 shadow-xs backdrop-blur-xl transition-colors duration-150 hover:bg-muted hover:text-foreground active:bg-muted"
++  "relative flex size-10 shrink-0 items-center justify-center overflow-visible rounded-full bg-muted text-foreground shadow-xs backdrop-blur-xl transition-colors duration-150 hover:bg-muted/80 hover:text-foreground active:bg-foreground/10"
+ 
+ export const TOPBAR_ICON_BTN_ACTIVE =
+-  "bg-muted text-foreground"
++  "bg-foreground/15 text-foreground"
+ 
+ /** Icon size dentro del círculo chrome desktop */
+ export const TOOLBAR_CHROME_ICON_SIZE = 14 as const

@@ -22,7 +22,9 @@ export function HistoryToggleButton({ count, active, onClick }: Props) {
       <span
         className={cn(
           "flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold select-none transition-colors duration-200 shadow-xs",
-          SIDEBAR_COUNT_BADGE,
+          // Activo: primary sólido + número blanco (igual light/dark, sin dark: que cambie tono)
+          // Inactivo: burbuja suave del sidebar
+          active ? "bg-primary text-white" : SIDEBAR_COUNT_BADGE,
           active && "animate-history-bounce",
         )}
       >

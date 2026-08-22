@@ -69,7 +69,7 @@ export function TopBar() {
           type="button"
           onClick={toggleDrawer}
           aria-label="Abrir navegación"
-          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-chrome text-muted-foreground shadow-xs backdrop-blur-xl transition hover:bg-chrome active:bg-popover"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-foreground shadow-xs backdrop-blur-xl transition hover:bg-muted/80 active:bg-foreground/10"
         >
           <Menu size={18} strokeWidth={2.2} />
         </button>

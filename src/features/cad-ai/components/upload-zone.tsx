@@ -226,7 +226,7 @@ export function UploadZone({
                       )
                     }
                   />
-                  <ChatBubble user={isUser}>
+                  <ChatBubble own={isUser}>
                     <p className="text-sm leading-relaxed">{msg.content}</p>
                     {msg.geometry && (
                       <p

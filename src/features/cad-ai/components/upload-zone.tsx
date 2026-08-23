@@ -94,12 +94,12 @@ export function UploadZone({
       <div
         className={cn(
           "mx-auto flex h-full min-h-0 w-full max-w-3xl flex-1 flex-col",
-          phoneLand ? "px-2 pb-1 pt-0" : compactChrome ? "px-3 pb-2 pt-1" : "px-3 py-3 sm:px-6 sm:py-6",
+          phoneLand ? "px-2 pb-1 pt-0" : compactChrome ? "px-3 pb-2 pt-1" : "px-3 pt-2 pb-3 sm:px-6 sm:pt-3 sm:pb-6",
         )}
       >
         {/* Hero: solo desktop / tablet ancha */}
         {!compactChrome && (
-          <div className="mb-3 shrink-0 px-2 sm:mb-4 sm:px-4">
+          <div className="mb-2 shrink-0 px-2 sm:mb-3 sm:px-4">
             <div className="flex flex-col items-center gap-x-3 gap-y-1 text-center md:flex-row md:items-baseline md:justify-start md:text-left">
               <h2
                 className="shrink-0 font-bold tracking-tight text-foreground"

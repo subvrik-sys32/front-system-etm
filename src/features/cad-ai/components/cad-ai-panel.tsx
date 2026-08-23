@@ -4,7 +4,6 @@ import { useState, useCallback, useRef, useEffect } from "react"
 import { SlidersHorizontal } from "lucide-react"
 import { Spinner } from "@/shared/ui/spinner/spinner"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
-import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
 import { cn } from "@/shared/utils/utils"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-header"
@@ -52,7 +51,6 @@ export function CadAiPanel({
   onRegisterOpenSkills?: (open: () => void) => void
 } = {}) {
   const isMobileLayout = layout === "mobile"
-  const chromeInset = useChromeInset({ bottom: false })
   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
   const [dxf, setDxf] = useState<string>("")
   const [imagePath, setImagePath] = useState<string | null>(null)
@@ -198,10 +196,7 @@ export function CadAiPanel({
           </div>
         )}
 
-        <div
-          className="relative z-10 flex min-h-0 w-full flex-1 flex-col"
-          style={isMobileLayout ? undefined : { paddingTop: chromeInset.paddingTop ?? 64 }}
-        >
+        <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col">
           {error && (
             <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
               <span className="truncate">{error}</span>
@@ -266,10 +261,7 @@ export function CadAiPanel({
         </div>
       )}
 
-      <div
-        className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col"
-        style={isMobileLayout ? undefined : { paddingTop: chromeInset.paddingTop ?? 64 }}
-      >
+      <div className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col">
         {error && (
           <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
             <span className="truncate">{error}</span>

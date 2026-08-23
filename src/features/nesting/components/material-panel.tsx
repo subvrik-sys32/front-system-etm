@@ -101,7 +101,7 @@ export function MaterialPanel({
               isProjectExpanded ? "mt-2 max-h-50 opacity-100 p-1" : "max-h-0 opacity-0 pointer-events-none"
             )}
           >
-            <div className="flex items-center gap-0.5 rounded-lg bg-black/25 p-2">
+            <div className="flex w-full items-center justify-center gap-0.5 rounded-lg bg-background/50 p-2">
               <button type="button" className={btn} title="Nuevo proyecto" onClick={projectActions.onNew}>
                 <FilePlus className="h-4 w-4" strokeWidth={1.5} />
               </button>

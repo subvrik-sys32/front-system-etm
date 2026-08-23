@@ -1,0 +1,124 @@
+diff --git a/src/features/nesting/components/material-panel.tsx b/src/features/nesting/components/material-panel.tsx
+index 50966a7..06b7890 100644
+--- a/src/features/nesting/components/material-panel.tsx
++++ b/src/features/nesting/components/material-panel.tsx
+@@ -101,7 +101,7 @@ export function MaterialPanel({
+               isProjectExpanded ? "mt-2 max-h-50 opacity-100 p-1" : "max-h-0 opacity-0 pointer-events-none"
+             )}
+           >
+-            <div className="flex items-center gap-0.5 rounded-lg bg-black/25 p-2">
++            <div className="flex w-full items-center justify-center gap-0.5 rounded-lg bg-background/50 p-2">
+               <button type="button" className={btn} title="Nuevo proyecto" onClick={projectActions.onNew}>
+                 <FilePlus className="h-4 w-4" strokeWidth={1.5} />
+               </button>
+diff --git a/src/features/nesting/components/piece-list.tsx b/src/features/nesting/components/piece-list.tsx
+index 8de9e17..8cbc242 100644
+--- a/src/features/nesting/components/piece-list.tsx
++++ b/src/features/nesting/components/piece-list.tsx
+@@ -1,7 +1,7 @@
+ "use client"
+ 
+ import { forwardRef, memo, useEffect, useImperativeHandle, useRef, useState, useMemo } from "react"
+-import { Import, FileWarning, AlertTriangle, Eye, Layers, Copy, Search, X, Trash2, type LucideProps } from "lucide-react"
++import { Import, FileWarning, AlertTriangle, Eye, Layers, Copy, Search, X, Trash2, Ruler, Box } from "lucide-react"
+ import {
+   EntityExpandedToggle,
+   type EntityExpandedToggleOption,
+@@ -57,39 +57,11 @@ export interface PieceListProps {
+ }
+ 
+ 
+-function LetterIcon({
+-  letter,
+-  ...props
+-}: LucideProps & { letter: string }) {
+-  const size = typeof props.size === "number" ? props.size : 13
+-  return (
+-    <span
+-      aria-hidden
+-      className={props.className}
+-      style={{
+-        width: size,
+-        height: size,
+-        display: "inline-flex",
+-        alignItems: "center",
+-        justifyContent: "center",
+-        fontSize: Math.max(10, size - 1),
+-        fontWeight: 700,
+-        lineHeight: 1,
+-      }}
+-    >
+-      {letter}
+-    </span>
+-  )
+-}
+-
+-const IconEspesor = (props: LucideProps) => <LetterIcon letter="E" {...props} />
+-const IconMaterial = (props: LucideProps) => <LetterIcon letter="M" {...props} />
+-
+ type GroupByType = "none" | "thickness" | "material"
+ 
+ const GROUP_BY_OPTIONS: EntityExpandedToggleOption<"thickness" | "material">[] = [
+-  { value: "thickness", label: "Espesor", icon: IconEspesor as never },
+-  { value: "material", label: "Material", icon: IconMaterial as never },
++  { value: "thickness", label: "Espesor", icon: Ruler },
++  { value: "material", label: "Material", icon: Box },
+ ]
+ 
+ // Extensiones y tipos MIME amplios para garantizar compatibilidad total en iOS y Android
+@@ -416,6 +388,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
+               setGroupBy((prev) => (prev === v ? "none" : v))
+             }
+             options={GROUP_BY_OPTIONS}
++            forceLabels
+           />
+         </div>
+       )}
+@@ -444,7 +417,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
+         </div>
+       )}
+       {errorMsg && (
+-        <p className="mb-2 mx-3 shrink-0 flex items-start gap-1.5 rounded-lg bg-destructive/10 p-2 text-xs text-destructive animate-in fade-in duration-200">
++        <p className="mb-2 flex w-full shrink-0 items-start gap-1.5 rounded-lg bg-destructive/10 p-2 text-xs text-destructive animate-in fade-in duration-200">
+           <FileWarning className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+           <span>{errorMsg}</span>
+         </p>
+@@ -466,7 +439,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
+           </div>
+         ) : (
+           <ScrollArea className="h-full w-full">
+-            <div className="flex flex-col gap-3 w-full px-3 py-2 pr-4.5 box-border pb-3">
++            <div className="flex w-full flex-col gap-2 box-border py-1">
+               {groupedEntries.map(({ groupKey, items }) => (
+                 <div key={groupKey ?? "default"} className="flex flex-col gap-2">
+                   {groupKey && (
+diff --git a/src/shared/ui/entity-expanded-row/entity-expanded-toggle.tsx b/src/shared/ui/entity-expanded-row/entity-expanded-toggle.tsx
+index a45cabc..328f599 100644
+--- a/src/shared/ui/entity-expanded-row/entity-expanded-toggle.tsx
++++ b/src/shared/ui/entity-expanded-row/entity-expanded-toggle.tsx
+@@ -22,6 +22,8 @@ type Props<T extends string> = {
+   leading?: ReactNode
+   /** Control a la derecha del grupo. */
+   trailing?: ReactNode
++  /** Si true, siempre muestra label junto al icono (no solo en ancho amplio). */
++  forceLabels?: boolean
+ }
+ 
+ const COMPACT_BREAKPOINT = 420
+@@ -32,6 +34,7 @@ export function EntityExpandedToggle<T extends string>({
+   options,
+   leading,
+   trailing,
++  forceLabels = false,
+ }: Props<T>) {
+   const wrapperRef = useRef<HTMLDivElement>(null)
+ 
+@@ -96,7 +99,7 @@ export function EntityExpandedToggle<T extends string>({
+                 />
+               </span>
+ 
+-              {!fullWidth && (
++              {(forceLabels || !fullWidth) && (
+                 <span className="min-w-0 truncate">
+                   {option.label}
+                 </span>

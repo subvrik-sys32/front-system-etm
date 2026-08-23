@@ -22,6 +22,8 @@ type Props<T extends string> = {
   leading?: ReactNode
   /** Control a la derecha del grupo. */
   trailing?: ReactNode
+  /** Si true, siempre muestra label junto al icono (no solo en ancho amplio). */
+  forceLabels?: boolean
 }
 
 const COMPACT_BREAKPOINT = 420
@@ -32,6 +34,7 @@ export function EntityExpandedToggle<T extends string>({
   options,
   leading,
   trailing,
+  forceLabels = false,
 }: Props<T>) {
   const wrapperRef = useRef<HTMLDivElement>(null)
 
@@ -96,7 +99,7 @@ export function EntityExpandedToggle<T extends string>({
                 />
               </span>
 
-              {!fullWidth && (
+              {(forceLabels || !fullWidth) && (
                 <span className="min-w-0 truncate">
                   {option.label}
                 </span>

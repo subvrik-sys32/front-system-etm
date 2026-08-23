@@ -1,7 +1,7 @@
 "use client"
 
 import { forwardRef, memo, useEffect, useImperativeHandle, useRef, useState, useMemo } from "react"
-import { Import, FileWarning, AlertTriangle, Eye, Layers, Copy, Search, X, Trash2, type LucideProps } from "lucide-react"
+import { Import, FileWarning, AlertTriangle, Eye, Layers, Copy, Search, X, Trash2, Ruler, Box } from "lucide-react"
 import {
   EntityExpandedToggle,
   type EntityExpandedToggleOption,
@@ -57,39 +57,11 @@ export interface PieceListProps {
 }
 
 
-function LetterIcon({
-  letter,
-  ...props
-}: LucideProps & { letter: string }) {
-  const size = typeof props.size === "number" ? props.size : 13
-  return (
-    <span
-      aria-hidden
-      className={props.className}
-      style={{
-        width: size,
-        height: size,
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: Math.max(10, size - 1),
-        fontWeight: 700,
-        lineHeight: 1,
-      }}
-    >
-      {letter}
-    </span>
-  )
-}
-
-const IconEspesor = (props: LucideProps) => <LetterIcon letter="E" {...props} />
-const IconMaterial = (props: LucideProps) => <LetterIcon letter="M" {...props} />
-
 type GroupByType = "none" | "thickness" | "material"
 
 const GROUP_BY_OPTIONS: EntityExpandedToggleOption<"thickness" | "material">[] = [
-  { value: "thickness", label: "Espesor", icon: IconEspesor as never },
-  { value: "material", label: "Material", icon: IconMaterial as never },
+  { value: "thickness", label: "Espesor", icon: Ruler },
+  { value: "material", label: "Material", icon: Box },
 ]
 
 // Extensiones y tipos MIME amplios para garantizar compatibilidad total en iOS y Android
@@ -416,6 +388,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
               setGroupBy((prev) => (prev === v ? "none" : v))
             }
             options={GROUP_BY_OPTIONS}
+            forceLabels
           />
         </div>
       )}
@@ -444,7 +417,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
         </div>
       )}
       {errorMsg && (
-        <p className="mb-2 mx-3 shrink-0 flex items-start gap-1.5 rounded-lg bg-destructive/10 p-2 text-xs text-destructive animate-in fade-in duration-200">
+        <p className="mb-2 flex w-full shrink-0 items-start gap-1.5 rounded-lg bg-destructive/10 p-2 text-xs text-destructive animate-in fade-in duration-200">
           <FileWarning className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>{errorMsg}</span>
         </p>
@@ -466,7 +439,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
           </div>
         ) : (
           <ScrollArea className="h-full w-full">
-            <div className="flex flex-col gap-3 w-full px-3 py-2 pr-4.5 box-border pb-3">
+            <div className="flex w-full flex-col gap-2 box-border py-1">
               {groupedEntries.map(({ groupKey, items }) => (
                 <div key={groupKey ?? "default"} className="flex flex-col gap-2">
                   {groupKey && (

@@ -104,6 +104,33 @@ export function DialogClose(
 
 }
 
+/** Clases del botón X de DialogContent (CAD / FormDialog / estándar). */
+export const DIALOG_CLOSE_BTN_CLASS =
+  "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
+
+/**
+ * X de cierre para headers custom (cuando showCloseButton={false}
+ * o [&>button]:hidden). Mismo look que el close nativo de DialogContent.
+ */
+export function DialogHeaderCloseButton({
+  onClick,
+  className,
+  ...props
+}: React.ComponentProps<"button">) {
+  return (
+    <button
+      type="button"
+      title="Cerrar"
+      aria-label="Cerrar"
+      onClick={onClick}
+      className={cn(DIALOG_CLOSE_BTN_CLASS, className)}
+      {...props}
+    >
+      <X size={16} strokeWidth={2} />
+    </button>
+  )
+}
+
 export function DialogPortal(
   props: DialogPortalProps
 ) {
@@ -207,31 +234,15 @@ export function DialogContent({
         {children}
 
         {showCloseButton && (
-
           <DialogClose
             className={cn(
-              "absolute",
-              "right-3",
-              "top-3",
-              "z-10",
-              "flex",
-              "h-7",
-              "w-7",
-              "items-center",
-              "justify-center",
-              "rounded-lg",
-              "text-muted-foreground",
-              "transition-colors",
-              "hover:bg-foreground/5",
-              "hover:text-foreground",
+              "absolute right-3 top-3 z-10",
+              DIALOG_CLOSE_BTN_CLASS,
               isFullscreenMobile && "h-9 w-9 bg-foreground/5",
             )}
           >
-
-            <X size={isFullscreenMobile ? 18 : 16} />
-
+            <X size={isFullscreenMobile ? 18 : 16} strokeWidth={2} />
           </DialogClose>
-
         )}
 
       </DialogPrimitive.Content>

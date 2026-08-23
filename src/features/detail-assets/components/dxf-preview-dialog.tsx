@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
-import { Download, X } from "lucide-react"
+import { Download } from "lucide-react"
 import { toast } from "sonner"
 import { saveBlobWithPreferences } from "@/features/user-preferences"
 
@@ -10,6 +10,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogHeaderCloseButton,
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Spinner } from "@/shared/ui/spinner/spinner"
@@ -120,18 +121,11 @@ export function DxfPreviewDialog({
               type="button"
               title="Descargar"
               onClick={() => void handleDownload()}
-              className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
             >
               <Download size={16} strokeWidth={2} />
             </button>
-            <button
-              type="button"
-              title="Cerrar"
-              onClick={() => onOpenChange(false)}
-              className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
-            >
-              <X size={16} strokeWidth={2} />
-            </button>
+            <DialogHeaderCloseButton onClick={() => onOpenChange(false)} />
           </div>
         </DialogHeader>
         {/* Lienzo a sangre: sin padding ni rounded interno (el dialog ya recorta) */}

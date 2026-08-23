@@ -1,9 +1,9 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { RotateCw, FlipHorizontal, FlipVertical, X } from "lucide-react"
+import { RotateCw, FlipHorizontal, FlipVertical } from "lucide-react"
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogHeaderCloseButton, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 
 import type { CadRow } from "./piece-list"
@@ -59,7 +59,7 @@ export function PiecePreviewDialog({
               <Button
                 size="icon-sm"
                 variant="ghost"
-                className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-foreground/10"
+                className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                 onClick={() => onRotate?.(row.id, 90)}
                 title="Rotar 90°"
               >
@@ -68,7 +68,7 @@ export function PiecePreviewDialog({
               <Button
                 size="icon-sm"
                 variant="ghost"
-                className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-foreground/10"
+                className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                 onClick={() => onMirrorX?.(row.id)}
                 title="Espejo horizontal"
               >
@@ -77,7 +77,7 @@ export function PiecePreviewDialog({
               <Button
                 size="icon-sm"
                 variant="ghost"
-                className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-foreground/10"
+                className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                 onClick={() => onMirrorY?.(row.id)}
                 title="Espejo vertical"
               >
@@ -86,15 +86,7 @@ export function PiecePreviewDialog({
 
               <div className="h-4 w-px bg-foreground/10 mx-0.5" />
 
-              <Button
-                size="icon-sm"
-                variant="ghost"
-                className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-foreground/10"
-                onClick={onClose}
-                title="Cerrar"
-              >
-                <X className="h-3.5 w-3.5" />
-              </Button>
+              <DialogHeaderCloseButton onClick={onClose} />
             </div>
           )}
         </DialogHeader>

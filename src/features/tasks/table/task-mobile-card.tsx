@@ -355,20 +355,22 @@ function TaskMobileCardReady({
           </span>
         </div>
 
-        {/* Auditoría + ojo: solo colapsado; al expandir van al panel / row móvil */}
+        {/* Ojo siempre colapsado; auditoría en filas anchas */}
         {!expanded && (
           <div
-            className="hidden shrink-0 items-center gap-1 pr-0.5 @[40rem]/trow:flex"
+            className="flex shrink-0 items-center gap-1 pr-0.5"
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
-            <EntityAuditInfo
-              createdAt={task.createdAt}
-              updatedAt={task.updatedAt}
-              createdBy={task.createdBy}
-              updatedBy={task.updatedBy}
-            workflowSteps={task.workflowSteps}
-          />
+            <div className="hidden items-center gap-1 @[40rem]/trow:flex">
+              <EntityAuditInfo
+                createdAt={task.createdAt}
+                updatedAt={task.updatedAt}
+                createdBy={task.createdBy}
+                updatedBy={task.updatedBy}
+                workflowSteps={task.workflowSteps}
+              />
+            </div>
             <DetailAssetsEye taskId={task.id} count={taskDetailAssetCount(task)} />
           </div>
         )}

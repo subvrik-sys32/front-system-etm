@@ -39,11 +39,12 @@ function CadTabs({
 }
 
 /**
- * Móvil + tablet (isCompact): una sola fila h-11 — toggle + Skills + settings.
- * Mismo patrón que Bitácora (chrome local bajo TopBar, sin toolbar de page).
+ * Móvil + tablet: slot immersive (entre TopBar y BottomNav).
+ * bleed — sin padding extra (Nesting). Landscape: fila más baja.
  */
 function CadPageCompact() {
   usePageTitle("CAD")
+  const { isLandscape } = useResponsive()
   const [tab, setTab] = useState<Tab>("ai")
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
   const [hasAiChat, setHasAiChat] = useState(false)
@@ -53,11 +54,15 @@ function CadPageCompact() {
   }, [])
 
   return (
-    <PageShell mode="fill">
+    <PageShell mode="bleed">
       <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-        {/* Una sola fila: no apilar Skills debajo del toggle */}
-        <div className="relative mb-1.5 flex h-11 shrink-0 items-center px-2">
-          <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
+        <div
+          className={cn(
+            "relative flex shrink-0 items-center px-2",
+            isLandscape ? "mb-0.5 h-9" : "mb-1.5 h-11",
+          )}
+        >
+          <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
             <CadTabs tab={tab} onTabChange={setTab} compact />
             {tab === "ai" && (
               <button
@@ -67,11 +72,12 @@ function CadPageCompact() {
                 onClick={() => openSkillsRef.current?.()}
                 className={cn(
                   CHROME_ICON_BTN,
-                  "h-9 w-auto shrink-0 gap-1.5 px-2.5 text-xs font-semibold shadow-xs backdrop-blur-xs",
+                  "w-auto shrink-0 gap-1.5 text-xs font-semibold shadow-xs backdrop-blur-xs",
+                  isLandscape ? "h-8 px-2" : "h-9 px-2.5",
                 )}
               >
                 <Layers size={14} strokeWidth={2.25} />
-                <span className="max-[380px]:hidden">Skills</span>
+                <span className={cn(isLandscape && "sr-only")}>Skills</span>
               </button>
             )}
           </div>
@@ -83,11 +89,12 @@ function CadPageCompact() {
               title="Opciones de IA"
               onClick={() => setAiPanelOpen(true)}
               className={cn(
-                "absolute right-2 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center",
+                "absolute right-2 top-1/2 flex -translate-y-1/2 items-center justify-center",
                 "rounded-xl bg-foreground/5 text-foreground shadow-xs backdrop-blur-xl",
+                isLandscape ? "size-8" : "size-9",
               )}
             >
-              <SlidersHorizontal size={16} strokeWidth={2.2} />
+              <SlidersHorizontal size={isLandscape ? 15 : 16} strokeWidth={2.2} />
             </button>
           )}
         </div>
@@ -110,7 +117,6 @@ function CadPageCompact() {
   )
 }
 
-/** Desktop / laptop: tabs en DesktopTopBar; Skills vive en el empty del panel. */
 function CadPageDesktop() {
   usePageTitle("CAD")
   const [tab, setTab] = useState<Tab>("ai")
@@ -139,7 +145,6 @@ export default function CadPage() {
     return <div className="min-h-0 flex-1" />
   }
 
-  // Bitácora: isMobile || isCompact → chrome local. CAD igual.
   const compactChrome = isMobile || isCompact
   return compactChrome ? <CadPageCompact /> : <CadPageDesktop />
 }

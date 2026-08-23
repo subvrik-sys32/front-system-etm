@@ -34,7 +34,7 @@ export function BottomNavigation() {
           sí se desvanezca, no solo el color de fondo. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 backdrop-blur-xl"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-28 backdrop-blur-xl"
         style={{
           maskImage: "linear-gradient(to top, black 40%, transparent)",
           WebkitMaskImage: "linear-gradient(to top, black 40%, transparent)",
@@ -42,7 +42,7 @@ export function BottomNavigation() {
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-background/60"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-background/80"
         style={{
           maskImage: "linear-gradient(to top, black 30%, transparent)",
           WebkitMaskImage: "linear-gradient(to top, black 30%, transparent)",
@@ -50,7 +50,7 @@ export function BottomNavigation() {
       />
 
       <div className="pointer-events-auto relative px-3 pb-1">
-        <nav className="flex items-stretch gap-1 rounded-full bg-foreground/10 px-1.5 py-1.5 shadow-xs ring-1 ring-border backdrop-blur-xl">
+        <nav className="flex items-stretch gap-1 rounded-full bg-background/90 px-1.5 py-1.5 shadow-xs ring-1 ring-border/60 backdrop-blur-xl">
           {BOTTOM_NAV_ITEMS.map(item => {
             const isActive =
               item.action.type === "link" &&

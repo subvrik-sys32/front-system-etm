@@ -3,7 +3,7 @@ import {
   BOTTOM_NAV_HEIGHT_PX,
 } from "@/shared/responsive/layout/chrome-constants"
 
-export const IMMERSIVE_ROUTE_PREFIXES = ["/nesting"] as const
+export const IMMERSIVE_ROUTE_PREFIXES = ["/nesting", "/cad"] as const
 
 export function isImmersiveRoute(pathname: string): boolean {
   return IMMERSIVE_ROUTE_PREFIXES.some(

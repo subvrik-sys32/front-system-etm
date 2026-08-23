@@ -6,6 +6,7 @@ import { Boxes, Layers, SlidersHorizontal, Sparkles } from "lucide-react"
 import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
 import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
 import { PageShell } from "@/shared/responsive/layout/page-shell"
 import { CadWorkspacePanel } from "@/features/cad/components/cad-workspace-panel"
 import { CadAiPanel } from "@/features/cad-ai/components/cad-ai-panel"
@@ -14,6 +15,18 @@ import { TOPBAR_ICON_BTN } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { cn } from "@/shared/utils/utils"
 
 type Tab = "ai" | "templates"
+
+/**
+ * Cad page chrome matrix
+ *
+ * | Viewport        | AppShell       | Page UI            | Top clear                          |
+ * |-----------------|----------------|--------------------|------------------------------------|
+ * | Phone (mobile)  | CompactShell   | CadPageCompact     | Immersive slot top: TOP_BAR        |
+ * | Tablet (compact)| DesktopShell   | CadPageCompact     | useChromeInset on this page        |
+ * | Laptop+         | DesktopShell   | CadPageDesktop     | useChromeInset in CadAiPanel       |
+ *
+ * isCompact = isMobile || tablet. Shell is only isMobile → CompactShell.
+ */
 
 function CadTabs({
   tab,
@@ -41,7 +54,6 @@ function CadTabs({
   )
 }
 
-/** Botón redondo topbar (mismo chrome que campana / mensajes / avatar). */
 function TopbarRoundButton({
   onClick,
   label,
@@ -66,14 +78,11 @@ function TopbarRoundButton({
   )
 }
 
-/**
- * Móvil + tablet: slot immersive (AppShell ya recorta top bajo el TopBar).
- * Landscape: Skills → toggle → settings en TopBar (fade al rotar a portrait).
- * Portrait: fila bajo el slot; Skills/settings a la derecha.
- */
 function CadPageCompact() {
   usePageTitle("CAD")
-  const { isLandscape } = useResponsive()
+  const { isLandscape, isMobile } = useResponsive()
+  // Tablet runs Compact UI inside DesktopShell — same clear as AppListScroll.
+  const chromeInset = useChromeInset({ bottom: false })
   const [tab, setTab] = useState<Tab>("ai")
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
   const [hasVisualizer, setHasVisualizer] = useState(false)
@@ -81,22 +90,19 @@ function CadPageCompact() {
   const registerOpenSkills = useCallback((open: () => void) => {
     openSkillsRef.current = open
   }, [])
-
   const openSkills = useCallback(() => openSkillsRef.current?.(), [])
 
-  // Siempre montado para poder animar opacity al rotar; en portrait queda invisible.
-  const chromeToolbar = useMemo(
+  const landscapeToolbar = useMemo(
     () => (
       <div
         className={cn(
-          "flex items-center gap-1 overflow-hidden transition-[opacity,max-width,margin] duration-300 ease-out",
+          "flex items-center gap-1 overflow-hidden transition-[opacity,max-width] duration-300 ease-out",
           isLandscape
             ? "max-w-[24rem] opacity-100"
             : "pointer-events-none max-w-0 opacity-0",
         )}
         aria-hidden={!isLandscape}
       >
-        {/* Orden: Skills primero, luego toggle */}
         {tab === "ai" && (
           <TopbarRoundButton onClick={openSkills} label="Skills" title="Skills">
             <Layers size={16} strokeWidth={2.2} />
@@ -117,18 +123,19 @@ function CadPageCompact() {
     [isLandscape, tab, openSkills, hasVisualizer],
   )
 
-  usePageToolbar(chromeToolbar)
+  usePageToolbar(landscapeToolbar)
 
   return (
     <PageShell mode="bleed">
-      {/* overflow-hidden: nada se dibuja bajo el TopBar (el slot immersive ya recorta) */}
-      <section className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <section
+        className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden"
+        style={isMobile ? undefined : chromeInset}
+      >
         {!isLandscape && (
-          <div className="relative z-[1] mb-1.5 flex h-11 shrink-0 items-center overflow-visible px-2">
+          <div className="relative z-[1] mb-1.5 flex h-11 shrink-0 items-center px-2">
             <div className="flex min-w-0 flex-1 items-center justify-center">
               <CadTabs tab={tab} onTabChange={setTab} compact />
             </div>
-
             {tab === "ai" && (
               <div className="absolute right-2 top-1/2 z-[2] flex -translate-y-1/2 items-center gap-1.5">
                 <TopbarRoundButton onClick={openSkills} label="Skills" title="Skills">
@@ -176,7 +183,6 @@ function CadPageDesktop() {
 
   usePageToolbar(
     <div className="flex items-center gap-1.5">
-      {/* Skills primero, luego toggle */}
       {tab === "ai" && (
         <TopbarRoundButton
           onClick={() => openSkillsRef.current?.()}
@@ -192,7 +198,7 @@ function CadPageDesktop() {
 
   return (
     <PageShell mode="bleed">
-      <section className="flex min-h-0 w-full flex-1 flex-col">
+      <section className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
         {tab === "ai" ? (
           <CadAiPanel layout="desktop" onRegisterOpenSkills={registerOpenSkills} />
         ) : (
@@ -210,6 +216,6 @@ export default function CadPage() {
     return <div className="min-h-0 flex-1" />
   }
 
-  const compactChrome = isMobile || isCompact
-  return compactChrome ? <CadPageCompact /> : <CadPageDesktop />
+  // Compact UI: phone + tablet. Desktop UI: laptop+.
+  return isMobile || isCompact ? <CadPageCompact /> : <CadPageDesktop />
 }

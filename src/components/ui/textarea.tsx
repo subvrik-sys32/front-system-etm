@@ -32,7 +32,7 @@ export const Textarea =
           "border border-transparent",
           "bg-foreground/5",
           "px-4 py-3",
-          "text-sm font-medium text-foreground",
+          "text-[15px] font-medium leading-snug text-foreground",
           "placeholder:text-muted-foreground/80",
           "outline-none",
           "transition-all duration-200",

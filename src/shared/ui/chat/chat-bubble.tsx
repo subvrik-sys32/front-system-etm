@@ -13,7 +13,7 @@ type ChatBubbleProps = {
 
 /**
  * Burbuja de mensaje — paridad comments / CAD AI.
- * Texto siempre al inicio (start); nunca centrado (rompe legibilidad multilínea).
+ * Tipografía SSOT: 12px (más compacta que text-sm de UI general).
  */
 export function ChatBubble({
   own = false,
@@ -23,7 +23,7 @@ export function ChatBubble({
   return (
     <div
       className={cn(
-        "w-fit max-w-[min(85%,22rem)] min-h-9 rounded-2xl px-3.5 py-2 text-left text-[13px] leading-relaxed shadow-xs [overflow-wrap:anywhere]",
+        "w-fit max-w-[min(85%,22rem)] min-h-9 rounded-2xl px-3.5 py-2 text-left text-[12px] leading-[1.45] shadow-xs [overflow-wrap:anywhere]",
         own
           ? "bg-foreground text-background"
           : "bg-muted/80 text-foreground dark:bg-foreground/[0.06]",

@@ -165,7 +165,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar en mis mensajes..."
-            className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/80"
+            className="w-full bg-transparent text-[15px] leading-snug text-foreground outline-none placeholder:text-muted-foreground/80"
           />
         </div>
       </div>

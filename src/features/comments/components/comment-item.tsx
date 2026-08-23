@@ -167,7 +167,7 @@ export function CommentItem({
           <div
             className={cn(
               // Ancho original (columna ya limita a 85%/22rem). Solo el texto parte palabras largas.
-              "w-fit max-w-full min-w-0 min-h-9 rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed shadow-xs",
+              "w-fit max-w-full min-w-0 min-h-9 rounded-2xl px-3.5 py-2 text-[12px] leading-[1.45] shadow-xs",
               isOwner
                 ? "bg-foreground text-background"
                 : "bg-muted/80 text-foreground dark:bg-foreground/[0.06]",

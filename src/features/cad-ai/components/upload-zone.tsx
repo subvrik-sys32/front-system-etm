@@ -47,7 +47,7 @@ export function UploadZone({
 }: UploadZoneProps) {
   const { isMobile, isLandscape, isCompact } = useResponsive()
   const phoneLand = isMobile && isLandscape
-  // Same rule as CadPage: tablet uses compact chrome (no desktop hero).
+  // Align with CadPage: phone + tablet → compact empty copy / no desktop hero.
   const compactChrome = isMobile || isCompact
 
   const [input, setInput] = useState("")
@@ -138,7 +138,9 @@ export function UploadZone({
             )}
           >
             {empty ? (
-              <div className="flex w-full flex-col gap-3">
+              /* min-h-full: ocupa el hueco del card (misma zona que el chat con mensajes).
+                 Drop flex-1 rellena; chips abajo; composer sigue fuera del scroll. */
+              <div className="flex min-h-full w-full flex-col gap-3">
                 {compactChrome && !phoneLand && (
                   <div className="shrink-0 text-center">
                     <p className="text-sm font-semibold text-foreground">
@@ -150,9 +152,8 @@ export function UploadZone({
                   </div>
                 )}
 
-                {/* Desktop / tablet / phone landscape */}
                 {phoneLand || !isMobile ? (
-                  <div className="flex w-full flex-col gap-2">
+                  <div className="flex min-h-0 w-full flex-1 flex-col gap-2">
                     <button
                       type="button"
                       disabled={loading}
@@ -162,7 +163,7 @@ export function UploadZone({
                       }}
                       aria-label="Adjuntar plano"
                       title="Adjuntar plano"
-                      className="flex min-h-[10rem] w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-8 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05] sm:min-h-[12rem]"
+                      className="flex min-h-[10rem] w-full flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-8 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]"
                     >
                       <div className="flex size-9 items-center justify-center rounded-full bg-secondary/30">
                         <ImageIcon className="size-5 text-muted-foreground" />
@@ -175,7 +176,6 @@ export function UploadZone({
                       </span>
                     </button>
 
-                    {/* Desktop/tablet: icono + texto si hay altura; phone landscape: solo icono */}
                     <div className="grid shrink-0 grid-cols-3 gap-1.5">
                       {CHIPS.map(c => (
                         <button
@@ -204,7 +204,7 @@ export function UploadZone({
                     </div>
                   </div>
                 ) : (
-                  <div className="grid w-full grid-cols-1 gap-2.5">
+                  <div className="flex min-h-0 w-full flex-1 flex-col gap-2.5">
                     <button
                       type="button"
                       disabled={loading}
@@ -212,7 +212,7 @@ export function UploadZone({
                         e.stopPropagation()
                         open()
                       }}
-                      className="flex min-h-[8rem] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-6 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]"
+                      className="flex min-h-[8rem] w-full flex-1 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-6 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]"
                     >
                       <div className="flex size-10 items-center justify-center rounded-full bg-secondary/30">
                         <ImageIcon className="size-5 text-muted-foreground" />
@@ -225,7 +225,7 @@ export function UploadZone({
                       </span>
                     </button>
 
-                    <div className="grid grid-rows-3 gap-1.5">
+                    <div className="grid shrink-0 grid-rows-3 gap-1.5">
                       {CHIPS.map(c => (
                         <button
                           key={c.text}
@@ -269,7 +269,7 @@ export function UploadZone({
                         }
                       />
                       <ChatBubble own={isUser}>
-                        <p className="text-sm leading-relaxed">{msg.content}</p>
+                        <p className="leading-[1.45]">{msg.content}</p>
                         {msg.geometry && (
                           <p
                             className={cn(
@@ -345,7 +345,7 @@ export function UploadZone({
                 }}
                 placeholder="Describe la pieza o adjunta un plano…"
                 disabled={loading}
-                className="min-h-9 flex-1 bg-transparent px-1 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 disabled:opacity-50"
+                className="min-h-9 flex-1 bg-transparent px-1 py-2 text-[15px] leading-snug text-foreground outline-none placeholder:text-muted-foreground/70 disabled:opacity-50"
               />
               <button
                 type="button"

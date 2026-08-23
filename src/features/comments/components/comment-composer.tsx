@@ -270,7 +270,7 @@ export function CommentComposer({
                     ? "Edita tu mensaje…"
                     : "Mensaje…  @mencionar"
               }
-              className="max-h-24 min-h-9 flex-1 resize-none bg-transparent py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/70"
+              className="max-h-24 min-h-9 flex-1 resize-none bg-transparent py-2 text-[15px] leading-snug text-foreground outline-none placeholder:text-muted-foreground/70"
             />
 
             <button

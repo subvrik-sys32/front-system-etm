@@ -84,7 +84,7 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar skills..."
-              className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/80"
+              className="w-full bg-transparent text-[15px] leading-snug text-foreground outline-none placeholder:text-muted-foreground/80"
             />
           </div>
 

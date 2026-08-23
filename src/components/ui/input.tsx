@@ -24,7 +24,7 @@ export const Input = React.forwardRef<
         "h-9 w-full min-w-0 rounded-xl px-3.5",
         "border border-transparent",
         "bg-foreground/5",
-        "text-xs font-medium text-foreground placeholder:text-muted-foreground/80",
+        "text-sm font-medium text-foreground placeholder:text-muted-foreground/80",
         "outline-none focus:outline-none focus:ring-0",
         "focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none",
         "disabled:cursor-not-allowed disabled:opacity-50",

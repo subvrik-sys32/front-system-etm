@@ -214,7 +214,7 @@ export function IterationPanel({
             placeholder="Describe qué cambiar…"
             rows={1}
             className={cn(
-              "max-h-24 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 [scrollbar-width:none] disabled:opacity-50",
+              "max-h-24 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-[15px] leading-snug text-foreground outline-none placeholder:text-muted-foreground/70 [scrollbar-width:none] disabled:opacity-50",
               EASE
             )}
             disabled={loading}

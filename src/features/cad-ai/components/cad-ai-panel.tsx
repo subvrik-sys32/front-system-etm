@@ -52,11 +52,16 @@ export function CadAiPanel({
   onRegisterOpenSkills?: (open: () => void) => void
 } = {}) {
   const isMobileLayout = layout === "mobile"
-  // Same SSOT as AppListScroll: clear DesktopTopBar on tablet/desktop.
-  // CompactShell immersive already offsets with top: TOP_BAR — skip there.
+  /**
+   * Top clear (DesktopTopBar), same SSOT as AppListScroll:
+   * - CompactShell (isMobile): immersive slot already clears top → no pad
+   * - CadPageCompact on tablet (layout mobile, !isMobile): page section owns pad
+   * - CadPageDesktop (layout desktop): this panel owns pad
+   */
   const { isMobile: isMobileShell } = useResponsive()
   const chromeInset = useChromeInset({ bottom: false })
-  const contentInsetStyle = isMobileShell ? undefined : chromeInset
+  const contentInsetStyle =
+    isMobileShell || isMobileLayout ? undefined : chromeInset
   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
   const [dxf, setDxf] = useState<string>("")
   const [imagePath, setImagePath] = useState<string | null>(null)

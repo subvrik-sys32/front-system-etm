@@ -37,18 +37,18 @@ function useRingDotSize(variant: keyof typeof RING_DOT_SIZE) {
 }
 
 export function CadAiPanel({
-  embedded = false,
+  layout = "desktop",
   mobilePanelOpen,
   onMobilePanelOpenChange,
   onHasChatChange,
 }: {
-  embedded?: boolean
-  /** Controlado desde la página (botón junto al toggle). */
+  /** Vista fija — no mezcla reglas mobile/desktop. */
+  layout?: "mobile" | "desktop"
   mobilePanelOpen?: boolean
   onMobilePanelOpenChange?: (open: boolean) => void
-  /** Hay mensajes de chat IA → mostrar settings en la page. */
   onHasChatChange?: (has: boolean) => void
 } = {}) {
+  const isMobileLayout = layout === "mobile"
   const chromeInset = useChromeInset({ bottom: false })
   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
   const [dxf, setDxf] = useState<string>("")
@@ -76,7 +76,7 @@ export function CadAiPanel({
     if (mobilePanelOpen === undefined) setInternalMobilePanelOpen(open)
   }
 
-  const { isMobile, isCompact } = useResponsive()
+  // layout prop es SSOT
   const geometryRef = useRef<PlanGeometry | null>(null)
 
   const emptyDotSize = useRingDotSize("empty")
@@ -178,7 +178,7 @@ export function CadAiPanel({
   if (!geometry) {
     return (
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto bg-background shadow-xs [scrollbar-width:none]">
-        {!isMobile && (
+        {!isMobileLayout && (
           <div className="absolute inset-0 z-0 opacity-30 pointer-events-auto">
             <CursorRingField
               background="transparent"
@@ -193,7 +193,7 @@ export function CadAiPanel({
 
         <div
           className="relative z-10 flex min-h-0 w-full flex-1 flex-col"
-          style={{ paddingTop: chromeInset.paddingTop }}
+          style={isMobileLayout ? undefined : { paddingTop: chromeInset.paddingTop }}
         >
           {error && (
             <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
@@ -205,7 +205,7 @@ export function CadAiPanel({
           <div
             className={cn(
               "flex shrink-0 px-4",
-              embedded ? "py-2" : "py-3",
+              isMobileLayout ? "py-2" : "py-3",
             )}
           >
             <button
@@ -268,7 +268,7 @@ export function CadAiPanel({
 
   return (
     <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-background shadow-xs">
-      {!isMobile && (
+      {!isMobileLayout && (
         <div className="absolute inset-0 z-0 opacity-20 pointer-events-auto">
           <CursorRingField
             background="transparent"
@@ -282,7 +282,7 @@ export function CadAiPanel({
 
       <div
         className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col"
-        style={{ paddingTop: chromeInset.paddingTop }}
+        style={isMobileLayout ? undefined : { paddingTop: chromeInset.paddingTop }}
       >
         {error && (
           <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
@@ -291,21 +291,7 @@ export function CadAiPanel({
           </div>
         )}
 
-        {/* Botón settings: en embedded lo pone CadPage junto al toggle (misma Y). */}
-        {isCompact && !embedded && (
-          <div className="absolute inset-x-0 top-2 z-10 flex h-11 items-center justify-end gap-1.5 px-2">
-            <button
-              type="button"
-              aria-label="Abrir panel de IA"
-              className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-foreground/5 text-foreground shadow-xs backdrop-blur-xl"
-              onClick={() => setIsMobilePanelOpen(true)}
-            >
-              <SlidersHorizontal size={16} strokeWidth={2.2} />
-            </button>
-          </div>
-        )}
-
-        {!isCompact ? (
+        {!isMobileLayout ? (
           <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 p-2">
             {/* Contenedor del visor CAD unificado con shadow-xs */}
             <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-muted/30 shadow-xs backdrop-blur-[2px]">
@@ -344,7 +330,7 @@ export function CadAiPanel({
         )}
 
         <Dialog
-          open={isCompact && isMobilePanelOpen}
+          open={isMobileLayout && isMobilePanelOpen}
           onOpenChange={(open) => setIsMobilePanelOpen(open)}
         >
           <DialogContent

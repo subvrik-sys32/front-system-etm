@@ -1,0 +1,64 @@
+diff --git a/src/app/(protected)/cad/page.tsx b/src/app/(protected)/cad/page.tsx
+index b86b440..b4b9376 100644
+--- a/src/app/(protected)/cad/page.tsx
++++ b/src/app/(protected)/cad/page.tsx
+@@ -47,7 +47,7 @@ function CadPageCompact() {
+   const { isLandscape } = useResponsive()
+   const [tab, setTab] = useState<Tab>("ai")
+   const [aiPanelOpen, setAiPanelOpen] = useState(false)
+-  const [hasAiChat, setHasAiChat] = useState(false)
++  const [hasVisualizer, setHasVisualizer] = useState(false)
+   const openSkillsRef = useRef<(() => void) | null>(null)
+   const registerOpenSkills = useCallback((open: () => void) => {
+     openSkillsRef.current = open
+@@ -83,7 +83,7 @@ function CadPageCompact() {
+             )}
+           </div>
+ 
+-          {tab === "ai" && hasAiChat && (
++          {tab === "ai" && hasVisualizer && (
+             <button
+               type="button"
+               aria-label="Abrir panel de IA"
+@@ -106,7 +106,7 @@ function CadPageCompact() {
+               layout="mobile"
+               mobilePanelOpen={aiPanelOpen}
+               onMobilePanelOpenChange={setAiPanelOpen}
+-              onHasChatChange={setHasAiChat}
++              onHasVisualizerChange={setHasVisualizer}
+               onRegisterOpenSkills={registerOpenSkills}
+             />
+           ) : (
+diff --git a/src/features/cad-ai/components/cad-ai-panel.tsx b/src/features/cad-ai/components/cad-ai-panel.tsx
+index 52631e9..193ae7b 100644
+--- a/src/features/cad-ai/components/cad-ai-panel.tsx
++++ b/src/features/cad-ai/components/cad-ai-panel.tsx
+@@ -40,14 +40,15 @@ export function CadAiPanel({
+   layout = "desktop",
+   mobilePanelOpen,
+   onMobilePanelOpenChange,
+-  onHasChatChange,
++  onHasVisualizerChange,
+   onRegisterOpenSkills,
+ }: {
+   /** Vista fija — no mezcla reglas mobile/desktop. */
+   layout?: "mobile" | "desktop"
+   mobilePanelOpen?: boolean
+   onMobilePanelOpenChange?: (open: boolean) => void
+-  onHasChatChange?: (has: boolean) => void
++  /** True cuando hay geometría (visualizer activo). */
++  onHasVisualizerChange?: (has: boolean) => void
+   /** Compact chrome: Skills en la fila del toggle (page). */
+   onRegisterOpenSkills?: (open: () => void) => void
+ } = {}) {
+@@ -61,8 +62,8 @@ export function CadAiPanel({
+   const [messages, setMessages] = useState<ChatMessage[]>([])
+ 
+   useEffect(() => {
+-    onHasChatChange?.(messages.length > 0)
+-  }, [messages.length, onHasChatChange])
++    onHasVisualizerChange?.(geometry !== null)
++  }, [geometry, onHasVisualizerChange])
+   const [selectedForAI, setSelectedForAI] = useState<Entity[] | null>(null)
+   const [showSaveSkill, setShowSaveSkill] = useState(false)
+   const [showSkillLibrary, setShowSkillLibrary] = useState(false)

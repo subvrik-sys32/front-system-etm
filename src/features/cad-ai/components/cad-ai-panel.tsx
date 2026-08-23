@@ -184,7 +184,7 @@ export function CadAiPanel({
 
   if (!geometry) {
     return (
-      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto bg-background shadow-xs [scrollbar-width:none]">
+      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background shadow-xs">
         {!isMobileLayout && (
           <div className="absolute inset-0 z-0 opacity-30 pointer-events-auto">
             <CursorRingField
@@ -229,7 +229,7 @@ export function CadAiPanel({
             </div>
           )}
 
-          <div className="flex w-full flex-col">
+          <div className="flex min-h-0 w-full flex-1 flex-col">
             <UploadZone onAnalyze={handleAnalyze} onGenerate={handleGenerate} loading={loading} messages={messages} />
           </div>
 

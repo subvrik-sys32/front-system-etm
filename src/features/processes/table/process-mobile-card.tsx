@@ -311,28 +311,22 @@ function ProcessMobileCardReady({
           </div>
         )}
 
-        {/* Ojo siempre visible colapsado (móvil incluido). Audit/materiales en filas anchas. */}
+        {/* Info + materiales + ojo detalle: después de Iniciar */}
         {!expanded && (
           <div
-            className="flex shrink-0 items-center gap-1 pr-0.5"
+            className="hidden shrink-0 items-center gap-1 pr-0.5 @[40rem]/prow:flex"
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
-            <div className="hidden items-center gap-1 @[40rem]/prow:flex">
-              <EntityAuditInfo
-                createdAt={task.createdAt}
-                updatedAt={task.updatedAt}
-                createdBy={task.createdBy}
-                updatedBy={task.updatedBy}
-                workflowSteps={task.workflowSteps}
-              />
-              <TaskMaterialInfo task={task} alwaysShow />
-            </div>
-            <DetailAssetsEye
-              taskId={task.id}
-              readOnly
-              count={task.detailAssetCount ?? 0}
-            />
+            <EntityAuditInfo
+              createdAt={task.createdAt}
+              updatedAt={task.updatedAt}
+              createdBy={task.createdBy}
+              updatedBy={task.updatedBy}
+            workflowSteps={task.workflowSteps}
+          />
+            <TaskMaterialInfo task={task} alwaysShow />
+            <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
           </div>
         )}
 

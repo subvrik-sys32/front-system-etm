@@ -120,7 +120,7 @@ export function MaterialLineDxfControls({
       <input
         ref={inputRef}
         type="file"
-        accept=".dxf,application/dxf"
+        accept=".dxf,application/dxf,application/octet-stream,text/plain"
         className="hidden"
         disabled={disabled || busy}
         onChange={e => {

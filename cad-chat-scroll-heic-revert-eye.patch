@@ -1,0 +1,186 @@
+diff --git a/src/features/cad-ai/components/cad-ai-panel.tsx b/src/features/cad-ai/components/cad-ai-panel.tsx
+index c0e637a..52631e9 100644
+--- a/src/features/cad-ai/components/cad-ai-panel.tsx
++++ b/src/features/cad-ai/components/cad-ai-panel.tsx
+@@ -184,7 +184,7 @@ export function CadAiPanel({
+ 
+   if (!geometry) {
+     return (
+-      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto bg-background shadow-xs [scrollbar-width:none]">
++      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background shadow-xs">
+         {!isMobileLayout && (
+           <div className="absolute inset-0 z-0 opacity-30 pointer-events-auto">
+             <CursorRingField
+@@ -229,7 +229,7 @@ export function CadAiPanel({
+             </div>
+           )}
+ 
+-          <div className="flex w-full flex-col">
++          <div className="flex min-h-0 w-full flex-1 flex-col">
+             <UploadZone onAnalyze={handleAnalyze} onGenerate={handleGenerate} loading={loading} messages={messages} />
+           </div>
+ 
+diff --git a/src/features/cad-ai/components/upload-zone.tsx b/src/features/cad-ai/components/upload-zone.tsx
+index 9ac786c..37b6e2c 100644
+--- a/src/features/cad-ai/components/upload-zone.tsx
++++ b/src/features/cad-ai/components/upload-zone.tsx
+@@ -56,7 +56,11 @@ export function UploadZone({
+ 
+   const { getRootProps, getInputProps, isDragActive } = useDropzone({
+     onDrop,
+-    accept: { "image/*": [".png", ".jpg", ".jpeg", ".webp", ".bmp"] },
++    accept: {
++      "image/*": [".png", ".jpg", ".jpeg", ".webp", ".bmp", ".heic", ".heif"],
++      "image/heic": [".heic", ".heif"],
++      "image/heif": [".heic", ".heif"],
++    },
+     maxFiles: 1,
+     disabled: loading,
+   })
+@@ -80,13 +84,13 @@ export function UploadZone({
+   ]
+ 
+   return (
+-    <div className="relative flex h-full w-full flex-col bg-transparent">
+-      <div className="mx-auto flex w-full max-w-3xl flex-col px-3 py-3 sm:px-6 sm:py-6">
+-        
++    <div className="relative flex h-full min-h-0 w-full flex-1 flex-col bg-transparent">
++      <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col px-3 py-3 sm:px-6 sm:py-6">
++
+         {/* Encabezado */}
+         <div className="mb-4 shrink-0 sm:mb-6 px-4">
+           <div className="flex flex-col items-center text-center md:flex-row md:items-baseline md:justify-start md:text-left gap-x-3 gap-y-1.5">
+-            <h2 
++            <h2
+               className="font-bold tracking-tight text-foreground shrink-0"
+               style={{ fontSize: "clamp(1.5rem, 3.5vw, 2.25rem)" }}
+             >
+@@ -95,7 +99,7 @@ export function UploadZone({
+                 corte
+               </span>
+             </h2>
+-            
++
+             <div className="hidden md:flex items-center gap-3 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+               <span className="size-1 rounded-full bg-muted-foreground/50 shrink-0" />
+               <span>Sube un plano o describe tu pieza — la IA genera el DXF listo para corte láser</span>
+@@ -209,8 +213,8 @@ export function UploadZone({
+             </div>
+           </div>
+         ) : (
+-          <div className="flex min-h-[380px] sm:min-h-[440px] w-full flex-col overflow-hidden rounded-2xl bg-card shadow-xs">
+-            
++          <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-2xl bg-card shadow-xs">
++
+             {/* Contenedor del chat estilizado */}
+             <div
+               ref={scrollRef}
+@@ -229,7 +233,7 @@ export function UploadZone({
+                       Describe las medidas o la forma geométrica en lenguaje natural.
+                     </p>
+                   </div>
+-                  
++
+                   {/* Grid responsive para los chips */}
+                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 w-full max-w-lg">
+                     {chips.map(c => (
+@@ -343,4 +347,4 @@ export function UploadZone({
+       </div>
+     </div>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/features/detail-assets/components/material-line-dxf-controls.tsx b/src/features/detail-assets/components/material-line-dxf-controls.tsx
+index 3a48f4c..5fde119 100644
+--- a/src/features/detail-assets/components/material-line-dxf-controls.tsx
++++ b/src/features/detail-assets/components/material-line-dxf-controls.tsx
+@@ -120,7 +120,7 @@ export function MaterialLineDxfControls({
+       <input
+         ref={inputRef}
+         type="file"
+-        accept=".dxf,application/dxf"
++        accept=".dxf,application/dxf,application/octet-stream,text/plain"
+         className="hidden"
+         disabled={disabled || busy}
+         onChange={e => {
+diff --git a/src/features/processes/table/process-mobile-card.tsx b/src/features/processes/table/process-mobile-card.tsx
+index 9f70b35..8069ccc 100644
+--- a/src/features/processes/table/process-mobile-card.tsx
++++ b/src/features/processes/table/process-mobile-card.tsx
+@@ -311,28 +311,22 @@ function ProcessMobileCardReady({
+           </div>
+         )}
+ 
+-        {/* Ojo siempre visible colapsado (móvil incluido). Audit/materiales en filas anchas. */}
++        {/* Info + materiales + ojo detalle: después de Iniciar */}
+         {!expanded && (
+           <div
+-            className="flex shrink-0 items-center gap-1 pr-0.5"
++            className="hidden shrink-0 items-center gap-1 pr-0.5 @[40rem]/prow:flex"
+             onClick={e => e.stopPropagation()}
+             onPointerDown={e => e.stopPropagation()}
+           >
+-            <div className="hidden items-center gap-1 @[40rem]/prow:flex">
+-              <EntityAuditInfo
+-                createdAt={task.createdAt}
+-                updatedAt={task.updatedAt}
+-                createdBy={task.createdBy}
+-                updatedBy={task.updatedBy}
+-                workflowSteps={task.workflowSteps}
+-              />
+-              <TaskMaterialInfo task={task} alwaysShow />
+-            </div>
+-            <DetailAssetsEye
+-              taskId={task.id}
+-              readOnly
+-              count={task.detailAssetCount ?? 0}
+-            />
++            <EntityAuditInfo
++              createdAt={task.createdAt}
++              updatedAt={task.updatedAt}
++              createdBy={task.createdBy}
++              updatedBy={task.updatedBy}
++            workflowSteps={task.workflowSteps}
++          />
++            <TaskMaterialInfo task={task} alwaysShow />
++            <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
+           </div>
+         )}
+ 
+diff --git a/src/features/tasks/table/task-mobile-card.tsx b/src/features/tasks/table/task-mobile-card.tsx
+index 14a8b95..dd06317 100644
+--- a/src/features/tasks/table/task-mobile-card.tsx
++++ b/src/features/tasks/table/task-mobile-card.tsx
+@@ -355,22 +355,20 @@ function TaskMobileCardReady({
+           </span>
+         </div>
+ 
+-        {/* Ojo siempre colapsado; auditoría en filas anchas */}
++        {/* Auditoría + ojo: solo colapsado; al expandir van al panel / row móvil */}
+         {!expanded && (
+           <div
+-            className="flex shrink-0 items-center gap-1 pr-0.5"
++            className="hidden shrink-0 items-center gap-1 pr-0.5 @[40rem]/trow:flex"
+             onClick={e => e.stopPropagation()}
+             onPointerDown={e => e.stopPropagation()}
+           >
+-            <div className="hidden items-center gap-1 @[40rem]/trow:flex">
+-              <EntityAuditInfo
+-                createdAt={task.createdAt}
+-                updatedAt={task.updatedAt}
+-                createdBy={task.createdBy}
+-                updatedBy={task.updatedBy}
+-                workflowSteps={task.workflowSteps}
+-              />
+-            </div>
++            <EntityAuditInfo
++              createdAt={task.createdAt}
++              updatedAt={task.updatedAt}
++              createdBy={task.createdBy}
++              updatedBy={task.updatedBy}
++            workflowSteps={task.workflowSteps}
++          />
+             <DetailAssetsEye taskId={task.id} count={taskDetailAssetCount(task)} />
+           </div>
+         )}

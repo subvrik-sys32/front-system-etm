@@ -56,7 +56,11 @@ export function UploadZone({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { "image/*": [".png", ".jpg", ".jpeg", ".webp", ".bmp"] },
+    accept: {
+      "image/*": [".png", ".jpg", ".jpeg", ".webp", ".bmp", ".heic", ".heif"],
+      "image/heic": [".heic", ".heif"],
+      "image/heif": [".heic", ".heif"],
+    },
     maxFiles: 1,
     disabled: loading,
   })
@@ -80,13 +84,13 @@ export function UploadZone({
   ]
 
   return (
-    <div className="relative flex h-full w-full flex-col bg-transparent">
-      <div className="mx-auto flex w-full max-w-3xl flex-col px-3 py-3 sm:px-6 sm:py-6">
-        
+    <div className="relative flex h-full min-h-0 w-full flex-1 flex-col bg-transparent">
+      <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col px-3 py-3 sm:px-6 sm:py-6">
+
         {/* Encabezado */}
         <div className="mb-4 shrink-0 sm:mb-6 px-4">
           <div className="flex flex-col items-center text-center md:flex-row md:items-baseline md:justify-start md:text-left gap-x-3 gap-y-1.5">
-            <h2 
+            <h2
               className="font-bold tracking-tight text-foreground shrink-0"
               style={{ fontSize: "clamp(1.5rem, 3.5vw, 2.25rem)" }}
             >
@@ -95,7 +99,7 @@ export function UploadZone({
                 corte
               </span>
             </h2>
-            
+
             <div className="hidden md:flex items-center gap-3 text-xs sm:text-sm text-muted-foreground leading-relaxed">
               <span className="size-1 rounded-full bg-muted-foreground/50 shrink-0" />
               <span>Sube un plano o describe tu pieza — la IA genera el DXF listo para corte láser</span>
@@ -209,8 +213,8 @@ export function UploadZone({
             </div>
           </div>
         ) : (
-          <div className="flex min-h-[380px] sm:min-h-[440px] w-full flex-col overflow-hidden rounded-2xl bg-card shadow-xs">
-            
+          <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-2xl bg-card shadow-xs">
+
             {/* Contenedor del chat estilizado */}
             <div
               ref={scrollRef}
@@ -229,7 +233,7 @@ export function UploadZone({
                       Describe las medidas o la forma geométrica en lenguaje natural.
                     </p>
                   </div>
-                  
+
                   {/* Grid responsive para los chips */}
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 w-full max-w-lg">
                     {chips.map(c => (

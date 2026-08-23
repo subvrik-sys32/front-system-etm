@@ -203,17 +203,24 @@ export function UploadZone({
                         key={c.text}
                         type="button"
                         disabled={loading}
+                        title={c.text}
+                        aria-label={c.text}
                         onClick={e => {
                           e.stopPropagation()
                           onGenerate(c.text)
                         }}
                         className={cn(
-                          "flex items-center gap-2 rounded-xl bg-foreground/5 px-3 py-2.5 text-left text-xs text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground",
-                          (phoneLand || !isMobile) && "min-h-0 flex-1",
+                          "flex items-center rounded-xl bg-foreground/5 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground",
+                          phoneLand
+                            ? "min-h-0 flex-1 justify-center px-2 py-2"
+                            : "gap-2 px-3 py-2.5 text-left text-xs",
+                          !phoneLand && !isMobile && "min-h-0 flex-1",
                         )}
                       >
-                        <c.icon className="size-3.5 shrink-0" />
-                        <span className="line-clamp-2">{c.text}</span>
+                        <c.icon className={cn("shrink-0", phoneLand ? "size-4" : "size-3.5")} />
+                        {!phoneLand && (
+                          <span className="line-clamp-2">{c.text}</span>
+                        )}
                       </button>
                     ))}
                   </div>

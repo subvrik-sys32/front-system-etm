@@ -19,10 +19,12 @@ function CadTabs({
   tab,
   onTabChange,
   compact = false,
+  iconsOnly = false,
 }: {
   tab: Tab
   onTabChange: (t: Tab) => void
   compact?: boolean
+  iconsOnly?: boolean
 }) {
   return (
     <EntityToggle
@@ -30,6 +32,7 @@ function CadTabs({
       onChange={onTabChange}
       aria-label="Vista CAD"
       compact={compact}
+      iconsOnly={iconsOnly}
       options={[
         { value: "ai" as const, label: "IA", icon: Sparkles },
         { value: "templates" as const, label: "Plantillas", icon: Boxes },
@@ -60,11 +63,11 @@ function CadPageCompact() {
         <div
           className={cn(
             "relative z-[1] flex shrink-0 items-center overflow-visible px-2",
-            isLandscape ? "mb-1 min-h-10 py-1" : "mb-1.5 h-11",
+            isLandscape ? "mb-0.5 min-h-9 py-0.5" : "mb-1.5 h-11",
           )}
         >
           <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
-            <CadTabs tab={tab} onTabChange={setTab} compact />
+            <CadTabs tab={tab} onTabChange={setTab} compact iconsOnly={isLandscape} />
             {tab === "ai" && (
               <button
                 type="button"
@@ -73,12 +76,14 @@ function CadPageCompact() {
                 onClick={() => openSkillsRef.current?.()}
                 className={cn(
                   CHROME_ICON_BTN,
-                  "w-auto shrink-0 gap-1.5 text-xs font-semibold shadow-xs backdrop-blur-xs",
-                  isLandscape ? "h-8 px-2" : "h-9 px-2.5",
+                  "shrink-0 shadow-xs backdrop-blur-xs",
+                  isLandscape
+                    ? "size-8 px-0"
+                    : "h-9 w-auto gap-1.5 px-2.5 text-xs font-semibold",
                 )}
               >
                 <Layers size={14} strokeWidth={2.25} />
-                <span className={cn(isLandscape && "sr-only")}>Skills</span>
+                {!isLandscape && <span>Skills</span>}
               </button>
             )}
           </div>

@@ -142,12 +142,18 @@ function getReadableTextFor(hex: string, backgroundRgb: Rgb) {
 
 /**
  * Texto del chip subtle — fill intacto, ink con contraste garantizado.
- * Fill claro → oscurece matiz. Fill oscuro → aclara matiz.
+ *
+ * Importante: fills pastel (rojo/naranja ~L 0.45–0.55) NO son “oscuros”.
+ * El umbral anterior (0.45) los mandaba a tintTowardWhite → texto lavado
+ * sobre rosa/durazno. Solo aclaramos ink cuando el fill es claramente oscuro
+ * (dark theme). En light/mid siempre oscurecemos el matiz (mismo contrato
+ * visual que ProjectCodeChip / EntityChip).
  */
 function getChipText(hex: string, backgroundRgb: Rgb) {
   const bgLum = getLuminanceFromRgb(backgroundRgb)
 
-  if (bgLum < 0.45) {
+  // Solo fills realmente oscuros (dark theme / solid-ish)
+  if (bgLum < 0.32) {
     for (const amount of [
       0.28, 0.36, 0.44, 0.52, 0.6, 0.68, 0.76, 0.84, 0.9, 0.94,
     ]) {
@@ -162,6 +168,7 @@ function getChipText(hex: string, backgroundRgb: Rgb) {
     return "#F9FAFB"
   }
 
+  // Light + pastel mid: ink oscuro del matiz (como chip 141)
   return getReadableTextFor(hex, backgroundRgb)
 }
 

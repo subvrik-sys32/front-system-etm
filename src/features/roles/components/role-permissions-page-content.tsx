@@ -262,9 +262,6 @@ export function RolePermissionsPageContent() {
   // (TOP_BAR_HEIGHT_PX) — por eso quedaba tapado en reposo, igual que
   // en Usuarios. Ahora se manda como primer hijo de cada
   // AppListScroll; para desktop se sigue mostrando afuera, ya que ahí
-  // no hay TopBar flotante.
-  // Desktop: lupa en chrome (junto a tabs / acciones), como Proyectos.
-  // Mobile: solo registra en TopBar (EntityToolbarSearch → null UI).
   usePageToolbar(
     isMobile
       ? null
@@ -277,30 +274,19 @@ export function RolePermissionsPageContent() {
   )
 
   return (
-    <div
-      className={cn(
-        "flex h-full min-h-0 w-full flex-col",
-        "",
-      )}
-    >
-      {/* Mobile: registra lupa en TopBar (derecha, junto a notis). Sin UI local. */}
-      {isMobile && (
-        <span data-access-search-bridge className="hidden">
-          <EntityToolbarSearch value={search} onChange={setSearch} />
-        </span>
-      )}
-
-            <div
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <div
         className={cn(
           "flex min-h-0 flex-1 gap-4",
-          isMobile ? "flex-col" : ""
+          isMobile ? "flex-col" : "",
         )}
       >
         {/* PANEL IZQUIERDO: ROLES o USUARIOS */}
         {showLeftPanel && isMobile && (
           <AppListScroll
           >
-                        <div className="mt-2 space-y-3 pb-4">
+            <EntityToolbarSearch value={search} onChange={setSearch} />
+            <div className="mt-2 space-y-3 pb-4">
               {mode === "roles" ? (
                 <>
                   {loadingRoles &&

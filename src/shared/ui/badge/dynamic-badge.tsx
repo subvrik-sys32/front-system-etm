@@ -22,7 +22,6 @@ import {
 } from "@/shared/utils/badge-colors"
 import {
   useBadgeColors,
-  useDomainInk,
 } from "@/shared/utils/use-badge-colors"
 
 import {
@@ -83,7 +82,6 @@ export function DynamicBadge({
 
   const safeHex = color ?? "#64748B"
   const badgeColors = useBadgeColors(safeHex, variant)
-  const domainInk = useDomainInk(safeHex)
   const [hovered, setHovered] = useState(false)
   const [pressed, setPressed] = useState(false)
 
@@ -95,13 +93,9 @@ export function DynamicBadge({
         ? ENTITY_ICONS[icon]
         : undefined
 
-  // Domain ink: contraste real sobre superficie (prioridad/etapa).
-  // badgeColors.text en subtle puede quedar lavado en rojos/pasteles.
   const textColor = placeholder || muted
     ? "var(--muted-foreground)"
-    : variant === "solid"
-      ? badgeColors.text
-      : domainInk
+    : badgeColors.text
 
   const backgroundColor =
     placeholder || muted
@@ -114,9 +108,7 @@ export function DynamicBadge({
 
   const actionColor = muted
     ? "var(--muted-foreground)"
-    : variant === "solid"
-      ? badgeColors.text
-      : domainInk
+    : badgeColors.text
 
   return (
     <span

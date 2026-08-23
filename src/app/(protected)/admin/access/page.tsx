@@ -17,7 +17,7 @@ export default function AccessPage() {
   usePageActions(isMobile ? null : <UserActions />)
 
   return (
-    <PageShell mode="list">
+    <PageShell mode={isMobile ? "list" : "fill"}>
       {/* FAB crear usuario (mobile) — mismo UserActions */}
       <div className="desktop:hidden">
         <UserActions />

@@ -182,7 +182,7 @@ export function CadAiPanel({
 
   if (!geometry) {
     return (
-      <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-background">
+      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-hidden bg-background">
         {!isMobileLayout && (
           <div className="absolute inset-0 z-0 opacity-30 pointer-events-auto">
             <CursorRingField

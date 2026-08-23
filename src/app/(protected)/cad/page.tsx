@@ -122,7 +122,7 @@ function CadPageCompact() {
   return (
     <PageShell mode="bleed">
       {/* overflow-hidden: nada se dibuja bajo el TopBar (el slot immersive ya recorta) */}
-      <section className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <section className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
         {!isLandscape && (
           <div className="relative z-[1] mb-1.5 flex h-11 shrink-0 items-center overflow-visible px-2">
             <div className="flex min-w-0 flex-1 items-center justify-center">
@@ -192,7 +192,8 @@ function CadPageDesktop() {
 
   return (
     <PageShell mode="bleed">
-      <section className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+      {/* flex-1 min-h-0 (sin h-full): respeta paddingTop del shell y no se recorta */}
+      <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {tab === "ai" ? (
             <CadAiPanel layout="desktop" onRegisterOpenSkills={registerOpenSkills} />

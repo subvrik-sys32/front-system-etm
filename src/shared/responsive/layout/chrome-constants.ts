@@ -14,5 +14,5 @@ export const BOTTOM_NAV_HEIGHT_PX = 80
 /** pt-1 + h-10 input + mb-2 (mismo gap que empty mt-2). */
 export const PAGE_SEARCH_BAR_HEIGHT_PX = 52
 
-/** Alto del DesktopTopBar overlay (h-14 = 56px). Sin aire extra: el contenido empieza justo debajo. */
-export const DESKTOP_TOP_BAR_HEIGHT_PX = 56
+/** Reserva top desktop = alto del blur del topbar (h-16), no solo h-14 del header. */
+export const DESKTOP_TOP_BAR_HEIGHT_PX = 64

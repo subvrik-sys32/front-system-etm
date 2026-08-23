@@ -54,7 +54,7 @@ export function PageShell({
         "flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none",
         "tablet:px-4 desktop:px-5 desktop:pb-3",
         (mode === "fill" || mode === "bleed") && "overflow-hidden",
-        mode === "bleed" && "px-0 tablet:px-0 desktop:px-0 pb-0 desktop:pb-0",
+        mode === "bleed" && "px-3 tablet:px-4 desktop:px-5 pb-0 desktop:pb-0",
         className,
       )}
       style={

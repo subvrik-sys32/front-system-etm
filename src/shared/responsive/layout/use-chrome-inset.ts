@@ -8,7 +8,6 @@ import {
   TOP_BAR_HEIGHT_PX,
   BOTTOM_NAV_HEIGHT_PX,
   PAGE_SEARCH_BAR_HEIGHT_PX,
-  DESKTOP_TOP_BAR_HEIGHT_PX,
 } from "@/shared/responsive/layout/chrome-constants"
 
 type Options = {
@@ -45,7 +44,5 @@ export function useChromeInset(options: Options = {}): CSSProperties {
     }
   }
 
-  return {
-    paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX,
-  }
+  return {}
 }

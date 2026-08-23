@@ -1,0 +1,193 @@
+diff --git a/src/features/cad-ai/components/cad-ai-panel.tsx b/src/features/cad-ai/components/cad-ai-panel.tsx
+index b596582..85e9885 100644
+--- a/src/features/cad-ai/components/cad-ai-panel.tsx
++++ b/src/features/cad-ai/components/cad-ai-panel.tsx
+@@ -4,7 +4,6 @@ import { useState, useCallback, useRef, useEffect } from "react"
+ import { SlidersHorizontal } from "lucide-react"
+ import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+-import { DESKTOP_TOP_BAR_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
+ import { cn } from "@/shared/utils/utils"
+ import { Dialog, DialogContent } from "@/components/ui/dialog"
+ import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-header"
+@@ -52,12 +51,6 @@ export function CadAiPanel({
+   onRegisterOpenSkills?: (open: () => void) => void
+ } = {}) {
+   const isMobileLayout = layout === "mobile"
+-  // CompactShell (isMobile) ya recorta con slot immersive.
+-  // DesktopShell (tablet/desktop): el contenido necesita inset bajo el topbar.
+-  const { isMobile: isMobileShell } = useResponsive()
+-  const contentInsetStyle = isMobileShell
+-    ? undefined
+-    : { paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX }
+   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
+   const [dxf, setDxf] = useState<string>("")
+   const [imagePath, setImagePath] = useState<string | null>(null)
+@@ -205,10 +198,7 @@ export function CadAiPanel({
+         )}
+ 
+         {/* Contenido: inset top solo fuera de CompactShell */}
+-        <div
+-          className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+-          style={contentInsetStyle}
+-        >
++        <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+           {error && (
+             <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
+               <span className="truncate">{error}</span>
+@@ -272,10 +262,7 @@ export function CadAiPanel({
+         </div>
+       )}
+ 
+-      <div
+-        className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+-        style={contentInsetStyle}
+-      >
++      <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+         {error && (
+           <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
+             <span className="truncate">{error}</span>
+diff --git a/src/features/cad-ai/components/upload-zone.tsx b/src/features/cad-ai/components/upload-zone.tsx
+index 063502d..61812a8 100644
+--- a/src/features/cad-ai/components/upload-zone.tsx
++++ b/src/features/cad-ai/components/upload-zone.tsx
+@@ -45,9 +45,10 @@ export function UploadZone({
+   loading,
+   messages,
+ }: UploadZoneProps) {
+-  const { isMobile, isLandscape } = useResponsive()
++  const { isMobile, isLandscape, isCompact } = useResponsive()
+   const phoneLand = isMobile && isLandscape
+-  const compactChrome = isMobile
++  // Same rule as CadPage: tablet uses compact chrome (no desktop hero).
++  const compactChrome = isMobile || isCompact
+ 
+   const [input, setInput] = useState("")
+   const scrollRef = useRef<HTMLDivElement>(null)
+@@ -76,6 +77,9 @@ export function UploadZone({
+   })
+ 
+   useEffect(() => {
++    // Only pin to bottom when there is conversation content.
++    // On empty state, scrollTop=scrollHeight + flex-1 center clips the drop CTA.
++    if (messages.length === 0 && !loading) return
+     const el = scrollRef.current
+     if (!el) return
+     el.scrollTop = el.scrollHeight
+@@ -134,7 +138,7 @@ export function UploadZone({
+             )}
+           >
+             {empty ? (
+-              <div className="flex min-h-0 flex-1 flex-col gap-3">
++              <div className="flex w-full flex-col gap-3">
+                 {compactChrome && !phoneLand && (
+                   <div className="shrink-0 text-center">
+                     <p className="text-sm font-semibold text-foreground">
+@@ -146,9 +150,9 @@ export function UploadZone({
+                   </div>
+                 )}
+ 
+-                {/* Desktop / tablet / landscape: drop + fila de 3 chips */}
++                {/* Desktop / tablet / phone landscape */}
+                 {phoneLand || !isMobile ? (
+-                  <div className="flex min-h-0 flex-1 flex-col gap-2">
++                  <div className="flex w-full flex-col gap-2">
+                     <button
+                       type="button"
+                       disabled={loading}
+@@ -158,7 +162,7 @@ export function UploadZone({
+                       }}
+                       aria-label="Adjuntar plano"
+                       title="Adjuntar plano"
+-                      className="flex min-h-[4.5rem] flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-3 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]"
++                      className="flex min-h-[10rem] w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-8 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05] sm:min-h-[12rem]"
+                     >
+                       <div className="flex size-9 items-center justify-center rounded-full bg-secondary/30">
+                         <ImageIcon className="size-5 text-muted-foreground" />
+@@ -200,7 +204,7 @@ export function UploadZone({
+                     </div>
+                   </div>
+                 ) : (
+-                  <div className="grid min-h-0 flex-1 grid-cols-1 gap-2.5">
++                  <div className="grid w-full grid-cols-1 gap-2.5">
+                     <button
+                       type="button"
+                       disabled={loading}
+@@ -208,7 +212,7 @@ export function UploadZone({
+                         e.stopPropagation()
+                         open()
+                       }}
+-                      className="flex min-h-[7.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-4 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]"
++                      className="flex min-h-[8rem] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-6 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]"
+                     >
+                       <div className="flex size-10 items-center justify-center rounded-full bg-secondary/30">
+                         <ImageIcon className="size-5 text-muted-foreground" />
+@@ -221,7 +225,7 @@ export function UploadZone({
+                       </span>
+                     </button>
+ 
+-                    <div className="grid min-h-0 grid-rows-3 gap-1.5">
++                    <div className="grid grid-rows-3 gap-1.5">
+                       {CHIPS.map(c => (
+                         <button
+                           key={c.text}
+@@ -233,7 +237,7 @@ export function UploadZone({
+                             e.stopPropagation()
+                             onGenerate(c.text)
+                           }}
+-                          className="flex min-h-0 items-center gap-2 rounded-xl bg-foreground/5 px-3 py-2.5 text-left text-xs text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
++                          className="flex items-center gap-2 rounded-xl bg-foreground/5 px-3 py-2.5 text-left text-xs text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+                         >
+                           <c.icon className="size-3.5 shrink-0" />
+                           <span className="line-clamp-2">{c.text}</span>
+diff --git a/src/shared/responsive/layout/app-shell.tsx b/src/shared/responsive/layout/app-shell.tsx
+index 662565f..7017df1 100644
+--- a/src/shared/responsive/layout/app-shell.tsx
++++ b/src/shared/responsive/layout/app-shell.tsx
+@@ -15,7 +15,11 @@ import { usePageTitleStore } from "@/shared/responsive/navigation/page-title-sto
+ import { usePageActionsStore } from "@/shared/responsive/navigation/page-actions-store"
+ import { usePageToolbarStore } from "@/shared/responsive/navigation/page-toolbar-store"
+ import { isImmersiveRoute } from "@/shared/responsive/navigation/immersive-routes"
+-import { TOP_BAR_HEIGHT_PX, BOTTOM_NAV_HEIGHT_PX } from "./chrome-constants"
++import {
++  TOP_BAR_HEIGHT_PX,
++  BOTTOM_NAV_HEIGHT_PX,
++  DESKTOP_TOP_BAR_HEIGHT_PX,
++} from "./chrome-constants"
+ import { TopBar } from "@/shared/responsive/mobile/top-bar"
+ import { useClearFocusOnNav } from "@/shared/hooks/use-clear-focus-on-nav"
+ import { BottomNavigation } from "../mobile/bottom-navigation"
+@@ -134,8 +138,10 @@ function DesktopShell({ children }: Props) {
+         }}
+       >
+         <DesktopTopBar />
+-        {/* Contenido a pantalla completa; el topbar flota encima con blur. */}
+-        <div className="absolute inset-0 flex min-h-0 min-w-0 flex-col">
++        <div
++          className="absolute inset-x-0 bottom-0 flex min-h-0 min-w-0 flex-col overflow-hidden"
++          style={{ top: DESKTOP_TOP_BAR_HEIGHT_PX }}
++        >
+           {children}
+         </div>
+       </main>
+diff --git a/src/shared/responsive/layout/use-chrome-inset.ts b/src/shared/responsive/layout/use-chrome-inset.ts
+index 3ca57ff..1a4f4de 100644
+--- a/src/shared/responsive/layout/use-chrome-inset.ts
++++ b/src/shared/responsive/layout/use-chrome-inset.ts
+@@ -8,7 +8,6 @@ import {
+   TOP_BAR_HEIGHT_PX,
+   BOTTOM_NAV_HEIGHT_PX,
+   PAGE_SEARCH_BAR_HEIGHT_PX,
+-  DESKTOP_TOP_BAR_HEIGHT_PX,
+ } from "@/shared/responsive/layout/chrome-constants"
+ 
+ type Options = {
+@@ -45,7 +44,5 @@ export function useChromeInset(options: Options = {}): CSSProperties {
+     }
+   }
+ 
+-  return {
+-    paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX,
+-  }
++  return {}
+ }

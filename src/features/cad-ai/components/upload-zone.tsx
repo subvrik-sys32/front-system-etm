@@ -45,9 +45,10 @@ export function UploadZone({
   loading,
   messages,
 }: UploadZoneProps) {
-  const { isMobile, isLandscape } = useResponsive()
+  const { isMobile, isLandscape, isCompact } = useResponsive()
   const phoneLand = isMobile && isLandscape
-  const compactChrome = isMobile
+  // Same rule as CadPage: tablet uses compact chrome (no desktop hero).
+  const compactChrome = isMobile || isCompact
 
   const [input, setInput] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -76,6 +77,9 @@ export function UploadZone({
   })
 
   useEffect(() => {
+    // Only pin to bottom when there is conversation content.
+    // On empty state, scrollTop=scrollHeight + flex-1 center clips the drop CTA.
+    if (messages.length === 0 && !loading) return
     const el = scrollRef.current
     if (!el) return
     el.scrollTop = el.scrollHeight
@@ -134,7 +138,7 @@ export function UploadZone({
             )}
           >
             {empty ? (
-              <div className="flex min-h-0 flex-1 flex-col gap-3">
+              <div className="flex w-full flex-col gap-3">
                 {compactChrome && !phoneLand && (
                   <div className="shrink-0 text-center">
                     <p className="text-sm font-semibold text-foreground">
@@ -146,9 +150,9 @@ export function UploadZone({
                   </div>
                 )}
 
-                {/* Desktop / tablet / landscape: drop + fila de 3 chips */}
+                {/* Desktop / tablet / phone landscape */}
                 {phoneLand || !isMobile ? (
-                  <div className="flex min-h-0 flex-1 flex-col gap-2">
+                  <div className="flex w-full flex-col gap-2">
                     <button
                       type="button"
                       disabled={loading}
@@ -158,7 +162,7 @@ export function UploadZone({
                       }}
                       aria-label="Adjuntar plano"
                       title="Adjuntar plano"
-                      className="flex min-h-[4.5rem] flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-3 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]"
+                      className="flex min-h-[10rem] w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-8 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05] sm:min-h-[12rem]"
                     >
                       <div className="flex size-9 items-center justify-center rounded-full bg-secondary/30">
                         <ImageIcon className="size-5 text-muted-foreground" />
@@ -200,7 +204,7 @@ export function UploadZone({
                     </div>
                   </div>
                 ) : (
-                  <div className="grid min-h-0 flex-1 grid-cols-1 gap-2.5">
+                  <div className="grid w-full grid-cols-1 gap-2.5">
                     <button
                       type="button"
                       disabled={loading}
@@ -208,7 +212,7 @@ export function UploadZone({
                         e.stopPropagation()
                         open()
                       }}
-                      className="flex min-h-[7.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-4 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]"
+                      className="flex min-h-[8rem] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-6 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]"
                     >
                       <div className="flex size-10 items-center justify-center rounded-full bg-secondary/30">
                         <ImageIcon className="size-5 text-muted-foreground" />
@@ -221,7 +225,7 @@ export function UploadZone({
                       </span>
                     </button>
 
-                    <div className="grid min-h-0 grid-rows-3 gap-1.5">
+                    <div className="grid grid-rows-3 gap-1.5">
                       {CHIPS.map(c => (
                         <button
                           key={c.text}
@@ -233,7 +237,7 @@ export function UploadZone({
                             e.stopPropagation()
                             onGenerate(c.text)
                           }}
-                          className="flex min-h-0 items-center gap-2 rounded-xl bg-foreground/5 px-3 py-2.5 text-left text-xs text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+                          className="flex items-center gap-2 rounded-xl bg-foreground/5 px-3 py-2.5 text-left text-xs text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
                         >
                           <c.icon className="size-3.5 shrink-0" />
                           <span className="line-clamp-2">{c.text}</span>

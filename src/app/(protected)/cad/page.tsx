@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { Boxes, Layers, SlidersHorizontal, Sparkles } from "lucide-react"
 
 import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
@@ -41,9 +41,35 @@ function CadTabs({
   )
 }
 
+function SkillsChromeButton({
+  onClick,
+  iconsOnly,
+}: {
+  onClick: () => void
+  iconsOnly?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      aria-label="Skills"
+      title="Skills"
+      onClick={onClick}
+      className={cn(
+        CHROME_ICON_BTN,
+        "shrink-0 shadow-xs backdrop-blur-xs",
+        iconsOnly ? "size-8 px-0" : "h-9 w-auto gap-1.5 px-2.5 text-xs font-semibold",
+      )}
+    >
+      <Layers size={14} strokeWidth={2.25} />
+      {!iconsOnly && <span>Skills</span>}
+    </button>
+  )
+}
+
 /**
  * Móvil + tablet: slot immersive (entre TopBar y BottomNav).
- * bleed — sin padding extra (Nesting). Landscape: fila más baja.
+ * Landscape: toggle + Skills van al TopBar (usePageToolbar).
+ * Portrait: fila bajo el TopBar; Skills solo icono a la derecha.
  */
 function CadPageCompact() {
   usePageTitle("CAD")
@@ -56,53 +82,71 @@ function CadPageCompact() {
     openSkillsRef.current = open
   }, [])
 
+  const openSkills = useCallback(() => openSkillsRef.current?.(), [])
+
+  const landscapeToolbar = useMemo(() => {
+    if (!isLandscape) return null
+    return (
+      <div className="flex items-center gap-1">
+        <CadTabs tab={tab} onTabChange={setTab} compact iconsOnly />
+        {tab === "ai" && (
+          <SkillsChromeButton onClick={openSkills} iconsOnly />
+        )}
+      </div>
+    )
+  }, [isLandscape, tab, openSkills])
+
+  usePageToolbar(landscapeToolbar)
+
   return (
     <PageShell mode="bleed">
       <section className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
-        {/* overflow-visible: el toggle no se recorta contra el TopBar/slot */}
-        <div
-          className={cn(
-            "relative z-[1] flex shrink-0 items-center overflow-visible px-2",
-            isLandscape ? "mb-0.5 min-h-9 py-0.5" : "mb-1.5 h-11",
-          )}
-        >
-          <div className="flex min-w-0 flex-1 items-center justify-center">
-            <CadTabs tab={tab} onTabChange={setTab} compact iconsOnly={isLandscape} />
+        {(!isLandscape || (tab === "ai" && hasVisualizer)) && (
+          <div
+            className={cn(
+              "relative z-[1] flex shrink-0 items-center overflow-visible px-2",
+              isLandscape ? "mb-0.5 min-h-8 py-0.5" : "mb-1.5 h-11",
+            )}
+          >
+            {!isLandscape && (
+              <div className="flex min-w-0 flex-1 items-center justify-center">
+                <CadTabs tab={tab} onTabChange={setTab} compact />
+              </div>
+            )}
+
+            {!isLandscape && tab === "ai" && (
+              <button
+                type="button"
+                aria-label="Skills"
+                title="Skills"
+                onClick={openSkills}
+                className={cn(
+                  CHROME_ICON_BTN,
+                  "absolute top-1/2 z-[2] flex size-9 -translate-y-1/2 px-0 shadow-xs backdrop-blur-xs",
+                  hasVisualizer ? "right-12" : "right-2",
+                )}
+              >
+                <Layers size={14} strokeWidth={2.25} />
+              </button>
+            )}
+
+            {tab === "ai" && hasVisualizer && (
+              <button
+                type="button"
+                aria-label="Abrir panel de IA"
+                title="Opciones de IA"
+                onClick={() => setAiPanelOpen(true)}
+                className={cn(
+                  "absolute right-2 top-1/2 flex -translate-y-1/2 items-center justify-center",
+                  "rounded-xl bg-foreground/5 text-foreground shadow-xs backdrop-blur-xl",
+                  isLandscape ? "size-8" : "size-9",
+                )}
+              >
+                <SlidersHorizontal size={isLandscape ? 15 : 16} strokeWidth={2.2} />
+              </button>
+            )}
           </div>
-
-          {tab === "ai" && (
-            <button
-              type="button"
-              aria-label="Skills"
-              title="Skills"
-              onClick={() => openSkillsRef.current?.()}
-              className={cn(
-                CHROME_ICON_BTN,
-                "absolute top-1/2 z-[2] flex -translate-y-1/2 shrink-0 shadow-xs backdrop-blur-xs",
-                hasVisualizer ? "right-12" : "right-2",
-                isLandscape ? "size-8 px-0" : "size-9 px-0",
-              )}
-            >
-              <Layers size={14} strokeWidth={2.25} />
-            </button>
-          )}
-
-          {tab === "ai" && hasVisualizer && (
-            <button
-              type="button"
-              aria-label="Abrir panel de IA"
-              title="Opciones de IA"
-              onClick={() => setAiPanelOpen(true)}
-              className={cn(
-                "absolute right-2 top-1/2 flex -translate-y-1/2 items-center justify-center",
-                "rounded-xl bg-foreground/5 text-foreground shadow-xs backdrop-blur-xl",
-                isLandscape ? "size-8" : "size-9",
-              )}
-            >
-              <SlidersHorizontal size={isLandscape ? 15 : 16} strokeWidth={2.2} />
-            </button>
-          )}
-        </div>
+        )}
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {tab === "ai" ? (
@@ -134,19 +178,10 @@ function CadPageDesktop() {
     <div className="flex items-center gap-1.5">
       <CadTabs tab={tab} onTabChange={setTab} />
       {tab === "ai" && (
-        <button
-          type="button"
-          aria-label="Skills"
-          title="Skills"
+        <SkillsChromeButton
           onClick={() => openSkillsRef.current?.()}
-          className={cn(
-            CHROME_ICON_BTN,
-            "h-9 w-auto gap-2 px-3 text-xs font-semibold shadow-xs backdrop-blur-xs",
-          )}
-        >
-          <Layers size={14} strokeWidth={2.25} />
-          <span>Skills</span>
-        </button>
+          iconsOnly={false}
+        />
       )}
     </div>,
   )

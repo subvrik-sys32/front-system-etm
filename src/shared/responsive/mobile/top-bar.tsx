@@ -9,6 +9,8 @@ import { NotificationBell } from "@/features/notifications/components/notificati
 import { MessageBell } from "@/features/comments/components/message-bell"
 import { SidebarPresence } from "../../responsive/layout/sidebar/sidebar-presence"
 import { usePageTitleStore } from "@/shared/responsive/navigation/page-title-store"
+import { usePageToolbarStore } from "@/shared/responsive/navigation/page-toolbar-store"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
 import { usePageSearchStore } from "@/shared/ui/entity-toolbar/page-search-store"
 import { TOP_BAR_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
@@ -18,6 +20,8 @@ import { cn } from "@/shared/utils/utils"
 export function TopBar() {
   const toggleDrawer = useMobileNavStore(s => s.toggleDrawer)
   const title = usePageTitleStore(s => s.title)
+  const toolbar = usePageToolbarStore(s => s.toolbar)
+  const { isLandscape } = useResponsive()
 
   const searchEnabled = usePageSearchStore(s => s.enabled)
   const searchOpen = usePageSearchStore(s => s.open)
@@ -74,15 +78,23 @@ export function TopBar() {
           <Menu size={18} strokeWidth={2.2} />
         </button>
 
-        <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5">
           <div
             title={title}
-            className="inline-flex max-w-full items-center rounded-full bg-muted px-2.5 py-1.5 shadow-xs backdrop-blur-xl"
+            className={cn(
+              "inline-flex max-w-full items-center rounded-full bg-muted px-2.5 py-1.5 shadow-xs backdrop-blur-xl",
+              isLandscape && toolbar && "max-w-[30%]",
+            )}
           >
             <span className="truncate text-sm font-semibold text-foreground">
               {title}
             </span>
           </div>
+          {toolbar ? (
+            <div className="flex min-w-0 items-center gap-1 overflow-visible">
+              {toolbar}
+            </div>
+          ) : null}
         </div>
 
         {searchEnabled && (

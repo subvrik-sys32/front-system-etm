@@ -135,7 +135,7 @@ export function UploadZone({
           >
             {empty ? (
               <div className="flex min-h-0 flex-1 flex-col gap-3">
-                {/* Título solo en portrait móvil; en landscape/desktop ahorra espacio */}
+                {/* Título solo portrait móvil */}
                 {compactChrome && !phoneLand && (
                   <div className="shrink-0 text-center">
                     <p className="text-sm font-semibold text-foreground">
@@ -147,73 +147,93 @@ export function UploadZone({
                   </div>
                 )}
 
-                <div
-                  className={cn(
-                    "grid min-h-0 flex-1 gap-2.5",
-                    phoneLand || !isMobile
-                      ? "grid-cols-[auto_1fr] items-stretch"
-                      : "grid-cols-1",
-                  )}
-                >
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={e => {
-                      e.stopPropagation()
-                      open()
-                    }}
-                    aria-label="Adjuntar plano"
-                    title="Adjuntar plano"
-                    className={cn(
-                      "flex items-center justify-center rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] transition hover:border-primary/40 hover:bg-foreground/[0.05]",
-                      phoneLand || !isMobile
-                        ? "size-16 shrink-0 self-center"
-                        : "min-h-[7.5rem] flex-col gap-2 px-3 py-4 text-center",
-                    )}
-                  >
-                    <div className="flex size-10 items-center justify-center rounded-full bg-secondary/30">
-                      <ImageIcon className="size-5 text-muted-foreground" />
-                    </div>
-                    {isMobile && !phoneLand && (
-                      <>
-                        <span className="text-xs font-semibold text-foreground">
-                          Adjuntar plano
-                        </span>
-                        <span className="text-[11px] text-muted-foreground">
-                          PNG, JPG, WEBP, HEIC
-                        </span>
-                      </>
-                    )}
-                  </button>
+                {/* Landscape / desktop: drop con texto corto + fila de 3 chips */}
+                {phoneLand || !isMobile ? (
+                  <div className="flex min-h-0 flex-1 flex-col gap-2">
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={e => {
+                        e.stopPropagation()
+                        open()
+                      }}
+                      aria-label="Adjuntar plano"
+                      title="Adjuntar plano"
+                      className="flex min-h-[4.5rem] flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-3 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]"
+                    >
+                      <div className="flex size-9 items-center justify-center rounded-full bg-secondary/30">
+                        <ImageIcon className="size-5 text-muted-foreground" />
+                      </div>
+                      <span className="text-xs font-semibold text-foreground">
+                        Adjuntar plano
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        PNG, JPG, WEBP o HEIC
+                      </span>
+                    </button>
 
-                  {/* 3 opciones en grid de 3 filas */}
-                  <div className="grid min-h-0 grid-rows-3 gap-1.5">
-                    {CHIPS.map(c => (
-                      <button
-                        key={c.text}
-                        type="button"
-                        disabled={loading}
-                        title={c.text}
-                        aria-label={c.text}
-                        onClick={e => {
-                          e.stopPropagation()
-                          onGenerate(c.text)
-                        }}
-                        className={cn(
-                          "flex min-h-0 items-center rounded-xl bg-foreground/5 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground",
-                          phoneLand
-                            ? "justify-center px-2 py-2"
-                            : "gap-2 px-3 py-2.5 text-left text-xs",
-                        )}
-                      >
-                        <c.icon className={cn("shrink-0", phoneLand ? "size-4" : "size-3.5")} />
-                        {!phoneLand && (
-                          <span className="line-clamp-2">{c.text}</span>
-                        )}
-                      </button>
-                    ))}
+                    <div className="grid shrink-0 grid-cols-3 gap-1.5">
+                      {CHIPS.map(c => (
+                        <button
+                          key={c.text}
+                          type="button"
+                          disabled={loading}
+                          title={c.text}
+                          aria-label={c.text}
+                          onClick={e => {
+                            e.stopPropagation()
+                            onGenerate(c.text)
+                          }}
+                          className="flex min-h-11 items-center justify-center rounded-xl bg-foreground/5 px-2 py-2 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+                        >
+                          <c.icon className="size-4 shrink-0" />
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="grid min-h-0 flex-1 grid-cols-1 gap-2.5">
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={e => {
+                        e.stopPropagation()
+                        open()
+                      }}
+                      className="flex min-h-[7.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-4 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]"
+                    >
+                      <div className="flex size-10 items-center justify-center rounded-full bg-secondary/30">
+                        <ImageIcon className="size-5 text-muted-foreground" />
+                      </div>
+                      <span className="text-xs font-semibold text-foreground">
+                        Adjuntar plano
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        PNG, JPG, WEBP, HEIC
+                      </span>
+                    </button>
+
+                    <div className="grid min-h-0 grid-rows-3 gap-1.5">
+                      {CHIPS.map(c => (
+                        <button
+                          key={c.text}
+                          type="button"
+                          disabled={loading}
+                          title={c.text}
+                          aria-label={c.text}
+                          onClick={e => {
+                            e.stopPropagation()
+                            onGenerate(c.text)
+                          }}
+                          className="flex min-h-0 items-center gap-2 rounded-xl bg-foreground/5 px-3 py-2.5 text-left text-xs text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+                        >
+                          <c.icon className="size-3.5 shrink-0" />
+                          <span className="line-clamp-2">{c.text}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex flex-col gap-3 sm:gap-4">

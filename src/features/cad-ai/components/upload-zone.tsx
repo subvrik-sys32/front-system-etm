@@ -12,7 +12,6 @@ import {
   Send,
   Bot,
   User,
-  Sparkles,
   Paperclip,
 } from "lucide-react"
 
@@ -136,7 +135,8 @@ export function UploadZone({
           >
             {empty ? (
               <div className="flex min-h-0 flex-1 flex-col gap-3">
-                {compactChrome && (
+                {/* Título solo en portrait móvil; en landscape/desktop ahorra espacio */}
+                {compactChrome && !phoneLand && (
                   <div className="shrink-0 text-center">
                     <p className="text-sm font-semibold text-foreground">
                       ¿Qué pieza diseñamos hoy?
@@ -146,25 +146,12 @@ export function UploadZone({
                     </p>
                   </div>
                 )}
-                {!compactChrome && (
-                  <div className="shrink-0 text-center">
-                    <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-2xl bg-secondary/30">
-                      <Sparkles className="size-6 text-muted-foreground" />
-                    </div>
-                    <p className="text-sm font-semibold text-foreground">
-                      ¿Qué pieza diseñamos hoy?
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      Adjunta un plano o escribe medidas en lenguaje natural.
-                    </p>
-                  </div>
-                )}
 
                 <div
                   className={cn(
                     "grid min-h-0 flex-1 gap-2.5",
                     phoneLand || !isMobile
-                      ? "grid-cols-2"
+                      ? "grid-cols-[auto_1fr] items-stretch"
                       : "grid-cols-1",
                   )}
                 >
@@ -175,29 +162,32 @@ export function UploadZone({
                       e.stopPropagation()
                       open()
                     }}
+                    aria-label="Adjuntar plano"
+                    title="Adjuntar plano"
                     className={cn(
-                      "flex min-h-[6.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-4 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]",
-                      (phoneLand || !isMobile) && "min-h-0 h-full",
-                      isMobile && !phoneLand && "min-h-[7.5rem]",
+                      "flex items-center justify-center rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] transition hover:border-primary/40 hover:bg-foreground/[0.05]",
+                      phoneLand || !isMobile
+                        ? "size-16 shrink-0 self-center"
+                        : "min-h-[7.5rem] flex-col gap-2 px-3 py-4 text-center",
                     )}
                   >
                     <div className="flex size-10 items-center justify-center rounded-full bg-secondary/30">
                       <ImageIcon className="size-5 text-muted-foreground" />
                     </div>
-                    <span className="text-xs font-semibold text-foreground">
-                      Adjuntar plano
-                    </span>
-                    <span className="text-[11px] text-muted-foreground">
-                      PNG, JPG, WEBP, HEIC
-                    </span>
+                    {isMobile && !phoneLand && (
+                      <>
+                        <span className="text-xs font-semibold text-foreground">
+                          Adjuntar plano
+                        </span>
+                        <span className="text-[11px] text-muted-foreground">
+                          PNG, JPG, WEBP, HEIC
+                        </span>
+                      </>
+                    )}
                   </button>
 
-                  <div
-                    className={cn(
-                      "flex min-h-0 flex-col gap-1.5",
-                      (phoneLand || !isMobile) && "h-full justify-stretch",
-                    )}
-                  >
+                  {/* 3 opciones en grid de 3 filas */}
+                  <div className="grid min-h-0 grid-rows-3 gap-1.5">
                     {CHIPS.map(c => (
                       <button
                         key={c.text}
@@ -210,11 +200,10 @@ export function UploadZone({
                           onGenerate(c.text)
                         }}
                         className={cn(
-                          "flex items-center rounded-xl bg-foreground/5 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground",
+                          "flex min-h-0 items-center rounded-xl bg-foreground/5 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground",
                           phoneLand
-                            ? "min-h-0 flex-1 justify-center px-2 py-2"
+                            ? "justify-center px-2 py-2"
                             : "gap-2 px-3 py-2.5 text-left text-xs",
-                          !phoneLand && !isMobile && "min-h-0 flex-1",
                         )}
                       >
                         <c.icon className={cn("shrink-0", phoneLand ? "size-4" : "size-3.5")} />

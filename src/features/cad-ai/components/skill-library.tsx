@@ -1,7 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Trash2, Layers, Loader2, LayoutGrid, List } from "lucide-react"
+import { Search, Trash2, Layers, LayoutGrid, List } from "lucide-react"
+
+import { Spinner } from "@/shared/ui/spinner/spinner"
 
 import {
   Dialog,
@@ -118,7 +120,7 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
             <div className="px-5 pb-5">
               {loading ? (
                 <div className="flex flex-col items-center justify-center gap-3 py-12 text-muted-foreground">
-                  <Loader2 className="size-5 animate-spin text-primary" />
+                  <Spinner size={20} className="text-primary" />
                   <p className="text-xs">Cargando skills...</p>
                 </div>
               ) : filtered.length === 0 ? (

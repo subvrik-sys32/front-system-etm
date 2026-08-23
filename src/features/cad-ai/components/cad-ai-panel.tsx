@@ -1,12 +1,11 @@
 "use client"
 
 import { useState, useCallback, useRef, useEffect } from "react"
-import { Layers, SlidersHorizontal } from "lucide-react"
+import { SlidersHorizontal } from "lucide-react"
 import { Spinner } from "@/shared/ui/spinner/spinner"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
 import { cn } from "@/shared/utils/utils"
-import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-header"
 import type { PlanGeometry, Entity, ChatMessage, Skill } from "../types"
@@ -210,26 +209,7 @@ export function CadAiPanel({
             </div>
           )}
 
-          {/* Mobile/tablet: Skills en la fila del toggle (CadPageCompact). */}
-          {!isMobileLayout && (
-            <div className="flex shrink-0 px-4 py-3">
-              <button
-                type="button"
-                aria-label="Skills"
-                title="Skills"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowSkillLibrary(true)
-                }}
-                onPointerDown={(e) => e.stopPropagation()}
-                className={cn(CHROME_ICON_BTN, "h-9 w-auto gap-2 px-3 text-xs font-semibold shadow-xs backdrop-blur-xs")}
-              >
-                <Layers size={14} strokeWidth={2.25} />
-                <span>Skills</span>
-              </button>
-            </div>
-          )}
-
+          {/* Skills: topbar (desktop) o fila del toggle (CadPageCompact). */}
           <div className="flex min-h-0 w-full flex-1 flex-col">
             <UploadZone onAnalyze={handleAnalyze} onGenerate={handleGenerate} loading={loading} messages={messages} />
           </div>

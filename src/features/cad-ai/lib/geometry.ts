@@ -235,12 +235,18 @@ export function drawEntity(ctx: CanvasRenderingContext2D, entity: Entity, t: Vie
     }
     case "circle": {
       const [cx, cy] = toScreen(entity.center[0], entity.center[1], t)
-      ctx.beginPath(); ctx.arc(cx, cy, entity.radius * t.scale, 0, Math.PI * 2); ctx.stroke()
+      const r = Math.max(0, entity.radius * t.scale)
+      if (r > 0) {
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke()
+      }
       break
     }
     case "arc": {
       const [cx, cy] = toScreen(entity.center[0], entity.center[1], t)
-      ctx.beginPath(); ctx.arc(cx, cy, entity.radius * t.scale, -entity.startAngle * Math.PI / 180, -entity.endAngle * Math.PI / 180, false); ctx.stroke()
+      const r = Math.max(0, entity.radius * t.scale)
+      if (r > 0) {
+        ctx.beginPath(); ctx.arc(cx, cy, r, -entity.startAngle * Math.PI / 180, -entity.endAngle * Math.PI / 180, false); ctx.stroke()
+      }
       break
     }
     case "polyline": {
@@ -274,20 +280,28 @@ export function drawEntity(ctx: CanvasRenderingContext2D, entity: Entity, t: Vie
       const p1 = toScreen(center[0] - dx + px, center[1] - dy + py, t)
       const p2 = toScreen(center[0] + dx + px, center[1] + dy + py, t)
       const p4 = toScreen(center[0] - dx - px, center[1] - dy - py, t)
-      const r = hw * t.scale
+      const r = Math.max(0, hw * t.scale)
       ctx.beginPath()
       ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1])
-      ctx.arc(p2[0], p2[1], r, -(angle + 90) * Math.PI / 180, -(angle + 270) * Math.PI / 180, false)
+      if (r > 0) {
+        ctx.arc(p2[0], p2[1], r, -(angle + 90) * Math.PI / 180, -(angle + 270) * Math.PI / 180, false)
+      }
       ctx.lineTo(p4[0], p4[1])
-      ctx.arc(p4[0], p4[1], r, -(angle + 270) * Math.PI / 180, -(angle + 90) * Math.PI / 180, false)
+      if (r > 0) {
+        ctx.arc(p4[0], p4[1], r, -(angle + 270) * Math.PI / 180, -(angle + 90) * Math.PI / 180, false)
+      }
       ctx.closePath(); ctx.stroke()
       break
     }
     case "ellipse": {
       const [cx, cy] = toScreen(entity.center[0], entity.center[1], t)
-      ctx.beginPath()
-      ctx.ellipse(cx, cy, entity.radiusX * t.scale, entity.radiusY * t.scale, (entity.angle * Math.PI) / 180, 0, Math.PI * 2)
-      ctx.stroke()
+      const rx = Math.max(0, entity.radiusX * t.scale)
+      const ry = Math.max(0, entity.radiusY * t.scale)
+      if (rx > 0 && ry > 0) {
+        ctx.beginPath()
+        ctx.ellipse(cx, cy, rx, ry, (entity.angle * Math.PI) / 180, 0, Math.PI * 2)
+        ctx.stroke()
+      }
       break
     }
     case "fold": {

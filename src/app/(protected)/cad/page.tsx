@@ -66,27 +66,26 @@ function CadPageCompact() {
             isLandscape ? "mb-0.5 min-h-9 py-0.5" : "mb-1.5 h-11",
           )}
         >
-          <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
+          <div className="flex min-w-0 flex-1 items-center justify-center">
             <CadTabs tab={tab} onTabChange={setTab} compact iconsOnly={isLandscape} />
-            {tab === "ai" && (
-              <button
-                type="button"
-                aria-label="Skills"
-                title="Skills"
-                onClick={() => openSkillsRef.current?.()}
-                className={cn(
-                  CHROME_ICON_BTN,
-                  "shrink-0 shadow-xs backdrop-blur-xs",
-                  isLandscape
-                    ? "size-8 px-0"
-                    : "h-9 w-auto gap-1.5 px-2.5 text-xs font-semibold",
-                )}
-              >
-                <Layers size={14} strokeWidth={2.25} />
-                {!isLandscape && <span>Skills</span>}
-              </button>
-            )}
           </div>
+
+          {tab === "ai" && (
+            <button
+              type="button"
+              aria-label="Skills"
+              title="Skills"
+              onClick={() => openSkillsRef.current?.()}
+              className={cn(
+                CHROME_ICON_BTN,
+                "absolute top-1/2 z-[2] flex -translate-y-1/2 shrink-0 shadow-xs backdrop-blur-xs",
+                hasVisualizer ? "right-12" : "right-2",
+                isLandscape ? "size-8 px-0" : "size-9 px-0",
+              )}
+            >
+              <Layers size={14} strokeWidth={2.25} />
+            </button>
+          )}
 
           {tab === "ai" && hasVisualizer && (
             <button
@@ -126,15 +125,38 @@ function CadPageCompact() {
 function CadPageDesktop() {
   usePageTitle("CAD")
   const [tab, setTab] = useState<Tab>("ai")
+  const openSkillsRef = useRef<(() => void) | null>(null)
+  const registerOpenSkills = useCallback((open: () => void) => {
+    openSkillsRef.current = open
+  }, [])
 
-  usePageToolbar(<CadTabs tab={tab} onTabChange={setTab} />)
+  usePageToolbar(
+    <div className="flex items-center gap-1.5">
+      <CadTabs tab={tab} onTabChange={setTab} />
+      {tab === "ai" && (
+        <button
+          type="button"
+          aria-label="Skills"
+          title="Skills"
+          onClick={() => openSkillsRef.current?.()}
+          className={cn(
+            CHROME_ICON_BTN,
+            "h-9 w-auto gap-2 px-3 text-xs font-semibold shadow-xs backdrop-blur-xs",
+          )}
+        >
+          <Layers size={14} strokeWidth={2.25} />
+          <span>Skills</span>
+        </button>
+      )}
+    </div>,
+  )
 
   return (
     <PageShell mode="bleed">
       <section className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {tab === "ai" ? (
-            <CadAiPanel layout="desktop" />
+            <CadAiPanel layout="desktop" onRegisterOpenSkills={registerOpenSkills} />
           ) : (
             <CadWorkspacePanel layout="desktop" />
           )}

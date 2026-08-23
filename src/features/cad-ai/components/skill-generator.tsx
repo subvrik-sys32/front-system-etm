@@ -1,7 +1,9 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Download, Loader2, Layers, ArrowRight } from "lucide-react"
+import { Download, Layers, ArrowRight } from "lucide-react"
+
+import { Spinner } from "@/shared/ui/spinner/spinner"
 
 import {
   Dialog,
@@ -128,7 +130,7 @@ export function SkillGenerator({
           <div className="relative min-h-0 flex-1">
             {loading && (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-background/70 backdrop-blur-sm">
-                <Loader2 className="size-7 animate-spin text-primary" />
+                <Spinner size={28} className="text-primary" />
                 <p className="text-xs text-muted-foreground">Generando vista previa…</p>
               </div>
             )}

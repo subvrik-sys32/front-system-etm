@@ -41,6 +41,7 @@ export function CadAiPanel({
   mobilePanelOpen,
   onMobilePanelOpenChange,
   onHasChatChange,
+  onRegisterOpenSkills,
 }: {
   embedded?: boolean
   /** Controlado desde la página (botón junto al toggle). */
@@ -48,6 +49,8 @@ export function CadAiPanel({
   onMobilePanelOpenChange?: (open: boolean) => void
   /** Hay mensajes de chat IA → mostrar settings en la page. */
   onHasChatChange?: (has: boolean) => void
+  /** Desktop page toolbar: registrar opener de Skills. */
+  onRegisterOpenSkills?: (open: () => void) => void
 } = {}) {
   const chromeInset = useChromeInset({ bottom: false })
   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
@@ -63,6 +66,10 @@ export function CadAiPanel({
   const [selectedForAI, setSelectedForAI] = useState<Entity[] | null>(null)
   const [showSaveSkill, setShowSaveSkill] = useState(false)
   const [showSkillLibrary, setShowSkillLibrary] = useState(false)
+
+  useEffect(() => {
+    onRegisterOpenSkills?.(() => setShowSkillLibrary(true))
+  }, [onRegisterOpenSkills])
   const [activeSkill, setActiveSkill] = useState<Skill | null>(null)
   const [skillParams, setSkillParams] = useState<Record<string, number | string> | null>(null)
   const [skillGenerator, setSkillGenerator] = useState<Skill | null>(null)

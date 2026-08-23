@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Boxes, SlidersHorizontal, Sparkles } from "lucide-react"
+import { useCallback, useRef, useState } from "react"
+import { Boxes, Layers, SlidersHorizontal, Sparkles } from "lucide-react"
 
 import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
 import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
@@ -20,6 +20,10 @@ export default function CadPage() {
   const [tab, setTab] = useState<Tab>("ai")
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
   const [hasAiChat, setHasAiChat] = useState(false)
+  const openSkillsRef = useRef<(() => void) | null>(null)
+  const registerOpenSkills = useCallback((open: () => void) => {
+    openSkillsRef.current = open
+  }, [])
 
   function TabsNav({ compact = false }: { compact?: boolean }) {
     return (
@@ -36,7 +40,27 @@ export default function CadPage() {
     )
   }
 
-  usePageToolbar(isMobile ? null : <TabsNav />)
+  usePageToolbar(
+    isMobile
+      ? null
+      : (
+          <div className="flex items-center gap-2">
+            <TabsNav />
+            {tab === "ai" && (
+              <button
+                type="button"
+                aria-label="Skills"
+                title="Skills"
+                onClick={() => openSkillsRef.current?.()}
+                className="inline-flex h-9 items-center gap-2 rounded-full border border-border/60 bg-card px-3.5 text-xs font-semibold text-foreground shadow-xs transition hover:bg-muted/80"
+              >
+                <Layers size={14} strokeWidth={2.25} className="text-primary" />
+                <span>Skills</span>
+              </button>
+            )}
+          </div>
+        ),
+  )
 
   return (
     <PageShell mode={isMobile ? "fill" : "bleed"}>
@@ -68,6 +92,7 @@ export default function CadPage() {
               mobilePanelOpen={aiPanelOpen}
               onMobilePanelOpenChange={setAiPanelOpen}
               onHasChatChange={setHasAiChat}
+              onRegisterOpenSkills={registerOpenSkills}
             />
           ) : (
             <CadWorkspacePanel embedded />

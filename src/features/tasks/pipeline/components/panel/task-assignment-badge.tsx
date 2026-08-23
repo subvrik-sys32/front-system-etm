@@ -10,12 +10,10 @@ import { useWorkflowSummon } from "@/features/workflow/hooks/use-workflow-summon
 import { Spinner } from "@/shared/ui/spinner/spinner"
 import { cn } from "@/shared/utils/utils"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 import type { WorkflowStep } from "@/features/workflow/types/workflow.types"
 import type { User } from "@/features/users/types/user.types"
@@ -24,16 +22,18 @@ type Props = {
   step: WorkflowStep
   onUnsummon: (stepId: string) => void
   unsummoning?: boolean
-  /** Solo icono + chevron (cabecera de asignado ya muestra el nombre). */
   iconOnly?: boolean
 }
 
 const itemClass =
-  "flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-foreground/10 hover:text-foreground focus:bg-foreground/10 focus:text-foreground"
+  "flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2.5 text-left text-sm text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
 
 const dangerItemClass =
-  "flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-500/10 hover:text-red-600 focus:bg-red-500/10 focus:text-red-600 dark:text-red-400 dark:hover:bg-red-500/20 dark:hover:text-red-400 dark:focus:bg-red-500/20 dark:focus:text-red-400"
+  "flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-500/10 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-500/20 dark:hover:text-red-400"
 
+/**
+ * Desktop: popover. Mobile: bottom sheet (contrato Popover del design system).
+ */
 export function TaskAssignmentBadge({
   step,
   onUnsummon,
@@ -73,19 +73,19 @@ export function TaskAssignmentBadge({
       toast.success(`Reasignado a ${user.name}`)
       setOpen(false)
     } catch {
-      // interceptor global
+      toast.error("No se pudo reasignar")
     }
   }
 
   const tone = invited
-    ? "bg-sky-500/10 text-sky-700 dark:text-sky-300"
-    : "bg-emerald-500/22 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300"
+    ? "bg-amber-500/15 text-amber-700 dark:text-amber-300"
+    : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
 
   const StatusIcon = invited ? Clock3 : UserCheck
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <button
           type="button"
           disabled={busy}
@@ -118,47 +118,48 @@ export function TaskAssignmentBadge({
             </>
           )}
         </button>
-      </DropdownMenuTrigger>
+      </PopoverTrigger>
 
-      <DropdownMenuContent
+      <PopoverContent
         side="bottom"
         align="end"
         sideOffset={4}
+        floatingClassName="w-56"
+        className="gap-0 p-1.5"
         onClick={e => e.stopPropagation()}
-        onPointerDownOutside={(e) => {
-          e.preventDefault()
-          setOpen(false)
-        }}
-        onCloseAutoFocus={e => e.preventDefault()}
-        className="z-50 min-w-36 rounded-xl border-0 bg-popover p-1 text-popover-foreground shadow-xs"
       >
         {!invited && candidates.length > 0 && (
           <>
-            <div className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Cambiar operario
-            </div>
+            </p>
             {candidates.map(user => (
-              <DropdownMenuItem
+              <button
                 key={user.id}
-                onSelect={() => void handleReassign(user)}
+                type="button"
                 className={itemClass}
+                onClick={() => void handleReassign(user)}
               >
-                <UserRoundCog size={13} className="shrink-0" />
+                <UserRoundCog size={14} className="shrink-0" />
                 <span className="truncate">{user.name}</span>
-              </DropdownMenuItem>
+              </button>
             ))}
-            <DropdownMenuSeparator className="my-1 h-px bg-foreground/10" />
+            <div className="my-1 h-px bg-foreground/10" />
           </>
         )}
 
-        <DropdownMenuItem
-          onSelect={() => onUnsummon(step.id)}
+        <button
+          type="button"
           className={dangerItemClass}
+          onClick={() => {
+            onUnsummon(step.id)
+            setOpen(false)
+          }}
         >
-          <X size={13} className="shrink-0" />
+          <X size={14} className="shrink-0" />
           {invited ? "Cancelar invitación" : "Desconvocar"}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </button>
+      </PopoverContent>
+    </Popover>
   )
 }

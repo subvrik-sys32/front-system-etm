@@ -263,30 +263,17 @@ export function RolePermissionsPageContent() {
   // en Usuarios. Ahora se manda como primer hijo de cada
   // AppListScroll; para desktop se sigue mostrando afuera, ya que ahí
   // no hay TopBar flotante.
+  // Desktop: lupa en chrome (junto a tabs / acciones), como Proyectos.
+  // Mobile: solo registra en TopBar (EntityToolbarSearch → null UI).
   usePageToolbar(
-    isMobile ? null : (
-      <PermissionsModeTabs mode={mode} onChange={handleModeChange} />
-    ),
-  )
-
-  // Mobile: EntityToolbarSearch no pinta UI (registra en TopBar).
-  // No montar toolbar vacía bajo el TopBar — solo el bridge.
-  const searchBridge = (
-    <EntityToolbarSearch value={search} onChange={setSearch} />
-  )
-  const searchToolbar = !isMobile ? (
-    <div className="mb-1 shrink-0">
-      <EntityToolbar
-        left={
-          <div className="flex flex-wrap items-center gap-2 py-1">
-            {searchBridge}
+    isMobile
+      ? null
+      : (
+          <div className="flex min-w-0 items-center justify-end gap-2">
+            <EntityToolbarSearch value={search} onChange={setSearch} />
+            <PermissionsModeTabs mode={mode} onChange={handleModeChange} />
           </div>
-        }
-        right={null}
-      />
-    </div>
-  ) : (
-    searchBridge
+        ),
   )
 
   return (
@@ -296,9 +283,14 @@ export function RolePermissionsPageContent() {
         "",
       )}
     >
-      {!isMobile && searchToolbar}
+      {/* Mobile: registra lupa en TopBar (derecha, junto a notis). Sin UI local. */}
+      {isMobile && (
+        <span data-access-search-bridge className="hidden">
+          <EntityToolbarSearch value={search} onChange={setSearch} />
+        </span>
+      )}
 
-      <div
+            <div
         className={cn(
           "flex min-h-0 flex-1 gap-4",
           isMobile ? "flex-col" : ""
@@ -308,8 +300,7 @@ export function RolePermissionsPageContent() {
         {showLeftPanel && isMobile && (
           <AppListScroll
           >
-            {searchToolbar}
-            <div className="mt-2 space-y-3 pb-4">
+                        <div className="mt-2 space-y-3 pb-4">
               {mode === "roles" ? (
                 <>
                   {loadingRoles &&

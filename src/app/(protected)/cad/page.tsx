@@ -56,10 +56,11 @@ function CadPageCompact() {
   return (
     <PageShell mode="bleed">
       <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+        {/* overflow-visible: el toggle no se recorta contra el TopBar/slot */}
         <div
           className={cn(
-            "relative flex shrink-0 items-center px-2",
-            isLandscape ? "mb-0.5 h-9" : "mb-1.5 h-11",
+            "relative z-[1] flex shrink-0 items-center overflow-visible px-2",
+            isLandscape ? "mb-1 min-h-10 py-1" : "mb-1.5 h-11",
           )}
         >
           <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5">

@@ -192,15 +192,12 @@ function CadPageDesktop() {
 
   return (
     <PageShell mode="bleed">
-      {/* flex-1 min-h-0 (sin h-full): respeta paddingTop del shell y no se recorta */}
-      <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          {tab === "ai" ? (
-            <CadAiPanel layout="desktop" onRegisterOpenSkills={registerOpenSkills} />
-          ) : (
-            <CadWorkspacePanel layout="desktop" />
-          )}
-        </div>
+      <section className="flex min-h-0 w-full flex-1 flex-col">
+        {tab === "ai" ? (
+          <CadAiPanel layout="desktop" onRegisterOpenSkills={registerOpenSkills} />
+        ) : (
+          <CadWorkspacePanel layout="desktop" />
+        )}
       </section>
     </PageShell>
   )

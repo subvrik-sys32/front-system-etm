@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react"
 import { SlidersHorizontal } from "lucide-react"
 import { Spinner } from "@/shared/ui/spinner/spinner"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { DESKTOP_TOP_BAR_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
 import { cn } from "@/shared/utils/utils"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-header"
@@ -51,6 +52,12 @@ export function CadAiPanel({
   onRegisterOpenSkills?: (open: () => void) => void
 } = {}) {
   const isMobileLayout = layout === "mobile"
+  // CompactShell (isMobile) ya recorta con slot immersive.
+  // DesktopShell (tablet/desktop): el contenido necesita inset bajo el topbar.
+  const { isMobile: isMobileShell } = useResponsive()
+  const contentInsetStyle = isMobileShell
+    ? undefined
+    : { paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX }
   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
   const [dxf, setDxf] = useState<string>("")
   const [imagePath, setImagePath] = useState<string | null>(null)
@@ -182,9 +189,10 @@ export function CadAiPanel({
 
   if (!geometry) {
     return (
-      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-hidden bg-background">
+      <div className="relative flex min-h-0 w-full flex-1 flex-col bg-background">
+        {/* Fondo decorativo: full-bleed, puede ir bajo el topbar */}
         {!isMobileLayout && (
-          <div className="absolute inset-0 z-0 opacity-30 pointer-events-auto">
+          <div className="pointer-events-none absolute inset-0 z-0 opacity-30">
             <CursorRingField
               background="transparent"
               dotSize={emptyDotSize}
@@ -196,7 +204,11 @@ export function CadAiPanel({
           </div>
         )}
 
-        <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col">
+        {/* Contenido: inset top solo fuera de CompactShell */}
+        <div
+          className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+          style={contentInsetStyle}
+        >
           {error && (
             <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
               <span className="truncate">{error}</span>
@@ -204,7 +216,6 @@ export function CadAiPanel({
             </div>
           )}
 
-          {/* Skills: topbar (desktop) o fila del toggle (CadPageCompact). */}
           <div className="flex min-h-0 w-full flex-1 flex-col">
             <UploadZone onAnalyze={handleAnalyze} onGenerate={handleGenerate} loading={loading} messages={messages} />
           </div>
@@ -248,9 +259,9 @@ export function CadAiPanel({
   )
 
   return (
-    <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-background shadow-xs">
+    <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background shadow-xs">
       {!isMobileLayout && (
-        <div className="absolute inset-0 z-0 opacity-20 pointer-events-auto">
+        <div className="pointer-events-none absolute inset-0 z-0 opacity-20">
           <CursorRingField
             background="transparent"
             dotSize={activeDotSize}
@@ -261,7 +272,10 @@ export function CadAiPanel({
         </div>
       )}
 
-      <div className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col">
+      <div
+        className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+        style={contentInsetStyle}
+      >
         {error && (
           <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
             <span className="truncate">{error}</span>

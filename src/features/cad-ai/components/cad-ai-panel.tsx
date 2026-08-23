@@ -40,14 +40,15 @@ export function CadAiPanel({
   layout = "desktop",
   mobilePanelOpen,
   onMobilePanelOpenChange,
-  onHasChatChange,
+  onHasVisualizerChange,
   onRegisterOpenSkills,
 }: {
   /** Vista fija — no mezcla reglas mobile/desktop. */
   layout?: "mobile" | "desktop"
   mobilePanelOpen?: boolean
   onMobilePanelOpenChange?: (open: boolean) => void
-  onHasChatChange?: (has: boolean) => void
+  /** True cuando hay geometría (visualizer activo). */
+  onHasVisualizerChange?: (has: boolean) => void
   /** Compact chrome: Skills en la fila del toggle (page). */
   onRegisterOpenSkills?: (open: () => void) => void
 } = {}) {
@@ -61,8 +62,8 @@ export function CadAiPanel({
   const [messages, setMessages] = useState<ChatMessage[]>([])
 
   useEffect(() => {
-    onHasChatChange?.(messages.length > 0)
-  }, [messages.length, onHasChatChange])
+    onHasVisualizerChange?.(geometry !== null)
+  }, [geometry, onHasVisualizerChange])
   const [selectedForAI, setSelectedForAI] = useState<Entity[] | null>(null)
   const [showSaveSkill, setShowSaveSkill] = useState(false)
   const [showSkillLibrary, setShowSkillLibrary] = useState(false)
@@ -184,7 +185,7 @@ export function CadAiPanel({
 
   if (!geometry) {
     return (
-      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background shadow-xs">
+      <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-background">
         {!isMobileLayout && (
           <div className="absolute inset-0 z-0 opacity-30 pointer-events-auto">
             <CursorRingField

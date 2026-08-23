@@ -4,6 +4,8 @@ import type { ReactNode } from "react"
 
 import { cn } from "@/shared/utils/utils"
 import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
+import { usePathname } from "next/navigation"
+import { isImmersiveRoute } from "../navigation/immersive-routes"
 
 type Props = {
   children: ReactNode
@@ -25,15 +27,16 @@ export function PageShell({
   className,
   mode = "list",
 }: Props) {
+  const pathname = usePathname()
+  const immersive = isImmersiveRoute(pathname)
   const insetFill = useChromeInset({ bottom: true })
   const insetBleed = useChromeInset({ bottom: true })
 
-  // bleed: solo bottom (y horizontal del shell), top libre bajo el blur
+  // bleed no-immersive: reserva bottom del chrome.
+  // immersive (/cad, /nesting): el slot ya recorta top/bottom — no sumar pad.
   const bleedStyle =
-    mode === "bleed"
-      ? {
-          paddingBottom: insetBleed.paddingBottom,
-        }
+    mode === "bleed" && !immersive
+      ? { paddingBottom: insetBleed.paddingBottom }
       : undefined
 
   return (

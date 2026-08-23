@@ -1,0 +1,56 @@
+diff --git a/src/shared/responsive/layout/page-shell.tsx b/src/shared/responsive/layout/page-shell.tsx
+index 285a333..ad84bb9 100644
+--- a/src/shared/responsive/layout/page-shell.tsx
++++ b/src/shared/responsive/layout/page-shell.tsx
+@@ -1,9 +1,11 @@
+ "use client"
+ 
+ import type { ReactNode } from "react"
++import { usePathname } from "next/navigation"
+ 
+ import { cn } from "@/shared/utils/utils"
+ import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
++import { isImmersiveRoute } from "@/shared/responsive/navigation/immersive-routes"
+ 
+ type Props = {
+   children: ReactNode
+@@ -11,7 +13,8 @@ type Props = {
+   /**
+    * fill  = Nesting/Bitácora desktop: inset top+bottom del chrome.
+    * list  = listas: inset lo aplica AppListScroll.
+-   * bleed = CAD: sin paddingTop — el contenido pasa bajo el blur del topbar.
++   * bleed = CAD/Nesting: sin paddingTop bajo el blur del topbar.
++   *         En rutas immersive el slot ya recorta bottom — no sumar pad.
+    */
+   mode?: "fill" | "list" | "bleed"
+ }
+@@ -25,15 +28,16 @@ export function PageShell({
+   className,
+   mode = "list",
+ }: Props) {
++  const pathname = usePathname()
++  const immersive = isImmersiveRoute(pathname)
+   const insetFill = useChromeInset({ bottom: true })
+   const insetBleed = useChromeInset({ bottom: true })
+ 
+-  // bleed: solo bottom (y horizontal del shell), top libre bajo el blur
++  // bleed no-immersive: reserva bottom del chrome.
++  // immersive (/cad, /nesting): el slot ya recorta top/bottom — no sumar pad.
+   const bleedStyle =
+-    mode === "bleed"
+-      ? {
+-          paddingBottom: insetBleed.paddingBottom,
+-        }
++    mode === "bleed" && !immersive
++      ? { paddingBottom: insetBleed.paddingBottom }
+       : undefined
+ 
+   return (
+@@ -42,7 +46,6 @@ export function PageShell({
+         "flex h-full min-h-0 flex-col bg-background px-3 pt-0 pb-2 text-foreground select-none",
+         "tablet:px-4 desktop:px-5 desktop:pb-3",
+         (mode === "fill" || mode === "bleed") && "overflow-hidden",
+-        // bleed desktop: sin px lateral del shell para que el ring llegue al borde
+         mode === "bleed" && "px-0 tablet:px-0 desktop:px-0 pb-0 desktop:pb-0",
+         className,
+       )}

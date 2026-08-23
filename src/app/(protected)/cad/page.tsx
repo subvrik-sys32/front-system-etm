@@ -47,7 +47,7 @@ function CadPageCompact() {
   const { isLandscape } = useResponsive()
   const [tab, setTab] = useState<Tab>("ai")
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
-  const [hasAiChat, setHasAiChat] = useState(false)
+  const [hasVisualizer, setHasVisualizer] = useState(false)
   const openSkillsRef = useRef<(() => void) | null>(null)
   const registerOpenSkills = useCallback((open: () => void) => {
     openSkillsRef.current = open
@@ -55,7 +55,7 @@ function CadPageCompact() {
 
   return (
     <PageShell mode="bleed">
-      <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <section className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
         {/* overflow-visible: el toggle no se recorta contra el TopBar/slot */}
         <div
           className={cn(
@@ -83,7 +83,7 @@ function CadPageCompact() {
             )}
           </div>
 
-          {tab === "ai" && hasAiChat && (
+          {tab === "ai" && hasVisualizer && (
             <button
               type="button"
               aria-label="Abrir panel de IA"
@@ -106,7 +106,7 @@ function CadPageCompact() {
               layout="mobile"
               mobilePanelOpen={aiPanelOpen}
               onMobilePanelOpenChange={setAiPanelOpen}
-              onHasChatChange={setHasAiChat}
+              onHasVisualizerChange={setHasVisualizer}
               onRegisterOpenSkills={registerOpenSkills}
             />
           ) : (
@@ -126,7 +126,7 @@ function CadPageDesktop() {
 
   return (
     <PageShell mode="bleed">
-      <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <section className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {tab === "ai" ? (
             <CadAiPanel layout="desktop" />

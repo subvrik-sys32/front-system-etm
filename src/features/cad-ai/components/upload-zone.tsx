@@ -37,8 +37,8 @@ const CHIPS = [
 ] as const
 
 /**
- * Una sola vista: subir plano (clip / drop) + chat en el mismo panel.
- * Sin toggle Subir / Crear con chat.
+ * Vista unificada: adjuntar plano + chat.
+ * Llena el slot immersive (sin hueco bajo el composer).
  */
 export function UploadZone({
   onAnalyze,
@@ -48,6 +48,7 @@ export function UploadZone({
 }: UploadZoneProps) {
   const { isMobile, isLandscape } = useResponsive()
   const phoneLand = isMobile && isLandscape
+  const compactChrome = isMobile
 
   const [input, setInput] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -90,14 +91,15 @@ export function UploadZone({
   const empty = messages.length === 0 && !loading
 
   return (
-    <div className="relative flex h-full min-h-0 w-full flex-1 flex-col bg-transparent">
+    <div className="relative flex h-full min-h-0 w-full flex-1 flex-col">
       <div
         className={cn(
-          "mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col",
-          phoneLand ? "px-2 py-1" : "px-3 py-3 sm:px-6 sm:py-6",
+          "mx-auto flex h-full min-h-0 w-full max-w-3xl flex-1 flex-col",
+          phoneLand ? "px-2 pb-1 pt-0" : compactChrome ? "px-3 pb-2 pt-1" : "px-3 py-3 sm:px-6 sm:py-6",
         )}
       >
-        {!phoneLand && (
+        {/* Hero: solo desktop / tablet ancha */}
+        {!compactChrome && (
           <div className="mb-3 shrink-0 px-2 sm:mb-4 sm:px-4">
             <div className="flex flex-col items-center gap-x-3 gap-y-1 text-center md:flex-row md:items-baseline md:justify-start md:text-left">
               <h2
@@ -116,7 +118,6 @@ export function UploadZone({
           </div>
         )}
 
-        {/* Panel único: drop en el body + mensajes + composer */}
         <div
           {...getRootProps()}
           className={cn(
@@ -129,38 +130,42 @@ export function UploadZone({
           <div
             ref={scrollRef}
             className={cn(
-              "min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
-              phoneLand ? "space-y-3 p-3" : "space-y-4 p-4 sm:space-y-5 sm:p-6",
+              "flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+              phoneLand ? "p-2.5" : "p-3 sm:p-5",
             )}
           >
-            {empty && (
-              <div
-                className={cn(
-                  "flex h-full min-h-0 flex-col gap-3",
-                  phoneLand ? "py-0.5" : "py-2 sm:py-3",
+            {empty ? (
+              <div className="flex min-h-0 flex-1 flex-col gap-3">
+                {compactChrome && (
+                  <div className="shrink-0 text-center">
+                    <p className="text-sm font-semibold text-foreground">
+                      ¿Qué pieza diseñamos hoy?
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Adjunta un plano o escribe en lenguaje natural.
+                    </p>
+                  </div>
                 )}
-              >
-                <div className={cn("text-center", phoneLand ? "shrink-0" : "mb-1")}>
-                  {!phoneLand && (
-                    <div className="mx-auto mb-2 flex size-11 items-center justify-center rounded-2xl bg-secondary/30 sm:size-12">
-                      <Sparkles className="size-5 text-muted-foreground sm:size-6" />
+                {!compactChrome && (
+                  <div className="shrink-0 text-center">
+                    <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-2xl bg-secondary/30">
+                      <Sparkles className="size-6 text-muted-foreground" />
                     </div>
-                  )}
-                  <p className="text-sm font-semibold text-foreground">
-                    ¿Qué pieza diseñamos hoy?
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    Adjunta un plano o escribe medidas en lenguaje natural.
-                  </p>
-                </div>
+                    <p className="text-sm font-semibold text-foreground">
+                      ¿Qué pieza diseñamos hoy?
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Adjunta un plano o escribe medidas en lenguaje natural.
+                    </p>
+                  </div>
+                )}
 
-                {/* Grid: drop | ejemplos — landscape y sm+ */}
                 <div
                   className={cn(
                     "grid min-h-0 flex-1 gap-2.5",
-                    "grid-cols-1",
-                    "sm:grid-cols-2",
-                    phoneLand && "grid-cols-2 gap-2",
+                    phoneLand || !isMobile
+                      ? "grid-cols-2"
+                      : "grid-cols-1",
                   )}
                 >
                   <button
@@ -171,8 +176,9 @@ export function UploadZone({
                       open()
                     }}
                     className={cn(
-                      "flex min-h-[7.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-4 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]",
-                      phoneLand && "min-h-0 py-3",
+                      "flex min-h-[6.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/50 bg-foreground/[0.03] px-3 py-4 text-center transition hover:border-primary/40 hover:bg-foreground/[0.05]",
+                      (phoneLand || !isMobile) && "min-h-0 h-full",
+                      isMobile && !phoneLand && "min-h-[7.5rem]",
                     )}
                   >
                     <div className="flex size-10 items-center justify-center rounded-full bg-secondary/30">
@@ -186,7 +192,12 @@ export function UploadZone({
                     </span>
                   </button>
 
-                  <div className="flex min-h-0 flex-col justify-center gap-1.5">
+                  <div
+                    className={cn(
+                      "flex min-h-0 flex-col gap-1.5",
+                      (phoneLand || !isMobile) && "h-full justify-stretch",
+                    )}
+                  >
                     {CHIPS.map(c => (
                       <button
                         key={c.text}
@@ -196,7 +207,10 @@ export function UploadZone({
                           e.stopPropagation()
                           onGenerate(c.text)
                         }}
-                        className="flex min-h-0 flex-1 items-center gap-2 rounded-xl bg-foreground/5 px-3 py-2 text-left text-xs text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+                        className={cn(
+                          "flex items-center gap-2 rounded-xl bg-foreground/5 px-3 py-2.5 text-left text-xs text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground",
+                          (phoneLand || !isMobile) && "min-h-0 flex-1",
+                        )}
                       >
                         <c.icon className="size-3.5 shrink-0" />
                         <span className="line-clamp-2">{c.text}</span>
@@ -205,51 +219,62 @@ export function UploadZone({
                   </div>
                 </div>
               </div>
+            ) : (
+              <div className="flex flex-col gap-3 sm:gap-4">
+                {messages.map((msg, i) => {
+                  const isUser = msg.role === "user"
+                  return (
+                    <div
+                      key={i}
+                      className={cn(
+                        "flex items-start gap-2",
+                        isUser && "flex-row-reverse",
+                      )}
+                    >
+                      <ChatAvatar
+                        fallback={
+                          isUser ? (
+                            <User className="size-4" />
+                          ) : (
+                            <Bot className="size-4" />
+                          )
+                        }
+                      />
+                      <ChatBubble own={isUser}>
+                        <p className="text-sm leading-relaxed">{msg.content}</p>
+                        {msg.geometry && (
+                          <p
+                            className={cn(
+                              "mt-1.5 text-[11px]",
+                              isUser
+                                ? "text-background/60"
+                                : "text-muted-foreground",
+                            )}
+                          >
+                            {msg.geometry.entities.length} entidades ·{" "}
+                            {msg.geometry.dimensions.width}×
+                            {msg.geometry.dimensions.height}{" "}
+                            {msg.geometry.units}
+                          </p>
+                        )}
+                      </ChatBubble>
+                    </div>
+                  )
+                })}
+
+                {loading && (
+                  <div className="flex items-center gap-2">
+                    <ChatAvatar fallback={<Spinner size={16} />} />
+                    <ChatBubble>
+                      <span className="text-muted-foreground">Procesando…</span>
+                    </ChatBubble>
+                  </div>
+                )}
+              </div>
             )}
 
-            {messages.map((msg, i) => {
-              const isUser = msg.role === "user"
-              return (
-                <div
-                  key={i}
-                  className={cn(
-                    "flex items-start gap-2",
-                    isUser && "flex-row-reverse",
-                  )}
-                >
-                  <ChatAvatar
-                    fallback={
-                      isUser ? (
-                        <User className="size-4" />
-                      ) : (
-                        <Bot className="size-4" />
-                      )
-                    }
-                  />
-                  <ChatBubble own={isUser}>
-                    <p className="text-sm leading-relaxed">{msg.content}</p>
-                    {msg.geometry && (
-                      <p
-                        className={cn(
-                          "mt-1.5 text-[11px]",
-                          isUser
-                            ? "text-background/60"
-                            : "text-muted-foreground",
-                        )}
-                      >
-                        {msg.geometry.entities.length} entidades ·{" "}
-                        {msg.geometry.dimensions.width}×
-                        {msg.geometry.dimensions.height}{" "}
-                        {msg.geometry.units}
-                      </p>
-                    )}
-                  </ChatBubble>
-                </div>
-              )
-            })}
-
-            {loading && (
-              <div className="flex items-center gap-2">
+            {empty && loading && (
+              <div className="mt-3 flex items-center gap-2">
                 <ChatAvatar fallback={<Spinner size={16} />} />
                 <ChatBubble>
                   <span className="text-muted-foreground">Procesando…</span>
@@ -261,7 +286,7 @@ export function UploadZone({
           <div
             className={cn(
               "shrink-0 border-t border-border/30 bg-card",
-              phoneLand ? "p-2" : "p-3 sm:p-4",
+              phoneLand ? "p-2" : "p-2.5 sm:p-4",
             )}
             onClick={e => e.stopPropagation()}
           >

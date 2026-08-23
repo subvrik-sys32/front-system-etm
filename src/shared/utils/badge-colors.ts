@@ -116,38 +116,52 @@ function blendOnChipSurface(hex: string, alpha: number): Rgb {
   }
 }
 
+/** WCAG AA para texto de UI denso (chips ≤14px se benefician de ≥4.5). */
+const CHIP_TEXT_MIN_CONTRAST = 4.5
+
+/**
+ * Oscurece el matiz de marca hasta legibilidad real sobre el fill del chip.
+ */
 function getReadableTextFor(hex: string, backgroundRgb: Rgb) {
   const bgLum = getLuminanceFromRgb(backgroundRgb)
-  const MIN_CONTRAST = 5.5
-  for (const amount of [0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.92, 0.96]) {
+
+  for (const amount of [
+    0.28, 0.36, 0.44, 0.52, 0.6, 0.68, 0.76, 0.84, 0.9, 0.94,
+  ]) {
     const candidate = tintTowardBlack(hex, amount)
     if (
       contrastFromLuminances(getLuminanceFromRgb(candidate), bgLum) >=
-      MIN_CONTRAST
+      CHIP_TEXT_MIN_CONTRAST
     ) {
       return rgbString(candidate)
     }
   }
-  return "#111827"
-}
 
-function getSubtleText(hex: string) {
-  const tint = readCssNumber("--chip-text-tint", 0.84)
-  return rgbString(tintTowardWhite(hex, tint))
+  return bgLum >= 0.45 ? "#111827" : "#F9FAFB"
 }
 
 /**
- * Texto del chip subtle — solo tinta, fill intacto.
- * Fill oscuro: claro del matiz (legible y cercano al blanco si la variable lo indica).
- * Fill claro: oscuro del matiz.
+ * Texto del chip subtle — fill intacto, ink con contraste garantizado.
+ * Fill claro → oscurece matiz. Fill oscuro → aclara matiz.
  */
 function getChipText(hex: string, backgroundRgb: Rgb) {
   const bgLum = getLuminanceFromRgb(backgroundRgb)
+
   if (bgLum < 0.45) {
-    // SIN TOPE Math.min(..., 0.5): el token CSS --chip-text-tint manda libremente.
-    const tint = readCssNumber("--chip-text-tint", 0.72)
-    return rgbString(tintTowardWhite(hex, tint))
+    for (const amount of [
+      0.28, 0.36, 0.44, 0.52, 0.6, 0.68, 0.76, 0.84, 0.9, 0.94,
+    ]) {
+      const candidate = tintTowardWhite(hex, amount)
+      if (
+        contrastFromLuminances(getLuminanceFromRgb(candidate), bgLum) >=
+        CHIP_TEXT_MIN_CONTRAST
+      ) {
+        return rgbString(candidate)
+      }
+    }
+    return "#F9FAFB"
   }
+
   return getReadableTextFor(hex, backgroundRgb)
 }
 

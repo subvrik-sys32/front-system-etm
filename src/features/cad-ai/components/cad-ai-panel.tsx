@@ -41,12 +41,15 @@ export function CadAiPanel({
   mobilePanelOpen,
   onMobilePanelOpenChange,
   onHasChatChange,
+  onRegisterOpenSkills,
 }: {
   /** Vista fija — no mezcla reglas mobile/desktop. */
   layout?: "mobile" | "desktop"
   mobilePanelOpen?: boolean
   onMobilePanelOpenChange?: (open: boolean) => void
   onHasChatChange?: (has: boolean) => void
+  /** Compact chrome: Skills en la fila del toggle (page). */
+  onRegisterOpenSkills?: (open: () => void) => void
 } = {}) {
   const isMobileLayout = layout === "mobile"
   const chromeInset = useChromeInset({ bottom: false })
@@ -63,6 +66,10 @@ export function CadAiPanel({
   const [selectedForAI, setSelectedForAI] = useState<Entity[] | null>(null)
   const [showSaveSkill, setShowSaveSkill] = useState(false)
   const [showSkillLibrary, setShowSkillLibrary] = useState(false)
+
+  useEffect(() => {
+    onRegisterOpenSkills?.(() => setShowSkillLibrary(true))
+  }, [onRegisterOpenSkills])
 
   const [activeSkill, setActiveSkill] = useState<Skill | null>(null)
   const [skillParams, setSkillParams] = useState<Record<string, number | string> | null>(null)
@@ -202,27 +209,25 @@ export function CadAiPanel({
             </div>
           )}
 
-          <div
-            className={cn(
-              "flex shrink-0 px-4",
-              isMobileLayout ? "py-2" : "py-3",
-            )}
-          >
-            <button
-              type="button"
-              aria-label="Skills"
-              title="Skills"
-              onClick={(e) => {
-                e.stopPropagation()
-                setShowSkillLibrary(true)
-              }}
-              onPointerDown={(e) => e.stopPropagation()}
-              className={cn(CHROME_ICON_BTN, "h-9 w-auto gap-2 px-3 text-xs font-semibold shadow-xs backdrop-blur-xs")}
-            >
-              <Layers size={14} strokeWidth={2.25} />
-              <span>Skills</span>
-            </button>
-          </div>
+          {/* Mobile/tablet: Skills en la fila del toggle (CadPageCompact). */}
+          {!isMobileLayout && (
+            <div className="flex shrink-0 px-4 py-3">
+              <button
+                type="button"
+                aria-label="Skills"
+                title="Skills"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowSkillLibrary(true)
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+                className={cn(CHROME_ICON_BTN, "h-9 w-auto gap-2 px-3 text-xs font-semibold shadow-xs backdrop-blur-xs")}
+              >
+                <Layers size={14} strokeWidth={2.25} />
+                <span>Skills</span>
+              </button>
+            </div>
+          )}
 
           <div className="flex w-full flex-col">
             <UploadZone onAnalyze={handleAnalyze} onGenerate={handleGenerate} loading={loading} messages={messages} />

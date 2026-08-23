@@ -1,0 +1,258 @@
+diff --git a/src/app/(protected)/cad/page.tsx b/src/app/(protected)/cad/page.tsx
+index 8962411..41dd057 100644
+--- a/src/app/(protected)/cad/page.tsx
++++ b/src/app/(protected)/cad/page.tsx
+@@ -1,7 +1,7 @@
+ "use client"
+ 
+-import { useState } from "react"
+-import { Boxes, SlidersHorizontal, Sparkles } from "lucide-react"
++import { useCallback, useRef, useState } from "react"
++import { Boxes, Layers, SlidersHorizontal, Sparkles } from "lucide-react"
+ 
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+ import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
+@@ -10,6 +10,7 @@ import { PageShell } from "@/shared/responsive/layout/page-shell"
+ import { CadWorkspacePanel } from "@/features/cad/components/cad-workspace-panel"
+ import { CadAiPanel } from "@/features/cad-ai/components/cad-ai-panel"
+ import { EntityToggle } from "@/shared/ui/entity-toggle/entity-toggle"
++import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
+ import { cn } from "@/shared/utils/utils"
+ 
+ type Tab = "ai" | "templates"
+@@ -37,17 +38,44 @@ function CadTabs({
+   )
+ }
+ 
+-function CadPageMobile() {
++/**
++ * Móvil + tablet (isCompact): una sola fila h-11 — toggle + Skills + settings.
++ * Mismo patrón que Bitácora (chrome local bajo TopBar, sin toolbar de page).
++ */
++function CadPageCompact() {
+   usePageTitle("CAD")
+   const [tab, setTab] = useState<Tab>("ai")
+   const [aiPanelOpen, setAiPanelOpen] = useState(false)
+   const [hasAiChat, setHasAiChat] = useState(false)
++  const openSkillsRef = useRef<(() => void) | null>(null)
++  const registerOpenSkills = useCallback((open: () => void) => {
++    openSkillsRef.current = open
++  }, [])
+ 
+   return (
+     <PageShell mode="fill">
+       <section className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+-        <div className="relative mb-1.5 flex h-11 shrink-0 items-center justify-center px-2">
+-          <CadTabs tab={tab} onTabChange={setTab} compact />
++        {/* Una sola fila: no apilar Skills debajo del toggle */}
++        <div className="relative mb-1.5 flex h-11 shrink-0 items-center px-2">
++          <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
++            <CadTabs tab={tab} onTabChange={setTab} compact />
++            {tab === "ai" && (
++              <button
++                type="button"
++                aria-label="Skills"
++                title="Skills"
++                onClick={() => openSkillsRef.current?.()}
++                className={cn(
++                  CHROME_ICON_BTN,
++                  "h-9 w-auto shrink-0 gap-1.5 px-2.5 text-xs font-semibold shadow-xs backdrop-blur-xs",
++                )}
++              >
++                <Layers size={14} strokeWidth={2.25} />
++                <span className="max-[380px]:hidden">Skills</span>
++              </button>
++            )}
++          </div>
++
+           {tab === "ai" && hasAiChat && (
+             <button
+               type="button"
+@@ -71,6 +99,7 @@ function CadPageMobile() {
+               mobilePanelOpen={aiPanelOpen}
+               onMobilePanelOpenChange={setAiPanelOpen}
+               onHasChatChange={setHasAiChat}
++              onRegisterOpenSkills={registerOpenSkills}
+             />
+           ) : (
+             <CadWorkspacePanel layout="mobile" />
+@@ -81,6 +110,7 @@ function CadPageMobile() {
+   )
+ }
+ 
++/** Desktop / laptop: tabs en DesktopTopBar; Skills vive en el empty del panel. */
+ function CadPageDesktop() {
+   usePageTitle("CAD")
+   const [tab, setTab] = useState<Tab>("ai")
+@@ -103,11 +133,13 @@ function CadPageDesktop() {
+ }
+ 
+ export default function CadPage() {
+-  const { isMobile, ready } = useResponsive()
++  const { isMobile, isCompact, ready } = useResponsive()
+ 
+   if (!ready) {
+     return <div className="min-h-0 flex-1" />
+   }
+ 
+-  return isMobile ? <CadPageMobile /> : <CadPageDesktop />
++  // Bitácora: isMobile || isCompact → chrome local. CAD igual.
++  const compactChrome = isMobile || isCompact
++  return compactChrome ? <CadPageCompact /> : <CadPageDesktop />
+ }
+diff --git a/src/features/cad-ai/components/cad-ai-panel.tsx b/src/features/cad-ai/components/cad-ai-panel.tsx
+index 80fd21f..c0e637a 100644
+--- a/src/features/cad-ai/components/cad-ai-panel.tsx
++++ b/src/features/cad-ai/components/cad-ai-panel.tsx
+@@ -41,12 +41,15 @@ export function CadAiPanel({
+   mobilePanelOpen,
+   onMobilePanelOpenChange,
+   onHasChatChange,
++  onRegisterOpenSkills,
+ }: {
+   /** Vista fija — no mezcla reglas mobile/desktop. */
+   layout?: "mobile" | "desktop"
+   mobilePanelOpen?: boolean
+   onMobilePanelOpenChange?: (open: boolean) => void
+   onHasChatChange?: (has: boolean) => void
++  /** Compact chrome: Skills en la fila del toggle (page). */
++  onRegisterOpenSkills?: (open: () => void) => void
+ } = {}) {
+   const isMobileLayout = layout === "mobile"
+   const chromeInset = useChromeInset({ bottom: false })
+@@ -64,6 +67,10 @@ export function CadAiPanel({
+   const [showSaveSkill, setShowSaveSkill] = useState(false)
+   const [showSkillLibrary, setShowSkillLibrary] = useState(false)
+ 
++  useEffect(() => {
++    onRegisterOpenSkills?.(() => setShowSkillLibrary(true))
++  }, [onRegisterOpenSkills])
++
+   const [activeSkill, setActiveSkill] = useState<Skill | null>(null)
+   const [skillParams, setSkillParams] = useState<Record<string, number | string> | null>(null)
+   const [skillGenerator, setSkillGenerator] = useState<Skill | null>(null)
+@@ -202,27 +209,25 @@ export function CadAiPanel({
+             </div>
+           )}
+ 
+-          <div
+-            className={cn(
+-              "flex shrink-0 px-4",
+-              isMobileLayout ? "py-2" : "py-3",
+-            )}
+-          >
+-            <button
+-              type="button"
+-              aria-label="Skills"
+-              title="Skills"
+-              onClick={(e) => {
+-                e.stopPropagation()
+-                setShowSkillLibrary(true)
+-              }}
+-              onPointerDown={(e) => e.stopPropagation()}
+-              className={cn(CHROME_ICON_BTN, "h-9 w-auto gap-2 px-3 text-xs font-semibold shadow-xs backdrop-blur-xs")}
+-            >
+-              <Layers size={14} strokeWidth={2.25} />
+-              <span>Skills</span>
+-            </button>
+-          </div>
++          {/* Mobile/tablet: Skills en la fila del toggle (CadPageCompact). */}
++          {!isMobileLayout && (
++            <div className="flex shrink-0 px-4 py-3">
++              <button
++                type="button"
++                aria-label="Skills"
++                title="Skills"
++                onClick={(e) => {
++                  e.stopPropagation()
++                  setShowSkillLibrary(true)
++                }}
++                onPointerDown={(e) => e.stopPropagation()}
++                className={cn(CHROME_ICON_BTN, "h-9 w-auto gap-2 px-3 text-xs font-semibold shadow-xs backdrop-blur-xs")}
++              >
++                <Layers size={14} strokeWidth={2.25} />
++                <span>Skills</span>
++              </button>
++            </div>
++          )}
+ 
+           <div className="flex w-full flex-col">
+             <UploadZone onAnalyze={handleAnalyze} onGenerate={handleGenerate} loading={loading} messages={messages} />
+diff --git a/src/shared/utils/badge-colors.ts b/src/shared/utils/badge-colors.ts
+index 5a3f583..4685cb0 100644
+--- a/src/shared/utils/badge-colors.ts
++++ b/src/shared/utils/badge-colors.ts
+@@ -116,38 +116,52 @@ function blendOnChipSurface(hex: string, alpha: number): Rgb {
+   }
+ }
+ 
++/** WCAG AA para texto de UI denso (chips ≤14px se benefician de ≥4.5). */
++const CHIP_TEXT_MIN_CONTRAST = 4.5
++
++/**
++ * Oscurece el matiz de marca hasta legibilidad real sobre el fill del chip.
++ */
+ function getReadableTextFor(hex: string, backgroundRgb: Rgb) {
+   const bgLum = getLuminanceFromRgb(backgroundRgb)
+-  const MIN_CONTRAST = 5.5
+-  for (const amount of [0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.92, 0.96]) {
++
++  for (const amount of [
++    0.28, 0.36, 0.44, 0.52, 0.6, 0.68, 0.76, 0.84, 0.9, 0.94,
++  ]) {
+     const candidate = tintTowardBlack(hex, amount)
+     if (
+       contrastFromLuminances(getLuminanceFromRgb(candidate), bgLum) >=
+-      MIN_CONTRAST
++      CHIP_TEXT_MIN_CONTRAST
+     ) {
+       return rgbString(candidate)
+     }
+   }
+-  return "#111827"
+-}
+ 
+-function getSubtleText(hex: string) {
+-  const tint = readCssNumber("--chip-text-tint", 0.84)
+-  return rgbString(tintTowardWhite(hex, tint))
++  return bgLum >= 0.45 ? "#111827" : "#F9FAFB"
+ }
+ 
+ /**
+- * Texto del chip subtle — solo tinta, fill intacto.
+- * Fill oscuro: claro del matiz (legible y cercano al blanco si la variable lo indica).
+- * Fill claro: oscuro del matiz.
++ * Texto del chip subtle — fill intacto, ink con contraste garantizado.
++ * Fill claro → oscurece matiz. Fill oscuro → aclara matiz.
+  */
+ function getChipText(hex: string, backgroundRgb: Rgb) {
+   const bgLum = getLuminanceFromRgb(backgroundRgb)
++
+   if (bgLum < 0.45) {
+-    // SIN TOPE Math.min(..., 0.5): el token CSS --chip-text-tint manda libremente.
+-    const tint = readCssNumber("--chip-text-tint", 0.72)
+-    return rgbString(tintTowardWhite(hex, tint))
++    for (const amount of [
++      0.28, 0.36, 0.44, 0.52, 0.6, 0.68, 0.76, 0.84, 0.9, 0.94,
++    ]) {
++      const candidate = tintTowardWhite(hex, amount)
++      if (
++        contrastFromLuminances(getLuminanceFromRgb(candidate), bgLum) >=
++        CHIP_TEXT_MIN_CONTRAST
++      ) {
++        return rgbString(candidate)
++      }
++    }
++    return "#F9FAFB"
+   }
++
+   return getReadableTextFor(hex, backgroundRgb)
+ }
+ 
+@@ -269,4 +283,4 @@ export function getGlassSurface(hex: string, theme?: "light" | "dark") {
+     backgroundInset: `linear-gradient(135deg, ${rgbString(start)}, ${rgbString(end)})`,
+     ...ink,
+   }
+-}
+\ No newline at end of file
++}

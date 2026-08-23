@@ -1,6 +1,6 @@
 /**
- * Tokens del ToolSidebar — única fuente UX (Nesting + CAD plantillas).
- * Aside = única superficie. Contenido a ancho completo del aside (sin px extra).
+ * Tokens ToolSidebar — única fuente UX (Nesting + plantillas).
+ * Aside = única superficie. Contenido full width, plano.
  */
 export const TOOL_SIDEBAR_ASIDE =
   "flex h-full min-h-0 w-80 shrink-0 flex-col overflow-hidden rounded-2xl bg-muted p-3 shadow-xs dark:bg-foreground/5"
@@ -8,7 +8,6 @@ export const TOOL_SIDEBAR_ASIDE =
 export const TOOL_SIDEBAR_INNER =
   "flex h-full min-h-0 flex-col gap-3 overflow-hidden"
 
-/** Contenido plano a 100% del ancho interior del aside */
 export const TOOL_SIDEBAR_CONTENT_SCROLL =
   "min-h-0 w-full flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
 

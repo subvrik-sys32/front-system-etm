@@ -1,7 +1,7 @@
 "use client"
 
 import { forwardRef, memo, useEffect, useImperativeHandle, useRef, useState, useMemo } from "react"
-import { Import, FileWarning, AlertTriangle, Eye, Layers, Copy, Search, X, Trash2, Circle, Ruler, Box } from "lucide-react"
+import { Import, FileWarning, AlertTriangle, Eye, Layers, Copy, Search, X, Trash2, type LucideProps } from "lucide-react"
 import {
   EntityExpandedToggle,
   type EntityExpandedToggleOption,
@@ -56,12 +56,40 @@ export interface PieceListProps {
   highlightedIds?: Set<string>
 }
 
+
+function LetterIcon({
+  letter,
+  ...props
+}: LucideProps & { letter: string }) {
+  const size = typeof props.size === "number" ? props.size : 13
+  return (
+    <span
+      aria-hidden
+      className={props.className}
+      style={{
+        width: size,
+        height: size,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: Math.max(10, size - 1),
+        fontWeight: 700,
+        lineHeight: 1,
+      }}
+    >
+      {letter}
+    </span>
+  )
+}
+
+const IconEspesor = (props: LucideProps) => <LetterIcon letter="E" {...props} />
+const IconMaterial = (props: LucideProps) => <LetterIcon letter="M" {...props} />
+
 type GroupByType = "none" | "thickness" | "material"
 
-const GROUP_BY_OPTIONS: EntityExpandedToggleOption<GroupByType>[] = [
-  { value: "none", label: "Ninguno", icon: Circle },
-  { value: "thickness", label: "Espesor", icon: Ruler },
-  { value: "material", label: "Material", icon: Box },
+const GROUP_BY_OPTIONS: EntityExpandedToggleOption<"thickness" | "material">[] = [
+  { value: "thickness", label: "Espesor", icon: IconEspesor as never },
+  { value: "material", label: "Material", icon: IconMaterial as never },
 ]
 
 // Extensiones y tipos MIME amplios para garantizar compatibilidad total en iOS y Android
@@ -379,8 +407,14 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
             Agrupar
           </span>
           <EntityExpandedToggle
-            value={groupBy}
-            onChange={setGroupBy}
+            value={
+              groupBy === "none"
+                ? ("" as unknown as "thickness")
+                : groupBy
+            }
+            onChange={(v) =>
+              setGroupBy((prev) => (prev === v ? "none" : v))
+            }
             options={GROUP_BY_OPTIONS}
           />
         </div>

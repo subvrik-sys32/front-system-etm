@@ -3,15 +3,8 @@
 import type { ReactNode } from "react"
 import { LayoutGrid, Layers, Info, SlidersHorizontal } from "lucide-react"
 
-import {
-  TOOL_SIDEBAR_CONTENT_FILL,
-  TOOL_SIDEBAR_CONTENT_SCROLL,
-  TOOL_SIDEBAR_INNER,
-} from "@/shared/ui/tool-side-panel/chrome"
-import {
-  EntityExpandedToggle,
-  type EntityExpandedToggleOption,
-} from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
+import type { EntityExpandedToggleOption } from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
+import { ToolSidebar } from "@/shared/ui/tool-side-panel"
 
 export type NestingPanelView =
   | "sheet-pieces"
@@ -40,11 +33,6 @@ export interface NestingPanelProps {
   footer?: ReactNode
 }
 
-/**
- * Panel lateral nesting.
- * Zona de contenido: min-h-0 + overflow-y-auto (única fuente de scroll).
- * Footer (Nestear) siempre visible fuera del scroller.
- */
 export function NestingPanel({
   activePanel,
   onActivePanelChange,
@@ -55,37 +43,21 @@ export function NestingPanel({
   footer,
 }: NestingPanelProps) {
   return (
-    <div className={TOOL_SIDEBAR_INNER}>
-      <EntityExpandedToggle
-        value={activePanel}
-        onChange={onActivePanelChange}
-        options={PANEL_OPTIONS}
-      />
-
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        {activePanel === "sheet-pieces" && (
-          <div className={TOOL_SIDEBAR_CONTENT_FILL}>
-            {pieces}
-          </div>
-        )}
-        {activePanel === "project-material" && (
-          <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
-            {projectMaterial}
-          </div>
-        )}
-        {activePanel === "layers" && (
-          <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
-            {layers}
-          </div>
-        )}
-        {activePanel === "inspector" && (
-          <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
-            {inspector}
-          </div>
-        )}
-      </div>
-
-      {footer && <div className="mt-auto shrink-0 pt-1">{footer}</div>}
-    </div>
+    <ToolSidebar
+      value={activePanel}
+      onChange={onActivePanelChange}
+      options={PANEL_OPTIONS}
+      footer={footer}
+      panels={[
+        { value: "sheet-pieces", overflow: "fill", content: pieces },
+        {
+          value: "project-material",
+          overflow: "scroll",
+          content: projectMaterial,
+        },
+        { value: "layers", overflow: "scroll", content: layers },
+        { value: "inspector", overflow: "scroll", content: inspector },
+      ]}
+    />
   )
 }

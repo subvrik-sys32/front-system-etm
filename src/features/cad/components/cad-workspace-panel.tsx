@@ -21,19 +21,13 @@ import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-he
 
 import { cn } from "@/shared/utils/utils"
 import {
-  TOOL_SIDEBAR_ASIDE,
-  TOOL_SIDEBAR_INNER,
-  TOOL_SIDEBAR_CONTENT_SCROLL,
-  TOOL_SIDE_SECTION,
+  ToolSidebar,
   TOOL_SIDE_SECTION_TITLE,
   TOOL_SIDE_FIELD_LABEL,
   TOOL_SIDE_INPUT_CENTER,
   TOOL_SIDE_INPUT,
-} from "@/shared/ui/tool-side-panel/chrome"
-import {
-  EntityExpandedToggle,
-  type EntityExpandedToggleOption,
-} from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
+} from "@/shared/ui/tool-side-panel"
+import type { EntityExpandedToggleOption } from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
 import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
 import { toast } from "sonner"
 import { cadPieceApi } from "../api/cad-piece.api"
@@ -276,12 +270,8 @@ export function CadWorkspacePanel({
   const plate = mode === "plate"
 
   const paramsBody = (
-    <div className="flex flex-col gap-3">
-      <div className={TOOL_SIDE_SECTION}>
-        <div className="px-2 py-2">
-          <span className={TOOL_SIDE_SECTION_TITLE}>Parámetros · mm</span>
-        </div>
-        <div className="flex flex-col gap-2 px-2 pb-2">
+    <div className="flex w-full flex-col gap-3">
+      <p className={TOOL_SIDE_SECTION_TITLE}>Parámetros · mm</p>
 
           {tira && (
             <>
@@ -679,17 +669,7 @@ export function CadWorkspacePanel({
             </p>
           )}
         
-        </div>
-      </div>
     </div>
-  )
-
-  const modeToggle = (
-    <EntityExpandedToggle
-      value={mode}
-      onChange={switchMode}
-      options={TEMPLATE_TOGGLE_OPTIONS}
-    />
   )
 
   const actionClass =
@@ -772,11 +752,24 @@ export function CadWorkspacePanel({
     </div>
   )
 
+
+  const sidePanel = (
+    <ToolSidebar
+      value={mode}
+      onChange={switchMode}
+      options={TEMPLATE_TOGGLE_OPTIONS}
+      panels={[
+        { value: "tira", overflow: "scroll", content: paramsBody },
+        { value: "malla", overflow: "scroll", content: paramsBody },
+        { value: "plate", overflow: "scroll", content: paramsBody },
+      ]}
+    />
+  )
+
   if (isMobileLayout) {
     return (
       <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-3 pt-2">
-          {modeToggle}
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 px-3 pt-2">
           {actionBtns}
         </div>
         <div className="relative min-h-0 flex-1 overflow-hidden p-2 pt-2">
@@ -788,10 +781,21 @@ export function CadWorkspacePanel({
             className="flex h-[min(92dvh,100%)] max-h-[min(92dvh,100%)] w-[calc(100vw-1.5rem)] max-w-lg flex-col gap-0 overflow-hidden rounded-2xl border-none bg-popover p-0 text-foreground shadow-xs"
           >
             <div className="shrink-0">
-              <FormDialogHeader title="Parámetros de plantilla" icon={SlidersHorizontal} />
+              <FormDialogHeader title="Plantilla" icon={SlidersHorizontal} />
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-              <div className="flex flex-col gap-3">{paramsBody}</div>
+            <div className="min-h-0 flex-1 overflow-hidden p-3">
+              <ToolSidebar
+                value={mode}
+                onChange={switchMode}
+                options={TEMPLATE_TOGGLE_OPTIONS}
+                widthClassName="w-full"
+                className="h-full"
+                panels={[
+                  { value: "tira", overflow: "scroll", content: paramsBody },
+                  { value: "malla", overflow: "scroll", content: paramsBody },
+                  { value: "plate", overflow: "scroll", content: paramsBody },
+                ]}
+              />
             </div>
           </DialogContent>
         </Dialog>
@@ -799,21 +803,13 @@ export function CadWorkspacePanel({
     )
   }
 
-  // Desktop: mismo chrome que Nesting (aside + toggle dentro + content)
   return (
     <div
       className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden"
       style={{ paddingTop: chromeInset.paddingTop }}
     >
       <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 p-2">
-        <aside className={TOOL_SIDEBAR_ASIDE}>
-          <div className={TOOL_SIDEBAR_INNER}>
-            {modeToggle}
-            <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
-              {paramsBody}
-            </div>
-          </div>
-        </aside>
+        {sidePanel}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
             {actionBtns}

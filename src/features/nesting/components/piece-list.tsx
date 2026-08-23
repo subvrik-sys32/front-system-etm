@@ -321,7 +321,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
       )}
 
       {/* Cabecera con título, contador y acciones globales */}
-      <div className="mb-2 flex shrink-0 items-center justify-between px-3">
+      <div className="mb-2 flex w-full shrink-0 items-center justify-between">
         <div className="flex items-center gap-2">
           <Layers className="h-3.5 w-3.5 text-primary" />
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Piezas</h2>
@@ -357,8 +357,8 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
       </div>
 
       {rows.length > 0 && (
-        <div className="relative mb-2 shrink-0 px-3">
-          <Search className="pointer-events-none absolute left-5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <div className="relative mb-2 w-full shrink-0">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Buscar..."
             value={searchQuery}
@@ -366,7 +366,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
             className="h-8 bg-foreground/5 pl-7 pr-7 text-xs border-none focus-visible:ring-1 focus-visible:ring-ring"
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery("")} className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
               <X className="h-3.5 w-3.5" />
             </button>
           )}
@@ -374,7 +374,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
       )}
 
       {rows.length > 0 && (
-        <div className="mb-2 flex shrink-0 items-center gap-2 px-3">
+        <div className="mb-2 flex w-full shrink-0 items-center gap-2">
           <span className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
             Agrupar
           </span>

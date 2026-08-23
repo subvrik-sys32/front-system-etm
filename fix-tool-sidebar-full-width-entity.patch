@@ -1,0 +1,456 @@
+diff --git a/src/features/cad/components/cad-workspace-panel.tsx b/src/features/cad/components/cad-workspace-panel.tsx
+index c610479..78e87a5 100644
+--- a/src/features/cad/components/cad-workspace-panel.tsx
++++ b/src/features/cad/components/cad-workspace-panel.tsx
+@@ -21,19 +21,13 @@ import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-he
+ 
+ import { cn } from "@/shared/utils/utils"
+ import {
+-  TOOL_SIDEBAR_ASIDE,
+-  TOOL_SIDEBAR_INNER,
+-  TOOL_SIDEBAR_CONTENT_SCROLL,
+-  TOOL_SIDE_SECTION,
++  ToolSidebar,
+   TOOL_SIDE_SECTION_TITLE,
+   TOOL_SIDE_FIELD_LABEL,
+   TOOL_SIDE_INPUT_CENTER,
+   TOOL_SIDE_INPUT,
+-} from "@/shared/ui/tool-side-panel/chrome"
+-import {
+-  EntityExpandedToggle,
+-  type EntityExpandedToggleOption,
+-} from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
++} from "@/shared/ui/tool-side-panel"
++import type { EntityExpandedToggleOption } from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
+ import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
+ import { toast } from "sonner"
+ import { cadPieceApi } from "../api/cad-piece.api"
+@@ -276,12 +270,8 @@ export function CadWorkspacePanel({
+   const plate = mode === "plate"
+ 
+   const paramsBody = (
+-    <div className="flex flex-col gap-3">
+-      <div className={TOOL_SIDE_SECTION}>
+-        <div className="px-2 py-2">
+-          <span className={TOOL_SIDE_SECTION_TITLE}>Parámetros · mm</span>
+-        </div>
+-        <div className="flex flex-col gap-2 px-2 pb-2">
++    <div className="flex w-full flex-col gap-3">
++      <p className={TOOL_SIDE_SECTION_TITLE}>Parámetros · mm</p>
+ 
+           {tira && (
+             <>
+@@ -679,19 +669,9 @@ export function CadWorkspacePanel({
+             </p>
+           )}
+         
+-        </div>
+-      </div>
+     </div>
+   )
+ 
+-  const modeToggle = (
+-    <EntityExpandedToggle
+-      value={mode}
+-      onChange={switchMode}
+-      options={TEMPLATE_TOGGLE_OPTIONS}
+-    />
+-  )
+-
+   const actionClass =
+     "inline-flex h-8 items-center gap-1.5 rounded-xl bg-foreground/5 px-3 text-xs font-semibold text-foreground/80 transition hover:bg-foreground/10 hover:text-foreground disabled:opacity-50"
+ 
+@@ -772,11 +752,24 @@ export function CadWorkspacePanel({
+     </div>
+   )
+ 
++
++  const sidePanel = (
++    <ToolSidebar
++      value={mode}
++      onChange={switchMode}
++      options={TEMPLATE_TOGGLE_OPTIONS}
++      panels={[
++        { value: "tira", overflow: "scroll", content: paramsBody },
++        { value: "malla", overflow: "scroll", content: paramsBody },
++        { value: "plate", overflow: "scroll", content: paramsBody },
++      ]}
++    />
++  )
++
+   if (isMobileLayout) {
+     return (
+       <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-3 pt-2">
+-          {modeToggle}
++        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 px-3 pt-2">
+           {actionBtns}
+         </div>
+         <div className="relative min-h-0 flex-1 overflow-hidden p-2 pt-2">
+@@ -788,10 +781,21 @@ export function CadWorkspacePanel({
+             className="flex h-[min(92dvh,100%)] max-h-[min(92dvh,100%)] w-[calc(100vw-1.5rem)] max-w-lg flex-col gap-0 overflow-hidden rounded-2xl border-none bg-popover p-0 text-foreground shadow-xs"
+           >
+             <div className="shrink-0">
+-              <FormDialogHeader title="Parámetros de plantilla" icon={SlidersHorizontal} />
++              <FormDialogHeader title="Plantilla" icon={SlidersHorizontal} />
+             </div>
+-            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+-              <div className="flex flex-col gap-3">{paramsBody}</div>
++            <div className="min-h-0 flex-1 overflow-hidden p-3">
++              <ToolSidebar
++                value={mode}
++                onChange={switchMode}
++                options={TEMPLATE_TOGGLE_OPTIONS}
++                widthClassName="w-full"
++                className="h-full"
++                panels={[
++                  { value: "tira", overflow: "scroll", content: paramsBody },
++                  { value: "malla", overflow: "scroll", content: paramsBody },
++                  { value: "plate", overflow: "scroll", content: paramsBody },
++                ]}
++              />
+             </div>
+           </DialogContent>
+         </Dialog>
+@@ -799,21 +803,13 @@ export function CadWorkspacePanel({
+     )
+   }
+ 
+-  // Desktop: mismo chrome que Nesting (aside + toggle dentro + content)
+   return (
+     <div
+       className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden"
+       style={{ paddingTop: chromeInset.paddingTop }}
+     >
+       <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 p-2">
+-        <aside className={TOOL_SIDEBAR_ASIDE}>
+-          <div className={TOOL_SIDEBAR_INNER}>
+-            {modeToggle}
+-            <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
+-              {paramsBody}
+-            </div>
+-          </div>
+-        </aside>
++        {sidePanel}
+         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
+           <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+             {actionBtns}
+diff --git a/src/features/nesting/components/nesting-page.tsx b/src/features/nesting/components/nesting-page.tsx
+index 7880ae0..b87462f 100644
+--- a/src/features/nesting/components/nesting-page.tsx
++++ b/src/features/nesting/components/nesting-page.tsx
+@@ -51,7 +51,6 @@ import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { computeLayerList, type NestingPieceInput } from "./dxf-canvas/dxf-canvas"
+ import { LayerManager } from "./layer-manager"
+ import { NestingPanel, type NestingPanelView } from "./nesting-panel"
+-import { TOOL_SIDEBAR_ASIDE } from "@/shared/ui/tool-side-panel/chrome"
+ import { consumeCadImportSignal } from "@/features/cad/pending-nesting-pieces"
+ import { NestingConfirmDialog } from "./nesting-confirm-dialog"
+ 
+@@ -604,7 +603,7 @@ export function NestingPage() {
+       footer={nestFooter}
+       pieces={<PieceList ref={pieceListRef} {...pieceListProps} />}
+       projectMaterial={
+-        <div className="flex flex-col gap-3 px-3 pb-3 pt-1">
++        <div className="flex w-full flex-col gap-3">
+             <MaterialPanel
+               settings={project.settings}
+               onChange={project.onSettingsChange}
+@@ -625,7 +624,7 @@ export function NestingPage() {
+         </div>
+       }
+       layers={
+-        <div className="flex flex-col gap-3 px-3 pb-3 pt-1">
++        <div className="flex w-full flex-col gap-3">
+             <LayerManager
+               layers={layerList}
+               hiddenKeys={hiddenLayerKeys}
+@@ -635,7 +634,7 @@ export function NestingPage() {
+         </div>
+       }
+       inspector={
+-        <div className="flex flex-col gap-3 px-3 pb-3 pt-1">
++        <div className="flex w-full flex-col gap-3">
+             <PropertiesPanel
+               sheetStats={sheetStats}
+               selectedPiece={selectedPiece}
+@@ -715,9 +714,7 @@ export function NestingPage() {
+       {/* —— Desktop: sidebar + canvas —— */}
+       {!isCompact && (
+         <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3">
+-          <aside className={TOOL_SIDEBAR_ASIDE}>
+-            {panel}
+-          </aside>
++          {panel}
+           <div
+             className={
+               project.sheetGroups.length > 0
+diff --git a/src/features/nesting/components/nesting-panel.tsx b/src/features/nesting/components/nesting-panel.tsx
+index 8e21755..b41de68 100644
+--- a/src/features/nesting/components/nesting-panel.tsx
++++ b/src/features/nesting/components/nesting-panel.tsx
+@@ -3,15 +3,8 @@
+ import type { ReactNode } from "react"
+ import { LayoutGrid, Layers, Info, SlidersHorizontal } from "lucide-react"
+ 
+-import {
+-  TOOL_SIDEBAR_CONTENT_FILL,
+-  TOOL_SIDEBAR_CONTENT_SCROLL,
+-  TOOL_SIDEBAR_INNER,
+-} from "@/shared/ui/tool-side-panel/chrome"
+-import {
+-  EntityExpandedToggle,
+-  type EntityExpandedToggleOption,
+-} from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
++import type { EntityExpandedToggleOption } from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
++import { ToolSidebar } from "@/shared/ui/tool-side-panel"
+ 
+ export type NestingPanelView =
+   | "sheet-pieces"
+@@ -40,11 +33,6 @@ export interface NestingPanelProps {
+   footer?: ReactNode
+ }
+ 
+-/**
+- * Panel lateral nesting.
+- * Zona de contenido: min-h-0 + overflow-y-auto (única fuente de scroll).
+- * Footer (Nestear) siempre visible fuera del scroller.
+- */
+ export function NestingPanel({
+   activePanel,
+   onActivePanelChange,
+@@ -55,37 +43,21 @@ export function NestingPanel({
+   footer,
+ }: NestingPanelProps) {
+   return (
+-    <div className={TOOL_SIDEBAR_INNER}>
+-      <EntityExpandedToggle
+-        value={activePanel}
+-        onChange={onActivePanelChange}
+-        options={PANEL_OPTIONS}
+-      />
+-
+-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+-        {activePanel === "sheet-pieces" && (
+-          <div className={TOOL_SIDEBAR_CONTENT_FILL}>
+-            {pieces}
+-          </div>
+-        )}
+-        {activePanel === "project-material" && (
+-          <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
+-            {projectMaterial}
+-          </div>
+-        )}
+-        {activePanel === "layers" && (
+-          <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
+-            {layers}
+-          </div>
+-        )}
+-        {activePanel === "inspector" && (
+-          <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
+-            {inspector}
+-          </div>
+-        )}
+-      </div>
+-
+-      {footer && <div className="mt-auto shrink-0 pt-1">{footer}</div>}
+-    </div>
++    <ToolSidebar
++      value={activePanel}
++      onChange={onActivePanelChange}
++      options={PANEL_OPTIONS}
++      footer={footer}
++      panels={[
++        { value: "sheet-pieces", overflow: "fill", content: pieces },
++        {
++          value: "project-material",
++          overflow: "scroll",
++          content: projectMaterial,
++        },
++        { value: "layers", overflow: "scroll", content: layers },
++        { value: "inspector", overflow: "scroll", content: inspector },
++      ]}
++    />
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/features/nesting/components/piece-list.tsx b/src/features/nesting/components/piece-list.tsx
+index 6890bab..a85a96f 100644
+--- a/src/features/nesting/components/piece-list.tsx
++++ b/src/features/nesting/components/piece-list.tsx
+@@ -321,7 +321,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
+       )}
+ 
+       {/* Cabecera con título, contador y acciones globales */}
+-      <div className="mb-2 flex shrink-0 items-center justify-between px-3">
++      <div className="mb-2 flex w-full shrink-0 items-center justify-between">
+         <div className="flex items-center gap-2">
+           <Layers className="h-3.5 w-3.5 text-primary" />
+           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Piezas</h2>
+@@ -357,8 +357,8 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
+       </div>
+ 
+       {rows.length > 0 && (
+-        <div className="relative mb-2 shrink-0 px-3">
+-          <Search className="pointer-events-none absolute left-5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
++        <div className="relative mb-2 w-full shrink-0">
++          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+           <Input
+             placeholder="Buscar..."
+             value={searchQuery}
+@@ -366,7 +366,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
+             className="h-8 bg-foreground/5 pl-7 pr-7 text-xs border-none focus-visible:ring-1 focus-visible:ring-ring"
+           />
+           {searchQuery && (
+-            <button onClick={() => setSearchQuery("")} className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
++            <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+               <X className="h-3.5 w-3.5" />
+             </button>
+           )}
+@@ -374,7 +374,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
+       )}
+ 
+       {rows.length > 0 && (
+-        <div className="mb-2 flex shrink-0 items-center gap-2 px-3">
++        <div className="mb-2 flex w-full shrink-0 items-center gap-2">
+           <span className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+             Agrupar
+           </span>
+diff --git a/src/shared/ui/tool-side-panel/chrome.ts b/src/shared/ui/tool-side-panel/chrome.ts
+index 79239db..60065ca 100644
+--- a/src/shared/ui/tool-side-panel/chrome.ts
++++ b/src/shared/ui/tool-side-panel/chrome.ts
+@@ -1,6 +1,6 @@
+ /**
+- * Chrome visual del sidebar de herramienta (Nesting desktop).
+- * Única fuente — Nesting y CAD plantillas deben usar estas clases.
++ * Tokens del ToolSidebar — única fuente UX (Nesting + CAD plantillas).
++ * Aside = única superficie. Contenido a ancho completo del aside (sin px extra).
+  */
+ export const TOOL_SIDEBAR_ASIDE =
+   "flex h-full min-h-0 w-80 shrink-0 flex-col overflow-hidden rounded-2xl bg-muted p-3 shadow-xs dark:bg-foreground/5"
+@@ -8,16 +8,12 @@ export const TOOL_SIDEBAR_ASIDE =
+ export const TOOL_SIDEBAR_INNER =
+   "flex h-full min-h-0 flex-col gap-3 overflow-hidden"
+ 
+-/** Superficie de contenido bajo el toggle (tabs). */
++/** Contenido plano a 100% del ancho interior del aside */
+ export const TOOL_SIDEBAR_CONTENT_SCROLL =
+-  "min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]"
++  "min-h-0 w-full flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+ 
+ export const TOOL_SIDEBAR_CONTENT_FILL =
+-  "flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]"
+-
+-/** Sección colapsable (PROYECTO / CONFIG / PARÁMETROS) */
+-export const TOOL_SIDE_SECTION =
+-  "flex flex-col rounded-xl bg-muted/80 p-1 transition-colors dark:bg-foreground/5"
++  "flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+ 
+ export const TOOL_SIDE_SECTION_TITLE =
+   "text-xs font-semibold uppercase tracking-widest text-muted-foreground"
+@@ -25,7 +21,6 @@ export const TOOL_SIDE_SECTION_TITLE =
+ export const TOOL_SIDE_FIELD_LABEL =
+   "text-xs font-medium text-muted-foreground"
+ 
+-/** Input del sidebar — text-xs, misma huella Nesting */
+ export const TOOL_SIDE_INPUT =
+   "h-9 w-full rounded-lg border-0 bg-background/50 px-3 text-xs text-foreground outline-none ring-0 focus-visible:ring-1 focus-visible:ring-primary/30"
+ 
+diff --git a/src/shared/ui/tool-side-panel/index.ts b/src/shared/ui/tool-side-panel/index.ts
+new file mode 100644
+index 0000000..616b5c1
+--- /dev/null
++++ b/src/shared/ui/tool-side-panel/index.ts
+@@ -0,0 +1,12 @@
++export { ToolSidebar } from "./tool-sidebar"
++export type { ToolSidebarPanel, ToolSidebarProps } from "./tool-sidebar"
++export {
++  TOOL_SIDEBAR_ASIDE,
++  TOOL_SIDEBAR_INNER,
++  TOOL_SIDEBAR_CONTENT_SCROLL,
++  TOOL_SIDEBAR_CONTENT_FILL,
++  TOOL_SIDE_SECTION_TITLE,
++  TOOL_SIDE_FIELD_LABEL,
++  TOOL_SIDE_INPUT,
++  TOOL_SIDE_INPUT_CENTER,
++} from "./chrome"
+diff --git a/src/shared/ui/tool-side-panel/tool-sidebar.tsx b/src/shared/ui/tool-side-panel/tool-sidebar.tsx
+new file mode 100644
+index 0000000..e10790e
+--- /dev/null
++++ b/src/shared/ui/tool-side-panel/tool-sidebar.tsx
+@@ -0,0 +1,72 @@
++"use client"
++
++import type { ReactNode } from "react"
++
++import {
++  EntityExpandedToggle,
++  type EntityExpandedToggleOption,
++} from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
++import { cn } from "@/shared/utils/utils"
++import {
++  TOOL_SIDEBAR_ASIDE,
++  TOOL_SIDEBAR_CONTENT_FILL,
++  TOOL_SIDEBAR_CONTENT_SCROLL,
++  TOOL_SIDEBAR_INNER,
++} from "./chrome"
++
++export type ToolSidebarPanel<T extends string> = {
++  value: T
++  content: ReactNode
++  overflow?: "fill" | "scroll"
++}
++
++export type ToolSidebarProps<T extends string> = {
++  value: T
++  onChange: (value: T) => void
++  options: EntityExpandedToggleOption<T>[]
++  panels: ToolSidebarPanel<T>[]
++  footer?: ReactNode
++  className?: string
++  widthClassName?: string
++}
++
++/**
++ * Única entidad UX de sidebar de herramienta.
++ * Nesting y plantillas solo pasan options + content.
++ */
++export function ToolSidebar<T extends string>({
++  value,
++  onChange,
++  options,
++  panels,
++  footer,
++  className,
++  widthClassName,
++}: ToolSidebarProps<T>) {
++  const active = panels.find(p => p.value === value) ?? panels[0]
++  const overflow = active?.overflow ?? "scroll"
++
++  return (
++    <aside className={cn(TOOL_SIDEBAR_ASIDE, widthClassName, className)}>
++      <div className={TOOL_SIDEBAR_INNER}>
++        <EntityExpandedToggle
++          value={value}
++          onChange={onChange}
++          options={options}
++        />
++        <div
++          className={
++            overflow === "fill"
++              ? TOOL_SIDEBAR_CONTENT_FILL
++              : TOOL_SIDEBAR_CONTENT_SCROLL
++          }
++        >
++          {active?.content ?? null}
++        </div>
++        {footer ? (
++          <div className="mt-auto w-full shrink-0 pt-1">{footer}</div>
++        ) : null}
++      </div>
++    </aside>
++  )
++}

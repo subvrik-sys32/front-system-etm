@@ -51,7 +51,6 @@ import { Spinner } from "@/shared/ui/spinner/spinner"
 import { computeLayerList, type NestingPieceInput } from "./dxf-canvas/dxf-canvas"
 import { LayerManager } from "./layer-manager"
 import { NestingPanel, type NestingPanelView } from "./nesting-panel"
-import { TOOL_SIDEBAR_ASIDE } from "@/shared/ui/tool-side-panel/chrome"
 import { consumeCadImportSignal } from "@/features/cad/pending-nesting-pieces"
 import { NestingConfirmDialog } from "./nesting-confirm-dialog"
 
@@ -604,7 +603,7 @@ export function NestingPage() {
       footer={nestFooter}
       pieces={<PieceList ref={pieceListRef} {...pieceListProps} />}
       projectMaterial={
-        <div className="flex flex-col gap-3 px-3 pb-3 pt-1">
+        <div className="flex w-full flex-col gap-3">
             <MaterialPanel
               settings={project.settings}
               onChange={project.onSettingsChange}
@@ -625,7 +624,7 @@ export function NestingPage() {
         </div>
       }
       layers={
-        <div className="flex flex-col gap-3 px-3 pb-3 pt-1">
+        <div className="flex w-full flex-col gap-3">
             <LayerManager
               layers={layerList}
               hiddenKeys={hiddenLayerKeys}
@@ -635,7 +634,7 @@ export function NestingPage() {
         </div>
       }
       inspector={
-        <div className="flex flex-col gap-3 px-3 pb-3 pt-1">
+        <div className="flex w-full flex-col gap-3">
             <PropertiesPanel
               sheetStats={sheetStats}
               selectedPiece={selectedPiece}
@@ -715,9 +714,7 @@ export function NestingPage() {
       {/* —— Desktop: sidebar + canvas —— */}
       {!isCompact && (
         <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3">
-          <aside className={TOOL_SIDEBAR_ASIDE}>
-            {panel}
-          </aside>
+          {panel}
           <div
             className={
               project.sheetGroups.length > 0

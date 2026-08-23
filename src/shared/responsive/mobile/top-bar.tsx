@@ -91,7 +91,7 @@ export function TopBar() {
             </span>
           </div>
           {toolbar ? (
-            <div className="flex min-w-0 items-center gap-1 overflow-visible">
+            <div className="flex min-w-0 items-center gap-1 overflow-visible transition-opacity duration-300 ease-out">
               {toolbar}
             </div>
           ) : null}

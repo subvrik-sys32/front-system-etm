@@ -32,11 +32,14 @@ export function PageShell({
   const insetFill = useChromeInset({ bottom: true })
   const insetBleed = useChromeInset({ bottom: true })
 
-  // bleed no-immersive: reserva bottom del chrome.
-  // immersive (/cad, /nesting): el slot ya recorta top/bottom — no sumar pad.
+  // bleed no-immersive (desktop CAD): reserva top+bottom del chrome overlay.
+  // immersive (/cad, /nesting mobile): el slot ya recorta top/bottom — no sumar pad.
   const bleedStyle =
     mode === "bleed" && !immersive
-      ? { paddingBottom: insetBleed.paddingBottom }
+      ? {
+          paddingTop: insetBleed.paddingTop,
+          paddingBottom: insetBleed.paddingBottom,
+        }
       : undefined
 
   return (

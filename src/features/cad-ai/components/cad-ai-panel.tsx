@@ -200,7 +200,7 @@ export function CadAiPanel({
 
         <div
           className="relative z-10 flex min-h-0 w-full flex-1 flex-col"
-          style={isMobileLayout ? undefined : { paddingTop: chromeInset.paddingTop }}
+          style={isMobileLayout ? undefined : { paddingTop: chromeInset.paddingTop ?? 64 }}
         >
           {error && (
             <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
@@ -268,7 +268,7 @@ export function CadAiPanel({
 
       <div
         className="relative z-10 flex h-full min-h-0 w-full flex-1 flex-col"
-        style={isMobileLayout ? undefined : { paddingTop: chromeInset.paddingTop }}
+        style={isMobileLayout ? undefined : { paddingTop: chromeInset.paddingTop ?? 64 }}
       >
         {error && (
           <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">

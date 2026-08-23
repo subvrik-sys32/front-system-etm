@@ -135,7 +135,6 @@ export function UploadZone({
           >
             {empty ? (
               <div className="flex min-h-0 flex-1 flex-col gap-3">
-                {/* Título solo portrait móvil */}
                 {compactChrome && !phoneLand && (
                   <div className="shrink-0 text-center">
                     <p className="text-sm font-semibold text-foreground">
@@ -147,7 +146,7 @@ export function UploadZone({
                   </div>
                 )}
 
-                {/* Landscape / desktop: drop con texto corto + fila de 3 chips */}
+                {/* Desktop / tablet / landscape: drop + fila de 3 chips */}
                 {phoneLand || !isMobile ? (
                   <div className="flex min-h-0 flex-1 flex-col gap-2">
                     <button
@@ -172,6 +171,7 @@ export function UploadZone({
                       </span>
                     </button>
 
+                    {/* Desktop/tablet: icono + texto si hay altura; phone landscape: solo icono */}
                     <div className="grid shrink-0 grid-cols-3 gap-1.5">
                       {CHIPS.map(c => (
                         <button
@@ -184,9 +184,17 @@ export function UploadZone({
                             e.stopPropagation()
                             onGenerate(c.text)
                           }}
-                          className="flex min-h-11 items-center justify-center rounded-xl bg-foreground/5 px-2 py-2 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+                          className={cn(
+                            "flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-foreground/5 px-2 py-2 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground",
+                            !phoneLand && "flex-col sm:flex-row sm:justify-start sm:px-3",
+                          )}
                         >
                           <c.icon className="size-4 shrink-0" />
+                          {!phoneLand && (
+                            <span className="line-clamp-2 text-left text-[11px] leading-tight sm:text-xs">
+                              {c.text}
+                            </span>
+                          )}
                         </button>
                       ))}
                     </div>

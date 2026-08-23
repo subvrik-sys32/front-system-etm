@@ -67,9 +67,9 @@ function TopbarRoundButton({
 }
 
 /**
- * Móvil + tablet: slot immersive.
- * Landscape: toggle + Skills + settings en TopBar (botones redondos chrome).
- * Portrait: fila bajo TopBar; Skills/settings redondos a la derecha.
+ * Móvil + tablet: slot immersive (AppShell ya recorta top bajo el TopBar).
+ * Landscape: Skills → toggle → settings en TopBar (fade al rotar a portrait).
+ * Portrait: fila bajo el slot; Skills/settings a la derecha.
  */
 function CadPageCompact() {
   usePageTitle("CAD")
@@ -84,16 +84,25 @@ function CadPageCompact() {
 
   const openSkills = useCallback(() => openSkillsRef.current?.(), [])
 
-  const landscapeToolbar = useMemo(() => {
-    if (!isLandscape) return null
-    return (
-      <div className="flex items-center gap-1">
-        <CadTabs tab={tab} onTabChange={setTab} compact iconsOnly />
+  // Siempre montado para poder animar opacity al rotar; en portrait queda invisible.
+  const chromeToolbar = useMemo(
+    () => (
+      <div
+        className={cn(
+          "flex items-center gap-1 overflow-hidden transition-[opacity,max-width,margin] duration-300 ease-out",
+          isLandscape
+            ? "max-w-[24rem] opacity-100"
+            : "pointer-events-none max-w-0 opacity-0",
+        )}
+        aria-hidden={!isLandscape}
+      >
+        {/* Orden: Skills primero, luego toggle */}
         {tab === "ai" && (
           <TopbarRoundButton onClick={openSkills} label="Skills" title="Skills">
             <Layers size={16} strokeWidth={2.2} />
           </TopbarRoundButton>
         )}
+        <CadTabs tab={tab} onTabChange={setTab} compact iconsOnly />
         {tab === "ai" && hasVisualizer && (
           <TopbarRoundButton
             onClick={() => setAiPanelOpen(true)}
@@ -104,15 +113,16 @@ function CadPageCompact() {
           </TopbarRoundButton>
         )}
       </div>
-    )
-  }, [isLandscape, tab, openSkills, hasVisualizer])
+    ),
+    [isLandscape, tab, openSkills, hasVisualizer],
+  )
 
-  usePageToolbar(landscapeToolbar)
+  usePageToolbar(chromeToolbar)
 
   return (
     <PageShell mode="bleed">
-      <section className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
-        {/* Portrait: toggle + Skills/settings redondos. Landscape: todo en TopBar */}
+      {/* overflow-hidden: nada se dibuja bajo el TopBar (el slot immersive ya recorta) */}
+      <section className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
         {!isLandscape && (
           <div className="relative z-[1] mb-1.5 flex h-11 shrink-0 items-center overflow-visible px-2">
             <div className="flex min-w-0 flex-1 items-center justify-center">
@@ -120,12 +130,7 @@ function CadPageCompact() {
             </div>
 
             {tab === "ai" && (
-              <div
-                className={cn(
-                  "absolute top-1/2 z-[2] flex -translate-y-1/2 items-center gap-1.5",
-                  "right-2",
-                )}
-              >
+              <div className="absolute right-2 top-1/2 z-[2] flex -translate-y-1/2 items-center gap-1.5">
                 <TopbarRoundButton onClick={openSkills} label="Skills" title="Skills">
                   <Layers size={16} strokeWidth={2.2} />
                 </TopbarRoundButton>
@@ -171,7 +176,7 @@ function CadPageDesktop() {
 
   usePageToolbar(
     <div className="flex items-center gap-1.5">
-      <CadTabs tab={tab} onTabChange={setTab} />
+      {/* Skills primero, luego toggle */}
       {tab === "ai" && (
         <TopbarRoundButton
           onClick={() => openSkillsRef.current?.()}
@@ -181,6 +186,7 @@ function CadPageDesktop() {
           <Layers size={16} strokeWidth={2.2} />
         </TopbarRoundButton>
       )}
+      <CadTabs tab={tab} onTabChange={setTab} />
     </div>,
   )
 

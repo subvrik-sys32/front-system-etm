@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react"
 import { SlidersHorizontal } from "lucide-react"
 import { Spinner } from "@/shared/ui/spinner/spinner"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
 import { cn } from "@/shared/utils/utils"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-header"
@@ -51,6 +52,11 @@ export function CadAiPanel({
   onRegisterOpenSkills?: (open: () => void) => void
 } = {}) {
   const isMobileLayout = layout === "mobile"
+  // Same SSOT as AppListScroll: clear DesktopTopBar on tablet/desktop.
+  // CompactShell immersive already offsets with top: TOP_BAR — skip there.
+  const { isMobile: isMobileShell } = useResponsive()
+  const chromeInset = useChromeInset({ bottom: false })
+  const contentInsetStyle = isMobileShell ? undefined : chromeInset
   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
   const [dxf, setDxf] = useState<string>("")
   const [imagePath, setImagePath] = useState<string | null>(null)
@@ -198,7 +204,10 @@ export function CadAiPanel({
         )}
 
         {/* Contenido: inset top solo fuera de CompactShell */}
-        <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+        <div
+          className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+          style={contentInsetStyle}
+        >
           {error && (
             <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
               <span className="truncate">{error}</span>
@@ -262,7 +271,10 @@ export function CadAiPanel({
         </div>
       )}
 
-      <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <div
+        className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+        style={contentInsetStyle}
+      >
         {error && (
           <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
             <span className="truncate">{error}</span>

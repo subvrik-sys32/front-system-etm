@@ -1,0 +1,100 @@
+diff --git a/src/features/cad-ai/components/cad-ai-panel.tsx b/src/features/cad-ai/components/cad-ai-panel.tsx
+index 85e9885..16c0c51 100644
+--- a/src/features/cad-ai/components/cad-ai-panel.tsx
++++ b/src/features/cad-ai/components/cad-ai-panel.tsx
+@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react"
+ import { SlidersHorizontal } from "lucide-react"
+ import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
++import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
+ import { cn } from "@/shared/utils/utils"
+ import { Dialog, DialogContent } from "@/components/ui/dialog"
+ import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-header"
+@@ -51,6 +52,11 @@ export function CadAiPanel({
+   onRegisterOpenSkills?: (open: () => void) => void
+ } = {}) {
+   const isMobileLayout = layout === "mobile"
++  // Same SSOT as AppListScroll: clear DesktopTopBar on tablet/desktop.
++  // CompactShell immersive already offsets with top: TOP_BAR — skip there.
++  const { isMobile: isMobileShell } = useResponsive()
++  const chromeInset = useChromeInset({ bottom: false })
++  const contentInsetStyle = isMobileShell ? undefined : chromeInset
+   const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
+   const [dxf, setDxf] = useState<string>("")
+   const [imagePath, setImagePath] = useState<string | null>(null)
+@@ -198,7 +204,10 @@ export function CadAiPanel({
+         )}
+ 
+         {/* Contenido: inset top solo fuera de CompactShell */}
+-        <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden">
++        <div
++          className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden"
++          style={contentInsetStyle}
++        >
+           {error && (
+             <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
+               <span className="truncate">{error}</span>
+@@ -262,7 +271,10 @@ export function CadAiPanel({
+         </div>
+       )}
+ 
+-      <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden">
++      <div
++        className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden"
++        style={contentInsetStyle}
++      >
+         {error && (
+           <div className="flex shrink-0 items-center justify-between gap-2 bg-destructive/10 px-4 py-2 text-sm text-destructive shadow-xs">
+             <span className="truncate">{error}</span>
+diff --git a/src/shared/responsive/layout/app-shell.tsx b/src/shared/responsive/layout/app-shell.tsx
+index 7017df1..4dc85b5 100644
+--- a/src/shared/responsive/layout/app-shell.tsx
++++ b/src/shared/responsive/layout/app-shell.tsx
+@@ -15,11 +15,7 @@ import { usePageTitleStore } from "@/shared/responsive/navigation/page-title-sto
+ import { usePageActionsStore } from "@/shared/responsive/navigation/page-actions-store"
+ import { usePageToolbarStore } from "@/shared/responsive/navigation/page-toolbar-store"
+ import { isImmersiveRoute } from "@/shared/responsive/navigation/immersive-routes"
+-import {
+-  TOP_BAR_HEIGHT_PX,
+-  BOTTOM_NAV_HEIGHT_PX,
+-  DESKTOP_TOP_BAR_HEIGHT_PX,
+-} from "./chrome-constants"
++import { TOP_BAR_HEIGHT_PX, BOTTOM_NAV_HEIGHT_PX } from "./chrome-constants"
+ import { TopBar } from "@/shared/responsive/mobile/top-bar"
+ import { useClearFocusOnNav } from "@/shared/hooks/use-clear-focus-on-nav"
+ import { BottomNavigation } from "../mobile/bottom-navigation"
+@@ -138,10 +134,9 @@ function DesktopShell({ children }: Props) {
+         }}
+       >
+         <DesktopTopBar />
+-        <div
+-          className="absolute inset-x-0 bottom-0 flex min-h-0 min-w-0 flex-col overflow-hidden"
+-          style={{ top: DESKTOP_TOP_BAR_HEIGHT_PX }}
+-        >
++        {/* Full-bleed under topbar (blur overlay). Content clears top via useChromeInset
++            — same SSOT as AppListScroll. */}
++        <div className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden">
+           {children}
+         </div>
+       </main>
+diff --git a/src/shared/responsive/layout/use-chrome-inset.ts b/src/shared/responsive/layout/use-chrome-inset.ts
+index 1a4f4de..3ca57ff 100644
+--- a/src/shared/responsive/layout/use-chrome-inset.ts
++++ b/src/shared/responsive/layout/use-chrome-inset.ts
+@@ -8,6 +8,7 @@ import {
+   TOP_BAR_HEIGHT_PX,
+   BOTTOM_NAV_HEIGHT_PX,
+   PAGE_SEARCH_BAR_HEIGHT_PX,
++  DESKTOP_TOP_BAR_HEIGHT_PX,
+ } from "@/shared/responsive/layout/chrome-constants"
+ 
+ type Options = {
+@@ -44,5 +45,7 @@ export function useChromeInset(options: Options = {}): CSSProperties {
+     }
+   }
+ 
+-  return {}
++  return {
++    paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX,
++  }
+ }

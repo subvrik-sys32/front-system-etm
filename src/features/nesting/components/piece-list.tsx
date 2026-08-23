@@ -1,7 +1,11 @@
 "use client"
 
 import { forwardRef, memo, useEffect, useImperativeHandle, useRef, useState, useMemo } from "react"
-import { Import, FileWarning, AlertTriangle, Eye, Layers, Copy, Search, X, Trash2 } from "lucide-react"
+import { Import, FileWarning, AlertTriangle, Eye, Layers, Copy, Search, X, Trash2, Circle, Ruler, Box } from "lucide-react"
+import {
+  EntityExpandedToggle,
+  type EntityExpandedToggleOption,
+} from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
 import { PieceListRow } from "./piece-list-row"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -53,6 +57,12 @@ export interface PieceListProps {
 }
 
 type GroupByType = "none" | "thickness" | "material"
+
+const GROUP_BY_OPTIONS: EntityExpandedToggleOption<GroupByType>[] = [
+  { value: "none", label: "Ninguno", icon: Circle },
+  { value: "thickness", label: "Espesor", icon: Ruler },
+  { value: "material", label: "Material", icon: Box },
+]
 
 // Extensiones y tipos MIME amplios para garantizar compatibilidad total en iOS y Android
 const CAD_IMPORT_ACCEPT = ".dxf,.geo,.pdf,.nps,application/pdf,application/dxf,application/octet-stream,text/plain,text/csv"
@@ -364,26 +374,15 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
       )}
 
       {rows.length > 0 && (
-        <div className="flex items-center gap-1.5 px-3 mb-2 shrink-0 overflow-x-auto hide-scrollbar">
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Agrupar:</span>
-          <button
-            onClick={() => setGroupBy("none")}
-            className={`px-2 py-0.5 rounded text-[10px] transition-colors ${groupBy === "none" ? "bg-foreground/10 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Ninguno
-          </button>
-          <button
-            onClick={() => setGroupBy("thickness")}
-            className={`px-2 py-0.5 rounded text-[10px] transition-colors ${groupBy === "thickness" ? "bg-foreground/10 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Espesor
-          </button>
-          <button
-            onClick={() => setGroupBy("material")}
-            className={`px-2 py-0.5 rounded text-[10px] transition-colors ${groupBy === "material" ? "bg-foreground/10 text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Material
-          </button>
+        <div className="mb-2 flex shrink-0 items-center gap-2 px-3">
+          <span className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            Agrupar
+          </span>
+          <EntityExpandedToggle
+            value={groupBy}
+            onChange={setGroupBy}
+            options={GROUP_BY_OPTIONS}
+          />
         </div>
       )}
 

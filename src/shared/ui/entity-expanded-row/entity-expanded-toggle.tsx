@@ -63,7 +63,7 @@ export function EntityExpandedToggle<T extends string>({
       {leading}
       <div
         className={cn(
-          "inline-flex min-w-0 items-center gap-1 rounded-lg bg-foreground/5 p-1 select-none",
+          "inline-flex min-w-0 items-center gap-1 rounded-xl bg-foreground/5 p-1 select-none",
           fullWidth && !leading && !trailing && "flex w-full",
           fullWidth && (leading || trailing) && "min-w-0 flex-1",
         )}
@@ -81,11 +81,11 @@ export function EntityExpandedToggle<T extends string>({
               title={option.label}
               onClick={() => onChange(option.value)}
               className={cn(
-                "flex min-w-0 items-center justify-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold tracking-wide transition-colors",
+                "flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold tracking-wide transition-colors",
                 fullWidth && "flex-1",
                 isActive
-                  ? "bg-foreground/10 text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-muted-foreground",
+                  ? "bg-background text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <span className="flex shrink-0 items-center justify-center">

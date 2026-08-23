@@ -101,24 +101,22 @@ export function EngineeringPageContent() {
   const { isMobile } = useResponsive()
 
   // Desktop: toggle en topbar (como tabs de departamento en bitácora).
-  usePageToolbar(isMobile ? null : <EngineeringViewToggle />)
+  usePageToolbar(<EngineeringViewToggle compact={isMobile} />)
 
   // Secundaria: picker centrado + contador — layout tipo bitácora (Día/fecha/entradas).
   const secondaryBar = (
-    <div className="flex w-full shrink-0 select-none flex-col gap-2">
-      {/* Mobile: toggle + badge en la misma fila; picker debajo */}
-      <div className="flex items-center gap-1.5 tablet:hidden">
-        <EngineeringViewToggle compact fullWidth />
+    <div className="flex w-full shrink-0 select-none flex-col gap-3">
+      {/* Toggle vive en topbar; aquí solo picker + contador */}
+      <div className="flex items-center gap-2 tablet:hidden">
+        <div className="min-w-0 flex-1">
+          <ContextPicker
+            mode="projects"
+            value={{ projectId, taskId: "" }}
+            onChange={v => setProjectId(v.projectId)}
+          />
+        </div>
         <EntryCountBadge count={tasks.length} compact />
       </div>
-      <div className="tablet:hidden">
-        <ContextPicker
-          mode="projects"
-          value={{ projectId, taskId: "" }}
-          onChange={v => setProjectId(v.projectId)}
-        />
-      </div>
-      {/* Tablet+: picker centro + badge derecha (toggle ya está en topbar) */}
       <div className="hidden tablet:grid tablet:grid-cols-[1fr_auto_1fr] tablet:items-center tablet:gap-4">
         <div />
         <div className="justify-self-center">
@@ -136,8 +134,8 @@ export function EngineeringPageContent() {
   )
 
   const body = (
-    <div className="flex w-full flex-col select-none">
-      <div className="mb-1 shrink-0">{secondaryBar}</div>
+    <div className="flex w-full flex-col gap-2 select-none">
+      <div className="mb-3 shrink-0">{secondaryBar}</div>
       {viewMode === "processes" ? (
         <div className="flex w-full flex-col max-md:mt-2">
           <EngineeringProcessBoard

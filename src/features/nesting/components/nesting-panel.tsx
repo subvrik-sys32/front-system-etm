@@ -64,17 +64,17 @@ export function NestingPanel({
           </div>
         )}
         {activePanel === "project-material" && (
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background dark:bg-foreground/[0.06]">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]">
             {projectMaterial}
           </div>
         )}
         {activePanel === "layers" && (
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background dark:bg-foreground/[0.06]">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]">
             {layers}
           </div>
         )}
         {activePanel === "inspector" && (
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background dark:bg-foreground/[0.06]">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]">
             {inspector}
           </div>
         )}

@@ -85,6 +85,7 @@ function CadPageCompact() {
   const chromeInset = useChromeInset({ bottom: false })
   const [tab, setTab] = useState<Tab>("ai")
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
+  const [templatesPanelOpen, setTemplatesPanelOpen] = useState(false)
   const [hasVisualizer, setHasVisualizer] = useState(false)
   const openSkillsRef = useRef<(() => void) | null>(null)
   const registerOpenSkills = useCallback((open: () => void) => {
@@ -165,7 +166,11 @@ function CadPageCompact() {
               onRegisterOpenSkills={registerOpenSkills}
             />
           ) : (
-            <CadWorkspacePanel layout="mobile" />
+            <CadWorkspacePanel
+              layout="mobile"
+              mobilePanelOpen={templatesPanelOpen}
+              onMobilePanelOpenChange={setTemplatesPanelOpen}
+            />
           )}
         </div>
       </section>

@@ -10,10 +10,20 @@ import {
   Save,
   Trash2,
   FileCode2,
+  RectangleHorizontal,
+  Grid3x3,
+  Square,
+  SlidersHorizontal,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-header"
 
 import { cn } from "@/shared/utils/utils"
+import {
+  EntityExpandedToggle,
+  type EntityExpandedToggleOption,
+} from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
 import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
 import { toast } from "sonner"
 import { cadPieceApi } from "../api/cad-piece.api"
@@ -47,6 +57,12 @@ const TEMPLATES: { key: CadTemplate; label: string }[] = [
   { key: "tira", label: "Tira" },
   { key: "malla", label: "Malla" },
   { key: "plate", label: "Placa" },
+]
+
+const TEMPLATE_TOGGLE_OPTIONS: EntityExpandedToggleOption<CadTemplate>[] = [
+  { value: "tira", label: "Tira", icon: RectangleHorizontal },
+  { value: "malla", label: "Malla", icon: Grid3x3 },
+  { value: "plate", label: "Placa", icon: Square },
 ]
 
 const DEFAULT_TIRA: CreatePieceBody = {
@@ -117,9 +133,24 @@ function Field({
   )
 }
 
-export function CadWorkspacePanel({ layout = "desktop" }: { layout?: "mobile" | "desktop" } = {}) {
+export function CadWorkspacePanel({
+  layout = "desktop",
+  mobilePanelOpen,
+  onMobilePanelOpenChange,
+}: {
+  layout?: "mobile" | "desktop"
+  mobilePanelOpen?: boolean
+  onMobilePanelOpenChange?: (open: boolean) => void
+} = {}) {
   const isMobileLayout = layout === "mobile"
   const chromeInset = useChromeInset({ bottom: false })
+  const [internalPanelOpen, setInternalPanelOpen] = useState(false)
+  const isPanelOpen =
+    mobilePanelOpen !== undefined ? mobilePanelOpen : internalPanelOpen
+  const setPanelOpen = (open: boolean) => {
+    onMobilePanelOpenChange?.(open)
+    if (mobilePanelOpen === undefined) setInternalPanelOpen(open)
+  }
 
   const router = useRouter()
   const [mode, setMode] = useState<CadTemplate>("tira")
@@ -236,80 +267,9 @@ export function CadWorkspacePanel({ layout = "desktop" }: { layout?: "mobile" | 
   const malla = mode === "malla"
   const plate = mode === "plate"
 
-  return (
-    <div className="flex h-full min-h-0 flex-col gap-3" style={isMobileLayout ? undefined : { paddingTop: chromeInset.paddingTop }}>
-      {/* Toolbar */}
-      <div className="flex shrink-0 flex-wrap items-center gap-2">
-        <div className="inline-flex items-center rounded-lg bg-foreground/5 p-0.5">
-          {TEMPLATES.map(opt => {
-            const active = mode === opt.key
-            return (
-              <button
-                key={opt.key}
-                type="button"
-                onClick={() => switchMode(opt.key)}
-                aria-pressed={active}
-                className={cn(
-                  "rounded-md px-3 py-1 text-sm font-semibold transition",
-                  active
-                    ? "bg-foreground/10 text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {opt.label}
-              </button>
-            )
-          })}
-        </div>
+  const paramsBody = (
+    <>
 
-        <button
-          type="button"
-          onClick={() => setShowDsl(v => !v)}
-          className={cn(
-            "inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium transition",
-            showDsl
-              ? "bg-foreground/10 text-foreground"
-              : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
-          )}
-        >
-          <FileCode2 size={14} />
-          Instrucciones
-        </button>
-
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => void generate()}
-            disabled={loading}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-foreground/10 px-2.5 text-xs font-medium hover:bg-foreground/15 disabled:opacity-50"
-          >
-            {loading ? <Spinner size={13} /> : <RefreshCw size={13} />}
-            Generar
-          </button>
-          <button
-            type="button"
-            onClick={() => void onDownloadDxf()}
-            disabled={!model || loading}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-foreground/10 px-2.5 text-xs font-medium hover:bg-foreground/15 disabled:opacity-50"
-          >
-            <Download size={13} />
-            DXF
-          </button>
-          <button
-            type="button"
-            onClick={() => void onSendToNesting()}
-            disabled={!model || loading}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-foreground/10 px-2.5 text-xs font-medium hover:bg-foreground/15 disabled:opacity-50"
-          >
-            <Boxes size={13} />
-            Nesting
-          </button>
-        </div>
-      </div>
-
-      <div className="flex min-h-0 flex-1 flex-col gap-3 tablet:flex-row">
-        {/* Params */}
-        <aside className="flex max-h-[46vh] w-full shrink-0 flex-col gap-3 overflow-y-auto rounded-xl bg-foreground/5 p-3 tablet:max-h-none tablet:w-56 desktop:w-64">
           <p className="text-[11px] font-medium tracking-wide text-muted-foreground">
             PARÁMETROS · mm
           </p>
@@ -709,31 +669,141 @@ export function CadWorkspacePanel({ layout = "desktop" }: { layout?: "mobile" | 
               {model.entities.length} entidades · {model.units}
             </p>
           )}
-        </aside>
+        
+    </>
+  )
 
-        {/* Preview + optional DSL */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
-          {showDsl && (
-            <div className="flex shrink-0 flex-col gap-2 rounded-xl bg-foreground/5 p-2">
-              <textarea
-                value={dsl}
-                onChange={e => setDsl(e.target.value)}
-                rows={5}
-                className="w-full resize-y rounded-lg bg-background/50 p-2 font-mono text-[11px] leading-relaxed outline-none focus:bg-background/80"
-                spellCheck={false}
-              />
-              <button
-                type="button"
-                onClick={onApplyDsl}
-                className="self-end rounded-lg bg-foreground/10 px-3 py-1.5 text-xs font-medium hover:bg-foreground/15"
-              >
-                Aplicar instrucciones
-              </button>
+  const modeToggle = (
+    <EntityExpandedToggle
+      value={mode}
+      onChange={switchMode}
+      options={TEMPLATE_TOGGLE_OPTIONS}
+    />
+  )
+
+  const actionClass =
+    "inline-flex h-8 items-center gap-1.5 rounded-xl bg-foreground/5 px-3 text-xs font-semibold text-foreground/80 transition hover:bg-foreground/10 hover:text-foreground disabled:opacity-50"
+
+  const actionBtns = (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <button
+        type="button"
+        onClick={() => setShowDsl(v => !v)}
+        className={cn(actionClass, showDsl && "bg-foreground/10 text-foreground")}
+      >
+        <FileCode2 size={14} strokeWidth={2.2} />
+        {!isMobileLayout && <span>Instrucciones</span>}
+      </button>
+      <button
+        type="button"
+        onClick={() => void generate()}
+        disabled={loading}
+        className={actionClass}
+      >
+        {loading ? <Spinner size={13} /> : <RefreshCw size={13} strokeWidth={2.2} />}
+        Generar
+      </button>
+      <button
+        type="button"
+        onClick={() => void onDownloadDxf()}
+        disabled={!model || loading}
+        className={actionClass}
+      >
+        <Download size={13} strokeWidth={2.2} />
+        DXF
+      </button>
+      <button
+        type="button"
+        onClick={() => void onSendToNesting()}
+        disabled={!model || loading}
+        className={actionClass}
+      >
+        <Boxes size={13} strokeWidth={2.2} />
+        Nesting
+      </button>
+      {isMobileLayout && (
+        <button
+          type="button"
+          onClick={() => setPanelOpen(true)}
+          className={actionClass}
+          aria-label="Parámetros"
+        >
+          <SlidersHorizontal size={14} strokeWidth={2.2} />
+          Parámetros
+        </button>
+      )}
+    </div>
+  )
+
+  const preview = (
+    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-muted/30 shadow-xs">
+      {showDsl && (
+        <div className="flex shrink-0 flex-col gap-2 border-b border-border/40 bg-card/40 p-2 backdrop-blur-sm">
+          <textarea
+            value={dsl}
+            onChange={e => setDsl(e.target.value)}
+            rows={4}
+            className="w-full resize-y rounded-lg bg-background/60 p-2 font-mono text-[11px] leading-relaxed outline-none focus:bg-background/80"
+            spellCheck={false}
+          />
+          <button
+            type="button"
+            onClick={onApplyDsl}
+            className="self-end rounded-xl bg-foreground/10 px-3 py-1.5 text-xs font-semibold hover:bg-foreground/15"
+          >
+            Aplicar instrucciones
+          </button>
+        </div>
+      )}
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <DxfCanvas pieces={geometryModelToCanvasPieces(model)} />
+      </div>
+    </div>
+  )
+
+  if (isMobileLayout) {
+    return (
+      <div className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-3 pt-2">
+          {modeToggle}
+          {actionBtns}
+        </div>
+        <div className="relative min-h-0 flex-1 overflow-hidden p-2 pt-2">
+          {preview}
+        </div>
+        <Dialog open={isPanelOpen} onOpenChange={setPanelOpen}>
+          <DialogContent
+            size="large"
+            className="flex h-[min(92dvh,100%)] max-h-[min(92dvh,100%)] w-[calc(100vw-1.5rem)] max-w-lg flex-col gap-0 overflow-hidden rounded-2xl border-none bg-popover p-0 text-foreground shadow-xs"
+          >
+            <div className="shrink-0">
+              <FormDialogHeader title="Parámetros de plantilla" icon={SlidersHorizontal} />
             </div>
-          )}
-          <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl bg-foreground/[0.03]">
-            <DxfCanvas pieces={geometryModelToCanvasPieces(model)} />
-          </div>
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+              <div className="flex flex-col gap-3">{paramsBody}</div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    )
+  }
+
+  // Desktop: mismo shell que CAD AI (p-2, gap-3, cards con shadow-xs)
+  return (
+    <div
+      className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden"
+      style={{ paddingTop: chromeInset.paddingTop }}
+    >
+      <div className="flex h-full min-h-0 w-full flex-1 flex-col gap-3 p-2">
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-1">
+          {modeToggle}
+          {actionBtns}
+        </div>
+        <div className="flex min-h-0 flex-1 items-stretch gap-3">
+          <aside className="flex h-full min-h-0 w-72 shrink-0 flex-col gap-3 overflow-y-auto rounded-2xl bg-card/90 p-3 shadow-xs backdrop-blur-md desktop:w-80">
+            {paramsBody}
+          </aside>
+          {preview}
         </div>
       </div>
     </div>

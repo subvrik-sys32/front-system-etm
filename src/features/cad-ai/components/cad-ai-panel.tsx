@@ -66,7 +66,7 @@ export function CadAiPanel({
   const [activeSkill, setActiveSkill] = useState<Skill | null>(null)
   const [skillParams, setSkillParams] = useState<Record<string, number | string> | null>(null)
   const [skillGenerator, setSkillGenerator] = useState<Skill | null>(null)
-  
+
   const [internalMobilePanelOpen, setInternalMobilePanelOpen] = useState(false)
   const isMobilePanelOpen =
     mobilePanelOpen !== undefined ? mobilePanelOpen : internalMobilePanelOpen
@@ -216,9 +216,12 @@ export function CadAiPanel({
                 setShowSkillLibrary(true)
               }}
               onPointerDown={(e) => e.stopPropagation()}
-              className={cn(CHROME_ICON_BTN, "h-9 w-auto gap-2 px-3 text-xs font-semibold shadow-xs backdrop-blur-xs")}
+              className={cn(
+                "inline-flex h-9 items-center gap-2 rounded-full border border-border/60 bg-card px-3.5 text-xs font-semibold text-foreground shadow-xs",
+                "transition hover:bg-muted/80 hover:border-border",
+              )}
             >
-              <Layers size={14} strokeWidth={2.25} />
+              <Layers size={14} strokeWidth={2.25} className="text-primary" />
               <span>Skills</span>
             </button>
           </div>
@@ -308,6 +311,26 @@ export function CadAiPanel({
           <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 p-2">
             {/* Contenedor del visor CAD unificado con shadow-xs */}
             <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-muted/30 shadow-xs backdrop-blur-[2px]">
+              {/* Desktop: acceso a Skills sin competir con UI móvil */}
+              <div className="pointer-events-none absolute left-3 top-3 z-20 hidden desktop:block">
+                <button
+                  type="button"
+                  aria-label="Skills"
+                  title="Skills"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowSkillLibrary(true)
+                  }}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className={cn(
+                    "pointer-events-auto inline-flex h-9 items-center gap-2 rounded-full border border-border/60 bg-card/95 px-3.5 text-xs font-semibold text-foreground shadow-xs backdrop-blur-md",
+                    "transition hover:bg-card",
+                  )}
+                >
+                  <Layers size={14} strokeWidth={2.25} className="text-primary" />
+                  <span>Skills</span>
+                </button>
+              </div>
               {loading && (
                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
                   <Spinner size={32} className="text-muted-foreground" />

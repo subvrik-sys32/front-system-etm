@@ -252,16 +252,21 @@ export function UsersPageContent() {
   // manda como primer hijo de cada AppListScroll (mismo patrón que
   // Proyectos/Tareas/Procesos/Bitácora), y para desktop se sigue
   // mostrando afuera, ya que ahí no hay TopBar flotante.
-  const searchToolbar = (
+  const searchBridge = (
+    <EntityToolbarSearch value={search} onChange={setSearch} />
+  )
+  const searchToolbar = !isMobile ? (
     <div className="mb-1 shrink-0">
       <EntityToolbar
         left={
           <div className="flex flex-wrap items-center gap-2 py-1">
-            <EntityToolbarSearch value={search} onChange={setSearch} />
+            {searchBridge}
           </div>
         }
       />
     </div>
+  ) : (
+    searchBridge
   )
 
   return (

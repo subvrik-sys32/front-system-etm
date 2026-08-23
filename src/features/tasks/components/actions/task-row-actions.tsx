@@ -56,6 +56,7 @@ export function TaskRowActions({ task, className, showAudit = true }: TaskRowAct
             updatedAt={task.updatedAt}
             createdBy={task.createdBy}
             updatedBy={task.updatedBy}
+            workflowSteps={task.workflowSteps}
           />
         )}
         <TaskMaterialInfo task={task} />

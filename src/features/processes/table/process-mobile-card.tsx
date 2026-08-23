@@ -323,7 +323,8 @@ function ProcessMobileCardReady({
               updatedAt={task.updatedAt}
               createdBy={task.createdBy}
               updatedBy={task.updatedBy}
-            />
+            workflowSteps={task.workflowSteps}
+          />
             <TaskMaterialInfo task={task} alwaysShow />
             <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
           </div>
@@ -409,6 +410,7 @@ function ProcessMobileCardReady({
             updatedAt={task.updatedAt}
             createdBy={task.createdBy}
             updatedBy={task.updatedBy}
+            workflowSteps={task.workflowSteps}
           />
           <TaskMaterialInfo task={task} alwaysShow />
           <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />

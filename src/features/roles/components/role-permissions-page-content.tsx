@@ -269,17 +269,24 @@ export function RolePermissionsPageContent() {
     ),
   )
 
-  const searchToolbar = (
-    <div className={cn("mb-1 shrink-0", isMobile && "mt-2")}>
+  // Mobile: EntityToolbarSearch no pinta UI (registra en TopBar).
+  // No montar toolbar vacía bajo el TopBar — solo el bridge.
+  const searchBridge = (
+    <EntityToolbarSearch value={search} onChange={setSearch} />
+  )
+  const searchToolbar = !isMobile ? (
+    <div className="mb-1 shrink-0">
       <EntityToolbar
         left={
           <div className="flex flex-wrap items-center gap-2 py-1">
-            <EntityToolbarSearch value={search} onChange={setSearch} />
+            {searchBridge}
           </div>
         }
         right={null}
       />
     </div>
+  ) : (
+    searchBridge
   )
 
   return (

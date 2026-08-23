@@ -1,0 +1,916 @@
+diff --git a/src/features/admin/users/components/users-page-content.tsx b/src/features/admin/users/components/users-page-content.tsx
+index c3b6fc2..67bea10 100644
+--- a/src/features/admin/users/components/users-page-content.tsx
++++ b/src/features/admin/users/components/users-page-content.tsx
+@@ -252,16 +252,21 @@ export function UsersPageContent() {
+   // manda como primer hijo de cada AppListScroll (mismo patrón que
+   // Proyectos/Tareas/Procesos/Bitácora), y para desktop se sigue
+   // mostrando afuera, ya que ahí no hay TopBar flotante.
+-  const searchToolbar = (
++  const searchBridge = (
++    <EntityToolbarSearch value={search} onChange={setSearch} />
++  )
++  const searchToolbar = !isMobile ? (
+     <div className="mb-1 shrink-0">
+       <EntityToolbar
+         left={
+           <div className="flex flex-wrap items-center gap-2 py-1">
+-            <EntityToolbarSearch value={search} onChange={setSearch} />
++            {searchBridge}
+           </div>
+         }
+       />
+     </div>
++  ) : (
++    searchBridge
+   )
+ 
+   return (
+@@ -619,4 +624,4 @@ export function UsersPageContent() {
+       />
+     </div>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/features/cad-ai/components/cad-ai-panel.tsx b/src/features/cad-ai/components/cad-ai-panel.tsx
+index defc297..bd80d50 100644
+--- a/src/features/cad-ai/components/cad-ai-panel.tsx
++++ b/src/features/cad-ai/components/cad-ai-panel.tsx
+@@ -66,7 +66,7 @@ export function CadAiPanel({
+   const [activeSkill, setActiveSkill] = useState<Skill | null>(null)
+   const [skillParams, setSkillParams] = useState<Record<string, number | string> | null>(null)
+   const [skillGenerator, setSkillGenerator] = useState<Skill | null>(null)
+-  
++
+   const [internalMobilePanelOpen, setInternalMobilePanelOpen] = useState(false)
+   const isMobilePanelOpen =
+     mobilePanelOpen !== undefined ? mobilePanelOpen : internalMobilePanelOpen
+@@ -216,9 +216,12 @@ export function CadAiPanel({
+                 setShowSkillLibrary(true)
+               }}
+               onPointerDown={(e) => e.stopPropagation()}
+-              className={cn(CHROME_ICON_BTN, "h-9 w-auto gap-2 px-3 text-xs font-semibold shadow-xs backdrop-blur-xs")}
++              className={cn(
++                "inline-flex h-9 items-center gap-2 rounded-full border border-border/60 bg-card px-3.5 text-xs font-semibold text-foreground shadow-xs",
++                "transition hover:bg-muted/80 hover:border-border",
++              )}
+             >
+-              <Layers size={14} strokeWidth={2.25} />
++              <Layers size={14} strokeWidth={2.25} className="text-primary" />
+               <span>Skills</span>
+             </button>
+           </div>
+@@ -308,6 +311,26 @@ export function CadAiPanel({
+           <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 p-2">
+             {/* Contenedor del visor CAD unificado con shadow-xs */}
+             <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-muted/30 shadow-xs backdrop-blur-[2px]">
++              {/* Desktop: acceso a Skills sin competir con UI móvil */}
++              <div className="pointer-events-none absolute left-3 top-3 z-20 hidden desktop:block">
++                <button
++                  type="button"
++                  aria-label="Skills"
++                  title="Skills"
++                  onClick={(e) => {
++                    e.stopPropagation()
++                    setShowSkillLibrary(true)
++                  }}
++                  onPointerDown={(e) => e.stopPropagation()}
++                  className={cn(
++                    "pointer-events-auto inline-flex h-9 items-center gap-2 rounded-full border border-border/60 bg-card/95 px-3.5 text-xs font-semibold text-foreground shadow-xs backdrop-blur-md",
++                    "transition hover:bg-card",
++                  )}
++                >
++                  <Layers size={14} strokeWidth={2.25} className="text-primary" />
++                  <span>Skills</span>
++                </button>
++              </div>
+               {loading && (
+                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+                   <Spinner size={32} className="text-muted-foreground" />
+@@ -370,4 +393,4 @@ export function CadAiPanel({
+       </div>
+     </div>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/features/detail-assets/components/detail-assets-dialog.tsx b/src/features/detail-assets/components/detail-assets-dialog.tsx
+index e5c23ad..1e00423 100644
+--- a/src/features/detail-assets/components/detail-assets-dialog.tsx
++++ b/src/features/detail-assets/components/detail-assets-dialog.tsx
+@@ -1,7 +1,16 @@
+ "use client"
+ 
+ import { useRef, useState } from "react"
+-import { Download, Eye, ImagePlus, MessageSquare, Trash2 } from "lucide-react"
++import { useRouter } from "next/navigation"
++import {
++  Download,
++  Eye,
++  FilePenLine,
++  ImageIcon,
++  ImagePlus,
++  MessageSquare,
++  Trash2,
++} from "lucide-react"
+ import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { toast } from "sonner"
+ import { saveBlobWithPreferences } from "@/features/user-preferences"
+@@ -27,10 +36,31 @@ type Props = {
+   onOpenChange: (open: boolean) => void
+   taskId?: string
+   projectId?: string
+-  /** Process / historial: no subir, solo ver. */
+   readOnly?: boolean
+ }
+ 
++function EmptyHint({
++  icon: Icon,
++  title,
++  description,
++}: {
++  icon: typeof ImageIcon
++  title: string
++  description: string
++}) {
++  return (
++    <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl bg-foreground/[0.04] px-4 py-6 text-center">
++      <div className="flex size-9 items-center justify-center rounded-full bg-foreground/5 text-muted-foreground">
++        <Icon size={16} strokeWidth={2} />
++      </div>
++      <p className="text-xs font-semibold text-foreground">{title}</p>
++      <p className="max-w-[16rem] text-[11px] leading-relaxed text-muted-foreground">
++        {description}
++      </p>
++    </div>
++  )
++}
++
+ export function DetailAssetsDialog({
+   open,
+   onOpenChange,
+@@ -38,6 +68,7 @@ export function DetailAssetsDialog({
+   projectId,
+   readOnly = false,
+ }: Props) {
++  const router = useRouter()
+   const isTask = Boolean(taskId)
+   const taskQ = useTaskDetailAssets(taskId, open && isTask)
+   const projectQ = useProjectDetailAssets(projectId, open && !isTask)
+@@ -57,34 +88,41 @@ export function DetailAssetsDialog({
+ 
+   const loading = isTask ? taskQ.loading : projectQ.loading
+ 
+-  // sync note when loads
+-  const noteText =
+-    note ||
+-    (typeof noteAsset?.meta === "object" && noteAsset?.meta && "text" in noteAsset.meta
++  const noteFromServer =
++    typeof noteAsset?.meta === "object" && noteAsset?.meta && "text" in noteAsset.meta
+       ? String((noteAsset.meta as { text?: string }).text ?? "")
+-      : "")
++      : ""
++  const noteText = note || noteFromServer
++
++  const goEditTask = () => {
++    if (!taskId) return
++    onOpenChange(false)
++    router.push(`/tasks?taskId=${encodeURIComponent(taskId)}`)
++  }
+ 
+   return (
+-    <Dialog open={open} onOpenChange={onOpenChange}>
++    <Dialog
++      open={open}
++      onOpenChange={next => {
++        if (!next) onOpenChange(false)
++        else onOpenChange(true)
++      }}
++    >
+       <DialogContent
+         size="large"
+         className="flex max-h-[min(92dvh,100%)] flex-col gap-0 overflow-hidden rounded-2xl border-none p-0 shadow-xs"
+       >
+-        <FormDialogHeader
+-          title="Archivos y detalle"
+-          icon={MessageSquare}
+-        />
++        <FormDialogHeader title="Archivos y detalle" icon={MessageSquare} />
+ 
+         <ScrollArea className="min-h-0 flex-1">
+-          <div className="flex flex-col gap-4 px-4 py-3">
++          <div className="flex flex-col gap-5 px-4 py-3 pb-5">
+             {loading ? (
+               <div className="flex h-32 items-center justify-center">
+                 <Spinner size={20} className="text-muted-foreground" />
+               </div>
+             ) : (
+               <>
+-                {/* Fotos: en solo lectura no mostrar bloque vacío */}
+-                {(!readOnly || photos.length > 0) && (
++                {/* Fotos */}
+                 <section className="flex flex-col gap-2">
+                   <div className="flex items-center justify-between">
+                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+@@ -117,73 +155,87 @@ export function DetailAssetsDialog({
+                       </>
+                     )}
+                   </div>
+-                  <div className="flex flex-wrap gap-2">
+-                    {photos.map(p => (
+-                      <div
+-                        key={p.id}
+-                        className="group relative size-20 overflow-hidden rounded-xl bg-muted/50"
+-                      >
+-                        {p.publicUrl ? (
+-                          // eslint-disable-next-line @next/next/no-img-element
++                  {photos.length === 0 ? (
++                    <EmptyHint
++                      icon={ImageIcon}
++                      title="Sin fotos todavía"
++                      description={
++                        readOnly
++                          ? "Cuando se suban fotos de referencia aparecerán aquí."
++                          : "Añade hasta 2 fotos de referencia del detalle o montaje."
++                      }
++                    />
++                  ) : (
++                    <div className="flex flex-wrap gap-2">
++                      {photos.map(p => (
++                        <div
++                          key={p.id}
++                          className="group relative size-20 overflow-hidden rounded-xl bg-muted"
++                        >
++                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                           <img
+-                            src={p.publicUrl}
++                            src={p.publicUrl ?? ""}
+                             alt=""
+                             className="size-full object-cover"
+                           />
+-                        ) : null}
+-                        {!readOnly && (
+-                          <button
+-                            type="button"
+-                            title="Eliminar foto"
+-                            onClick={() => mutations.remove.mutate(p.id)}
+-                            className="absolute right-1.5 top-1.5 rounded-lg bg-background/90 p-1.5 text-muted-foreground shadow-xs backdrop-blur-xs transition hover:bg-destructive/10 hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
+-                          >
+-                            <Trash2 className="size-3.5" />
+-                          </button>
+-                        )}
+-                      </div>
+-                    ))}
+-                    {photos.length === 0 && !readOnly && (
+-                      <p className="text-xs text-muted-foreground">Sin fotos</p>
+-                    )}
+-                  </div>
++                          {!readOnly && (
++                            <button
++                              type="button"
++                              title="Eliminar"
++                              className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-md bg-background/90 text-muted-foreground opacity-0 shadow-xs transition group-hover:opacity-100 hover:text-destructive"
++                              onClick={() => mutations.remove.mutate(p.id)}
++                            >
++                              <Trash2 size={12} />
++                            </button>
++                          )}
++                        </div>
++                      ))}
++                    </div>
++                  )}
+                 </section>
+-                )}
+ 
+-                {/* Nota: en solo lectura no se muestra si está vacía */}
+-                {(!readOnly || Boolean((note || noteText).trim())) && (
+-                  <section className="flex flex-col gap-2">
+-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+-                      Nota
+-                    </h3>
+-                    {readOnly ? (
+-                      <p className="rounded-xl bg-foreground/5 px-3 py-2 text-sm whitespace-pre-wrap">
+-                        {(note || noteText).trim()}
++                {/* Nota / detalle */}
++                <section className="flex flex-col gap-2">
++                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
++                    Detalle
++                  </h3>
++                  {readOnly ? (
++                    noteFromServer ? (
++                      <p className="rounded-xl bg-foreground/[0.04] px-3 py-2.5 text-sm leading-relaxed text-foreground">
++                        {noteFromServer}
+                       </p>
+                     ) : (
+-                      <>
+-                        <textarea
+-                          value={note || noteText}
+-                          onChange={e => setNote(e.target.value)}
+-                          rows={3}
+-                          placeholder="Detalle libre..."
+-                          className="w-full resize-none rounded-xl bg-foreground/5 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/60"
+-                        />
+-                        <button
+-                          type="button"
+-                          onClick={() =>
+-                            mutations.saveNote.mutate(note || noteText, {
+-                              onSuccess: () => toast.success("Nota guardada"),
+-                            })
+-                          }
+-                          className="self-end rounded-lg bg-foreground/10 px-3 py-1.5 text-xs font-semibold"
+-                        >
+-                          Guardar nota
+-                        </button>
+-                      </>
+-                    )}
+-                  </section>
+-                )}
++                      <EmptyHint
++                        icon={MessageSquare}
++                        title="Sin nota de detalle"
++                        description="No se registró un mensaje o instrucción adicional para esta entidad."
++                      />
++                    )
++                  ) : (
++                    <div className="flex flex-col gap-2">
++                      <textarea
++                        value={noteText}
++                        onChange={e => setNote(e.target.value)}
++                        placeholder="Detalle libre, instrucciones de montaje, observaciones…"
++                        rows={3}
++                        className="w-full resize-none rounded-xl bg-foreground/[0.04] px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 focus:ring-1 focus:ring-foreground/15"
++                      />
++                      <button
++                        type="button"
++                        disabled={!noteText.trim() || mutations.saveNote.isPending}
++                        onClick={() =>
++                          mutations.saveNote.mutate(noteText.trim(), {
++                            onSuccess: () => toast.success("Detalle guardado"),
++                            onError: () => toast.error("No se pudo guardar"),
++                          })
++                        }
++                        className="self-end rounded-lg bg-foreground/10 px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-foreground/15 disabled:opacity-40"
++                      >
++                        Guardar detalle
++                      </button>
++                    </div>
++                  )}
++                </section>
+ 
+                 {/* DXF por material (solo tarea) */}
+                 {isTask && (
+@@ -192,65 +244,90 @@ export function DetailAssetsDialog({
+                       Planos DXF por material
+                     </h3>
+                     {materialLines.length === 0 ? (
+-                      <p className="text-xs text-muted-foreground">Sin líneas de material</p>
++                      <EmptyHint
++                        icon={FilePenLine}
++                        title="Sin líneas de material"
++                        description="Los planos DXF se asocian a cada material de la tarea."
++                      />
+                     ) : (
+-                      materialLines.map(line => (
+-                        <div
+-                          key={line.id}
+-                          className="flex items-center gap-2 rounded-xl bg-foreground/5 px-3 py-2"
+-                        >
+-                          <div className="min-w-0 flex-1">
+-                            <p className="truncate text-sm font-medium">
+-                              {line.material.name} · {line.thickness.name}
+-                            </p>
+-                            <p className="text-[11px] text-muted-foreground">
+-                              {line.pieces} pzs
+-                              {line.dxf ? ` · ${line.dxf.originalName}` : " · sin DXF"}
+-                            </p>
+-                          </div>
+-                          {line.dxf?.publicUrl ? (
+-                            <div className="flex items-center gap-1">
+-                              <button
+-                                type="button"
+-                                title="Ver plano"
+-                                className="flex size-8 items-center justify-center rounded-lg hover:bg-foreground/10"
+-                                onClick={() =>
+-                                  setPreviewDxf({
+-                                    url: line.dxf!.publicUrl!,
+-                                    name: line.dxf!.originalName || "plano.dxf",
+-                                  })
+-                                }
+-                              >
+-                                <Eye size={14} />
+-                              </button>
+-                              <button
+-                                type="button"
+-                                title="Descargar"
+-                                className="flex size-8 items-center justify-center rounded-lg hover:bg-foreground/10"
+-                                onClick={async () => {
+-                                  try {
+-                                    const res = await fetch(line.dxf!.publicUrl!)
+-                                    if (!res.ok) throw new Error("fetch")
+-                                    const blob = await res.blob()
+-                                    await saveBlobWithPreferences({
+-                                      blob,
+-                                      fileName:
+-                                        line.dxf!.originalName || "plano.dxf",
+-                                      mimeType: "application/dxf",
++                      <div className="flex flex-col gap-1.5">
++                        {materialLines.map(line => (
++                          <div
++                            key={line.id}
++                            className="flex items-center gap-3 rounded-xl bg-foreground/[0.04] px-3 py-2.5"
++                          >
++                            <div className="min-w-0 flex-1">
++                              <p className="truncate text-sm font-semibold text-foreground">
++                                {line.material?.name ?? "Material"}
++                                {line.thickness?.name ? ` · ${line.thickness.name}` : ""}
++                              </p>
++                              <p className="text-[11px] text-muted-foreground">
++                                {line.pieces} pzs
++                                {line.dxf
++                                  ? ` · ${line.dxf.originalName}`
++                                  : " · sin DXF"}
++                              </p>
++                            </div>
++                            {line.dxf?.publicUrl ? (
++                              <div className="flex items-center gap-0.5">
++                                <button
++                                  type="button"
++                                  title="Ver plano"
++                                  className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
++                                  onClick={() =>
++                                    setPreviewDxf({
++                                      url: line.dxf!.publicUrl!,
++                                      name: line.dxf!.originalName || "plano.dxf",
+                                     })
+-                                  } catch {
+-                                    toast.error("No se pudo descargar")
+                                   }
+-                                }}
++                                >
++                                  <Eye size={14} />
++                                </button>
++                                <button
++                                  type="button"
++                                  title="Descargar"
++                                  className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
++                                  onClick={async () => {
++                                    try {
++                                      const res = await fetch(line.dxf!.publicUrl!)
++                                      if (!res.ok) throw new Error("fetch")
++                                      const blob = await res.blob()
++                                      await saveBlobWithPreferences({
++                                        blob,
++                                        fileName:
++                                          line.dxf!.originalName || "plano.dxf",
++                                        mimeType: "application/dxf",
++                                      })
++                                    } catch {
++                                      toast.error("No se pudo descargar")
++                                    }
++                                  }}
++                                >
++                                  <Download size={14} />
++                                </button>
++                              </div>
++                            ) : (
++                              <button
++                                type="button"
++                                onClick={goEditTask}
++                                className="shrink-0 rounded-lg bg-foreground/10 px-2.5 py-1.5 text-[11px] font-semibold text-foreground transition hover:bg-foreground/15"
+                               >
+-                                <Download size={14} />
++                                Agregar DXF
+                               </button>
+-                            </div>
+-                          ) : (
+-                            <span className="text-[11px] text-muted-foreground">—</span>
+-                          )}
+-                        </div>
+-                      ))
++                            )}
++                          </div>
++                        ))}
++                      </div>
++                    )}
++                    {materialLines.some(l => !l.dxf) && (
++                      <button
++                        type="button"
++                        onClick={goEditTask}
++                        className="mt-1 inline-flex items-center justify-center gap-1.5 self-start rounded-xl bg-primary/10 px-3 py-2 text-xs font-semibold text-primary transition hover:bg-primary/15"
++                      >
++                        <FilePenLine size={14} />
++                        Editar tarea para subir planos
++                      </button>
+                     )}
+                   </section>
+                 )}
+@@ -259,6 +336,7 @@ export function DetailAssetsDialog({
+           </div>
+         </ScrollArea>
+       </DialogContent>
++
+       <DxfPreviewDialog
+         open={!!previewDxf}
+         onOpenChange={o => !o && setPreviewDxf(null)}
+@@ -267,4 +345,4 @@ export function DetailAssetsDialog({
+       />
+     </Dialog>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/features/processes/table/process-mobile-card.tsx b/src/features/processes/table/process-mobile-card.tsx
+index 43c6f3c..8069ccc 100644
+--- a/src/features/processes/table/process-mobile-card.tsx
++++ b/src/features/processes/table/process-mobile-card.tsx
+@@ -323,7 +323,8 @@ function ProcessMobileCardReady({
+               updatedAt={task.updatedAt}
+               createdBy={task.createdBy}
+               updatedBy={task.updatedBy}
+-            />
++            workflowSteps={task.workflowSteps}
++          />
+             <TaskMaterialInfo task={task} alwaysShow />
+             <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
+           </div>
+@@ -409,6 +410,7 @@ function ProcessMobileCardReady({
+             updatedAt={task.updatedAt}
+             createdBy={task.createdBy}
+             updatedBy={task.updatedBy}
++            workflowSteps={task.workflowSteps}
+           />
+           <TaskMaterialInfo task={task} alwaysShow />
+           <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
+diff --git a/src/features/projects/components/expanded-row/project-task-row.tsx b/src/features/projects/components/expanded-row/project-task-row.tsx
+index 37e3417..14b7beb 100644
+--- a/src/features/projects/components/expanded-row/project-task-row.tsx
++++ b/src/features/projects/components/expanded-row/project-task-row.tsx
+@@ -371,7 +371,8 @@ export function ProjectTaskRow({
+                       updatedAt={task.updatedAt}
+                       createdBy={task.createdBy}
+                       updatedBy={task.updatedBy}
+-                    />
++            workflowSteps={task.workflowSteps}
++          />
+                     <TaskMaterialInfo task={task} />
+                     {processTask?.workflowStep && (
+                       <button
+@@ -440,7 +441,8 @@ export function ProjectTaskRow({
+                   updatedAt={task.updatedAt}
+                   createdBy={task.createdBy}
+                   updatedBy={task.updatedBy}
+-                />
++            workflowSteps={task.workflowSteps}
++          />
+                 <TaskMaterialInfo task={task} />
+                 {processTask.workflowStep && (
+                   <button
+@@ -522,4 +524,4 @@ export function ProjectTaskRow({
+       )}
+     </div>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/features/roles/components/role-permissions-page-content.tsx b/src/features/roles/components/role-permissions-page-content.tsx
+index d5cd152..959860e 100644
+--- a/src/features/roles/components/role-permissions-page-content.tsx
++++ b/src/features/roles/components/role-permissions-page-content.tsx
+@@ -269,17 +269,24 @@ export function RolePermissionsPageContent() {
+     ),
+   )
+ 
+-  const searchToolbar = (
+-    <div className={cn("mb-1 shrink-0", isMobile && "mt-2")}>
++  // Mobile: EntityToolbarSearch no pinta UI (registra en TopBar).
++  // No montar toolbar vacía bajo el TopBar — solo el bridge.
++  const searchBridge = (
++    <EntityToolbarSearch value={search} onChange={setSearch} />
++  )
++  const searchToolbar = !isMobile ? (
++    <div className="mb-1 shrink-0">
+       <EntityToolbar
+         left={
+           <div className="flex flex-wrap items-center gap-2 py-1">
+-            <EntityToolbarSearch value={search} onChange={setSearch} />
++            {searchBridge}
+           </div>
+         }
+         right={null}
+       />
+     </div>
++  ) : (
++    searchBridge
+   )
+ 
+   return (
+diff --git a/src/features/tasks/components/actions/task-row-actions.tsx b/src/features/tasks/components/actions/task-row-actions.tsx
+index 3735ed2..4c75e94 100644
+--- a/src/features/tasks/components/actions/task-row-actions.tsx
++++ b/src/features/tasks/components/actions/task-row-actions.tsx
+@@ -56,6 +56,7 @@ export function TaskRowActions({ task, className, showAudit = true }: TaskRowAct
+             updatedAt={task.updatedAt}
+             createdBy={task.createdBy}
+             updatedBy={task.updatedBy}
++            workflowSteps={task.workflowSteps}
+           />
+         )}
+         <TaskMaterialInfo task={task} />
+@@ -97,4 +98,4 @@ export function TaskRowActions({ task, className, showAudit = true }: TaskRowAct
+       />
+     </>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/features/tasks/components/task-material-info.tsx b/src/features/tasks/components/task-material-info.tsx
+index a104e38..e68a040 100644
+--- a/src/features/tasks/components/task-material-info.tsx
++++ b/src/features/tasks/components/task-material-info.tsx
+@@ -15,16 +15,10 @@ import { getTaskPiecesTotal } from "../utils/task-material-summary"
+ type Props = {
+   task: Task
+   className?: string
+-  /** En card de proceso: botón más grande */
+   size?: "sm" | "md"
+-  /**
+-   * En process row: siempre visible si hay al menos un material.
+-   * En cards de kanban: por defecto solo si hay multi-material.
+-   */
+   alwaysShow?: boolean
+ }
+ 
+-/** Por defecto solo multi-material; `alwaysShow` → desde 1 línea. */
+ export function TaskMaterialInfo({
+   task,
+   className,
+@@ -37,7 +31,6 @@ export function TaskMaterialInfo({
+ 
+   const total = getTaskPiecesTotal(task)
+   const isMd = size === "md"
+-  const count = lines.length
+ 
+   return (
+     <Popover>
+@@ -48,25 +41,9 @@ export function TaskMaterialInfo({
+           title="Materiales"
+           onClick={e => e.stopPropagation()}
+           onPointerDown={e => e.stopPropagation()}
+-          className={cn(
+-            CHROME_ICON_BTN,
+-            "relative",
+-            isMd && "size-9 rounded-xl",
+-            className,
+-          )}
++          className={cn(CHROME_ICON_BTN, isMd && "size-9", className)}
+         >
+-          <Layers size={isMd ? 18 : 14} strokeWidth={2.25} />
+-          {count > 1 && (
+-            <span
+-              className={cn(
+-                "absolute -right-1 -top-1 flex items-center justify-center",
+-                "rounded-full bg-primary font-bold tabular-nums text-primary-foreground",
+-                isMd ? "size-4 text-[9px]" : "size-3.5 text-[8px]",
+-              )}
+-            >
+-              {count > 9 ? "9+" : count}
+-            </span>
+-          )}
++          <Layers size={isMd ? 16 : 14} strokeWidth={2.25} />
+         </button>
+       </PopoverTrigger>
+       <PopoverContent
+@@ -77,30 +54,32 @@ export function TaskMaterialInfo({
+         floatingClassName="w-72"
+         className="gap-0 p-0"
+       >
+-        <div className="px-3 pt-1 pb-2">
++        <div className="border-b border-border/50 px-3 py-2">
+           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+-            Materiales · {total} piezas
++            Materiales · {total} {total === 1 ? "pieza" : "piezas"}
+           </p>
+         </div>
+-        <div className="flex flex-col gap-2 px-3 pb-3">
+-          {lines.map(line => (
+-            <div
+-              key={line.id}
+-              className="flex items-center justify-between gap-2 text-sm"
+-            >
+-              <span className="min-w-0 truncate font-medium text-foreground">
+-                {line.material.name}
+-                <span className="text-muted-foreground">
+-                  {" "}
+-                  · {line.thickness.name}
++        <ul className="flex max-h-64 flex-col gap-0.5 overflow-y-auto p-1.5">
++          {lines.map((line, i) => {
++            const label =
++              [line.material?.name, line.thickness?.name]
++                .filter(Boolean)
++                .join(" · ") || `Línea ${i + 1}`
++            return (
++              <li
++                key={line.id ?? i}
++                className="flex items-center justify-between gap-3 rounded-lg px-2.5 py-2 hover:bg-foreground/[0.04]"
++              >
++                <span className="min-w-0 truncate text-sm font-medium text-foreground">
++                  {label}
+                 </span>
+-              </span>
+-              <span className="shrink-0 tabular-nums text-muted-foreground">
+-                {line.pieces} pzas
+-              </span>
+-            </div>
+-          ))}
+-        </div>
++                <span className="shrink-0 rounded-md bg-foreground/5 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
++                  {line.pieces ?? 0} pzs
++                </span>
++              </li>
++            )
++          })}
++        </ul>
+       </PopoverContent>
+     </Popover>
+   )
+diff --git a/src/features/tasks/pipeline/components/cards/task-pipeline-card.tsx b/src/features/tasks/pipeline/components/cards/task-pipeline-card.tsx
+index b660e04..39c90de 100644
+--- a/src/features/tasks/pipeline/components/cards/task-pipeline-card.tsx
++++ b/src/features/tasks/pipeline/components/cards/task-pipeline-card.tsx
+@@ -123,7 +123,8 @@ export function TaskPipelineCard({
+                       updatedAt={task.updatedAt}
+                       createdBy={task.createdBy}
+                       updatedBy={task.updatedBy}
+-                    />
++            workflowSteps={task.workflowSteps}
++          />
+                     <TaskMaterialInfo task={task} />
+                     {processTask.workflowStep && (
+                       <button
+@@ -184,4 +185,4 @@ export function TaskPipelineCard({
+       )}
+     </div>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/features/tasks/pipeline/components/panel/area-task-section.tsx b/src/features/tasks/pipeline/components/panel/area-task-section.tsx
+index 38f982c..4d4c55a 100644
+--- a/src/features/tasks/pipeline/components/panel/area-task-section.tsx
++++ b/src/features/tasks/pipeline/components/panel/area-task-section.tsx
+@@ -56,7 +56,15 @@ export function AreaTaskSection({
+       groupsMap.get(id)!.tasks.push(task)
+     })
+ 
+-    return Array.from(groupsMap.values())
++    const groups = Array.from(groupsMap.values())
++    // Convocados primero; "Sin convocar" al final
++    groups.sort((a, b) => {
++      const aUn = a.id === "unassigned" ? 1 : 0
++      const bUn = b.id === "unassigned" ? 1 : 0
++      if (aUn !== bUn) return aUn - bUn
++      return a.name.localeCompare(b.name, "es")
++    })
++    return groups
+   }, [allTasksForCode, code])
+ 
+   return (
+@@ -269,4 +277,4 @@ function OperatorTaskLists({ code, tasks, panel }: OperatorTaskListsProps) {
+       )}
+     </>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/features/tasks/table/task-mobile-card.tsx b/src/features/tasks/table/task-mobile-card.tsx
+index 350f8e2..dd06317 100644
+--- a/src/features/tasks/table/task-mobile-card.tsx
++++ b/src/features/tasks/table/task-mobile-card.tsx
+@@ -367,7 +367,8 @@ function TaskMobileCardReady({
+               updatedAt={task.updatedAt}
+               createdBy={task.createdBy}
+               updatedBy={task.updatedBy}
+-            />
++            workflowSteps={task.workflowSteps}
++          />
+             <DetailAssetsEye taskId={task.id} count={taskDetailAssetCount(task)} />
+           </div>
+         )}
+diff --git a/src/shared/ui/entity-audit-info/entity-audit-info.tsx b/src/shared/ui/entity-audit-info/entity-audit-info.tsx
+index eec1898..891c8fe 100644
+--- a/src/shared/ui/entity-audit-info/entity-audit-info.tsx
++++ b/src/shared/ui/entity-audit-info/entity-audit-info.tsx
+@@ -10,6 +10,8 @@ import {
+ import { formatDateTime } from "@/shared/utils/date-format"
+ import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
+ import { cn } from "@/shared/utils/utils"
++import type { WorkflowStep } from "@/features/workflow/types/workflow.types"
++import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
+ 
+ type AuditUser = { id: string; name: string }
+ 
+@@ -18,14 +20,26 @@ type Props = {
+   updatedAt?: string | null
+   createdBy?: AuditUser | null
+   updatedBy?: AuditUser | null
++  /** Pasos de workflow: quién opera / estado / timestamps */
++  workflowSteps?: WorkflowStep[] | null
+   className?: string
+ }
+ 
++const STATUS_LABEL: Record<string, string> = {
++  QUEUE: "En cola",
++  PENDING: "Pendiente",
++  PROGRESS: "En progreso",
++  PAUSED: "Pausado",
++  COMPLETED: "Completado",
++  REVIEWED: "Revisado",
++}
++
+ export function EntityAuditInfo({
+   createdAt,
+   updatedAt,
+   createdBy,
+   updatedBy,
++  workflowSteps,
+   className,
+ }: Props) {
+   const rows = [
+@@ -37,6 +51,8 @@ export function EntityAuditInfo({
+       : []),
+   ]
+ 
++  const steps = (workflowSteps ?? []).slice().sort((a, b) => a.order - b.order)
++
+   return (
+     <Popover>
+       <PopoverTrigger asChild>
+@@ -56,15 +72,15 @@ export function EntityAuditInfo({
+         align="start"
+         sideOffset={8}
+         collisionPadding={12}
+-        floatingClassName="w-64"
++        floatingClassName="w-72"
+         className="gap-0 p-0"
+       >
+-        <div className="px-3 pt-1 pb-2">
++        <div className="border-b border-border/50 px-3 py-2">
+           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+             Información
+           </p>
+         </div>
+-        <div className="flex flex-col gap-2.5 px-3 pb-3">
++        <div className="flex flex-col gap-2.5 px-3 py-3">
+           {rows.map(row => (
+             <div key={row.label} className="min-w-0">
+               <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+@@ -76,6 +92,48 @@ export function EntityAuditInfo({
+             </div>
+           ))}
+         </div>
++
++        {steps.length > 0 && (
++          <>
++            <div className="border-t border-border/50 px-3 py-2">
++              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
++                Flujo de trabajo
++              </p>
++            </div>
++            <ul className="flex max-h-52 flex-col gap-1 overflow-y-auto px-2 pb-3">
++              {steps.map(step => {
++                const def = PROCESS_DEFINITIONS[step.processCode]
++                const processName = def?.label ?? step.processCode
++                const status = STATUS_LABEL[step.status] ?? step.status
++                const who = step.operator?.name ?? "Sin asignar"
++                const when =
++                  step.completedAt ??
++                  step.startedAt ??
++                  (step.status === "PAUSED" ? step.updatedAt : null)
++
++                return (
++                  <li
++                    key={step.id}
++                    className="rounded-lg px-2 py-2 hover:bg-foreground/[0.04]"
++                  >
++                    <div className="flex items-center justify-between gap-2">
++                      <span className="truncate text-xs font-semibold text-foreground">
++                        {processName}
++                      </span>
++                      <span className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
++                        {status}
++                      </span>
++                    </div>
++                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
++                      {who}
++                      {when ? ` · ${formatDateTime(when)}` : ""}
++                    </p>
++                  </li>
++                )
++              })}
++            </ul>
++          </>
++        )}
+       </PopoverContent>
+     </Popover>
+   )

@@ -56,7 +56,15 @@ export function AreaTaskSection({
       groupsMap.get(id)!.tasks.push(task)
     })
 
-    return Array.from(groupsMap.values())
+    const groups = Array.from(groupsMap.values())
+    // Convocados primero; "Sin convocar" al final
+    groups.sort((a, b) => {
+      const aUn = a.id === "unassigned" ? 1 : 0
+      const bUn = b.id === "unassigned" ? 1 : 0
+      if (aUn !== bUn) return aUn - bUn
+      return a.name.localeCompare(b.name, "es")
+    })
+    return groups
   }, [allTasksForCode, code])
 
   return (

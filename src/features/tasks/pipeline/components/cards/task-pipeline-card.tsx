@@ -123,7 +123,8 @@ export function TaskPipelineCard({
                       updatedAt={task.updatedAt}
                       createdBy={task.createdBy}
                       updatedBy={task.updatedBy}
-                    />
+            workflowSteps={task.workflowSteps}
+          />
                     <TaskMaterialInfo task={task} />
                     {processTask.workflowStep && (
                       <button

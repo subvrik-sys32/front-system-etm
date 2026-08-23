@@ -367,7 +367,8 @@ function TaskMobileCardReady({
               updatedAt={task.updatedAt}
               createdBy={task.createdBy}
               updatedBy={task.updatedBy}
-            />
+            workflowSteps={task.workflowSteps}
+          />
             <DetailAssetsEye taskId={task.id} count={taskDetailAssetCount(task)} />
           </div>
         )}

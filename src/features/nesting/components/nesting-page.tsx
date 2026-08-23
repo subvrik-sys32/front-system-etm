@@ -51,6 +51,7 @@ import { Spinner } from "@/shared/ui/spinner/spinner"
 import { computeLayerList, type NestingPieceInput } from "./dxf-canvas/dxf-canvas"
 import { LayerManager } from "./layer-manager"
 import { NestingPanel, type NestingPanelView } from "./nesting-panel"
+import { TOOL_SIDEBAR_ASIDE } from "@/shared/ui/tool-side-panel/chrome"
 import { consumeCadImportSignal } from "@/features/cad/pending-nesting-pieces"
 import { NestingConfirmDialog } from "./nesting-confirm-dialog"
 
@@ -714,7 +715,7 @@ export function NestingPage() {
       {/* —— Desktop: sidebar + canvas —— */}
       {!isCompact && (
         <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3">
-          <aside className="flex h-full min-h-0 w-80 shrink-0 flex-col overflow-hidden rounded-2xl bg-muted p-3 shadow-xs dark:bg-foreground/5">
+          <aside className={TOOL_SIDEBAR_ASIDE}>
             {panel}
           </aside>
           <div

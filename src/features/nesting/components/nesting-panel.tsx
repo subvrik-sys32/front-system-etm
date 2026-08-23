@@ -4,6 +4,11 @@ import type { ReactNode } from "react"
 import { LayoutGrid, Layers, Info, SlidersHorizontal } from "lucide-react"
 
 import {
+  TOOL_SIDEBAR_CONTENT_FILL,
+  TOOL_SIDEBAR_CONTENT_SCROLL,
+  TOOL_SIDEBAR_INNER,
+} from "@/shared/ui/tool-side-panel/chrome"
+import {
   EntityExpandedToggle,
   type EntityExpandedToggleOption,
 } from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
@@ -50,7 +55,7 @@ export function NestingPanel({
   footer,
 }: NestingPanelProps) {
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
+    <div className={TOOL_SIDEBAR_INNER}>
       <EntityExpandedToggle
         value={activePanel}
         onChange={onActivePanelChange}
@@ -59,22 +64,22 @@ export function NestingPanel({
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {activePanel === "sheet-pieces" && (
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]">
+          <div className={TOOL_SIDEBAR_CONTENT_FILL}>
             {pieces}
           </div>
         )}
         {activePanel === "project-material" && (
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]">
+          <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
             {projectMaterial}
           </div>
         )}
         {activePanel === "layers" && (
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]">
+          <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
             {layers}
           </div>
         )}
         {activePanel === "inspector" && (
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]">
+          <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
             {inspector}
           </div>
         )}

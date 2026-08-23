@@ -1,0 +1,338 @@
+diff --git a/src/features/cad/components/cad-workspace-panel.tsx b/src/features/cad/components/cad-workspace-panel.tsx
+index 1342e16..c610479 100644
+--- a/src/features/cad/components/cad-workspace-panel.tsx
++++ b/src/features/cad/components/cad-workspace-panel.tsx
+@@ -20,6 +20,16 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
+ import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-header"
+ 
+ import { cn } from "@/shared/utils/utils"
++import {
++  TOOL_SIDEBAR_ASIDE,
++  TOOL_SIDEBAR_INNER,
++  TOOL_SIDEBAR_CONTENT_SCROLL,
++  TOOL_SIDE_SECTION,
++  TOOL_SIDE_SECTION_TITLE,
++  TOOL_SIDE_FIELD_LABEL,
++  TOOL_SIDE_INPUT_CENTER,
++  TOOL_SIDE_INPUT,
++} from "@/shared/ui/tool-side-panel/chrome"
+ import {
+   EntityExpandedToggle,
+   type EntityExpandedToggleOption,
+@@ -118,16 +128,14 @@ function Field({
+   step?: string
+ }) {
+   return (
+-    <label className="flex flex-col gap-1">
+-      <span className="text-[11px] font-medium tracking-wide text-muted-foreground">
+-        {label}
+-      </span>
++    <label className="flex flex-col gap-1.5">
++      <span className={TOOL_SIDE_FIELD_LABEL}>{label}</span>
+       <input
+         type="number"
+         step={step}
+         value={value}
+         onChange={e => onChange(e.target.value)}
+-        className="h-9 w-full rounded-lg bg-foreground/5 px-3 text-sm tabular-nums text-foreground outline-none ring-0 border-0 focus:bg-foreground/10"
++        className={TOOL_SIDE_INPUT_CENTER}
+       />
+     </label>
+   )
+@@ -268,11 +276,12 @@ export function CadWorkspacePanel({
+   const plate = mode === "plate"
+ 
+   const paramsBody = (
+-    <>
+-
+-          <p className="text-[11px] font-medium tracking-wide text-muted-foreground">
+-            PARÁMETROS · mm
+-          </p>
++    <div className="flex flex-col gap-3">
++      <div className={TOOL_SIDE_SECTION}>
++        <div className="px-2 py-2">
++          <span className={TOOL_SIDE_SECTION_TITLE}>Parámetros · mm</span>
++        </div>
++        <div className="flex flex-col gap-2 px-2 pb-2">
+ 
+           {tira && (
+             <>
+@@ -324,7 +333,7 @@ export function CadWorkspacePanel({
+                       material: e.target.value,
+                     } as CreatePieceBody)
+                   }
+-                  className="h-9 rounded-lg border-0 bg-foreground/5 px-3 text-sm outline-none ring-0 focus:bg-foreground/10"
++                  className={TOOL_SIDE_INPUT}
+                 />
+               </label>
+               <div className="grid grid-cols-2 gap-2">
+@@ -475,7 +484,7 @@ export function CadWorkspacePanel({
+                           bends: { positions: prev },
+                         } as CreatePieceBody)
+                       }}
+-                      className="h-9 min-w-0 flex-1 rounded-lg border-0 bg-foreground/5 px-3 text-sm tabular-nums outline-none ring-0 focus:bg-foreground/10"
++                      className={cn(TOOL_SIDE_INPUT_CENTER, "min-w-0 flex-1")}
+                     />
+                     <button
+                       type="button"
+@@ -547,7 +556,7 @@ export function CadWorkspacePanel({
+                       material: e.target.value,
+                     } as CreatePieceBody)
+                   }
+-                  className="h-9 rounded-lg border-0 bg-foreground/5 px-3 text-sm outline-none ring-0 focus:bg-foreground/10"
++                  className={TOOL_SIDE_INPUT}
+                 />
+               </label>
+             </div>
+@@ -616,7 +625,7 @@ export function CadWorkspacePanel({
+                 value={saveName}
+                 onChange={e => setSaveName(e.target.value)}
+                 placeholder="Nombre…"
+-                className="h-9 min-w-0 flex-1 rounded-lg border-0 bg-foreground/5 px-3 text-sm outline-none ring-0 focus:bg-foreground/10"
++                className={cn(TOOL_SIDE_INPUT, "min-w-0 flex-1")}
+               />
+               <button
+                 type="button"
+@@ -670,7 +679,9 @@ export function CadWorkspacePanel({
+             </p>
+           )}
+         
+-    </>
++        </div>
++      </div>
++    </div>
+   )
+ 
+   const modeToggle = (
+@@ -788,21 +799,25 @@ export function CadWorkspacePanel({
+     )
+   }
+ 
+-  // Desktop: mismo shell que CAD AI (p-2, gap-3, cards con shadow-xs)
++  // Desktop: mismo chrome que Nesting (aside + toggle dentro + content)
+   return (
+     <div
+       className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden"
+       style={{ paddingTop: chromeInset.paddingTop }}
+     >
+-      <div className="flex h-full min-h-0 w-full flex-1 flex-col gap-3 p-2">
+-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-1">
+-          {modeToggle}
+-          {actionBtns}
+-        </div>
+-        <div className="flex min-h-0 flex-1 items-stretch gap-3">
+-          <aside className="flex h-full min-h-0 w-72 shrink-0 flex-col gap-3 overflow-y-auto rounded-2xl bg-card/90 p-3 shadow-xs backdrop-blur-md desktop:w-80">
+-            {paramsBody}
+-          </aside>
++      <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 p-2">
++        <aside className={TOOL_SIDEBAR_ASIDE}>
++          <div className={TOOL_SIDEBAR_INNER}>
++            {modeToggle}
++            <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
++              {paramsBody}
++            </div>
++          </div>
++        </aside>
++        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
++          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
++            {actionBtns}
++          </div>
+           {preview}
+         </div>
+       </div>
+diff --git a/src/features/nesting/components/material-panel.tsx b/src/features/nesting/components/material-panel.tsx
+index 08e7331..14f31ae 100644
+--- a/src/features/nesting/components/material-panel.tsx
++++ b/src/features/nesting/components/material-panel.tsx
+@@ -47,7 +47,7 @@ export interface MaterialPanelProps {
+ function Field({ label, children }: { label: string; children: React.ReactNode }) {
+   return (
+     <div className="flex flex-col gap-1.5">
+-      <label className="text-[11px] font-medium text-muted-foreground">{label}</label>
++      <label className="text-xs font-medium text-muted-foreground">{label}</label>
+       {children}
+     </div>
+   )
+@@ -155,7 +155,7 @@ export function MaterialPanel({
+             <div className="grid grid-cols-2 gap-2">
+               <Field label="Ancho (mm)">
+                 <Input
+-                  className="h-9 rounded-lg border-0 bg-background/50 text-center text-base text-foreground tablet:text-xs focus-visible:ring-1 focus-visible:ring-primary/30"
++                  className="h-9 rounded-lg border-0 bg-background/50 text-center text-xs text-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
+                   inputMode="decimal"
+                   value={settings.sheetWidth}
+                   onChange={(e) => onChange({ sheetWidth: e.target.value })}
+@@ -164,7 +164,7 @@ export function MaterialPanel({
+ 
+               <Field label="Alto (mm)">
+                 <Input
+-                  className="h-9 rounded-lg border-0 bg-background/50 text-center text-base text-foreground tablet:text-xs focus-visible:ring-1 focus-visible:ring-primary/30"
++                  className="h-9 rounded-lg border-0 bg-background/50 text-center text-xs text-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
+                   inputMode="decimal"
+                   value={settings.sheetHeight}
+                   onChange={(e) => onChange({ sheetHeight: e.target.value })}
+@@ -173,7 +173,7 @@ export function MaterialPanel({
+ 
+               <Field label="Margen (mm)">
+                 <Input
+-                  className="h-9 rounded-lg border-0 bg-background/50 text-center text-base text-foreground tablet:text-xs focus-visible:ring-1 focus-visible:ring-primary/30"
++                  className="h-9 rounded-lg border-0 bg-background/50 text-center text-xs text-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
+                   inputMode="decimal"
+                   value={settings.margin}
+                   onChange={(e) => onChange({ margin: e.target.value })}
+@@ -182,7 +182,7 @@ export function MaterialPanel({
+ 
+               <Field label="Separación (mm)">
+                 <Input
+-                  className="h-9 rounded-lg border-0 bg-background/50 text-center text-base text-foreground tablet:text-xs focus-visible:ring-1 focus-visible:ring-primary/30"
++                  className="h-9 rounded-lg border-0 bg-background/50 text-center text-xs text-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
+                   inputMode="decimal"
+                   value={settings.separacion}
+                   onChange={(e) => onChange({ separacion: e.target.value })}
+@@ -201,7 +201,7 @@ export function MaterialPanel({
+             <div className="grid grid-cols-2 gap-2 mb-2">
+               <Field label="Proyecto">
+                 <Input
+-                  className="h-9 rounded-lg border-0 bg-background/50 text-base truncate uppercase text-foreground tablet:text-xs focus-visible:ring-1 focus-visible:ring-primary/30"
++                  className="h-9 rounded-lg border-0 bg-background/50 text-xs truncate uppercase text-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
+                   placeholder="001-M"
+                   value={settings.proyecto}
+                   onChange={(e) => onChange({ proyecto: e.target.value })}
+@@ -209,7 +209,7 @@ export function MaterialPanel({
+               </Field>
+               <Field label="Cliente">
+                 <Input
+-                  className="h-9 rounded-lg border-0 bg-background/50 text-base truncate uppercase text-foreground tablet:text-xs focus-visible:ring-1 focus-visible:ring-primary/30"
++                  className="h-9 rounded-lg border-0 bg-background/50 text-xs truncate uppercase text-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
+                   placeholder="ETM"
+                   value={settings.cliente}
+                   onChange={(e) => onChange({ cliente: e.target.value })}
+@@ -226,7 +226,7 @@ export function MaterialPanel({
+                   </div>
+                 ) : (
+                   <Input
+-                    className="h-9 rounded-lg border-0 bg-background/50 text-base tablet:text-xs truncate uppercase text-foreground focus-visible:ring-1 focus-visible:ring-primary/30 w-full"
++                    className="h-9 rounded-lg border-0 bg-background/50 text-xs truncate uppercase text-foreground focus-visible:ring-1 focus-visible:ring-primary/30 w-full"
+                     placeholder="INOX"
+                     value={settings.material}
+                     onChange={(e) => onChange({ material: e.target.value })}
+@@ -242,7 +242,7 @@ export function MaterialPanel({
+                   </div>
+                 ) : (
+                   <Input
+-                    className="h-9 rounded-lg border-0 bg-background/50 text-base tablet:text-xs truncate uppercase text-foreground focus-visible:ring-1 focus-visible:ring-primary/30 w-full"
++                    className="h-9 rounded-lg border-0 bg-background/50 text-xs truncate uppercase text-foreground focus-visible:ring-1 focus-visible:ring-primary/30 w-full"
+                     inputMode="decimal"
+                     placeholder="Ej: 3.0 mm"
+                     value={settings.espesor}
+diff --git a/src/features/nesting/components/nesting-page.tsx b/src/features/nesting/components/nesting-page.tsx
+index 44361e2..7880ae0 100644
+--- a/src/features/nesting/components/nesting-page.tsx
++++ b/src/features/nesting/components/nesting-page.tsx
+@@ -51,6 +51,7 @@ import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { computeLayerList, type NestingPieceInput } from "./dxf-canvas/dxf-canvas"
+ import { LayerManager } from "./layer-manager"
+ import { NestingPanel, type NestingPanelView } from "./nesting-panel"
++import { TOOL_SIDEBAR_ASIDE } from "@/shared/ui/tool-side-panel/chrome"
+ import { consumeCadImportSignal } from "@/features/cad/pending-nesting-pieces"
+ import { NestingConfirmDialog } from "./nesting-confirm-dialog"
+ 
+@@ -714,7 +715,7 @@ export function NestingPage() {
+       {/* —— Desktop: sidebar + canvas —— */}
+       {!isCompact && (
+         <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3">
+-          <aside className="flex h-full min-h-0 w-80 shrink-0 flex-col overflow-hidden rounded-2xl bg-muted p-3 shadow-xs dark:bg-foreground/5">
++          <aside className={TOOL_SIDEBAR_ASIDE}>
+             {panel}
+           </aside>
+           <div
+diff --git a/src/features/nesting/components/nesting-panel.tsx b/src/features/nesting/components/nesting-panel.tsx
+index c37be33..8e21755 100644
+--- a/src/features/nesting/components/nesting-panel.tsx
++++ b/src/features/nesting/components/nesting-panel.tsx
+@@ -3,6 +3,11 @@
+ import type { ReactNode } from "react"
+ import { LayoutGrid, Layers, Info, SlidersHorizontal } from "lucide-react"
+ 
++import {
++  TOOL_SIDEBAR_CONTENT_FILL,
++  TOOL_SIDEBAR_CONTENT_SCROLL,
++  TOOL_SIDEBAR_INNER,
++} from "@/shared/ui/tool-side-panel/chrome"
+ import {
+   EntityExpandedToggle,
+   type EntityExpandedToggleOption,
+@@ -50,7 +55,7 @@ export function NestingPanel({
+   footer,
+ }: NestingPanelProps) {
+   return (
+-    <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
++    <div className={TOOL_SIDEBAR_INNER}>
+       <EntityExpandedToggle
+         value={activePanel}
+         onChange={onActivePanelChange}
+@@ -59,22 +64,22 @@ export function NestingPanel({
+ 
+       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+         {activePanel === "sheet-pieces" && (
+-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]">
++          <div className={TOOL_SIDEBAR_CONTENT_FILL}>
+             {pieces}
+           </div>
+         )}
+         {activePanel === "project-material" && (
+-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]">
++          <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
+             {projectMaterial}
+           </div>
+         )}
+         {activePanel === "layers" && (
+-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]">
++          <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
+             {layers}
+           </div>
+         )}
+         {activePanel === "inspector" && (
+-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]">
++          <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
+             {inspector}
+           </div>
+         )}
+diff --git a/src/shared/ui/tool-side-panel/chrome.ts b/src/shared/ui/tool-side-panel/chrome.ts
+new file mode 100644
+index 0000000..79239db
+--- /dev/null
++++ b/src/shared/ui/tool-side-panel/chrome.ts
+@@ -0,0 +1,32 @@
++/**
++ * Chrome visual del sidebar de herramienta (Nesting desktop).
++ * Única fuente — Nesting y CAD plantillas deben usar estas clases.
++ */
++export const TOOL_SIDEBAR_ASIDE =
++  "flex h-full min-h-0 w-80 shrink-0 flex-col overflow-hidden rounded-2xl bg-muted p-3 shadow-xs dark:bg-foreground/5"
++
++export const TOOL_SIDEBAR_INNER =
++  "flex h-full min-h-0 flex-col gap-3 overflow-hidden"
++
++/** Superficie de contenido bajo el toggle (tabs). */
++export const TOOL_SIDEBAR_CONTENT_SCROLL =
++  "min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]"
++
++export const TOOL_SIDEBAR_CONTENT_FILL =
++  "flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-background p-3 dark:bg-foreground/[0.06]"
++
++/** Sección colapsable (PROYECTO / CONFIG / PARÁMETROS) */
++export const TOOL_SIDE_SECTION =
++  "flex flex-col rounded-xl bg-muted/80 p-1 transition-colors dark:bg-foreground/5"
++
++export const TOOL_SIDE_SECTION_TITLE =
++  "text-xs font-semibold uppercase tracking-widest text-muted-foreground"
++
++export const TOOL_SIDE_FIELD_LABEL =
++  "text-xs font-medium text-muted-foreground"
++
++/** Input del sidebar — text-xs, misma huella Nesting */
++export const TOOL_SIDE_INPUT =
++  "h-9 w-full rounded-lg border-0 bg-background/50 px-3 text-xs text-foreground outline-none ring-0 focus-visible:ring-1 focus-visible:ring-primary/30"
++
++export const TOOL_SIDE_INPUT_CENTER = `${TOOL_SIDE_INPUT} text-center tabular-nums`

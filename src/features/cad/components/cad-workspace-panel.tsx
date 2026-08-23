@@ -21,6 +21,16 @@ import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-he
 
 import { cn } from "@/shared/utils/utils"
 import {
+  TOOL_SIDEBAR_ASIDE,
+  TOOL_SIDEBAR_INNER,
+  TOOL_SIDEBAR_CONTENT_SCROLL,
+  TOOL_SIDE_SECTION,
+  TOOL_SIDE_SECTION_TITLE,
+  TOOL_SIDE_FIELD_LABEL,
+  TOOL_SIDE_INPUT_CENTER,
+  TOOL_SIDE_INPUT,
+} from "@/shared/ui/tool-side-panel/chrome"
+import {
   EntityExpandedToggle,
   type EntityExpandedToggleOption,
 } from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
@@ -118,16 +128,14 @@ function Field({
   step?: string
 }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-medium tracking-wide text-muted-foreground">
-        {label}
-      </span>
+    <label className="flex flex-col gap-1.5">
+      <span className={TOOL_SIDE_FIELD_LABEL}>{label}</span>
       <input
         type="number"
         step={step}
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="h-9 w-full rounded-lg bg-foreground/5 px-3 text-sm tabular-nums text-foreground outline-none ring-0 border-0 focus:bg-foreground/10"
+        className={TOOL_SIDE_INPUT_CENTER}
       />
     </label>
   )
@@ -268,11 +276,12 @@ export function CadWorkspacePanel({
   const plate = mode === "plate"
 
   const paramsBody = (
-    <>
-
-          <p className="text-[11px] font-medium tracking-wide text-muted-foreground">
-            PARÁMETROS · mm
-          </p>
+    <div className="flex flex-col gap-3">
+      <div className={TOOL_SIDE_SECTION}>
+        <div className="px-2 py-2">
+          <span className={TOOL_SIDE_SECTION_TITLE}>Parámetros · mm</span>
+        </div>
+        <div className="flex flex-col gap-2 px-2 pb-2">
 
           {tira && (
             <>
@@ -324,7 +333,7 @@ export function CadWorkspacePanel({
                       material: e.target.value,
                     } as CreatePieceBody)
                   }
-                  className="h-9 rounded-lg border-0 bg-foreground/5 px-3 text-sm outline-none ring-0 focus:bg-foreground/10"
+                  className={TOOL_SIDE_INPUT}
                 />
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -475,7 +484,7 @@ export function CadWorkspacePanel({
                           bends: { positions: prev },
                         } as CreatePieceBody)
                       }}
-                      className="h-9 min-w-0 flex-1 rounded-lg border-0 bg-foreground/5 px-3 text-sm tabular-nums outline-none ring-0 focus:bg-foreground/10"
+                      className={cn(TOOL_SIDE_INPUT_CENTER, "min-w-0 flex-1")}
                     />
                     <button
                       type="button"
@@ -547,7 +556,7 @@ export function CadWorkspacePanel({
                       material: e.target.value,
                     } as CreatePieceBody)
                   }
-                  className="h-9 rounded-lg border-0 bg-foreground/5 px-3 text-sm outline-none ring-0 focus:bg-foreground/10"
+                  className={TOOL_SIDE_INPUT}
                 />
               </label>
             </div>
@@ -616,7 +625,7 @@ export function CadWorkspacePanel({
                 value={saveName}
                 onChange={e => setSaveName(e.target.value)}
                 placeholder="Nombre…"
-                className="h-9 min-w-0 flex-1 rounded-lg border-0 bg-foreground/5 px-3 text-sm outline-none ring-0 focus:bg-foreground/10"
+                className={cn(TOOL_SIDE_INPUT, "min-w-0 flex-1")}
               />
               <button
                 type="button"
@@ -670,7 +679,9 @@ export function CadWorkspacePanel({
             </p>
           )}
         
-    </>
+        </div>
+      </div>
+    </div>
   )
 
   const modeToggle = (
@@ -788,21 +799,25 @@ export function CadWorkspacePanel({
     )
   }
 
-  // Desktop: mismo shell que CAD AI (p-2, gap-3, cards con shadow-xs)
+  // Desktop: mismo chrome que Nesting (aside + toggle dentro + content)
   return (
     <div
       className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden"
       style={{ paddingTop: chromeInset.paddingTop }}
     >
-      <div className="flex h-full min-h-0 w-full flex-1 flex-col gap-3 p-2">
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 px-1">
-          {modeToggle}
-          {actionBtns}
-        </div>
-        <div className="flex min-h-0 flex-1 items-stretch gap-3">
-          <aside className="flex h-full min-h-0 w-72 shrink-0 flex-col gap-3 overflow-y-auto rounded-2xl bg-card/90 p-3 shadow-xs backdrop-blur-md desktop:w-80">
-            {paramsBody}
-          </aside>
+      <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 p-2">
+        <aside className={TOOL_SIDEBAR_ASIDE}>
+          <div className={TOOL_SIDEBAR_INNER}>
+            {modeToggle}
+            <div className={TOOL_SIDEBAR_CONTENT_SCROLL}>
+              {paramsBody}
+            </div>
+          </div>
+        </aside>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+            {actionBtns}
+          </div>
           {preview}
         </div>
       </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { forwardRef, memo, useEffect, useImperativeHandle, useRef, useState, useMemo } from "react"
-import { Import, FileWarning, AlertTriangle, Eye, Layers, Copy, Search, X, Trash2, Ruler } from "lucide-react"
+import { Import, FileWarning, AlertTriangle, Eye, Layers, Copy, Search, X, Trash2, Circle, Ruler } from "lucide-react"
 import {
   EntityExpandedToggle,
   type EntityExpandedToggleOption,
@@ -59,7 +59,8 @@ export interface PieceListProps {
 
 type GroupByType = "none" | "thickness" | "material"
 
-const GROUP_BY_OPTIONS: EntityExpandedToggleOption<"thickness" | "material">[] = [
+const GROUP_BY_OPTIONS: EntityExpandedToggleOption<GroupByType>[] = [
+  { value: "none", label: "Ninguno", icon: Circle },
   { value: "thickness", label: "Espesor", icon: Ruler },
   { value: "material", label: "Material", icon: Layers },
 ]
@@ -379,16 +380,10 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
             Agrupar
           </span>
           <EntityExpandedToggle
-            value={
-              groupBy === "none"
-                ? ("" as unknown as "thickness")
-                : groupBy
-            }
-            onChange={(v) =>
-              setGroupBy((prev) => (prev === v ? "none" : v))
-            }
+            value={groupBy}
+            onChange={setGroupBy}
             options={GROUP_BY_OPTIONS}
-            forceLabels
+            compact
           />
         </div>
       )}

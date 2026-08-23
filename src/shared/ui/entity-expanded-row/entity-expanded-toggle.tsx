@@ -24,6 +24,8 @@ type Props<T extends string> = {
   trailing?: ReactNode
   /** Si true, siempre muestra label junto al icono (no solo en ancho amplio). */
   forceLabels?: boolean
+  /** Solo iconos, sin expandir a full width (agrupar, chips fijos). */
+  compact?: boolean
 }
 
 const COMPACT_BREAKPOINT = 420
@@ -35,12 +37,14 @@ export function EntityExpandedToggle<T extends string>({
   leading,
   trailing,
   forceLabels = false,
+  compact = false,
 }: Props<T>) {
   const wrapperRef = useRef<HTMLDivElement>(null)
 
   const [fullWidth, setFullWidth] = useState(false)
 
   useEffect(() => {
+    if (compact) return
     if (!wrapperRef.current) return
 
     const measure = () => {
@@ -56,7 +60,7 @@ export function EntityExpandedToggle<T extends string>({
     resizeObserver.observe(wrapperRef.current)
 
     return () => resizeObserver.disconnect()
-  }, [])
+  }, [compact])
 
   return (
     <div
@@ -99,7 +103,7 @@ export function EntityExpandedToggle<T extends string>({
                 />
               </span>
 
-              {(forceLabels || !fullWidth) && (
+              {!compact && (forceLabels || !fullWidth) && (
                 <span className="min-w-0 truncate">
                   {option.label}
                 </span>

@@ -1,0 +1,186 @@
+diff --git a/src/app/(protected)/cad/page.tsx b/src/app/(protected)/cad/page.tsx
+index 535bd70..9e74900 100644
+--- a/src/app/(protected)/cad/page.tsx
++++ b/src/app/(protected)/cad/page.tsx
+@@ -1,6 +1,6 @@
+ "use client"
+ 
+-import { useCallback, useMemo, useRef, useState } from "react"
++import { useCallback, useMemo, useRef, useState, type ReactNode } from "react"
+ import { Boxes, Layers, SlidersHorizontal, Sparkles } from "lucide-react"
+ 
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+@@ -10,7 +10,7 @@ import { PageShell } from "@/shared/responsive/layout/page-shell"
+ import { CadWorkspacePanel } from "@/features/cad/components/cad-workspace-panel"
+ import { CadAiPanel } from "@/features/cad-ai/components/cad-ai-panel"
+ import { EntityToggle } from "@/shared/ui/entity-toggle/entity-toggle"
+-import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
++import { TOPBAR_ICON_BTN } from "@/shared/ui/entity-toolbar/toolbar-chrome"
+ import { cn } from "@/shared/utils/utils"
+ 
+ type Tab = "ai" | "templates"
+@@ -41,35 +41,35 @@ function CadTabs({
+   )
+ }
+ 
+-function SkillsChromeButton({
++/** Botón redondo topbar (mismo chrome que campana / mensajes / avatar). */
++function TopbarRoundButton({
+   onClick,
+-  iconsOnly,
++  label,
++  title,
++  children,
+ }: {
+   onClick: () => void
+-  iconsOnly?: boolean
++  label: string
++  title?: string
++  children: ReactNode
+ }) {
+   return (
+     <button
+       type="button"
+-      aria-label="Skills"
+-      title="Skills"
++      aria-label={label}
++      title={title ?? label}
+       onClick={onClick}
+-      className={cn(
+-        CHROME_ICON_BTN,
+-        "shrink-0 shadow-xs backdrop-blur-xs",
+-        iconsOnly ? "size-8 px-0" : "h-9 w-auto gap-1.5 px-2.5 text-xs font-semibold",
+-      )}
++      className={cn(TOPBAR_ICON_BTN, "shrink-0")}
+     >
+-      <Layers size={14} strokeWidth={2.25} />
+-      {!iconsOnly && <span>Skills</span>}
++      {children}
+     </button>
+   )
+ }
+ 
+ /**
+- * Móvil + tablet: slot immersive (entre TopBar y BottomNav).
+- * Landscape: toggle + Skills van al TopBar (usePageToolbar).
+- * Portrait: fila bajo el TopBar; Skills solo icono a la derecha.
++ * Móvil + tablet: slot immersive.
++ * Landscape: toggle + Skills + settings en TopBar (botones redondos chrome).
++ * Portrait: fila bajo TopBar; Skills/settings redondos a la derecha.
+  */
+ function CadPageCompact() {
+   usePageTitle("CAD")
+@@ -90,60 +90,55 @@ function CadPageCompact() {
+       <div className="flex items-center gap-1">
+         <CadTabs tab={tab} onTabChange={setTab} compact iconsOnly />
+         {tab === "ai" && (
+-          <SkillsChromeButton onClick={openSkills} iconsOnly />
++          <TopbarRoundButton onClick={openSkills} label="Skills" title="Skills">
++            <Layers size={16} strokeWidth={2.2} />
++          </TopbarRoundButton>
++        )}
++        {tab === "ai" && hasVisualizer && (
++          <TopbarRoundButton
++            onClick={() => setAiPanelOpen(true)}
++            label="Opciones de IA"
++            title="Opciones de IA"
++          >
++            <SlidersHorizontal size={16} strokeWidth={2.2} />
++          </TopbarRoundButton>
+         )}
+       </div>
+     )
+-  }, [isLandscape, tab, openSkills])
++  }, [isLandscape, tab, openSkills, hasVisualizer])
+ 
+   usePageToolbar(landscapeToolbar)
+ 
+   return (
+     <PageShell mode="bleed">
+       <section className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+-        {(!isLandscape || (tab === "ai" && hasVisualizer)) && (
+-          <div
+-            className={cn(
+-              "relative z-[1] flex shrink-0 items-center overflow-visible px-2",
+-              isLandscape ? "mb-0.5 min-h-8 py-0.5" : "mb-1.5 h-11",
+-            )}
+-          >
+-            {!isLandscape && (
+-              <div className="flex min-w-0 flex-1 items-center justify-center">
+-                <CadTabs tab={tab} onTabChange={setTab} compact />
+-              </div>
+-            )}
+-
+-            {!isLandscape && tab === "ai" && (
+-              <button
+-                type="button"
+-                aria-label="Skills"
+-                title="Skills"
+-                onClick={openSkills}
++        {/* Portrait: toggle + Skills/settings redondos. Landscape: todo en TopBar */}
++        {!isLandscape && (
++          <div className="relative z-[1] mb-1.5 flex h-11 shrink-0 items-center overflow-visible px-2">
++            <div className="flex min-w-0 flex-1 items-center justify-center">
++              <CadTabs tab={tab} onTabChange={setTab} compact />
++            </div>
++
++            {tab === "ai" && (
++              <div
+                 className={cn(
+-                  CHROME_ICON_BTN,
+-                  "absolute top-1/2 z-[2] flex size-9 -translate-y-1/2 px-0 shadow-xs backdrop-blur-xs",
+-                  hasVisualizer ? "right-12" : "right-2",
++                  "absolute top-1/2 z-[2] flex -translate-y-1/2 items-center gap-1.5",
++                  "right-2",
+                 )}
+               >
+-                <Layers size={14} strokeWidth={2.25} />
+-              </button>
+-            )}
+-
+-            {tab === "ai" && hasVisualizer && (
+-              <button
+-                type="button"
+-                aria-label="Abrir panel de IA"
+-                title="Opciones de IA"
+-                onClick={() => setAiPanelOpen(true)}
+-                className={cn(
+-                  "absolute right-2 top-1/2 flex -translate-y-1/2 items-center justify-center",
+-                  "rounded-xl bg-foreground/5 text-foreground shadow-xs backdrop-blur-xl",
+-                  isLandscape ? "size-8" : "size-9",
++                <TopbarRoundButton onClick={openSkills} label="Skills" title="Skills">
++                  <Layers size={16} strokeWidth={2.2} />
++                </TopbarRoundButton>
++                {hasVisualizer && (
++                  <TopbarRoundButton
++                    onClick={() => setAiPanelOpen(true)}
++                    label="Opciones de IA"
++                    title="Opciones de IA"
++                  >
++                    <SlidersHorizontal size={16} strokeWidth={2.2} />
++                  </TopbarRoundButton>
+                 )}
+-              >
+-                <SlidersHorizontal size={isLandscape ? 15 : 16} strokeWidth={2.2} />
+-              </button>
++              </div>
+             )}
+           </div>
+         )}
+@@ -178,10 +173,13 @@ function CadPageDesktop() {
+     <div className="flex items-center gap-1.5">
+       <CadTabs tab={tab} onTabChange={setTab} />
+       {tab === "ai" && (
+-        <SkillsChromeButton
++        <TopbarRoundButton
+           onClick={() => openSkillsRef.current?.()}
+-          iconsOnly={false}
+-        />
++          label="Skills"
++          title="Skills"
++        >
++          <Layers size={16} strokeWidth={2.2} />
++        </TopbarRoundButton>
+       )}
+     </div>,
+   )

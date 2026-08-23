@@ -32,20 +32,21 @@ export function BottomNavigation() {
           arriba), por eso se veía como un corte duro en vez de un
           desvanecimiento. mask-image hace que el EFECTO del blur en
           sí se desvanezca, no solo el color de fondo. */}
+      {/* Fade corto: no invade el composer CAD ni listados */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-28 backdrop-blur-xl"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-14 backdrop-blur-md"
         style={{
-          maskImage: "linear-gradient(to top, black 40%, transparent)",
-          WebkitMaskImage: "linear-gradient(to top, black 40%, transparent)",
+          maskImage: "linear-gradient(to top, black 55%, transparent)",
+          WebkitMaskImage: "linear-gradient(to top, black 55%, transparent)",
         }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-background/80"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-background/50"
         style={{
-          maskImage: "linear-gradient(to top, black 30%, transparent)",
-          WebkitMaskImage: "linear-gradient(to top, black 30%, transparent)",
+          maskImage: "linear-gradient(to top, black 45%, transparent)",
+          WebkitMaskImage: "linear-gradient(to top, black 45%, transparent)",
         }}
       />
 

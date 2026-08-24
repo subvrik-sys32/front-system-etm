@@ -26,8 +26,11 @@ import {
   MEASURE_COLOR,
   MEASURE_PENDING_COLOR,
   getSelectedStroke,
-  SHEET_STROKE,
 } from "../../types/types"
+import {
+  resolveEntityStroke,
+  resolveSheetStroke,
+} from "./resolve-entity-color"
 
 // Re-exportado para no romper el import externo existente (dxf-canvas.tsx
 // no lo usa hoy directamente, pero era `export` acá — se mantiene la
@@ -122,7 +125,7 @@ export function drawScene(d: DrawContext) {
   }
 
   if (sheetSize) {
-    ctx.strokeStyle = SHEET_STROKE
+    ctx.strokeStyle = resolveSheetStroke()
     ctx.lineWidth = 1.5 / scale
     ctx.strokeRect(0, 0, sheetSize.width, sheetSize.height)
   }
@@ -156,12 +159,13 @@ export function drawScene(d: DrawContext) {
     // Culling: si está fuera del viewport y no se está arrastrando, skip
     if (!inDrag && item.bounds && !aabbIntersects(item.bounds, viewAabb)) continue
 
+    const base = resolveEntityStroke(e.color)
     ctx.strokeStyle = isColliding
       ? COLLISION_COLOR
       : isSelected
         ? getSelectedStroke()
-        : e.color
-    ctx.fillStyle = e.color
+        : base
+    ctx.fillStyle = base
     ctx.lineWidth = (isColliding || isSelected ? 1.8 : 1) / scale
 
     if (e.kind === "text") {

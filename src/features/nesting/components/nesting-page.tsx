@@ -997,6 +997,7 @@ export function NestingPage() {
         sheetConfig={project.sheetConfig}
         nomenclatura={project.nomenclatura}
         onExportSheet={handleExportSheet}
+        onExportMosaic={(format) => project.onExportMosaic(format)}
         onSaveProject={project.onSaveProject}
         cliente={project.settings.cliente}
         maquina={project.machine.maquina}

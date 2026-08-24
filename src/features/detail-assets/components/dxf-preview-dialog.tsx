@@ -16,6 +16,8 @@ import {
 import { Spinner } from "@/shared/ui/spinner/spinner"
 import { cadParseApi } from "@/features/nesting/api/cad-parse.api"
 import type { NestingPieceInput } from "@/features/nesting/components/dxf-canvas/dxf-canvas"
+import type { CadRow } from "@/features/nesting/components/piece-list"
+import { cadRowToPreviewPieces } from "@/features/nesting/components/piece-preview-dialog"
 
 const DxfCanvas = dynamic(
   () =>
@@ -28,14 +30,13 @@ const DxfCanvas = dynamic(
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** URL pública del DXF */
   url: string | null
   fileName?: string | null
 }
 
 /**
- * Visor DXF = mismo canvas que nesting (solo lectura).
- * Descarga aparte del ojito.
+ * Mismo pipeline que PieceList:
+ * cadParseApi.parseFile → CadRow (drawing) → cadRowToPreviewPieces → DxfCanvas
  */
 export function DxfPreviewDialog({
   open,
@@ -64,31 +65,28 @@ export function DxfPreviewDialog({
         const name = fileName?.endsWith(".dxf")
           ? fileName
           : `${fileName || "plano"}.dxf`
-        const file = new File([blob], name, {
-          type: "application/dxf",
-        })
+        const file = new File([blob], name, { type: "application/dxf" })
         const parsed = await cadParseApi.parseFile(file, ac.signal)
-        if (!parsed.valid) {
-          throw new Error("Geometría inválida")
+        if (!parsed.valid) throw new Error("Geometría inválida")
+
+        // drawing = espacio completo (mosaico / plano).
+        // pieces[0] = fallback una pieza.
+        const src = parsed.drawing ?? parsed.pieces?.[0]
+        if (!src?.outline?.points?.length) throw new Error("Geometría inválida")
+
+        const row: CadRow = {
+          id: "preview",
+          source: "cad",
+          fileName: name,
+          outline: src.outline,
+          subEntities: src.subEntities ?? [],
+          width: parsed.width ?? 0,
+          height: parsed.height ?? 0,
+          quantity: "1",
+          color: "#22c55e",
+          material: { thickness: -1, dinNorm: "N/D", alloy: "N/D" },
         }
-        // Preview = drawing (un solo espacio). pieces[] va normalizado
-        // por contorno a (0,0) y rompe la posición relativa del DXF.
-        const source = parsed.drawing
-          ? [parsed.drawing]
-          : parsed.pieces
-        if (!source?.length) {
-          throw new Error("Geometría inválida")
-        }
-        setPieces(
-          source.map(p => ({
-            outline: p.outline.points,
-            subOutlines: (p.subEntities ?? []).map(s => ({
-              points: s.outline.points,
-              color: s.color,
-              layer: s.layer,
-            })),
-          })),
-        )
+        setPieces(cadRowToPreviewPieces(row))
       } catch (e) {
         if ((e as Error).name === "AbortError") return
         setError((e as Error).message || "Error al cargar DXF")
@@ -137,14 +135,7 @@ export function DxfPreviewDialog({
             <DialogHeaderCloseButton onClick={() => onOpenChange(false)} />
           </div>
         </DialogHeader>
-        {/* Lienzo a sangre: sin padding ni rounded interno (el dialog ya recorta) */}
-        <div
-          className={
-            "relative min-h-0 flex-1 overflow-hidden bg-neutral-950 " +
-            // anula rounded/borde del DxfCanvas anidado
-            "[&>*]:h-full [&>*]:w-full [&>*]:rounded-none [&>*]:border-0"
-          }
-        >
+        <div className="relative min-h-0 flex-1 overflow-hidden [&>*]:h-full [&>*]:w-full [&>*]:rounded-none [&>*]:border-0">
           {loading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
               <Spinner size={28} />

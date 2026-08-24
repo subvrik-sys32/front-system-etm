@@ -22,6 +22,18 @@ export interface PiecePreviewDialogProps {
   onMirrorY?: (id: string) => void
 }
 
+/** Único mapeo CadRow → DxfCanvas (PieceList + cualquier preview). */
+export function cadRowToPreviewPieces(row: CadRow): NestingPieceInput[] {
+  return [
+    {
+      subOutlines: row.subEntities.length
+        ? row.subEntities.map((s) => ({ points: s.outline.points, color: s.color }))
+        : [],
+      outline: row.outline.points,
+    },
+  ]
+}
+
 export function PiecePreviewDialog({
   row,
   onClose,
@@ -29,16 +41,7 @@ export function PiecePreviewDialog({
   onMirrorX,
   onMirrorY,
 }: PiecePreviewDialogProps) {
-  const pieces: NestingPieceInput[] = row
-    ? [
-        {
-          subOutlines: row.subEntities.length
-            ? row.subEntities.map((s) => ({ points: s.outline.points, color: s.color }))
-            : [],
-          outline: row.outline.points,
-        },
-      ]
-    : []
+  const pieces: NestingPieceInput[] = row ? cadRowToPreviewPieces(row) : []
 
   return (
     <Dialog open={row !== null} onOpenChange={(next) => !next && onClose()}>

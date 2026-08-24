@@ -20,6 +20,7 @@ type Props = {
   sheetConfig: SheetConfig
   nomenclatura: Nomenclatura
   onExportSheet: (format: "dxf" | "nsp", sheetIndex: number) => Promise<void> | void
+  onExportMosaic?: (format: "dxf" | "nsp") => Promise<void> | void
   onSaveProject: () => void
   nameById?: PieceNameMap
   cliente?: string
@@ -34,6 +35,7 @@ export function ExportDialog({
   sheetConfig,
   nomenclatura,
   onExportSheet,
+  onExportMosaic,
   onSaveProject,
   nameById,
   cliente,
@@ -131,6 +133,24 @@ export function ExportDialog({
                     </span>
                     <span className="truncate text-[11px] text-muted-foreground">
                       Resumen, vista de cada plancha y catálogo (BOM)
+                    </span>
+                  </div>
+                </button>
+              )}
+
+              {sheetGroups.length > 0 && onExportMosaic && (
+                <button
+                  type="button"
+                  onClick={() => void onExportMosaic("dxf")}
+                  className="group flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-foreground/10"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-foreground/5 text-muted-foreground group-hover:text-foreground">
+                    <Layers size={18} />
+                  </div>
+                  <div className="flex min-w-0 flex-col">
+                    <span className="text-sm font-medium text-foreground">Mosaico DXF</span>
+                    <span className="truncate text-[11px] text-muted-foreground">
+                      Un archivo · {sheetGroups.length} layouts (sin duplicar)
                     </span>
                   </div>
                 </button>

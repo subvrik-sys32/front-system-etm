@@ -16,6 +16,10 @@ import { buildSheetFileName, type Nomenclatura } from "../export/nomenclatura"
 import { generateSheetDxf, type BridgeSettings } from "../export/dxf-export"
 import { generateSheetNsp } from "../export/nsp-export"
 import {
+  generateMosaicDxf,
+  buildMosaicFileName,
+} from "../export/mosaic-export"
+import {
   serializeProjectV2,
   parseProjectFile,
   isProjectFileV2,
@@ -383,6 +387,20 @@ export function useNestingProject() {
     }
   }, [sheets, nomenclatura, sheetConfig, defaultBridgeSettings])
 
+  const handleExportMosaic = useCallback((format: "dxf" | "nsp", bridges?: BridgeSettings) => {
+    if (format !== "dxf") return
+    const source = sheetGroups.map((g) => g.sheet)
+    if (source.length === 0) return
+    const totalPieces = source.reduce((n, s) => n + s.pieces.length, 0)
+    const fileName = buildMosaicFileName(nomenclatura, totalPieces, source.length)
+    void saveTextFile(
+      `${fileName}.dxf`,
+      generateMosaicDxf(source, sheetConfig, bridges ?? defaultBridgeSettings),
+      "application/dxf",
+      [".dxf"],
+    )
+  }, [sheetGroups, nomenclatura, sheetConfig, defaultBridgeSettings])
+
   const exportMaterializedSheet = useCallback((format: "dxf" | "nsp", sheet: NestedSheet, sheetIndex: number, bridges?: BridgeSettings) => {
     const fileName = buildSheetFileName(nomenclatura, sheet.pieces.length, sheetIndex)
     if (format === "dxf") {
@@ -731,6 +749,7 @@ export function useNestingProject() {
       onRun: handleRun,
       onCancel: cancel,
       onExportSheet: handleExportSheet,
+      onExportMosaic: handleExportMosaic,
       onExportMaterializedSheet: exportMaterializedSheet,
       onSaveProject: handleSaveProject,
       onSaveProjectLocal: handleSaveProjectLocal,
@@ -783,6 +802,7 @@ export function useNestingProject() {
       handleRun,
       cancel,
       handleExportSheet,
+      handleExportMosaic,
       exportMaterializedSheet,
       handleSaveProject,
       handleSaveProjectLocal,

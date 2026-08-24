@@ -80,26 +80,30 @@ function writePolylineR12(points: Point2D[], layer: string, color: number): stri
  * el marco de la plancha (capa MARCO_CHAPA) y cada pieza colocada, con
  * sus entidades agrupadas por capa/color según la convención CypCut.
  */
-export function generateSheetDxf(
+/**
+ * Entidades de una plancha (marco + piezas). origin = tile en mosaico.
+ */
+export function writeSheetDxfEntities(
   sheet: NestedSheet,
   sheetConfig: SheetConfig,
-  bridges: BridgeSettings = NO_BRIDGES
+  bridges: BridgeSettings = NO_BRIDGES,
+  origin: Point2D = { x: 0, y: 0 },
 ): string {
   const { width, height } = sheetConfig
+  const ox = origin.x
+  const oy = origin.y
+  const flipY = (p: Point2D): Point2D => ({
+    x: p.x + ox,
+    y: height - p.y + oy,
+  })
 
-  // Invierte el eje Y para que el origen quede abajo-izquierda, como
-  // espera AutoCAD (mi modelo interno usa Y hacia abajo desde el
-  // parseo). Puerto directo de la lambda flipY del original.
-  const flipY = (p: Point2D): Point2D => ({ x: p.x, y: height - p.y })
-
-  let out = "  0\nSECTION\n  2\nENTITIES\n"
-
+  let out = ""
   const frame: Point2D[] = [
-    { x: 0, y: 0 },
-    { x: width, y: 0 },
-    { x: width, y: height },
-    { x: 0, y: height },
-    { x: 0, y: 0 },
+    { x: ox, y: oy },
+    { x: width + ox, y: oy },
+    { x: width + ox, y: height + oy },
+    { x: ox, y: height + oy },
+    { x: ox, y: oy },
   ]
   out += writePolylineR12(frame, "MARCO_CHAPA", 7)
 
@@ -113,13 +117,22 @@ export function generateSheetDxf(
         }
       }
     } else {
-      // Respaldo: piezas sin sub-entidades (ej. rectángulos manuales) — un solo contorno de corte.
       for (const tramo of splitForBridges(piece.outline, bridges)) {
         out += writePolylineR12(tramo.points.map(flipY), "CORTE_PRINCIPAL", 3)
       }
     }
   }
-
-  out += "  0\nENDSEC\n  0\nEOF\n"
   return out
+}
+
+export function generateSheetDxf(
+  sheet: NestedSheet,
+  sheetConfig: SheetConfig,
+  bridges: BridgeSettings = NO_BRIDGES,
+): string {
+  return (
+    ["  0", "SECTION", "  2", "ENTITIES", ""].join("\n") +
+    writeSheetDxfEntities(sheet, sheetConfig, bridges) +
+    ["  0", "ENDSEC", "  0", "EOF", ""].join("\n")
+  )
 }

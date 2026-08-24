@@ -27,6 +27,8 @@ export function invalidateDetailAssetCaches(
     void qc.invalidateQueries({
       queryKey: projectDetailAssetsKey(scope.projectId),
     })
+    // herencia: las tareas del proyecto muestran projectAssets
+    void qc.invalidateQueries({ queryKey: ["detail-assets", "task"] })
   }
   void qc.invalidateQueries({ queryKey: ["tasks"] })
   void qc.invalidateQueries({ queryKey: ["projects"] })

@@ -17,7 +17,13 @@ export type DetailAsset = {
 }
 
 export type TaskDetailAssetsResponse = {
+  /** Fotos/notas propias de la tarea */
   taskAssets: DetailAsset[]
+  /**
+   * Herencia proyecto → tarea: fotos/notas del proyecto.
+   * Visibles en tarea y procesos (read-through, sin copia).
+   */
+  projectAssets?: DetailAsset[]
   materialLines: Array<{
     id: string
     pieces: number

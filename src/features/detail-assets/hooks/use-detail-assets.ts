@@ -15,7 +15,6 @@ export const projectDetailAssetsKey = (projectId: string) =>
 
 /**
  * Invalida dialog + badges de fila (detailAssetCount en listados).
- * Sin esto el ojo del row queda desfasado tras borrar/subir.
  */
 export function invalidateDetailAssetCaches(
   qc: QueryClient,

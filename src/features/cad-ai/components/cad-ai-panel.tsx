@@ -5,6 +5,7 @@ import { SlidersHorizontal } from "lucide-react"
 import { Spinner } from "@/shared/ui/spinner/spinner"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
+import { useCadAiSessionStore } from "../store/cad-ai-session-store"
 import { cn } from "@/shared/utils/utils"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-header"
@@ -62,12 +63,16 @@ export function CadAiPanel({
   const chromeInset = useChromeInset({ bottom: false })
   const contentInsetStyle =
     isMobileShell || isMobileLayout ? undefined : chromeInset
-  const [geometry, setGeometry] = useState<PlanGeometry | null>(null)
-  const [dxf, setDxf] = useState<string>("")
+  const geometry = useCadAiSessionStore(s => s.geometry)
+  const setGeometry = useCadAiSessionStore(s => s.setGeometry)
+  const dxf = useCadAiSessionStore(s => s.dxf)
+  const setDxf = useCadAiSessionStore(s => s.setDxf)
+  const messages = useCadAiSessionStore(s => s.messages)
+  const setMessages = useCadAiSessionStore(s => s.setMessages)
+  const resetSession = useCadAiSessionStore(s => s.reset)
   const [imagePath, setImagePath] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
 
   useEffect(() => {
     onHasVisualizerChange?.(geometry !== null)
@@ -94,6 +99,12 @@ export function CadAiPanel({
 
   // layout prop es SSOT
   const geometryRef = useRef<PlanGeometry | null>(null)
+
+  // Restaurar ref al hidratar sesión (navegación / toggle IA↔Plantillas)
+  useEffect(() => {
+    geometryRef.current = geometry
+  }, [geometry])
+
 
   const emptyDotSize = useRingDotSize("empty")
   const activeDotSize = useRingDotSize("active")
@@ -180,16 +191,14 @@ export function CadAiPanel({
   }, [])
 
   const handleReset = useCallback(() => {
-    setGeometry(null)
-    setDxf("")
+    resetSession()
     setImagePath(null)
     setError(null)
-    setMessages([])
     setSelectedForAI(null)
     setActiveSkill(null)
     setSkillParams(null)
     geometryRef.current = null
-  }, [])
+  }, [resetSession])
 
   if (!geometry) {
     return (
@@ -308,7 +317,7 @@ export function CadAiPanel({
             </aside>
           </div>
         ) : (
-          <div className="absolute inset-x-0 bottom-0 top-0 mx-2 mb-2 mt-1 overflow-hidden rounded-xl bg-zinc-100 shadow-xs dark:bg-neutral-950">
+          <div className="absolute inset-x-0 bottom-0 top-0 mx-2 mb-2 overflow-hidden rounded-xl bg-zinc-100 shadow-xs dark:bg-neutral-950">
             <div className="absolute inset-0 overflow-hidden">
               {loading && (
                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">

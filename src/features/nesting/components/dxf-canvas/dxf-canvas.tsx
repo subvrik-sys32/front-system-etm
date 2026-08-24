@@ -73,6 +73,7 @@ export function DxfCanvas({
   const entitiesRef = useRef<Entity[]>([])
   const drawRafRef = useRef<number | null>(null)
   const cursorCssRef = useRef<{ x: number; y: number } | null>(null)
+  const coordsLabelRef = useRef<HTMLSpanElement | null>(null)
 
   const draggingRef = useRef<{
     startX: number
@@ -284,31 +285,22 @@ export function DxfCanvas({
     gridStyle,
   ])
 
+  // setToolpath estable; NO `sim` en deps (progress cambiaba identidad y reseteaba play)
+  const setToolpath = sim.setToolpath
   useEffect(() => {
     collisionIndexRef.current = buildCollisionIndex(pieces)
     const entities = piecesToEntities(pieces, hiddenKeys)
     entitiesRef.current = entities
     const { segments, totalLength, fullPath } = buildToolpath(entities)
-    sim.setToolpath(segments, totalLength, fullPath)
+    setToolpath(segments, totalLength, fullPath)
     requestAnimationFrame(() => {
-      // No pisar zoom/pan del usuario (medir, acercar detalle, pinch, etc.)
       if (!view.hasUserInteracted()) {
         view.fitToSheetOrEntities(canvasRef.current, entities, sheetSize, isCompact)
       }
       scheduleDraw()
     })
-    // `view` y `sim` ahora son estables (memoizados en sus hooks), así
-    // que sí pueden ir en las deps sin causar reruns de más.
-    // `scheduleDraw` queda afuera A PROPÓSITO: su identidad cambia por
-    // razones que NO deberían disparar este efecto pesado (selección,
-    // mediciones activas, estilo de grilla, etc. — ver sus propias deps
-    // más arriba). Este efecto solo debe reconstruir colisiones/entidades/
-    // toolpath y reajustar la cámara cuando cambian las piezas, el
-    // tamaño de la plancha o las capas ocultas; siempre usa la versión
-    // más reciente de scheduleDraw vía closure, sin necesitar re-ejecutarse
-    // por eso.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pieces, sheetSize, hiddenKeys, view, sim])
+  }, [pieces, sheetSize, hiddenKeys, view, setToolpath])
 
   useEffect(() => {
     scheduleDraw()
@@ -547,6 +539,11 @@ export function DxfCanvas({
         cursorCssRef.current = {
           x: (e.clientX - rect.left) * sx,
           y: (e.clientY - rect.top) * sy,
+        }
+        const local = view.screenToLocal(c, e.clientX, e.clientY)
+        if (local && coordsLabelRef.current) {
+          coordsLabelRef.current.textContent =
+            `X: ${local.x.toFixed(2)}  Y: ${local.y.toFixed(2)} mm`
         }
       }
       if (pointersRef.current.has(e.pointerId)) {
@@ -1288,6 +1285,14 @@ export function DxfCanvas({
         onFocusSelected={handleFocus}
         onSetCanvasTool={setCanvasTool}
       />
+
+      <div
+        data-slot="canvas-coords"
+        className="pointer-events-none absolute bottom-3 z-20 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] tabular-nums text-muted-foreground backdrop-blur-sm"
+        style={{ right: 12 }}
+      >
+        <span ref={coordsLabelRef}>X: —  Y: — mm</span>
+      </div>
 
       <CanvasToolbar
         onOpenChange={setToolsChromeOpen}

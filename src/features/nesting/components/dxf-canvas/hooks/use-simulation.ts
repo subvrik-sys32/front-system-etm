@@ -10,6 +10,7 @@ const BASE_MM_PER_SEC = 80
  */
 export function useSimulation() {
   const [panelOpen, setPanelOpen] = useState(false)
+  const panelOpenRef = useRef(false)
   const [running, setRunning] = useState(false)
   const [progress, setProgress] = useState(0)
   const [speed, setSpeed] = useState(1)
@@ -46,11 +47,16 @@ export function useSimulation() {
   )
 
   const clearOverlayIfIdle = useCallback(() => {
+    if (panelOpenRef.current) return
     if (!runningRef.current && progressRef.current > 0) {
       setProgress(0)
       progressRef.current = 0
     }
   }, [])
+
+  useEffect(() => {
+    panelOpenRef.current = panelOpen
+  }, [panelOpen])
 
   const openPanel = useCallback(() => setPanelOpen(true), [])
 

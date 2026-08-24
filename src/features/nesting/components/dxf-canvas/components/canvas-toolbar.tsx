@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, type ReactNode } from "react"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import {
   ZoomIn,
@@ -44,6 +44,53 @@ const mdBtnRed =
   "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-destructive transition-colors duration-150 hover:bg-destructive/15 active:bg-destructive/20 disabled:pointer-events-none disabled:opacity-30"
 const mdBtnActive = "bg-blue-500/20 text-blue-300 hover:bg-blue-500/25 hover:text-blue-300"
 const mdDivider = "mx-0.5 h-5 w-px shrink-0 bg-foreground/10"
+
+function ToolBtn({
+  title,
+  onClick,
+  disabled,
+  active,
+  className,
+  children,
+  tabIndex,
+}: {
+  title: string
+  onClick?: () => void
+  disabled?: boolean
+  active?: boolean
+  className?: string
+  children: ReactNode
+  tabIndex?: number
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      disabled={disabled}
+      tabIndex={tabIndex}
+      onClick={onClick}
+      onPointerDown={(e) => e.stopPropagation()}
+      className={`group/tool relative ${mdBtn} ${active ? mdBtnActive : ""} ${className ?? ""}`}
+    >
+      {children}
+      <span
+        className="
+          pointer-events-none absolute left-1/2 top-[calc(100%+6px)] z-50
+          -translate-x-1/2 whitespace-nowrap rounded-md
+          bg-popover px-2 py-1 text-[10px] font-medium text-popover-foreground
+          shadow-md ring-1 ring-border
+          opacity-0 transition-opacity duration-150
+          group-hover/tool:opacity-100
+          max-sm:hidden
+        "
+      >
+        {title}
+      </span>
+    </button>
+  )
+}
+
 
 export interface CanvasToolbarProps {
   showGrid: boolean
@@ -200,57 +247,58 @@ export function CanvasToolbar({
           "
         >
           {/* Vista */}
-          <button type="button" onClick={onZoomIn} className={`${mdBtn}`} title="Acercar">
+          <ToolBtn title="Acercar" onClick={onZoomIn}>
             <ZoomIn size={16} strokeWidth={1.75} />
-          </button>
-          <button type="button" onClick={onZoomOut} className={`${mdBtn}`} title="Alejar">
+          </ToolBtn>
+          <ToolBtn title="Alejar" onClick={onZoomOut}>
             <ZoomOut size={16} strokeWidth={1.75} />
-          </button>
-          <button type="button" onClick={onFit} className={`${mdBtn}`} title="Ajustar a la vista">
+          </ToolBtn>
+          <ToolBtn title="Ajustar a la vista" onClick={onFit}>
             <Maximize size={16} strokeWidth={1.75} />
-          </button>
-          <button
-            type="button"
-            onClick={onFocusSelected}
-            disabled={!canFocusSelected}
-            className={`${mdBtn}`}
-            title="Centrar en selección"
-          >
+          </ToolBtn>
+          <ToolBtn title="Centrar en selección" onClick={onFocusSelected} disabled={!canFocusSelected}>
             <Target size={16} strokeWidth={1.75} />
-          </button>
-          <button
-            type="button"
-            onClick={onAutoBboxDim}
-            disabled={!canAutoBboxDim || !onAutoBboxDim}
-            className={`${mdBtn}`}
-            title="Auto-cota bbox (selección)"
-          >
+          </ToolBtn>
+          <ToolBtn title="Auto-cota bbox" onClick={onAutoBboxDim} disabled={!canAutoBboxDim || !onAutoBboxDim}>
             <Square size={16} strokeWidth={1.75} />
-          </button>
+          </ToolBtn>
 
           <div className={mdDivider} />
 
-          <button
-            type="button"
-            onClick={onToggleGrid}
-            className={`${mdBtn} ${showGrid ? mdBtnActive : ""}`}
+          <ToolBtn
             title={showGrid ? "Ocultar fondo" : "Mostrar fondo"}
+            onClick={onToggleGrid}
+            active={showGrid}
           >
             {showGrid ? (
               <Eye size={16} strokeWidth={1.75} />
             ) : (
               <EyeOff size={16} strokeWidth={1.75} />
             )}
-          </button>
+          </ToolBtn>
 
           {onGridStyleChange && (
             <Popover open={displayOpen} onOpenChange={setDisplayOpen}>
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className={`${mdBtn} ${showGrid && gridStyle !== "none" ? mdBtnActive : ""}`}
+                  className={`group/tool relative ${mdBtn} ${showGrid && gridStyle !== "none" ? mdBtnActive : ""}`}
                   title="Estilo de fondo"
+                  aria-label="Estilo de fondo"
                 >
+                  <span
+                    className="
+                      pointer-events-none absolute left-1/2 top-[calc(100%+6px)] z-50
+                      -translate-x-1/2 whitespace-nowrap rounded-md
+                      bg-popover px-2 py-1 text-[10px] font-medium text-popover-foreground
+                      shadow-md ring-1 ring-border
+                      opacity-0 transition-opacity duration-150
+                      group-hover/tool:opacity-100
+                      max-sm:hidden
+                    "
+                  >
+                    Estilo de fondo
+                  </span>
                   {gridStyle === "lines" ? (
                     <Hash size={16} strokeWidth={1.75} />
                   ) : gridStyle === "cross" ? (
@@ -318,33 +366,32 @@ export function CanvasToolbar({
               ["coords", Crosshair],
             ] as const
           ).map(([tool, Icon]) => (
-            <button
+            <ToolBtn
               key={tool}
-              type="button"
+              title={TOOL_LABELS[tool]}
               onClick={() => onToggleTool(tool as Exclude<MeasureTool, "none">)}
-              className={`${mdBtn} ${
+              active={activeTool === tool}
+              className={
                 activeTool === tool
                   ? "bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary"
-                  : ""
-              }`}
-              title={TOOL_LABELS[tool]}
+                  : undefined
+              }
             >
               <Icon size={16} strokeWidth={1.75} />
-            </button>
+            </ToolBtn>
           ))}
 
-          <button
-            type="button"
-            onClick={onToggleSnap}
-            className={`${mdBtn} ${
-              snapEnabled
-                ? "bg-amber-500/20 text-amber-800 dark:text-amber-300 hover:bg-amber-500/25 hover:text-amber-800 dark:text-amber-300"
-                : ""
-            }`}
+          <ToolBtn
             title={snapEnabled ? "Snap activado" : "Snap desactivado"}
+            onClick={onToggleSnap}
+            className={
+              snapEnabled
+                ? "bg-amber-500/20 text-amber-800 dark:text-amber-300 hover:bg-amber-500/25"
+                : undefined
+            }
           >
             <Magnet size={16} strokeWidth={1.75} />
-          </button>
+          </ToolBtn>
 
           {onTransformModeChange && (
             <button
@@ -421,7 +468,7 @@ export function CanvasToolbar({
         <div
           className={`
             pointer-events-auto flex min-w-0 items-center gap-1 overflow-hidden rounded-2xl
-            bg-background/95 py-1.5 pl-2 pr-1.5
+            bg-muted/90 py-1.5 pl-2 pr-1.5
             backdrop-blur-md
             transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] origin-top
             ${isCompact ? "w-full max-w-full" : ""}
@@ -432,30 +479,21 @@ export function CanvasToolbar({
             }
           `}
         >
-          <button
-            type="button"
-            onClick={onTogglePlay}
-            onPointerDown={(e) => e.stopPropagation()}
-            className={mdBtn}
-            title={simRunning ? "Pausar" : "Reproducir"}
-          >
+          <ToolBtn title={simRunning ? "Pausar" : "Reproducir"} onClick={onTogglePlay}>
             {simRunning ? (
               <Pause size={15} strokeWidth={1.75} />
             ) : (
               <Play size={15} strokeWidth={1.75} />
             )}
-          </button>
+          </ToolBtn>
 
-          <button
-            type="button"
-            onClick={onResetSim}
-            onPointerDown={(e) => e.stopPropagation()}
-            disabled={simProgress === 0 && !simRunning}
-            className={mdBtn}
+          <ToolBtn
             title="Reiniciar"
+            onClick={onResetSim}
+            disabled={simProgress === 0 && !simRunning}
           >
             <SkipBack size={14} strokeWidth={1.75} />
-          </button>
+          </ToolBtn>
 
           <input
             type="range"

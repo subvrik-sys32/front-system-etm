@@ -2,7 +2,6 @@ import type { Point, ViewState } from "../../types/types"
 
 export const RULER_SIZE = 22
 const CORNER_RADIUS = 12
-/** Mínimo de px entre etiquetas mayores para que no se monten al achicar el viewport. */
 const MIN_LABEL_GAP_PX = 40
 
 function theme() {
@@ -15,7 +14,6 @@ function theme() {
 }
 
 function niceStep(scale: number): number {
-  // Más espacio entre majors cuando el viewport es chico: target ~px entre ticks
   const target = 80 / Math.max(scale, 1e-9)
   const pow = Math.pow(10, Math.floor(Math.log10(Math.max(target, 1e-9))))
   for (const m of [1, 2, 5, 10]) {
@@ -30,55 +28,26 @@ function fmt(n: number): string {
   return `${parseFloat(v.toFixed(1))}`
 }
 
-function screenToLocal(
-  sx: number,
-  sy: number,
-  canvasW: number,
-  canvasH: number,
-  view: ViewState,
-): Point {
-  const { scale, offsetX, offsetY, rotationDeg = 0 } = view
-  let lx = sx - canvasW / 2 - offsetX
-  let ly = sy - canvasH / 2 - offsetY
-  if (rotationDeg === 90) {
-    const rx = lx
-    const ry = ly
-    lx = ry
-    ly = -rx
-  }
-  const s = Math.max(scale, 1e-9)
-  return { x: lx / s, y: ly / s }
-}
-
+/**
+ * Reglas fijas: superior = X, izquierda = Y.
+ * sx = cw/2 + ox + x·s
+ * sy = ch/2 + oy + y·s
+ */
 export function drawNestingRulers(
   ctx: CanvasRenderingContext2D,
   canvasW: number,
   canvasH: number,
   view: ViewState,
-  localToScreen: (p: Point) => Point,
+  _localToScreen: (p: Point) => Point,
   cursorCss: Point | null,
 ) {
+  if (canvasW < 2 || canvasH < 2) return
+
   const { bg, border, tick, text } = theme()
   const scale = Math.max(view.scale, 1e-9)
   const step = niceStep(scale)
   const minor = step / 5
-
-  const corners = [
-    screenToLocal(RULER_SIZE, RULER_SIZE, canvasW, canvasH, view),
-    screenToLocal(canvasW, RULER_SIZE, canvasW, canvasH, view),
-    screenToLocal(RULER_SIZE, canvasH, canvasW, canvasH, view),
-    screenToLocal(canvasW, canvasH, canvasW, canvasH, view),
-  ]
-  let minX = Infinity,
-    maxX = -Infinity,
-    minY = Infinity,
-    maxY = -Infinity
-  for (const p of corners) {
-    minX = Math.min(minX, p.x)
-    maxX = Math.max(maxX, p.x)
-    minY = Math.min(minY, p.y)
-    maxY = Math.max(maxY, p.y)
-  }
+  const { offsetX, offsetY } = view
 
   ctx.save()
   ctx.fillStyle = bg
@@ -104,49 +73,67 @@ export function drawNestingRulers(
 
   ctx.font = "9px ui-sans-serif, system-ui, sans-serif"
 
-  // Eje X (regla superior): ticks siempre; texto solo si hay gap en px
-  let lastLabelX = -Infinity
-  const x0 = Math.floor(minX / minor) * minor
-  for (let wx = x0; wx <= maxX + minor; wx += minor) {
-    const sx = localToScreen({ x: wx, y: minY }).x
-    if (sx < RULER_SIZE || sx > canvasW) continue
-    const isMajor = Math.abs(wx / step - Math.round(wx / step)) < 1e-4
-    ctx.strokeStyle = tick
-    ctx.beginPath()
-    ctx.moveTo(sx + 0.5, RULER_SIZE)
-    ctx.lineTo(sx + 0.5, RULER_SIZE - (isMajor ? 8 : 4))
-    ctx.stroke()
-    if (isMajor && sx - lastLabelX >= MIN_LABEL_GAP_PX) {
-      ctx.fillStyle = text
-      ctx.textAlign = "center"
-      ctx.textBaseline = "top"
-      ctx.fillText(fmt(wx), sx, 3)
-      lastLabelX = sx
+  // Superior = X
+  {
+    const xAt = (sx: number) => (sx - canvasW / 2 - offsetX) / scale
+    const xMin = Math.min(xAt(RULER_SIZE), xAt(canvasW))
+    const xMax = Math.max(xAt(RULER_SIZE), xAt(canvasW))
+    const start = Math.floor(xMin / minor) * minor
+    let lastLabel = Number.NaN
+
+    for (let x = start; x <= xMax + minor; x += minor) {
+      const sx = canvasW / 2 + offsetX + x * scale
+      if (sx < RULER_SIZE || sx > canvasW) continue
+      const isMajor = Math.abs(x / step - Math.round(x / step)) < 1e-4
+      ctx.strokeStyle = tick
+      ctx.beginPath()
+      ctx.moveTo(sx + 0.5, RULER_SIZE)
+      ctx.lineTo(sx + 0.5, RULER_SIZE - (isMajor ? 8 : 4))
+      ctx.stroke()
+      if (
+        isMajor &&
+        (Number.isNaN(lastLabel) || Math.abs(sx - lastLabel) >= MIN_LABEL_GAP_PX)
+      ) {
+        ctx.fillStyle = text
+        ctx.textAlign = "left"
+        ctx.textBaseline = "top"
+        ctx.fillText(fmt(x), sx + 2, 3)
+        lastLabel = sx
+      }
     }
   }
 
-  // Eje Y (regla izquierda): igual, gap en píxeles de pantalla
-  let lastLabelY = -Infinity
-  const y0 = Math.floor(minY / minor) * minor
-  for (let wy = y0; wy <= maxY + minor; wy += minor) {
-    const sy = localToScreen({ x: minX, y: wy }).y
-    if (sy < RULER_SIZE || sy > canvasH) continue
-    const isMajor = Math.abs(wy / step - Math.round(wy / step)) < 1e-4
-    ctx.strokeStyle = tick
-    ctx.beginPath()
-    ctx.moveTo(RULER_SIZE, sy + 0.5)
-    ctx.lineTo(RULER_SIZE - (isMajor ? 8 : 4), sy + 0.5)
-    ctx.stroke()
-    if (isMajor && Math.abs(sy - lastLabelY) >= MIN_LABEL_GAP_PX) {
-      ctx.save()
-      ctx.translate(10, sy)
-      ctx.rotate(-Math.PI / 2)
-      ctx.fillStyle = text
-      ctx.textAlign = "center"
-      ctx.textBaseline = "middle"
-      ctx.fillText(fmt(wy), 0, 0)
-      ctx.restore()
-      lastLabelY = sy
+  // Izquierda = Y
+  {
+    const yAt = (sy: number) => (sy - canvasH / 2 - offsetY) / scale
+    const yMin = Math.min(yAt(RULER_SIZE), yAt(canvasH))
+    const yMax = Math.max(yAt(RULER_SIZE), yAt(canvasH))
+    const start = Math.floor(yMin / minor) * minor
+    let lastLabel = Number.NaN
+
+    for (let y = start; y <= yMax + minor; y += minor) {
+      const sy = canvasH / 2 + offsetY + y * scale
+      if (sy < RULER_SIZE || sy > canvasH) continue
+      const isMajor = Math.abs(y / step - Math.round(y / step)) < 1e-4
+      ctx.strokeStyle = tick
+      ctx.beginPath()
+      ctx.moveTo(RULER_SIZE, sy + 0.5)
+      ctx.lineTo(RULER_SIZE - (isMajor ? 8 : 4), sy + 0.5)
+      ctx.stroke()
+      if (
+        isMajor &&
+        (Number.isNaN(lastLabel) || Math.abs(sy - lastLabel) >= MIN_LABEL_GAP_PX)
+      ) {
+        ctx.save()
+        ctx.translate(9, sy + 2)
+        ctx.rotate(-Math.PI / 2)
+        ctx.fillStyle = text
+        ctx.textAlign = "left"
+        ctx.textBaseline = "middle"
+        ctx.fillText(fmt(y), 0, 0)
+        ctx.restore()
+        lastLabel = sy
+      }
     }
   }
 
@@ -170,5 +157,11 @@ export function drawNestingRulers(
       ctx.fill()
     }
   }
+
+  ctx.fillStyle = bg
+  ctx.fillRect(0, 0, RULER_SIZE, RULER_SIZE)
+  ctx.strokeStyle = border
+  ctx.strokeRect(0.5, 0.5, RULER_SIZE - 1, RULER_SIZE - 1)
+
   ctx.restore()
 }

@@ -105,7 +105,7 @@ export function drawScene(d: DrawContext) {
     showGrid = true,
   } = d
 
-  const { scale, offsetX, offsetY, rotationDeg = 0 } = view
+  const { scale, offsetX, offsetY } = view
   const dpr = window.devicePixelRatio || 1
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
@@ -113,11 +113,8 @@ export function drawScene(d: DrawContext) {
 
   ctx.save()
   ctx.translate(w / 2 + offsetX, h / 2 + offsetY)
-  if (rotationDeg === 90) {
-    ctx.rotate(Math.PI / 2)
-  }
   ctx.scale(scale, scale)
-
+  
   // Grilla en TODO el viewport (fondo infinito).
   // Borde de plancha DESPUÉS para que la grilla no lo tape.
   if (showGrid && gridStyle !== "none") {

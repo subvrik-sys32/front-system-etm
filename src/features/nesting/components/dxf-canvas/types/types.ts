@@ -108,14 +108,11 @@ export interface DxfCanvasProps {
   ) => void
   /** Eliminar piezas seleccionadas de la plancha. */
   onDeleteSelected?: (pieceIndices: number[]) => void
-  /** Eliminar de plancha + listado del proyecto (opcional). */
-  onDeleteFromProject?: (pieceIndices: number[]) => void
   /** Modo de transformación manual en plancha. Default: free. */
   transformMode?: TransformMode
   onTransformModeChange?: (mode: TransformMode) => void
   /** Paso angular en modo geométrico (grados). Default: 90. */
   rotationStep?: RotationStep
-  onRotationStepChange?: (step: RotationStep) => void
   /**
    * Identidad de la plancha/pestaña actual (ej. activeGroupIndex). Las
    * mediciones (regla/ángulo/etc) son coordenadas de mundo específicas

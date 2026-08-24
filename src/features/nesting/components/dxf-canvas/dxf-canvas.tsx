@@ -1,31 +1,28 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { Ruler, AlertTriangle, Trash2, X, MousePointer2, Hand, CircleSlash, HelpCircle } from "lucide-react"
-// Ruler used in measurements panel
-import type { CanvasTool } from "./types/types"
+import { AlertTriangle } from "lucide-react"
+import type { CanvasTool, DxfCanvasProps, Entity, Point, SnapCandidate } from "./types/types"
 
 import { CanvasToolbar } from "./components/canvas-toolbar"
 import { CanvasContextMenu } from "./components/canvas-context-menu"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { CanvasStatusBar } from "./components/canvas-status-bar"
+import { CanvasVhToggle } from "./components/canvas-vh-toggle"
+import { CanvasCoords } from "./components/canvas-coords"
+import { CanvasMeasurePanel } from "./components/canvas-measure-panel"
 import { drawScene } from "./utils/draw/draw"
 import { drawNestingRulers, RULER_SIZE } from "./utils/draw/draw-rulers"
 import { buildToolpath, computeLayerList, piecesToEntities } from "./utils/entities"
-import { fmtMm } from "./utils/geometry-utils"
-import { findSmartSpansAtPoint } from "./utils/geometry-utils"
-import { hitTestPieceAt, piecesInBox, hitTestDimensionLine } from "./utils/hit-test"
 import {
   buildCollisionIndex,
-  resolveDragOffset,
   type CollisionIndex,
   type SnapGuide,
 } from "./utils/collision"
-import { findNearestSnap, findSmartSnap } from "./utils/snap"
-import type { DxfCanvasProps, Entity, Point, SnapCandidate } from "./types/types"
-import { resolveAxisLock } from "../../utils/transform-mode"
 import { useCanvasView } from "./hooks/use-canvas-view"
-import { useMeasurements, measurementsFromBBox, applyOrthoConstraint } from "./hooks/use-measurements"
+import { useMeasurements, measurementsFromBBox } from "./hooks/use-measurements"
 import { useSimulation } from "./hooks/use-simulation"
+import { useCanvasKeyboard } from "./hooks/use-canvas-keyboard"
+import { useCanvasPointers } from "./hooks/use-canvas-pointers"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { cn } from "@/shared/utils/utils"
 
@@ -36,15 +33,6 @@ type PieceDragState = {
   pieceIndices: number[]
   startLocal: Point
   offset: Point
-  /**
-   * Eje bloqueado en modo "geometric" (movimiento restringido a 1 eje).
-   * Se decide UNA vez, al primer movimiento con distancia suficiente
-   * desde el punto de inicio, y se mantiene fijo hasta soltar el drag.
-   * Antes se recalculaba en cada pointermove comparando dx/dy
-   * acumulados — cerca de la diagonal (45°) un jitter mínimo del mouse
-   * hacía que el eje "ganador" cambiara de golpe entre X e Y en medio
-   * del arrastre, y la pieza se veía "tambalear" saltando de eje.
-   */
   axisLock: "x" | "y" | null
 }
 
@@ -60,7 +48,6 @@ export function DxfCanvas({
   onRotateSelected,
   onRotateAroundPivot,
   onDeleteSelected,
-  onDeleteFromProject,
   transformMode = "free",
   onTransformModeChange,
   rotationStep = 90,
@@ -70,12 +57,7 @@ export function DxfCanvas({
   onRedo,
   canUndo,
   canRedo,
-}: DxfCanvasProps & {
-  onUndo?: () => void
-  onRedo?: () => void
-  canUndo?: boolean
-  canRedo?: boolean
-}) {
+}: DxfCanvasProps) {
   const { isCompact, isMobile } = useResponsive()
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -91,24 +73,12 @@ export function DxfCanvas({
     startOffsetY: number
     moved: boolean
   } | null>(null)
-
   const pieceDragRef = useRef<PieceDragState | null>(null)
-  /**
-   * Drag para "jalar" una cota de distancia ya colocada y moverla lejos
-   * de la geometría, como en un plano real (AutoCAD/SolidWorks: la cota
-   * queda clicable/arrastrable después de puesta, no fija para siempre
-   * en el offset que tenía al momento del 2º click).
-   */
-  const measurementDragRef = useRef<{
-    id: string
-    a: Point
-    b: Point
-  } | null>(null)
-  const lockedPieceIndicesRef = useRef<number[]>(lockedPieceIndices)
+  const measurementDragRef = useRef<{ id: string; a: Point; b: Point } | null>(null)
+  const lockedPieceIndicesRef = useRef(lockedPieceIndices)
   lockedPieceIndicesRef.current = lockedPieceIndices
   const spaceHeldRef = useRef(false)
-  /** Pointers activos para pan/pinch táctil (pointerId → client coords). */
-  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map())
+  const pointersRef = useRef(new Map<number, { x: number; y: number }>())
   const pinchRef = useRef<{
     startDist: number
     startScale: number
@@ -117,34 +87,14 @@ export function DxfCanvas({
     midX: number
     midY: number
   } | null>(null)
+
   const [canvasTool, setCanvasTool] = useState<CanvasTool>("select")
   const [toolsChromeOpen, setToolsChromeOpen] = useState(false)
-  const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; pieceIndex: number | null } | null>(null)
-  const [showCanvasHelp, setShowCanvasHelp] = useState(false)
-  const [statusActionsOpen, setStatusActionsOpen] = useState(false)
-  const hasSelection = selectedPieceIndices.length > 0
-  // Mismo patrón que el auto-open del canvas-toolbar (ver ese archivo):
-  // al seleccionar algo se muestran las acciones de una vez, y al
-  // deseleccionar se cierran para no dejar un hueco vacío abierto en el
-  // pill. Es "ajustar estado cuando cambia una prop derivada" — se
-  // podría evitar el efecto llevando `statusActionsOpen` a puramente
-  // derivado (`open = hasSelection`), pero eso le quitaría al usuario
-  // la posibilidad de colapsar las acciones manualmente sin perder la
-  // selección, que es justo lo que este pill ofrece.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setStatusActionsOpen(hasSelection)
-  }, [hasSelection])
-
-  // Efecto para ocultar la guía de ayuda automáticamente después de 9 segundos
-  useEffect(() => {
-    if (showCanvasHelp) {
-      const timer = setTimeout(() => {
-        setShowCanvasHelp(false)
-      }, 9000)
-      return () => clearTimeout(timer)
-    }
-  }, [showCanvasHelp])
+  const [ctxMenu, setCtxMenu] = useState<{
+    x: number
+    y: number
+    pieceIndex: number | null
+  } | null>(null)
 
   const boxSelectRef = useRef<{
     startScreen: { x: number; y: number }
@@ -153,21 +103,22 @@ export function DxfCanvas({
     curLocal: { x: number; y: number }
   } | null>(null)
   const [boxSelectScreen, setBoxSelectScreen] = useState<{
-    x0: number; y0: number; x1: number; y1: number
+    x0: number
+    y0: number
+    x1: number
+    y1: number
   } | null>(null)
-  const zoomWindowRef = useRef<{
-    startScreen: { x: number; y: number }
-    curScreen: { x: number; y: number }
-    startLocal: { x: number; y: number }
-    curLocal: { x: number; y: number }
-  } | null>(null)
+  const zoomWindowRef = useRef<typeof boxSelectRef.current>(null)
   const rotateDragRef = useRef<{
     pivot: { x: number; y: number }
     startAngle: number
     currentDelta: number
     pieceIndices: number[]
   } | null>(null)
-  const [rotatePivotScreen, setRotatePivotScreen] = useState<{ x: number; y: number } | null>(null)
+  const [rotatePivotScreen, setRotatePivotScreen] = useState<{
+    x: number
+    y: number
+  } | null>(null)
   const [rotatePreviewDelta, setRotatePreviewDelta] = useState(0)
   const collisionIndexRef = useRef<CollisionIndex | null>(null)
   const snapGuidesRef = useRef<SnapGuide[]>([])
@@ -176,32 +127,17 @@ export function DxfCanvas({
   const [snapEnabled, setSnapEnabled] = useState(true)
   const [gridStyle, setGridStyle] = useState<"dots" | "lines" | "cross" | "none">("lines")
   const [snapCandidate, setSnapCandidate] = useState<SnapCandidate | null>(null)
-  /** Spans H/V por raycast en el polígono bajo el cursor (cota inteligente). */
   const [smartSpans, setSmartSpans] = useState<{
-    h: { a: { x: number; y: number }; b: { x: number; y: number }; value: number } | null
-    v: { a: { x: number; y: number }; b: { x: number; y: number }; value: number } | null
-    center: { x: number; y: number }
+    h: { a: Point; b: Point; value: number } | null
+    v: { a: Point; b: Point; value: number } | null
+    center: Point
   } | null>(null)
-  /**
-   * Contorno bajo el cursor con la herramienta de área activa. Antes
-   * esta herramienta era la única sin ningún feedback visual al pasar
-   * el mouse (las demás muestran el círculo amarillo de snap) — como
-   * el área trabaja sobre un contorno completo, no un punto, se
-   * resalta el contorno entero en vez de un punto de snap.
-   */
   const [areaHoverContour, setAreaHoverContour] = useState<Point[] | null>(null)
 
   const view = useCanvasView()
   const sim = useSimulation()
   const measure = useMeasurements()
 
-  // Al cambiar de plancha/pestaña, las mediciones (coords de mundo de
-  // una plancha específica) ya no tienen sentido geométrico — se
-  // limpian. La herramienta activa NO se desactiva (ver
-  // resetMeasurementsOnly): seguir en modo regla al cambiar de pestaña
-  // es una preferencia de flujo de trabajo, no un dato de esa plancha.
-  // No se ejecuta al montar (sheetKey siempre "cambia" desde undefined
-  // la primera vez) porque en ese punto no hay nada que limpiar todavía.
   const sheetKeyRef = useRef(sheetKey)
   useEffect(() => {
     if (sheetKeyRef.current === sheetKey) return
@@ -232,7 +168,8 @@ export function DxfCanvas({
 
       const drag = pieceDragRef.current
       const dragPreview =
-        drag && (Math.abs(drag.offset.x) > 1e-12 || Math.abs(drag.offset.y) > 1e-12)
+        drag &&
+        (Math.abs(drag.offset.x) > 1e-12 || Math.abs(drag.offset.y) > 1e-12)
           ? { indices: drag.pieceIndices, dx: drag.offset.x, dy: drag.offset.y }
           : null
 
@@ -255,7 +192,7 @@ export function DxfCanvas({
         hoverScreen: measure.hoverScreen,
         snapCandidate,
         activeTool: measure.activeTool,
-        localToScreen: (p) => view.localToScreen(canvas, p),
+        localToScreen: (pt) => view.localToScreen(canvas, pt),
         dragPreview,
         snapGuides: snapGuidesRef.current,
         boxSelectScreen,
@@ -302,13 +239,8 @@ export function DxfCanvas({
     const { segments, totalLength, fullPath } = buildToolpath(entities)
     setToolpath(segments, totalLength, fullPath)
     requestAnimationFrame(() => {
-      if (!view.hasUserInteracted() && sheetSize) {
-        view.fitToSheetOrEntities(
-          canvasRef.current,
-          entities,
-          sheetSize,
-          isCompact,
-        )
+      if (!view.hasUserInteracted()) {
+        view.fitToSheetOrEntities(canvasRef.current, entities, sheetSize, isCompact)
       }
       scheduleDraw()
     })
@@ -319,31 +251,6 @@ export function DxfCanvas({
     scheduleDraw()
   }, [scheduleDraw, sim.progress])
 
-  // Tema: la regla lee .dark en <html>; sin redibujar se queda el color anterior.
-  useEffect(() => {
-    const root = document.documentElement
-    const obs = new MutationObserver(() => scheduleDraw())
-    obs.observe(root, { attributes: true, attributeFilter: ["class"] })
-    return () => obs.disconnect()
-  }, [scheduleDraw])
-
-  // Ancho/alto de plancha: siempre re-fit (aunque el usuario haya pan/zoom).
-  useEffect(() => {
-    if (!sheetSize) return
-    const canvasEl = canvasRef.current
-    if (!canvasEl) return
-    view.allowAutoFit()
-    view.fitToSheetOrEntities(
-      canvasEl,
-      entitiesRef.current,
-      sheetSize,
-      isCompact,
-    )
-    scheduleDraw()
-  }, [sheetSize, isCompact, view, scheduleDraw])
-
-  // Al cambiar el tamaño del contenedor (rotación, sheet panel, teclado
-  // móvil) re-fit solo si el usuario no interactuó; siempre redibujar.
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
@@ -353,7 +260,7 @@ export function DxfCanvas({
       raf = requestAnimationFrame(() => {
         const canvasEl = canvasRef.current
         if (!canvasEl) return
-        if (!view.hasUserInteracted() && sheetSize) {
+        if (!view.hasUserInteracted()) {
           view.fitToSheetOrEntities(
             canvasEl,
             entitiesRef.current,
@@ -371,11 +278,10 @@ export function DxfCanvas({
     }
   }, [scheduleDraw, view, sheetSize, isCompact])
 
-  // Al entrar/salir de layout compacto, reorientar plancha (solo si el usuario no ha interactuado).
   useEffect(() => {
     const canvasEl = canvasRef.current
     if (!canvasEl) return
-    if (!view.hasUserInteracted() && sheetSize) {
+    if (!view.hasUserInteracted()) {
       view.fitToSheetOrEntities(
         canvasEl,
         entitiesRef.current,
@@ -386,655 +292,57 @@ export function DxfCanvas({
     scheduleDraw()
   }, [isCompact, sheetSize, view, scheduleDraw])
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const setCursor = (c: string) => {
-      canvas.style.cursor = c
-    }
-
-    const canvasCssPoint = (clientX: number, clientY: number) => {
-      const rect = canvas.getBoundingClientRect()
-      const sx = (canvas.clientWidth || rect.width) / (rect.width || 1)
-      const sy = (canvas.clientHeight || rect.height) / (rect.height || 1)
-      return {
-        x: (clientX - rect.left) * sx,
-        y: (clientY - rect.top) * sy,
-      }
-    }
-
-    const onPointerDown = (e: PointerEvent) => {
-      setCtxMenu(null)
-      if (e.button === 2) return
-
-      pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
-
-      // 2+ dedos: iniciar pinch-zoom (móvil/tablet)
-      if (pointersRef.current.size === 2) {
-        const pts = [...pointersRef.current.values()]
-        const dx = pts[1].x - pts[0].x
-        const dy = pts[1].y - pts[0].y
-        const dist = Math.hypot(dx, dy) || 1
-        const midX = (pts[0].x + pts[1].x) / 2
-        const midY = (pts[0].y + pts[1].y) / 2
-        pinchRef.current = {
-          startDist: dist,
-          startScale: view.viewRef.current.scale,
-          startOffsetX: view.viewRef.current.offsetX,
-          startOffsetY: view.viewRef.current.offsetY,
-          midX,
-          midY,
-        }
-        // Cancelar pan/drag de 1 dedo
-        draggingRef.current = null
-        pieceDragRef.current = null
-        boxSelectRef.current = null
-        zoomWindowRef.current = null
-        setBoxSelectScreen(null)
-        canvas.setPointerCapture(e.pointerId)
-        return
-      }
-
-      const rawPoint = view.screenToLocal(canvas, e.clientX, e.clientY)
-      if (!rawPoint) return
-
-      const forcePan = spaceHeldRef.current || e.button === 1 || canvasTool === "pan"
-      if (forcePan) {
-        draggingRef.current = {
-          startX: e.clientX,
-          startY: e.clientY,
-          startOffsetX: view.viewRef.current.offsetX,
-          startOffsetY: view.viewRef.current.offsetY,
-          moved: false,
-        }
-        canvas.setPointerCapture(e.pointerId)
-        setCursor("grabbing")
-        return
-      }
-
-      if (canvasTool === "zoomWindow" && measure.activeTool === "none") {
-        const screenPt = canvasCssPoint(e.clientX, e.clientY)
-        zoomWindowRef.current = {
-          startScreen: screenPt,
-          curScreen: screenPt,
-          startLocal: rawPoint,
-          curLocal: rawPoint,
-        }
-        setBoxSelectScreen({ x0: screenPt.x, y0: screenPt.y, x1: screenPt.x, y1: screenPt.y })
-        canvas.setPointerCapture(e.pointerId)
-        setCursor("crosshair")
-        return
-      }
-
-      if (canvasTool === "rotate" && measure.activeTool === "none") {
-        const locked = new Set(lockedPieceIndicesRef.current)
-        const movable = selectedPieceIndices.filter((i) => !locked.has(i))
-        if (movable.length === 0) return
-        const pivot = { x: rawPoint.x, y: rawPoint.y }
-        rotateDragRef.current = {
-          pivot,
-          startAngle: Number.NaN,
-          currentDelta: 0,
-          pieceIndices: movable,
-        }
-        const rect = canvas.getBoundingClientRect()
-        setRotatePivotScreen({ x: e.clientX - rect.left, y: e.clientY - rect.top })
-        setRotatePreviewDelta(0)
-        canvas.setPointerCapture(e.pointerId)
-        setCursor("crosshair")
-        return
-      }
-
-      if (measure.activeTool === "none") {
-        // Agarrar una cota YA colocada para reposicionarla (jalar el
-        // offset, como en un plano real). Va antes del hit-test de
-        // piezas: si la línea de cota está encima de una pieza, gana
-        // la cota, porque es lo más específico que el usuario puede
-        // estar apuntando a esa altura de zoom.
-        const measurementHit = hitTestDimensionLine(
-          measure.measurements,
-          rawPoint,
-          view.viewRef.current.scale,
-        )
-        if (measurementHit) {
-          measurementDragRef.current = {
-            id: measurementHit.id,
-            a: measurementHit.a,
-            b: measurementHit.b,
-          }
-          canvas.setPointerCapture(e.pointerId)
-          setCursor("move")
-          return
-        }
-
-        const hit = hitTestPieceAt(entitiesRef.current, rawPoint, view.viewRef.current.scale)
-
-        if (hit !== null && selectedPieceIndices.includes(hit)) {
-          const locked = new Set(lockedPieceIndicesRef.current)
-          const movable = selectedPieceIndices.filter((i) => !locked.has(i))
-          if (movable.length === 0) return
-          pieceDragRef.current = {
-            pieceIndices: movable,
-            startLocal: rawPoint,
-            offset: { x: 0, y: 0 },
-            axisLock: null,
-          }
-          canvas.setPointerCapture(e.pointerId)
-          setCursor("move")
-          return
-        }
-
-        if (hit === null && canvasTool === "select") {
-          // Móvil/tablet: arrastrar en vacío = pan (más natural que box-select).
-          // Desktop: box-select como antes.
-          if (isCompact) {
-            draggingRef.current = {
-              startX: e.clientX,
-              startY: e.clientY,
-              startOffsetX: view.viewRef.current.offsetX,
-              startOffsetY: view.viewRef.current.offsetY,
-              moved: false,
-            }
-            canvas.setPointerCapture(e.pointerId)
-            setCursor("grabbing")
-            return
-          }
-          const screenPt = canvasCssPoint(e.clientX, e.clientY)
-          boxSelectRef.current = {
-            startScreen: screenPt,
-            curScreen: screenPt,
-            startLocal: rawPoint,
-            curLocal: rawPoint,
-          }
-          setBoxSelectScreen({ x0: screenPt.x, y0: screenPt.y, x1: screenPt.x, y1: screenPt.y })
-          canvas.setPointerCapture(e.pointerId)
-          setCursor("crosshair")
-          return
-        }
-
-        draggingRef.current = {
-          startX: e.clientX,
-          startY: e.clientY,
-          startOffsetX: view.viewRef.current.offsetX,
-          startOffsetY: view.viewRef.current.offsetY,
-          moved: false,
-        }
-        canvas.setPointerCapture(e.pointerId)
-        return
-      }
-
-      draggingRef.current = {
-        startX: e.clientX,
-        startY: e.clientY,
-        startOffsetX: view.viewRef.current.offsetX,
-        startOffsetY: view.viewRef.current.offsetY,
-        moved: false,
-      }
-      canvas.setPointerCapture(e.pointerId)
-    }
-
-    const onPointerMove = (e: PointerEvent) => {
-      const c = canvasRef.current
-      const overChrome =  e.target instanceof Element &&  Boolean(    (e.target as Element).closest(      '[data-slot="canvas-toolbar"],[data-slot="canvas-vh"],[data-slot="canvas-status-bar"],[data-slot="canvas-coords"]',    ),  )
-      if (c && !overChrome) {
-        const rect = c.getBoundingClientRect()
-        const sx = c.clientWidth / (rect.width || 1)
-        const sy = c.clientHeight / (rect.height || 1)
-        cursorCssRef.current = {
-          x: (e.clientX - rect.left) * sx,
-          y: (e.clientY - rect.top) * sy,
-        }
-        const local = view.screenToLocal(c, e.clientX, e.clientY)
-        if (local && coordsLabelRef.current) {
-          coordsLabelRef.current.textContent =
-            `X: ${local.x.toFixed(2)}  Y: ${local.y.toFixed(2)} mm`
-        }
-      }
-      if (pointersRef.current.has(e.pointerId)) {
-        pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
-      }
-
-      // Arrastrando una cota ya colocada: recalcular su offset según
-      // la posición actual del cursor, igual que el cálculo de offset
-      // del 2º click al ponerla por primera vez.
-      if (measurementDragRef.current) {
-        const rawPoint = view.screenToLocal(canvas, e.clientX, e.clientY)
-        if (rawPoint) {
-          const { id, a, b } = measurementDragRef.current
-          const dx = b.x - a.x
-          const dy = b.y - a.y
-          const len = Math.hypot(dx, dy) || 1
-          const nx = -dy / len
-          const ny = dx / len
-          const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
-          const offset = (rawPoint.x - mid.x) * nx + (rawPoint.y - mid.y) * ny
-          measure.updateMeasurementOffset(id, offset)
-          scheduleDraw()
-        }
-        return
-      }
-
-      // Pinch zoom + pan de 2 dedos
-      if (pinchRef.current && pointersRef.current.size >= 2) {
-        const pts = [...pointersRef.current.values()]
-        const dx = pts[1].x - pts[0].x
-        const dy = pts[1].y - pts[0].y
-        const dist = Math.hypot(dx, dy) || 1
-        const midX = (pts[0].x + pts[1].x) / 2
-        const midY = (pts[0].y + pts[1].y) / 2
-        const pinch = pinchRef.current
-        const factor = dist / pinch.startDist
-        const newScale = Math.min(200, Math.max(0.01, pinch.startScale * factor))
-
-        // Zoom hacia el punto medio de los dedos
-        const rect = canvas.getBoundingClientRect()
-        const cx = midX - rect.left - rect.width / 2
-        const cy = midY - rect.top - rect.height / 2
-        const scaleRatio = newScale / pinch.startScale
-        // Pan: mover el centro según el desplazamiento del midpoint
-        const midDx = midX - pinch.midX
-        const midDy = midY - pinch.midY
-
-        view.markUserInteracted()
-        view.viewRef.current = {
-          scale: newScale,
-          offsetX: pinch.startOffsetX * scaleRatio + cx * (1 - scaleRatio) + midDx,
-          offsetY: pinch.startOffsetY * scaleRatio + cy * (1 - scaleRatio) + midDy,
-          rotationDeg: view.viewRef.current.rotationDeg ?? 0,
-        }
-        scheduleDraw()
-        return
-      }
-
-      if (boxSelectRef.current || zoomWindowRef.current) {
-        const screenPt = canvasCssPoint(e.clientX, e.clientY)
-        const local = view.screenToLocal(canvas, e.clientX, e.clientY)
-        const active = boxSelectRef.current ?? zoomWindowRef.current
-        if (active) {
-          active.curScreen = screenPt
-          if (local) active.curLocal = local
-          setBoxSelectScreen({
-            x0: active.startScreen.x,
-            y0: active.startScreen.y,
-            x1: screenPt.x,
-            y1: screenPt.y,
-          })
-        }
-        scheduleDraw()
-        return
-      }
-
-      if (rotateDragRef.current) {
-        const local = view.screenToLocal(canvas, e.clientX, e.clientY)
-        if (local) {
-          const rd = rotateDragRef.current
-          const dx = local.x - rd.pivot.x
-          const dy = local.y - rd.pivot.y
-          if (Math.hypot(dx, dy) > 1e-3) {
-            const ang = Math.atan2(dy, dx)
-            if (Number.isNaN(rd.startAngle)) rd.startAngle = ang
-            let delta = ((ang - rd.startAngle) * 180) / Math.PI
-            if (e.shiftKey) delta = Math.round(delta / 15) * 15
-            rd.currentDelta = delta
-            setRotatePreviewDelta(delta)
-          }
-        }
-        scheduleDraw()
-        return
-      }
-
-      if (measure.activeTool !== "none" && measure.activeTool !== "smart") {
-        setCursor("crosshair")
-        const rawPoint = view.screenToLocal(canvas, e.clientX, e.clientY)
-        const rect = canvas.getBoundingClientRect()
-        const usesPointSnap =
-          measure.activeTool === "distance" ||
-          measure.activeTool === "angle" ||
-          measure.activeTool === "coords" ||
-          measure.activeTool === "radius"
-        const snap =
-          snapEnabled && usesPointSnap && rawPoint
-            ? findSmartSnap(entitiesRef.current, rawPoint, view.viewRef.current.scale, sheetSize)
-            : null
-        setSnapCandidate(snap)
-        setSmartSpans(null)
-
-        if (measure.activeTool === "area" && rawPoint) {
-          setAreaHoverContour(measure.hitTestClosedContour(entitiesRef.current, rawPoint))
-        } else {
-          setAreaHoverContour(null)
-        }
-
-        let hoverPt = snap ? snap.point : rawPoint
-        // Con 1 punto pendiente en distancia: proyectar hover a H/V si está cerca
-        // (las guías dashed se dibujan en draw.ts con el mismo criterio).
-        if (
-          measure.activeTool === "distance" &&
-          measure.pendingPoints.length === 1 &&
-          hoverPt
-        ) {
-          hoverPt = applyOrthoConstraint(measure.pendingPoints[0], hoverPt, {
-            force: e.shiftKey,
-          })
-        }
-        measure.setHoverLocal(hoverPt)
-        measure.setHoverScreen({ x: e.clientX - rect.left, y: e.clientY - rect.top })
-        scheduleDraw()
-      }
-
-      const pieceDrag = pieceDragRef.current
-      if (pieceDrag) {
-        const rawPoint = view.screenToLocal(canvas, e.clientX, e.clientY)
-        if (rawPoint) {
-          let wantDx = rawPoint.x - pieceDrag.startLocal.x
-          let wantDy = rawPoint.y - pieceDrag.startLocal.y
-          const axisResult = resolveAxisLock(transformMode, wantDx, wantDy, pieceDrag.axisLock)
-          wantDx = axisResult.dx
-          wantDy = axisResult.dy
-          pieceDrag.axisLock = axisResult.lock
-          const resolved = resolveDragOffset(
-            pieces,
-            pieceDrag.pieceIndices,
-            wantDx,
-            wantDy,
-            view.viewRef.current.scale,
-            sheetSize,
-            {
-              clearance: 0,
-              snapPx: 10,
-              snapEnabled: snapEnabled && transformMode === "free",
-              index: collisionIndexRef.current ?? undefined,
-            }
-          )
-          pieceDrag.offset.x = resolved.dx
-          pieceDrag.offset.y = resolved.dy
-          snapGuidesRef.current = resolved.guides
-          const pushed =
-            resolved.blocked &&
-            (Math.abs(wantDx - resolved.dx) > 0.5 || Math.abs(wantDy - resolved.dy) > 0.5)
-          setCursor(pushed ? "not-allowed" : "move")
-          scheduleDraw()
-        }
-        return
-      }
-
-      if (measure.activeTool === "none" && !draggingRef.current) {
-        const rawPoint = view.screenToLocal(canvas, e.clientX, e.clientY)
-        if (rawPoint) {
-          const hit = hitTestPieceAt(entitiesRef.current, rawPoint, view.viewRef.current.scale)
-          if (hit !== null && selectedPieceIndices.includes(hit)) setCursor("move")
-          else if (hit !== null) setCursor("pointer")
-          else setCursor(canvasTool === "pan" ? "grab" : "default")
-        }
-        // Sin herramienta: no mostrar cotas fantasma. Se llama siempre
-        // al setter (no se lee smartSpans/snapCandidate, que no están
-        // en las deps de este efecto a propósito) — inofensivo si ya
-        // son null, y evita depender de un closure con valor obsoleto.
-        setSnapCandidate(null)
-        setSmartSpans(null)
-        setAreaHoverContour(null)
-      }
-
-      // Cota inteligente: SOLO con la herramienta "smart" activa.
-      // Sin clics: solo posicionar el puntero sobre arista o centro del objeto.
-      if (measure.activeTool === "smart" && !draggingRef.current) {
-        setCursor("crosshair")
-        // Mismo criterio que snapCandidate/smartSpans: no leer el
-        // valor actual (closure obsoleto, areaHoverContour no está en
-        // las deps de este efecto a propósito). Llamar siempre al
-        // setter es inofensivo si ya es null.
-        setAreaHoverContour(null)
-        const rawPoint = view.screenToLocal(canvas, e.clientX, e.clientY)
-        if (!rawPoint) return
-        const scale = view.viewRef.current.scale
-        const edgeSnap = findSmartSnap(entitiesRef.current, rawPoint, scale, sheetSize)
-
-        let preferEdge = false
-        if (edgeSnap?.segment) {
-          const { a, b } = edgeSnap.segment
-          const vx = b.x - a.x
-          const vy = b.y - a.y
-          const len2 = vx * vx + vy * vy || 1
-          let tt = ((rawPoint.x - a.x) * vx + (rawPoint.y - a.y) * vy) / len2
-          tt = Math.max(0, Math.min(1, tt))
-          const proj = { x: a.x + tt * vx, y: a.y + tt * vy }
-          const distPx = Math.hypot(rawPoint.x - proj.x, rawPoint.y - proj.y) * scale
-          preferEdge = distPx < 10
-        }
-
-        // Prioridad: si el puntero está DENTRO de un contorno → cruz H/V.
-        // Solo si no hay span interior, caer a cota de arista.
-        const spans = findSmartSpansAtPoint(entitiesRef.current, rawPoint)
-        if (spans && (spans.h || spans.v)) {
-          setSnapCandidate(null)
-          setSmartSpans(spans)
-          measure.setHoverLocal(rawPoint)
-        } else if (preferEdge && edgeSnap) {
-          setSnapCandidate(edgeSnap)
-          setSmartSpans(null)
-          measure.setHoverLocal(edgeSnap.point)
-        } else if (edgeSnap) {
-          setSnapCandidate(edgeSnap)
-          setSmartSpans(null)
-          measure.setHoverLocal(edgeSnap.point)
-        } else {
-          setSnapCandidate(null)
-          setSmartSpans(null)
-          measure.setHoverLocal(rawPoint)
-        }
-        const rect = canvas.getBoundingClientRect()
-        measure.setHoverScreen({ x: e.clientX - rect.left, y: e.clientY - rect.top })
-        scheduleDraw()
-      }
-
-      const drag = draggingRef.current
-      if (!drag) return
-      const dx = e.clientX - drag.startX
-      const dy = e.clientY - drag.startY
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-        if (!drag.moved) {
-          drag.moved = true
-          sim.clearOverlayIfIdle()
-          setCursor("grabbing")
-        }
-      }
-      view.panBy(dx, dy, drag.startOffsetX, drag.startOffsetY)
-      scheduleDraw()
-    }
-
-    const onPointerUp = (e: PointerEvent) => {
-      pointersRef.current.delete(e.pointerId)
-      if (pointersRef.current.size < 2) {
-        pinchRef.current = null
-      }
-
-      if (measurementDragRef.current) {
-        measurementDragRef.current = null
-        setCursor("default")
-        scheduleDraw()
-        return
-      }
-
-      if (zoomWindowRef.current) {
-        const box = zoomWindowRef.current
-        zoomWindowRef.current = null
-        setBoxSelectScreen(null)
-        const minX = Math.min(box.startLocal.x, box.curLocal.x)
-        const maxX = Math.max(box.startLocal.x, box.curLocal.x)
-        const minY = Math.min(box.startLocal.y, box.curLocal.y)
-        const maxY = Math.max(box.startLocal.y, box.curLocal.y)
-        if (maxX - minX > 1e-2 && maxY - minY > 1e-2) {
-          view.fitToBounds(canvas, { minX, minY, maxX, maxY }, 0.95)
-        }
-        setCursor("crosshair")
-        scheduleDraw()
-        return
-      }
-
-      if (rotateDragRef.current) {
-        const rd = rotateDragRef.current
-        rotateDragRef.current = null
-        setRotatePivotScreen(null)
-        const delta = rd.currentDelta
-        setRotatePreviewDelta(0)
-        if (Math.abs(delta) > 0.05) {
-          onRotateAroundPivot?.(rd.pieceIndices, rd.pivot, delta)
-        }
-        setCursor("crosshair")
-        scheduleDraw()
-        return
-      }
-
-      if (boxSelectRef.current) {
-        const box = boxSelectRef.current
-        boxSelectRef.current = null
-        setBoxSelectScreen(null)
-        const minX = Math.min(box.startLocal.x, box.curLocal.x)
-        const maxX = Math.max(box.startLocal.x, box.curLocal.x)
-        const minY = Math.min(box.startLocal.y, box.curLocal.y)
-        const maxY = Math.max(box.startLocal.y, box.curLocal.y)
-        const w = maxX - minX
-        const h = maxY - minY
-        if (w < 1e-3 && h < 1e-3) {
-          if (onSelectPiece && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-            onSelectPiece(null, false)
-          }
-          setCursor("default")
-          scheduleDraw()
-          return
-        }
-        const mode = box.curScreen.x >= box.startScreen.x ? "contain" : "intersect"
-        const hits = piecesInBox(entitiesRef.current, { minX, minY, maxX, maxY }, mode)
-        if (onSelectPiece) {
-          const additive = e.shiftKey || e.ctrlKey || e.metaKey
-          if (!additive) onSelectPiece(null, false)
-          for (const idx of hits) onSelectPiece(idx, true)
-        }
-        setCursor("default")
-        scheduleDraw()
-        return
-      }
-
-      const pieceDrag = pieceDragRef.current
-      pieceDragRef.current = null
-      if (pieceDrag) {
-        const { offset, pieceIndices } = pieceDrag
-        if (Math.abs(offset.x) > 0.01 || Math.abs(offset.y) > 0.01) {
-          onMovePieces?.(pieceIndices, offset.x, offset.y)
-        }
-        snapGuidesRef.current = []
-        setCursor("default")
-        scheduleDraw()
-        return
-      }
-
-      const drag = draggingRef.current
-      draggingRef.current = null
-      if (!drag) return
-
-      if (!drag.moved) {
-        const rawPoint = view.screenToLocal(canvas, e.clientX, e.clientY)
-        if (!rawPoint) return
-
-        if (measure.activeTool !== "none" && measure.activeTool !== "coords" && measure.activeTool !== "smart") {
-          const usesPointSnap =
-            measure.activeTool === "distance" ||
-            measure.activeTool === "angle" ||
-            measure.activeTool === "radius"
-          const snap =
-            snapEnabled && usesPointSnap
-              ? findSmartSnap(entitiesRef.current, rawPoint!, view.viewRef.current.scale, sheetSize)
-              : null
-          measure.handleToolClick(
-            snap ? snap.point : rawPoint,
-            entitiesRef.current,
-            view.viewRef.current.scale,
-            { shiftKey: e.shiftKey },
-          )
-          return
-        }
-
-        if (measure.activeTool === "none" && onSelectPiece) {
-          const hit = hitTestPieceAt(entitiesRef.current, rawPoint, view.viewRef.current.scale)
-          onSelectPiece(hit, e.shiftKey || e.ctrlKey || e.metaKey)
-        }
-      }
-      setCursor("default")
-    }
-
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault()
-      sim.clearOverlayIfIdle()
-      const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1
-      view.zoomAt(canvas, e.clientX, e.clientY, factor)
-      scheduleDraw()
-    }
-
-    // Clic derecho (anticlick) para salir/cancelar herramientas o ediciones activas
-    const onContextMenu = (e: MouseEvent) => {
-      e.preventDefault()
-
-      if (measure.activeTool !== "none") {
-        measure.resetTool()
-        setSnapCandidate(null)
-        setCursor("default")
-        scheduleDraw()
-        return
-      }
-
-      if (canvasTool === "zoomWindow" || canvasTool === "rotate") {
-        setCanvasTool("select")
-        zoomWindowRef.current = null
-        rotateDragRef.current = null
-        setBoxSelectScreen(null)
-        setRotatePivotScreen(null)
-        setCursor("default")
-        scheduleDraw()
-        return
-      }
-
-      const rawPoint = view.screenToLocal(canvas, e.clientX, e.clientY)
-      if (!rawPoint) return
-      const hit =
-        measure.activeTool === "none"
-          ? hitTestPieceAt(entitiesRef.current, rawPoint, view.viewRef.current.scale)
-          : null
-      if (hit !== null && onSelectPiece && !selectedPieceIndices.includes(hit)) {
-        onSelectPiece(hit, false)
-      }
-      setCtxMenu({ x: e.clientX, y: e.clientY, pieceIndex: hit })
-    }
-
-    canvas.addEventListener("pointerdown", onPointerDown)
-    window.addEventListener("pointermove", onPointerMove)
-    window.addEventListener("pointerup", onPointerUp)
-    canvas.addEventListener("wheel", onWheel, { passive: false })
-    canvas.addEventListener("contextmenu", onContextMenu)
-
-    return () => {
-      canvas.removeEventListener("pointerdown", onPointerDown)
-      window.removeEventListener("pointermove", onPointerMove)
-      window.removeEventListener("pointerup", onPointerUp)
-      canvas.removeEventListener("wheel", onWheel)
-      canvas.removeEventListener("contextmenu", onContextMenu)
-    }
-  }, [
+  useCanvasPointers({
+    canvasRef,
+    entitiesRef,
+    draggingRef,
+    pieceDragRef,
+    measurementDragRef,
+    lockedPieceIndicesRef,
+    spaceHeldRef,
+    pointersRef,
+    pinchRef,
+    boxSelectRef,
+    zoomWindowRef,
+    rotateDragRef,
+    collisionIndexRef,
+    snapGuidesRef,
+    cursorCssRef,
+    coordsLabelRef,
     view,
     measure,
     sim,
-    snapEnabled,
+    scheduleDraw,
+    canvasTool,
+    setCanvasTool,
+    setCtxMenu,
+    setBoxSelectScreen,
+    setRotatePivotScreen,
+    setRotatePreviewDelta,
+    setSnapCandidate,
+    setSmartSpans,
+    setAreaHoverContour,
+    pieces,
+    sheetSize,
     selectedPieceIndices,
+    snapEnabled,
+    transformMode,
+    isCompact,
     onSelectPiece,
     onMovePieces,
     onRotateAroundPivot,
-    transformMode,
-    scheduleDraw,
-    pieces,
-    sheetSize,
-    canvasTool,
-    isCompact,
-  ])
+  })
+
+  useCanvasKeyboard({
+    spaceHeldRef,
+    selectedPieceIndices,
+    rotationStep,
+    onRotateSelected,
+    onDeleteSelected,
+    onSelectPiece,
+    setCanvasTool,
+    resetMeasureTool: measure.resetTool,
+  })
 
   const handleZoom = useCallback(
     (direction: "in" | "out") => {
@@ -1042,12 +350,17 @@ export function DxfCanvas({
       view.zoomBy(direction === "in" ? 1.25 : 0.8)
       scheduleDraw()
     },
-    [view, sim, scheduleDraw]
+    [view, sim, scheduleDraw],
   )
 
   const handleFit = useCallback(() => {
     view.allowAutoFit()
-    view.fitToSheetOrEntities(canvasRef.current, entitiesRef.current, sheetSize, isCompact)
+    view.fitToSheetOrEntities(
+      canvasRef.current,
+      entitiesRef.current,
+      sheetSize,
+      isCompact,
+    )
     scheduleDraw()
   }, [view, sheetSize, isCompact, scheduleDraw])
 
@@ -1056,19 +369,20 @@ export function DxfCanvas({
     if (selectedPieceIndices.length === 0) return
     const selectedSet = new Set(selectedPieceIndices)
     const selected = entitiesRef.current.filter(
-      (e) => e.pieceIndex !== undefined && selectedSet.has(e.pieceIndex)
+      (e) => e.pieceIndex !== undefined && selectedSet.has(e.pieceIndex),
     )
     view.focusEntities(canvasRef.current, selected)
     scheduleDraw()
   }, [view, selectedPieceIndices, scheduleDraw])
 
-
   const handleAutoBboxDim = useCallback(() => {
     if (selectedPieceIndices.length === 0) return
-    // No apilar: si ya hay cotas bbox activas, no añadir más
     if (measure.measurements.some((m) => m.id.startsWith("bbox-"))) return
 
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity
     for (const i of selectedPieceIndices) {
       const piece = pieces[i]
       if (!piece) continue
@@ -1095,227 +409,52 @@ export function DxfCanvas({
     scheduleDraw()
   }, [selectedPieceIndices, pieces, measure, scheduleDraw])
 
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
-      if (e.code === "Space") {
-        e.preventDefault()
-        spaceHeldRef.current = true
-        return
-      }
-      if (e.key === "Delete" || e.key === "Backspace") {
-        if (selectedPieceIndices.length > 0 && onDeleteSelected) {
-          e.preventDefault()
-          onDeleteSelected(selectedPieceIndices)
-        }
-        return
-      }
-      if (e.key === "v" || e.key === "V") {
-        setCanvasTool("select")
-        return
-      }
-      if (e.key === "h" || e.key === "H") {
-        setCanvasTool("pan")
-        return
-      }
-      if (e.key === "Escape") {
-        onSelectPiece?.(null, false)
-        measure.resetTool()
-        setCanvasTool("select")
-        return
-      }
-      if (e.key !== "r" && e.key !== "R") return
-      if (selectedPieceIndices.length === 0 || !onRotateSelected) return
-      e.preventDefault()
-      const deg = e.shiftKey ? -rotationStep : rotationStep
-      onRotateSelected(selectedPieceIndices, deg)
-    }
-    const onKeyUp = (e: KeyboardEvent) => {
-      if (e.code === "Space") spaceHeldRef.current = false
-    }
-    window.addEventListener("keydown", onKeyDown)
-    window.addEventListener("keyup", onKeyUp)
-    return () => {
-      window.removeEventListener("keydown", onKeyDown)
-      window.removeEventListener("keyup", onKeyUp)
-    }
-  }, [selectedPieceIndices, onRotateSelected, rotationStep, onSelectPiece, measure, onDeleteSelected])
-
   return (
     <div
       ref={containerRef}
-      className={cn("relative h-full w-full overflow-hidden rounded-xl border border-border bg-background", className)}
+      className={cn(
+        "relative h-full w-full overflow-hidden rounded-xl border border-border bg-background",
+        className,
+      )}
       style={{ backgroundColor: "var(--background, #0a0a0c)" }}
     >
-      <canvas ref={canvasRef} className="h-full w-full touch-none select-none" style={{ cursor: "default" }} />
+      <canvas
+        ref={canvasRef}
+        className="h-full w-full touch-none select-none"
+        style={{ cursor: "default" }}
+      />
 
-      {/* Barra de estado inferior. Cuando hay selección, el texto "N
-          piezas" es tappable/clickable y expande las acciones (misma
-          técnica de max-w+opacity que el FAB de canvas-toolbar.tsx) —
-          antes esto vivía DUPLICADO: este pill solo mostraba el conteo,
-          y en nesting-page.tsx había otra barra completa aparte, siempre
-          expandida, con "X · N sel. · Eliminar · Rotar+90/-90" debajo
-          del canvas. Se fusionaron en un solo lugar. */}
-      <div
-        data-slot="canvas-status-bar"
-        className={`absolute bottom-3 z-20 flex items-center gap-2 rounded-full bg-muted/95 py-1.5 text-xs text-muted-foreground backdrop-blur-sm ${
-          isCompact ? "px-2.5" : "px-3"
-        }`}
-        style={{ left: RULER_SIZE + 8 }}
-      >
-        {selectedPieceIndices.length > 0 ? (
-          <button
-            type="button"
-            onClick={() => setStatusActionsOpen((v) => !v)}
-            className="min-w-22 text-left text-foreground hover:text-foreground"
-            aria-expanded={statusActionsOpen}
-            title={statusActionsOpen ? "Ocultar acciones" : "Ver acciones"}
-          >
-            {selectedPieceIndices.length === 1
-              ? "1 pieza"
-              : `${selectedPieceIndices.length} piezas`}
-          </button>
-        ) : (
-          <span className="min-w-22 text-foreground">Sin selección</span>
-        )}
-        {collidingPieceIndices.length > 0 && (
-          <>
-            <span className="text-foreground/15">|</span>
-            <span className="text-red-400 font-medium">
-              {collidingPieceIndices.length} colisión{collidingPieceIndices.length === 1 ? "" : "es"}
-            </span>
-          </>
-        )}
+      <CanvasStatusBar
+        isCompact={isCompact}
+        selectedCount={selectedPieceIndices.length}
+        collidingCount={collidingPieceIndices.length}
+        rotationStep={rotationStep}
+        canvasTool={canvasTool}
+        onDeselect={() => onSelectPiece?.(null, false)}
+        onDelete={
+          onDeleteSelected
+            ? () => onDeleteSelected(selectedPieceIndices)
+            : undefined
+        }
+        onRotate={
+          onRotateSelected
+            ? (deg) => onRotateSelected(selectedPieceIndices, deg)
+            : undefined
+        }
+        onFreeRotate={() => setCanvasTool("rotate")}
+        canDelete={Boolean(onDeleteSelected) && selectedPieceIndices.length > 0}
+        canRotate={Boolean(onRotateSelected) && selectedPieceIndices.length > 0}
+      />
 
-        {/* Acciones de selección — mismo patrón de expansión (max-w +
-            opacity) que el panel principal del canvas-toolbar. */}
-        {selectedPieceIndices.length > 0 && (
-          <div
-            className={`flex items-center gap-0.5 overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-              statusActionsOpen ? "max-w-80 opacity-100" : "max-w-0 opacity-0 pointer-events-none"
-            }`}
-          >
-            <span className="text-foreground/15">|</span>
-            <button
-              type="button"
-              onClick={() => onSelectPiece?.(null, false)}
-              className="rounded-full p-1.5 text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
-              title="Deseleccionar"
-            >
-              <CircleSlash size={13} />
-            </button>
-            <button
-              type="button"
-              disabled={!onDeleteSelected}
-              onClick={() => onDeleteSelected?.(selectedPieceIndices)}
-              className="rounded-full p-1.5 text-destructive hover:bg-destructive/15 disabled:pointer-events-none disabled:opacity-30"
-              title="Eliminar"
-            >
-              <Trash2 size={13} />
-            </button>
-            <div className="mx-0.5 h-4 w-px shrink-0 bg-foreground/10" />
-            <button
-              type="button"
-              disabled={!onRotateSelected}
-              onClick={() => onRotateSelected?.(selectedPieceIndices, rotationStep)}
-              className="whitespace-nowrap rounded-full px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-foreground/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-            >
-              +{rotationStep}°
-            </button>
-            <button
-              type="button"
-              disabled={!onRotateSelected}
-              onClick={() => onRotateSelected?.(selectedPieceIndices, -rotationStep)}
-              className="whitespace-nowrap rounded-full px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-foreground/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
-            >
-              −{rotationStep}°
-            </button>
-            <button
-              type="button"
-              onClick={() => setCanvasTool("rotate")}
-              className={`whitespace-nowrap rounded-full px-2 py-1 text-[11px] font-medium hover:bg-foreground/10 hover:text-foreground ${
-                canvasTool === "rotate" ? "bg-primary/15 text-primary" : "text-muted-foreground"
-              }`}
-              title="Rotar libre arrastrando (Shift = pasos de 15°)"
-            >
-              Libre
-            </button>
-          </div>
-        )}
+      <CanvasVhToggle
+        canvasTool={canvasTool}
+        onChange={setCanvasTool}
+        isCompact={isCompact}
+        isMobile={isMobile}
+        toolsChromeOpen={toolsChromeOpen}
+      />
 
-        {/* Botón de ayuda desplegable */}
-        <div className="relative flex items-center">
-          <button
-            type="button"
-            onClick={() => setShowCanvasHelp((prev) => !prev)}
-            className="ml-1 rounded-full p-1 text-muted-foreground hover:bg-foreground/10 hover:text-foreground transition-colors"
-            title="Ayuda de atajos"
-          >
-            <HelpCircle size={13} />
-          </button>
-
-          {showCanvasHelp && (
-            <div
-              className={
-                isCompact
-                  ? "fixed inset-x-3 bottom-16 z-40 rounded-xl bg-popover/95 p-3 text-[11px] text-muted-foreground backdrop-blur-md"
-                  : "absolute bottom-8 left-0 z-40 w-60 rounded-xl bg-popover/95 p-3 text-[11px] text-muted-foreground backdrop-blur-md"
-              }
-            >
-              <div className="z-90 font-semibold text-foreground mb-1">Guía rápida de interacción:</div>
-              <ul className="space-y-1 text-muted-foreground">
-                <li>• <strong className="text-foreground">V</strong>: Modo Selección</li>
-                <li>• <strong className="text-foreground">H o Espacio+Arrastrar</strong>: Panorámica</li>
-                <li>• <strong className="text-foreground">Arrastrar fondo</strong>: Selección por caja</li>
-                <li>• <strong className="text-foreground">Anticlick</strong>: Salir de herramienta actual</li>
-              </ul>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Indicador modo interacción V/H superior — única fuente de verdad
-          del modo activo (antes se repetía también en la barra de estado). */}
-      <div
-        data-slot="canvas-vh"
-        className="pointer-events-none absolute right-3 z-20 flex items-center gap-1.5 transition-[top] duration-300"
-        style={{
-          top: toolsChromeOpen && isMobile ? RULER_SIZE + 88 : RULER_SIZE + 8,
-        }}
-      >
-        <div className="pointer-events-auto flex items-center gap-0.5 rounded-full bg-muted/90 p-1 backdrop-blur-sm">
-          <button
-            type="button"
-            title="Seleccionar (V)"
-            onClick={() => setCanvasTool("select")}
-            className={`flex h-8 items-center gap-1.5 rounded-full text-[11px] font-semibold transition-colors ${
-              isCompact ? "w-8 justify-center px-0" : "px-2.5"
-            } ${
-              canvasTool === "select"
-                ? "bg-foreground/15 text-foreground"
-                : "text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
-            }`}
-          >
-            <MousePointer2 className="h-3.5 w-3.5" />
-            {!isCompact && "V"}
-          </button>
-          <button
-            type="button"
-            title="Pan (H)"
-            onClick={() => setCanvasTool("pan")}
-            className={`flex h-8 items-center gap-1.5 rounded-full text-[11px] font-semibold transition-colors ${
-              isCompact ? "w-8 justify-center px-0" : "px-2.5"
-            } ${
-              canvasTool === "pan"
-                ? "bg-foreground/15 text-foreground"
-                : "text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
-            }`}
-          >
-            <Hand className="h-3.5 w-3.5" />
-            {!isCompact && "H"}
-          </button>
-        </div>
-      </div>
+      <CanvasCoords labelRef={coordsLabelRef} />
 
       <CanvasContextMenu
         ctxMenu={ctxMenu}
@@ -1331,14 +470,6 @@ export function DxfCanvas({
         onFocusSelected={handleFocus}
         onSetCanvasTool={setCanvasTool}
       />
-
-      <div
-        data-slot="canvas-coords"
-        className="pointer-events-none absolute bottom-3 z-20 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] tabular-nums text-muted-foreground backdrop-blur-sm"
-        style={{ right: 12 }}
-      >
-        <span ref={coordsLabelRef}>X: —  Y: — mm</span>
-      </div>
 
       <CanvasToolbar
         onOpenChange={setToolsChromeOpen}
@@ -1386,7 +517,11 @@ export function DxfCanvas({
       {rotatePivotScreen && (
         <div
           className="pointer-events-none absolute z-20"
-          style={{ left: rotatePivotScreen.x, top: rotatePivotScreen.y, transform: "translate(-50%, -50%)" }}
+          style={{
+            left: rotatePivotScreen.x,
+            top: rotatePivotScreen.y,
+            transform: "translate(-50%, -50%)",
+          }}
         >
           <div className="relative flex h-6 w-6 items-center justify-center">
             <div className="absolute h-px w-6 bg-primary" />
@@ -1403,18 +538,27 @@ export function DxfCanvas({
       )}
 
       {canvasTool === "zoomWindow" && !boxSelectScreen && (
-        <div className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-xs" style={{ top: RULER_SIZE + 56 }}>
+        <div
+          className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-xs"
+          style={{ top: RULER_SIZE + 56 }}
+        >
           Arrastra un rectángulo para hacer zoom (Anticlick para salir)
         </div>
       )}
       {canvasTool === "rotate" && !rotatePivotScreen && (
-        <div className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-xs" style={{ top: RULER_SIZE + 56 }}>
+        <div
+          className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-xs"
+          style={{ top: RULER_SIZE + 56 }}
+        >
           Clic = pivot · arrastrar = ángulo (Shift = 15°) (Anticlick para salir)
         </div>
       )}
 
       {measure.activeTool !== "none" && (
-        <div className="absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground backdrop-blur-md transition-opacity duration-200" style={{ top: RULER_SIZE + 56 }}>
+        <div
+          className="absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground backdrop-blur-md transition-opacity duration-200"
+          style={{ top: RULER_SIZE + 56 }}
+        >
           {measure.activeTool === "distance" &&
             (measure.pendingPoints.length === 0
               ? "Cota: clic en el primer punto (snap a arista/extremo)"
@@ -1437,7 +581,10 @@ export function DxfCanvas({
       )}
 
       {collidingPieceIndices.length > 0 && (
-        <div className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-red-500/15 px-3 py-1.5 text-xs font-medium text-red-400 backdrop-blur-md" style={{ top: RULER_SIZE + 56 }}>
+        <div
+          className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-red-500/15 px-3 py-1.5 text-xs font-medium text-red-400 backdrop-blur-md"
+          style={{ top: RULER_SIZE + 56 }}
+        >
           <AlertTriangle className="h-3.5 w-3.5" />
           {collidingPieceIndices.length === 1
             ? "1 pieza se solapa con otra"
@@ -1445,69 +592,11 @@ export function DxfCanvas({
         </div>
       )}
 
-      {/* Panel de mediciones con altura segura sobre la barra inferior */}
-      {measure.measurements.length > 0 && (
-        <div
-          className="absolute bottom-14 z-30 flex max-h-[40%] w-[min(15rem,calc(100%-1.5rem))] flex-col gap-1.5 rounded-2xl bg-popover/95 p-2.5 backdrop-blur-md sm:p-3" style={{ left: RULER_SIZE + 8 }}
-          title="Mediciones activas"
-        >
-          {/*
-            Antes el título + contador + botón "borrar todas" vivían
-            DENTRO del mismo div con overflow-y-auto que la lista de
-            mediciones — se desplazaban junto con la lista al scrollear
-            en vez de quedar fijos arriba. Ahora la cabecera queda
-            afuera (shrink-0) y solo la lista entra en un ScrollArea
-            real (no un overflow-y-auto + clase de scrollbar copiada a
-            mano — mismo componente que usa el resto de la app, para
-            no tener 2 formas distintas de lograr lo mismo).
-          */}
-          <div className="flex shrink-0 items-center justify-between gap-2 px-0.5 pb-0.5">
-            <span className="hidden min-w-0 truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground xs:inline sm:inline">
-              Mediciones
-            </span>
-            <span className="inline text-muted-foreground sm:hidden" aria-hidden>
-              <Ruler size={14} />
-            </span>
-            <div className="flex items-center gap-1">
-              <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground">
-                {measure.measurements.length}
-              </span>
-              <button
-                type="button"
-                onClick={measure.clearMeasurements}
-                className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
-                title="Borrar todas"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          </div>
-          <ScrollArea className="min-h-0 flex-1">
-          <div className="flex flex-col gap-1 pt-0.5 pr-1">
-            {measure.measurements.map((m) => (
-              <div
-                key={m.id}
-                className="flex items-center justify-between gap-2 rounded-xl bg-foreground/5 px-2.5 py-1.5 text-xs text-foreground transition-colors hover:bg-foreground/10"
-              >
-                <span className="min-w-0 truncate font-medium">
-                  {m.kind === "distance" && fmtMm(m.value)}
-                  {m.kind === "radius" && `R${m.radius.toFixed(1)} · ⌀${(m.radius * 2).toFixed(1)}`}
-                  {m.kind === "angle" && `${m.degrees.toFixed(1)}°`}
-                  {m.kind === "area" && `${(m.area / 1_000_000).toFixed(4)}m²`}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => measure.removeMeasurement(m.id)}
-                  className="shrink-0 rounded-lg p-1 text-foreground/70 transition-colors hover:bg-destructive/15 hover:text-destructive"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ))}
-          </div>
-          </ScrollArea>
-        </div>
-      )}
+      <CanvasMeasurePanel
+        measurements={measure.measurements}
+        onClear={measure.clearMeasurements}
+        onRemove={measure.removeMeasurement}
+      />
     </div>
   )
 }

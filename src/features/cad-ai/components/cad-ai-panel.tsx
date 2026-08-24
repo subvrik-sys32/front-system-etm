@@ -288,7 +288,7 @@ export function CadAiPanel({
         )}
 
         {!isMobileLayout ? (
-          <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 p-2">
+          <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 px-3 pb-2 tablet:px-4 desktop:px-5 desktop:pb-3">
             {/* Contenedor del visor CAD unificado con shadow-xs */}
             <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-muted/30 shadow-xs backdrop-blur-[2px]">
               {loading && (

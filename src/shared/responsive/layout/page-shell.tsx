@@ -36,7 +36,7 @@ export function PageShell({
       className={cn(
         "flex h-full min-h-0 flex-col bg-background text-foreground select-none",
         mode === "list" && "px-3 pt-0 pb-2 tablet:px-4 desktop:px-5 desktop:pb-3",
-        mode === "fill" && "overflow-hidden px-3 tablet:px-4 desktop:px-5",
+        mode === "fill" && "overflow-hidden px-3 pb-2 tablet:px-4 desktop:px-5 desktop:pb-3",
         mode === "bleed" && "overflow-hidden px-0",
         className,
       )}

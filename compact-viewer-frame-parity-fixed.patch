@@ -1,0 +1,28 @@
+diff --git a/src/features/cad-ai/components/cad-ai-panel.tsx b/src/features/cad-ai/components/cad-ai-panel.tsx
+index 0a6d593..eb56815 100644
+--- a/src/features/cad-ai/components/cad-ai-panel.tsx
++++ b/src/features/cad-ai/components/cad-ai-panel.tsx
+@@ -308,7 +308,7 @@ export function CadAiPanel({
+             </aside>
+           </div>
+         ) : (
+-          <div className="absolute inset-x-0 bottom-0 top-0 mx-1 mb-1 mt-1 overflow-hidden rounded-xl bg-zinc-100 shadow-xs dark:bg-neutral-950">
++          <div className="absolute inset-x-0 bottom-0 top-0 mx-2 mb-2 mt-1 overflow-hidden rounded-xl bg-zinc-100 shadow-xs dark:bg-neutral-950">
+             <div className="absolute inset-0 overflow-hidden">
+               {loading && (
+                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+diff --git a/src/features/nesting/components/nesting-page.tsx b/src/features/nesting/components/nesting-page.tsx
+index b87462f..aeb24aa 100644
+--- a/src/features/nesting/components/nesting-page.tsx
++++ b/src/features/nesting/components/nesting-page.tsx
+@@ -830,8 +830,8 @@ export function NestingPage() {
+           </div>
+ 
+           {/* top-12 ≈ tabs; bottom-0 = todo el resto del slot immersive */}
+-          <div className="absolute inset-x-0 bottom-0 top-[3.25rem] mx-1 mb-1 overflow-hidden rounded-xl border-0 bg-zinc-100 shadow-xs dark:border-0 dark:bg-neutral-950">
+-            <div className="absolute inset-px overflow-hidden rounded-4xl">
++          <div className="absolute inset-x-0 bottom-0 top-[3.25rem] mx-2 mb-2 overflow-hidden rounded-xl bg-zinc-100 shadow-xs dark:bg-neutral-950">
++            <div className="absolute inset-0 overflow-hidden">
+               {!project.sessionReady ? (
+                 <WorkspaceSpinner />
+               ) : dxfCanvasPieces.length > 0 ? (

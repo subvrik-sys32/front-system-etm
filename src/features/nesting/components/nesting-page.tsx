@@ -830,8 +830,8 @@ export function NestingPage() {
           </div>
 
           {/* top-12 ≈ tabs; bottom-0 = todo el resto del slot immersive */}
-          <div className="absolute inset-x-0 bottom-0 top-[3.25rem] mx-1 mb-1 overflow-hidden rounded-xl border-0 bg-zinc-100 shadow-xs dark:border-0 dark:bg-neutral-950">
-            <div className="absolute inset-px overflow-hidden rounded-4xl">
+          <div className="absolute inset-x-0 bottom-0 top-[3.25rem] mx-2 mb-2 overflow-hidden rounded-xl bg-zinc-100 shadow-xs dark:bg-neutral-950">
+            <div className="absolute inset-0 overflow-hidden">
               {!project.sessionReady ? (
                 <WorkspaceSpinner />
               ) : dxfCanvasPieces.length > 0 ? (

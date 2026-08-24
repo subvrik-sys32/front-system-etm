@@ -601,6 +601,8 @@ export function NestingPage() {
       activePanel={activePanel}
       onActivePanelChange={setActivePanel}
       footer={nestFooter}
+      widthClassName="w-full"
+      className="h-full"
       pieces={<PieceList ref={pieceListRef} {...pieceListProps} />}
       projectMaterial={
         <div className="flex w-full flex-col gap-3">
@@ -830,7 +832,7 @@ export function NestingPage() {
           </div>
 
           {/* top-12 ≈ tabs; bottom-0 = todo el resto del slot immersive */}
-          <div className="absolute inset-x-0 bottom-0 top-[3.25rem] mx-2 mb-2 overflow-hidden rounded-xl bg-zinc-100 shadow-xs dark:bg-neutral-950">
+          <div className="absolute inset-x-2 bottom-2 top-[3.25rem] overflow-hidden rounded-xl bg-zinc-100 shadow-xs dark:bg-neutral-950">
             <div className="absolute inset-0 overflow-hidden">
               {!project.sessionReady ? (
                 <WorkspaceSpinner />
@@ -889,8 +891,11 @@ export function NestingPage() {
           <div className="shrink-0">
             <FormDialogHeader title="Panel de Control" icon={SlidersHorizontal} />
           </div>
-          <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4">
-            {panel}
+          <div className="min-h-0 flex-1 overflow-hidden p-3">
+            <div className="h-full min-h-0">
+              {/* w-full: mismo contrato que Plantillas (no w-80 desfasado) */}
+              {panel}
+            </div>
           </div>
         </DialogContent>
       </Dialog>

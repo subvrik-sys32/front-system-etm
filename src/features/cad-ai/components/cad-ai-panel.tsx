@@ -317,8 +317,8 @@ export function CadAiPanel({
             </aside>
           </div>
         ) : (
-          <div className="absolute inset-x-0 bottom-0 top-0 mx-2 mb-2 overflow-hidden rounded-xl bg-zinc-100 shadow-xs dark:bg-neutral-950">
-            <div className="absolute inset-0 overflow-hidden">
+          <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden p-2">
+            <div className="relative min-h-0 w-full flex-1 overflow-hidden rounded-xl bg-zinc-100 shadow-xs dark:bg-neutral-950">
               {loading && (
                 <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80 backdrop-blur-sm">
                   <Spinner size={32} className="text-muted-foreground" />

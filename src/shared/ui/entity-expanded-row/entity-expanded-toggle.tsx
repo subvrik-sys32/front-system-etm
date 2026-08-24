@@ -65,7 +65,10 @@ export function EntityExpandedToggle<T extends string>({
   return (
     <div
       ref={wrapperRef}
-      className="flex w-full min-w-0 items-center justify-end gap-1.5"
+      className={cn(
+        "flex w-full min-w-0 items-center gap-1.5",
+        leading || trailing ? "justify-between" : "justify-center",
+      )}
     >
       {leading}
       <div

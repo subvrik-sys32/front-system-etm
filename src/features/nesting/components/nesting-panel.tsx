@@ -31,6 +31,8 @@ export interface NestingPanelProps {
   layers: ReactNode
   inspector: ReactNode
   footer?: ReactNode
+  widthClassName?: string
+  className?: string
 }
 
 export function NestingPanel({
@@ -41,6 +43,8 @@ export function NestingPanel({
   layers,
   inspector,
   footer,
+  widthClassName,
+  className,
 }: NestingPanelProps) {
   return (
     <ToolSidebar
@@ -48,6 +52,8 @@ export function NestingPanel({
       onChange={onActivePanelChange}
       options={PANEL_OPTIONS}
       footer={footer}
+      widthClassName={widthClassName}
+      className={className}
       panels={[
         { value: "sheet-pieces", overflow: "fill", content: pieces },
         {

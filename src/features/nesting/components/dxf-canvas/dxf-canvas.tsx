@@ -7,7 +7,6 @@ import type { CanvasTool, DxfCanvasProps, Entity, Point, SnapCandidate } from ".
 import { CanvasToolbar } from "./components/canvas-toolbar"
 import { CanvasContextMenu } from "./components/canvas-context-menu"
 import { CanvasStatusBar } from "./components/canvas-status-bar"
-import { CanvasVhToggle } from "./components/canvas-vh-toggle"
 import { CanvasCoords } from "./components/canvas-coords"
 import { CanvasMeasurePanel } from "./components/canvas-measure-panel"
 import { drawScene } from "./utils/draw/draw"
@@ -446,13 +445,6 @@ export function DxfCanvas({
         canRotate={Boolean(onRotateSelected) && selectedPieceIndices.length > 0}
       />
 
-      <CanvasVhToggle
-        canvasTool={canvasTool}
-        onChange={setCanvasTool}
-        isCompact={isCompact}
-        isMobile={isMobile}
-        toolsChromeOpen={toolsChromeOpen}
-      />
 
       <CanvasCoords labelRef={coordsLabelRef} />
 
@@ -472,6 +464,8 @@ export function DxfCanvas({
       />
 
       <CanvasToolbar
+        canvasTool={canvasTool}
+        onCanvasToolChange={setCanvasTool}
         onOpenChange={setToolsChromeOpen}
         showGrid={showGrid}
         onToggleGrid={() => setShowGrid((v) => !v)}

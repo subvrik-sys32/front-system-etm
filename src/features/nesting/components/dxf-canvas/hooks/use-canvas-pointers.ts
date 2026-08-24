@@ -369,27 +369,56 @@ export function useCanvasPointers(p: Params) {
       canvas.setPointerCapture(e.pointerId)
     }
 
+    const writeCursor = (clientX: number, clientY: number) => {
+      const rect = canvas.getBoundingClientRect()
+      const sx = canvas.clientWidth / (rect.width || 1)
+      const sy = canvas.clientHeight / (rect.height || 1)
+      cursorCssRef.current = {
+        x: (clientX - rect.left) * sx,
+        y: (clientY - rect.top) * sy,
+      }
+      const local = view.screenToLocal(canvas, clientX, clientY)
+      if (local && coordsLabelRef.current) {
+        coordsLabelRef.current.textContent = `X: ${local.x.toFixed(2)}  Y: ${local.y.toFixed(2)} mm`
+      }
+    }
+
+    // Cursor / reglas: solo si el puntero está EN el canvas.
+    // El toolbar es overlay hermano; no recibe estos eventos.
+    const onCanvasHoverMove = (e: PointerEvent) => {
+      const gesture =
+        draggingRef.current ||
+        pieceDragRef.current ||
+        measurementDragRef.current ||
+        pinchRef.current ||
+        boxSelectRef.current ||
+        zoomWindowRef.current
+      if (gesture) return
+      writeCursor(e.clientX, e.clientY)
+    }
+
+    const onCanvasHoverLeave = () => {
+      const gesture =
+        draggingRef.current ||
+        pieceDragRef.current ||
+        measurementDragRef.current ||
+        pinchRef.current
+      if (gesture) return
+      cursorCssRef.current = null
+    }
+
     const onPointerMove = (e: PointerEvent) => {
-      const c = canvasRef.current
-      const overChrome =
-        e.target instanceof Element &&
-        Boolean(
-          (e.target as Element).closest(
-            '[data-slot="canvas-toolbar"],[data-slot="canvas-vh"],[data-slot="canvas-status-bar"],[data-slot="canvas-coords"]',
-          ),
-        )
-      if (c && !overChrome) {
-        const rect = c.getBoundingClientRect()
-        const sx = c.clientWidth / (rect.width || 1)
-        const sy = c.clientHeight / (rect.height || 1)
-        cursorCssRef.current = {
-          x: (e.clientX - rect.left) * sx,
-          y: (e.clientY - rect.top) * sy,
-        }
-        const local = view.screenToLocal(c, e.clientX, e.clientY)
-        if (local && coordsLabelRef.current) {
-          coordsLabelRef.current.textContent = `X: ${local.x.toFixed(2)}  Y: ${local.y.toFixed(2)} mm`
-        }
+      const gesture =
+        draggingRef.current ||
+        pieceDragRef.current ||
+        measurementDragRef.current ||
+        pinchRef.current ||
+        boxSelectRef.current ||
+        zoomWindowRef.current
+      // Window move solo para gestos que empezaron en el canvas.
+      // No pinta cursor: eso es onCanvasHoverMove.
+      if (gesture) {
+        writeCursor(e.clientX, e.clientY)
       }
       if (pointersRef.current.has(e.pointerId)) {
         pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
@@ -853,6 +882,8 @@ export function useCanvasPointers(p: Params) {
     }
 
     canvas.addEventListener("pointerdown", onPointerDown)
+    canvas.addEventListener("pointermove", onCanvasHoverMove)
+    canvas.addEventListener("pointerleave", onCanvasHoverLeave)
     window.addEventListener("pointermove", onPointerMove)
     window.addEventListener("pointerup", onPointerUp)
     canvas.addEventListener("wheel", onWheel, { passive: false })
@@ -860,6 +891,8 @@ export function useCanvasPointers(p: Params) {
 
     return () => {
       canvas.removeEventListener("pointerdown", onPointerDown)
+      canvas.removeEventListener("pointermove", onCanvasHoverMove)
+      canvas.removeEventListener("pointerleave", onCanvasHoverLeave)
       window.removeEventListener("pointermove", onPointerMove)
       window.removeEventListener("pointerup", onPointerUp)
       canvas.removeEventListener("wheel", onWheel)

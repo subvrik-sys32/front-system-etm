@@ -31,6 +31,8 @@ import {
   Undo2,
   Redo2,
   Trash2,
+  MousePointer2,
+  Hand,
 } from "lucide-react"
 import type { MeasureTool, CanvasTool, TransformMode } from "../types/types"
 import { RULER_SIZE } from "../utils/draw/draw-rulers"
@@ -216,7 +218,8 @@ export function CanvasToolbar({
 
   return (
     <div
-      className={`pointer-events-none absolute z-25 flex max-w-[calc(100%-1.5rem)] flex-col items-start gap-2 ${
+      data-slot="canvas-toolbar"
+      className={`pointer-events-auto absolute z-25 flex max-w-[calc(100%-1.5rem)] flex-col items-start gap-2 ${
         isCompact ? "right-3" : ""
       }`}
       style={{
@@ -266,6 +269,26 @@ export function CanvasToolbar({
             backdrop-blur-md
           "
         >
+          {onCanvasToolChange && (
+            <>
+              <ToolBtn
+                title="Seleccionar (V)"
+                onClick={() => onCanvasToolChange("select")}
+                active={canvasTool === "select"}
+              >
+                <MousePointer2 size={16} strokeWidth={1.75} />
+              </ToolBtn>
+              <ToolBtn
+                title="Pan (H)"
+                onClick={() => onCanvasToolChange("pan")}
+                active={canvasTool === "pan"}
+              >
+                <Hand size={16} strokeWidth={1.75} />
+              </ToolBtn>
+              <div className={mdDivider} />
+            </>
+          )}
+
           {/* Vista */}
           <ToolBtn title="Acercar" onClick={onZoomIn}>
             <ZoomIn size={16} strokeWidth={1.75} />

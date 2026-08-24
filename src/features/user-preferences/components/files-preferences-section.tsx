@@ -20,11 +20,7 @@ const MODES: { id: DownloadMode; label: string; hint: string }[] = [
   { id: "quick", label: "Rápida", hint: "Descargas del navegador" },
 ]
 
-/**
- * Misma línea visual que el resto de Ajustes:
- * título xs + subtítulo 11px + control denso.
- * Checkbox = PermissionToggle de Access (caja 4.5 + check verde).
- */
+/** SSOT visual de Ajustes: títulos xs, hints 11px, ancho completo. */
 export function FilesPreferencesSection() {
   const downloadMode = useUserPreferencesStore(s => s.downloadMode)
   const rememberFolder = useUserPreferencesStore(s => s.rememberFolder)
@@ -64,8 +60,7 @@ export function FilesPreferencesSection() {
   }
 
   return (
-    <div className="flex w-full max-w-md flex-col gap-6">
-      {/* —— Al descargar —— */}
+    <div className="flex w-full flex-col gap-6">
       <section className="flex flex-col gap-2">
         <div className="flex flex-col gap-0.5">
           <h3 className="text-xs font-semibold text-foreground">Al descargar</h3>
@@ -106,7 +101,6 @@ export function FilesPreferencesSection() {
         </div>
       </section>
 
-      {/* —— Carpeta habitual —— misma jerarquía tipográfica */}
       {supportsFs && (
         <section className="flex flex-col gap-2">
           <div className="flex flex-col gap-0.5">
@@ -118,9 +112,7 @@ export function FilesPreferencesSection() {
             </p>
           </div>
 
-          {/* Un solo bloque denso, mismo radio que el segmented */}
           <div className="flex flex-col gap-0.5 rounded-lg bg-muted/50 p-0.5 dark:bg-muted/40">
-            {/* Toggle — PermissionToggle (Access) */}
             <div
               role="checkbox"
               aria-checked={rememberFolder}
@@ -154,7 +146,6 @@ export function FilesPreferencesSection() {
               </span>
             </div>
 
-            {/* Path + acción — solo si recordar está on */}
             {rememberFolder && (
               <div className="flex flex-col gap-1.5 rounded-md bg-background/40 px-3 py-2">
                 <p
@@ -171,7 +162,8 @@ export function FilesPreferencesSection() {
                   )}
                 </p>
                 <p className="text-[10px] leading-snug text-muted-foreground/80">
-                  El navegador solo comparte el nombre de la carpeta, no la ruta completa.
+                  El navegador solo comparte el nombre de la carpeta, no la ruta
+                  completa.
                 </p>
                 <button
                   type="button"

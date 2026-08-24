@@ -73,7 +73,6 @@ export function SettingsDialog({ open, onClose }: Props) {
             <div className="shrink-0">
               <FormDialogHeader title="Ajustes" icon={Settings2} />
             </div>
-            {/* Chips de sección en móvil */}
             <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-border/50 px-3 py-2 [scrollbar-width:none]">
               {SECTIONS.map(s => {
                 const Icon = s.icon
@@ -115,7 +114,6 @@ export function SettingsDialog({ open, onClose }: Props) {
           </>
         ) : (
           <div className="flex min-h-0 flex-1">
-            {/* Rail */}
             <aside className="flex w-48 shrink-0 flex-col gap-1 border-r border-border/50 bg-muted/20 p-3">
               <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 General
@@ -141,7 +139,6 @@ export function SettingsDialog({ open, onClose }: Props) {
                 )
               })}
             </aside>
-            {/* Panel */}
             <div className="flex min-w-0 flex-1 flex-col">
               <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-5 py-3">
                 <h2 className="text-sm font-semibold text-foreground">
@@ -179,44 +176,58 @@ function SectionBody({
 }) {
   if (section === "account") {
     return (
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex size-12 items-center justify-center overflow-hidden rounded-full bg-foreground/10 text-sm font-semibold">
-            {user?.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={user.avatarUrl}
-                alt=""
-                className="size-full object-cover"
-              />
-            ) : (
-              (user?.name?.[0] ?? "?").toUpperCase()
-            )}
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">
-              {user?.name ?? "Usuario"}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {user?.email ?? ""}
+      <div className="flex w-full flex-col gap-6">
+        <section className="flex flex-col gap-2">
+          <div className="flex flex-col gap-0.5">
+            <h3 className="text-xs font-semibold text-foreground">Perfil</h3>
+            <p className="text-[11px] leading-snug text-muted-foreground">
+              Datos de la sesión actual
             </p>
           </div>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Edita nombre y foto desde <span className="font-medium text-foreground">Mi perfil</span> en
-          la barra lateral.
-        </p>
+          <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3 dark:bg-muted/40">
+            <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-foreground/10 text-xs font-semibold">
+              {user?.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.avatarUrl}
+                  alt=""
+                  className="size-full object-cover"
+                />
+              ) : (
+                (user?.name?.[0] ?? "?").toUpperCase()
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-semibold text-foreground">
+                {user?.name ?? "Usuario"}
+              </p>
+              <p className="truncate text-[11px] text-muted-foreground">
+                {user?.email ?? ""}
+              </p>
+            </div>
+          </div>
+          <p className="text-[11px] leading-snug text-muted-foreground">
+            Edita nombre y foto desde{" "}
+            <span className="font-medium text-foreground">Mi perfil</span> en la
+            barra lateral.
+          </p>
+        </section>
       </div>
     )
   }
 
   if (section === "appearance") {
     return (
-      <div className="flex flex-col gap-3">
-        <p className="text-xs text-muted-foreground">
-          Tema de la interfaz. En móvil reemplaza el toggle del drawer.
-        </p>
-        <ThemeToggle />
+      <div className="flex w-full flex-col gap-6">
+        <section className="flex flex-col gap-2">
+          <div className="flex flex-col gap-0.5">
+            <h3 className="text-xs font-semibold text-foreground">Tema</h3>
+            <p className="text-[11px] leading-snug text-muted-foreground">
+              Tema de la interfaz. En móvil reemplaza el toggle del drawer.
+            </p>
+          </div>
+          <ThemeToggle />
+        </section>
       </div>
     )
   }

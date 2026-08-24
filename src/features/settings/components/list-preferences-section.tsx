@@ -23,6 +23,7 @@ const PROJECT_MODES: { id: ProjectSortMode; label: string; hint: string }[] = [
   { id: "manual", label: "Manual", hint: "Como lo arrastras" },
 ]
 
+/** Chips densos — misma línea que el segmented de Archivos. */
 function ModeGrid<T extends string>({
   value,
   options,
@@ -33,7 +34,7 @@ function ModeGrid<T extends string>({
   onChange: (v: T) => void
 }) {
   return (
-    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+    <div className="grid grid-cols-2 gap-0.5 sm:grid-cols-3">
       {options.map(o => {
         const active = value === o.id
         return (
@@ -42,14 +43,16 @@ function ModeGrid<T extends string>({
             type="button"
             onClick={() => onChange(o.id)}
             className={cn(
-              "flex flex-col items-start gap-0.5 rounded-xl border px-3 py-2.5 text-left transition",
+              "flex flex-col items-start gap-0.5 rounded-md px-3 py-2 text-left transition",
               active
-                ? "border-primary/35 bg-primary/10 text-foreground"
-                : "border-transparent bg-foreground/5 text-muted-foreground hover:bg-foreground/8 hover:text-foreground",
+                ? "bg-background text-foreground shadow-xs ring-1 ring-foreground/10"
+                : "bg-muted/50 text-muted-foreground hover:bg-muted/70 hover:text-foreground dark:bg-muted/40",
             )}
           >
-            <span className="text-sm font-semibold leading-none">{o.label}</span>
-            <span className="text-[10px] leading-tight opacity-80">{o.hint}</span>
+            <span className="text-xs font-semibold leading-none">{o.label}</span>
+            <span className="text-[10px] leading-tight text-muted-foreground">
+              {o.hint}
+            </span>
           </button>
         )
       })}
@@ -68,13 +71,13 @@ function DirectionToggle({
 }) {
   if (disabled) {
     return (
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-[11px] leading-snug text-muted-foreground">
         En modo manual el orden es el del arrastre.
       </p>
     )
   }
   return (
-    <div className="inline-flex rounded-lg bg-muted/60 p-0.5">
+    <div className="inline-flex rounded-lg bg-muted/50 p-0.5 dark:bg-muted/40">
       {(
         [
           { id: "asc" as const, label: "Ascendente" },
@@ -99,7 +102,7 @@ function DirectionToggle({
   )
 }
 
-/** Orden por defecto de listas (mismo store que el toolbar). */
+/** Misma tipografía / densidad que FilesPreferencesSection. */
 export function ListPreferencesSection() {
   const taskSortMode = useSortStore(s => s.taskSortMode)
   const projectSortMode = useSortStore(s => s.projectSortMode)
@@ -111,11 +114,11 @@ export function ListPreferencesSection() {
   const setProjectSortDirection = useSortStore(s => s.setProjectSortDirection)
 
   return (
-    <div className="flex w-full max-w-lg flex-col gap-6">
-      <section className="flex flex-col gap-2.5">
+    <div className="flex w-full flex-col gap-6">
+      <section className="flex flex-col gap-2">
         <div className="flex flex-col gap-0.5">
-          <h3 className="text-sm font-semibold text-foreground">Tareas</h3>
-          <p className="text-[11px] text-muted-foreground">
+          <h3 className="text-xs font-semibold text-foreground">Tareas</h3>
+          <p className="text-[11px] leading-snug text-muted-foreground">
             Criterio al abrir la lista de tareas
           </p>
         </div>
@@ -131,10 +134,10 @@ export function ListPreferencesSection() {
         />
       </section>
 
-      <section className="flex flex-col gap-2.5">
+      <section className="flex flex-col gap-2">
         <div className="flex flex-col gap-0.5">
-          <h3 className="text-sm font-semibold text-foreground">Proyectos</h3>
-          <p className="text-[11px] text-muted-foreground">
+          <h3 className="text-xs font-semibold text-foreground">Proyectos</h3>
+          <p className="text-[11px] leading-snug text-muted-foreground">
             Criterio al abrir la lista de proyectos
           </p>
         </div>

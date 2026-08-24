@@ -9,7 +9,6 @@ type State = {
   downloadMode: DownloadMode
   fileNameTemplate: string
   rememberFolder: boolean
-  /** Nombre de la carpeta (FileSystemDirectoryHandle.name). */
   rememberedFolderName: string | null
   setDownloadMode: (mode: DownloadMode) => void
   setFileNameTemplate: (tpl: string) => void

@@ -37,7 +37,7 @@ export function defaultProjectSettings(): ProjectSettings {
     cliente: "",
     material: "",
     espesor: "",
-    sheetWidth: "2045",
+    sheetWidth: "2405",
     sheetHeight: "1205",
     margin: "3",
     muesca: "0",

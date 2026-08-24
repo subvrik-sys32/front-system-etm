@@ -14,11 +14,19 @@ function niceGridStep(scale: number): number {
   return mult * base
 }
 
+function gridTheme() {
+  const dark =
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark")
+  // Estilo CAD AI: líneas suaves en light; equivalentes en dark
+  return dark
+    ? { minor: "#2a2a2e", major: "#3f3f46", dot: "#52525b" }
+    : { minor: "#e8e8e8", major: "#cccccc", dot: "#a3a3a3" }
+}
+
 /**
  * Dibuja la cuadrícula en coords mundo (caller ya aplicó translate/rotate/scale).
- * Tiene en cuenta rotationDeg para cubrir TODO el viewport visible (crítico en
- * tablet con plancha landscape → vista rotada 90°).
- * Limita cantidad de celdas para no explotar en móvil al hacer zoom out.
+ * Default visual = líneas tipo CAD AI; dots/cross con contraste light/dark.
  */
 export function drawWorldGrid(
   ctx: CanvasRenderingContext2D,
@@ -30,8 +38,8 @@ export function drawWorldGrid(
 ) {
   const { offsetX, offsetY, rotationDeg = 0 } = view
   const inv = 1 / Math.max(scale, 1e-12)
+  const theme = gridTheme()
 
-  // 4 esquinas del canvas CSS → coords mundo (inversa de localToScreen)
   const corners: { x: number; y: number }[] = []
   for (const [sx, sy] of [
     [0, 0],
@@ -42,7 +50,6 @@ export function drawWorldGrid(
     let cx = sx - canvasW / 2 - offsetX
     let cy = sy - canvasH / 2 - offsetY
     if (rotationDeg === 90) {
-      // inversa de rotate(π/2): (x,y) → (y, -x)
       const ix = cy
       const iy = -cx
       cx = ix
@@ -62,7 +69,6 @@ export function drawWorldGrid(
     if (c.y > worldBottom) worldBottom = c.y
   }
 
-  // Paso adaptativo + tope de celdas (móvil/zoom-out no debe generar 50k dots)
   const MAX_CELLS = 80
   let step = niceGridStep(scale)
   const spanX = Math.max(1e-6, worldRight - worldLeft)
@@ -83,8 +89,8 @@ export function drawWorldGrid(
   if (style === "lines" || style === "cross") {
     for (let x = x0; x <= x1; x += step) {
       const major = Math.abs(Math.round(x / step)) % majorEvery === 0
-      ctx.strokeStyle = major ? "#3a3a42" : "#252528"
-      ctx.lineWidth = (major ? 1 : 0.6) / scale
+      ctx.strokeStyle = major ? theme.major : theme.minor
+      ctx.lineWidth = (major ? 1 : 0.5) / scale
       ctx.beginPath()
       ctx.moveTo(x, y0)
       ctx.lineTo(x, y1)
@@ -92,8 +98,8 @@ export function drawWorldGrid(
     }
     for (let y = y0; y <= y1; y += step) {
       const major = Math.abs(Math.round(y / step)) % majorEvery === 0
-      ctx.strokeStyle = major ? "#3a3a42" : "#252528"
-      ctx.lineWidth = (major ? 1 : 0.6) / scale
+      ctx.strokeStyle = major ? theme.major : theme.minor
+      ctx.lineWidth = (major ? 1 : 0.5) / scale
       ctx.beginPath()
       ctx.moveTo(x0, y)
       ctx.lineTo(x1, y)
@@ -102,10 +108,9 @@ export function drawWorldGrid(
   }
 
   if (style === "dots" || style === "cross") {
-    // ~1.25 px en pantalla; fillRect es mucho más barato que arc()×N en móvil
-    const r = 1.25 / scale
+    const r = 1.1 / scale
     const d = r * 2
-    ctx.fillStyle = "#3a3a3f"
+    ctx.fillStyle = theme.dot
     for (let x = x0; x <= x1; x += step) {
       for (let y = y0; y <= y1; y += step) {
         ctx.fillRect(x - r, y - r, d, d)

@@ -25,7 +25,7 @@ import {
   COLLISION_COLOR,
   MEASURE_COLOR,
   MEASURE_PENDING_COLOR,
-  SELECTED_STROKE,
+  getSelectedStroke,
   SHEET_STROKE,
 } from "../../types/types"
 
@@ -101,7 +101,7 @@ export function drawScene(d: DrawContext) {
     localToScreen,
     dragPreview,
     snapGuides,
-    gridStyle = "dots",
+    gridStyle = "lines",
     showGrid = true,
   } = d
 
@@ -159,7 +159,11 @@ export function drawScene(d: DrawContext) {
     // Culling: si está fuera del viewport y no se está arrastrando, skip
     if (!inDrag && item.bounds && !aabbIntersects(item.bounds, viewAabb)) continue
 
-    ctx.strokeStyle = isColliding ? COLLISION_COLOR : isSelected ? SELECTED_STROKE : e.color
+    ctx.strokeStyle = isColliding
+      ? COLLISION_COLOR
+      : isSelected
+        ? getSelectedStroke()
+        : e.color
     ctx.fillStyle = e.color
     ctx.lineWidth = (isColliding || isSelected ? 1.8 : 1) / scale
 

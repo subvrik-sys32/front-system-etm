@@ -28,6 +28,9 @@ import {
   EyeOff,
   Move,
   MoveHorizontal,
+  Undo2,
+  Redo2,
+  Trash2,
 } from "lucide-react"
 import type { MeasureTool, CanvasTool, TransformMode } from "../types/types"
 import { RULER_SIZE } from "../utils/draw/draw-rulers"
@@ -42,7 +45,7 @@ const mdBtn =
   "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 hover:bg-foreground/10 hover:text-foreground active:bg-foreground/15 disabled:pointer-events-none disabled:opacity-30"
 const mdBtnRed =
   "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-destructive transition-colors duration-150 hover:bg-destructive/15 active:bg-destructive/20 disabled:pointer-events-none disabled:opacity-30"
-const mdBtnActive = "bg-blue-500/20 text-blue-300 hover:bg-blue-500/25 hover:text-blue-300"
+const mdBtnActive = "bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary"
 const mdDivider = "mx-0.5 h-5 w-px shrink-0 bg-foreground/10"
 
 function ToolBtn({
@@ -91,7 +94,6 @@ function ToolBtn({
   )
 }
 
-
 export interface CanvasToolbarProps {
   showGrid: boolean
   onToggleGrid: () => void
@@ -134,6 +136,14 @@ export interface CanvasToolbarProps {
   onAutoBboxDim?: () => void
   canAutoBboxDim?: boolean
 
+  /** Acciones de historial y edición */
+  onUndo?: () => void
+  onRedo?: () => void
+  canUndo?: boolean
+  canRedo?: boolean
+  onDeleteSelected?: () => void
+  canDelete?: boolean
+
   /** Avisa si la barra de tools está expandida (para mover chrome colindante). */
   onOpenChange?: (open: boolean) => void
 }
@@ -157,7 +167,7 @@ export function CanvasToolbar({
   onToggleSnap,
   transformMode = "free",
   onTransformModeChange,
-  gridStyle = "dots",
+  gridStyle = "lines",
   onGridStyleChange,
   hasToolpath,
   simPanelOpen,
@@ -172,6 +182,12 @@ export function CanvasToolbar({
   onSpeedChange,
   onAutoBboxDim,
   canAutoBboxDim = false,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
+  onDeleteSelected,
+  canDelete,
   onOpenChange,
 }: CanvasToolbarProps) {
   const [open, setOpen] = useState(false)
@@ -208,12 +224,17 @@ export function CanvasToolbar({
         left: RULER_SIZE + 8,
         maxWidth: isCompact ? undefined : `calc(100% - ${RULER_SIZE + 16}px)`,
       }}
+      onPointerDown={(e) => e.stopPropagation()}
     >
       {/* Fila superior: FAB + barra de herramientas */}
       <div className={`flex items-start gap-2 ${isCompact ? "w-full" : ""}`}>
         <button
           type="button"
-          onClick={() => (open ? handleClose() : setOpen(true))}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation()
+            open ? handleClose() : setOpen(true)
+          }}
           className={`
             pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full
             backdrop-blur-sm
@@ -230,8 +251,7 @@ export function CanvasToolbar({
           {open ? <X size={18} strokeWidth={1.75} /> : <Wrench size={18} strokeWidth={1.75} />}
         </button>
 
-        {/* Ancho real desde el primer frame (sin max-w→grow).
-            Animar max-width hacía wrap de 1 col = columna enorme al abrir. */}
+        {/* Ancho real desde el primer frame (sin max-w→grow). */}
         {open && (
         <div
           className={`
@@ -418,6 +438,29 @@ export function CanvasToolbar({
             </button>
           )}
 
+          {/* Bloque de Historial y Edición */}
+          {(onUndo || onRedo || onDeleteSelected) && <div className={mdDivider} />}
+          {onUndo && (
+            <ToolBtn title="Deshacer" onClick={onUndo} disabled={!canUndo}>
+              <Undo2 size={16} strokeWidth={1.75} />
+            </ToolBtn>
+          )}
+          {onRedo && (
+            <ToolBtn title="Rehacer" onClick={onRedo} disabled={!canRedo}>
+              <Redo2 size={16} strokeWidth={1.75} />
+            </ToolBtn>
+          )}
+          {onDeleteSelected && (
+            <ToolBtn
+              title="Eliminar selección"
+              onClick={onDeleteSelected}
+              disabled={!canDelete}
+              className="text-destructive hover:bg-destructive/15 hover:text-destructive"
+            >
+              <Trash2 size={16} strokeWidth={1.75} />
+            </ToolBtn>
+          )}
+
           {/* Salir de herramienta de medida */}
           <div
             className={`
@@ -462,8 +505,7 @@ export function CanvasToolbar({
         )}
       </div>
 
-      {/* Subpanel de simulación — independiente de la barra de tools
-          (si dependía de `open`, en móvil al colapsar tools el play moría). */}
+      {/* Subpanel de simulación */}
       {hasToolpath && (
         <div
           className={`

@@ -66,7 +66,16 @@ export function DxfCanvas({
   rotationStep = 90,
   sheetKey,
   className,
-}: DxfCanvasProps) {
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
+}: DxfCanvasProps & {
+  onUndo?: () => void
+  onRedo?: () => void
+  canUndo?: boolean
+  canRedo?: boolean
+}) {
   const { isCompact, isMobile } = useResponsive()
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -165,7 +174,7 @@ export function DxfCanvas({
 
   const [showGrid, setShowGrid] = useState(true)
   const [snapEnabled, setSnapEnabled] = useState(true)
-  const [gridStyle, setGridStyle] = useState<"dots" | "lines" | "cross" | "none">(isCompact ? "lines" : "dots")
+  const [gridStyle, setGridStyle] = useState<"dots" | "lines" | "cross" | "none">("lines")
   const [snapCandidate, setSnapCandidate] = useState<SnapCandidate | null>(null)
   /** Spans H/V por raycast en el polígono bajo el cursor (cota inteligente). */
   const [smartSpans, setSmartSpans] = useState<{
@@ -532,7 +541,8 @@ export function DxfCanvas({
 
     const onPointerMove = (e: PointerEvent) => {
       const c = canvasRef.current
-      if (c) {
+      const overChrome =  e.target instanceof Element &&  Boolean(    (e.target as Element).closest(      '[data-slot="canvas-toolbar"],[data-slot="canvas-vh"],[data-slot="canvas-status-bar"],[data-slot="canvas-coords"]',    ),  )
+      if (c && !overChrome) {
         const rect = c.getBoundingClientRect()
         const sx = c.clientWidth / (rect.width || 1)
         const sy = c.clientHeight / (rect.height || 1)
@@ -1232,6 +1242,7 @@ export function DxfCanvas({
       {/* Indicador modo interacción V/H superior — única fuente de verdad
           del modo activo (antes se repetía también en la barra de estado). */}
       <div
+        data-slot="canvas-vh"
         className="pointer-events-none absolute right-3 z-20 flex items-center gap-1.5 transition-[top] duration-300"
         style={{
           top: toolsChromeOpen && isMobile ? RULER_SIZE + 88 : RULER_SIZE + 8,
@@ -1325,6 +1336,16 @@ export function DxfCanvas({
         onResetSim={sim.reset}
         onSeek={sim.seek}
         onSpeedChange={sim.setSpeed}
+        onDeleteSelected={
+          onDeleteSelected && selectedPieceIndices.length > 0
+            ? () => onDeleteSelected(selectedPieceIndices)
+            : undefined
+        }
+        canDelete={selectedPieceIndices.length > 0}
+        onUndo={onUndo}
+        onRedo={onRedo}
+        canUndo={canUndo}
+        canRedo={canRedo}
       />
 
       {rotatePivotScreen && (

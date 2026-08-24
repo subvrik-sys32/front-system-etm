@@ -124,6 +124,11 @@ export interface DxfCanvasProps {
    * use-measurements.ts).
    */
   sheetKey?: string | number
+  /** Historial de plancha (opcional). */
+  onUndo?: () => void
+  onRedo?: () => void
+  canUndo?: boolean
+  canRedo?: boolean
 }
 
 /** Offset temporal mientras se arrastran piezas (preview en vivo). */
@@ -134,7 +139,21 @@ export interface PieceDragPreview {
 }
 
 export const SHEET_STROKE = "#71717a"
-export const SELECTED_STROKE = "#ffffff"
+
+/**
+ * Stroke de selección theme-aware.
+ * Dark: blanco. Light: primary CAD (#0ea5e9) — el #fff se perdía en light.
+ */
+export function getSelectedStroke(): string {
+  if (typeof document === "undefined") return "#0ea5e9"
+  return document.documentElement.classList.contains("dark")
+    ? "#ffffff"
+    : "#0ea5e9"
+}
+
+/** @deprecated usar getSelectedStroke() */
+export const SELECTED_STROKE = "#0ea5e9"
+
 export const SELECTED_HALO = "#facc15"
 export const COLLISION_COLOR = "#ef4444"
 export const MEASURE_COLOR = "#22d3ee"

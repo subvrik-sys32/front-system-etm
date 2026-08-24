@@ -29,6 +29,7 @@ import {
 } from "@/shared/ui/tool-side-panel"
 import type { EntityExpandedToggleOption } from "@/shared/ui/entity-expanded-row/entity-expanded-toggle"
 import { useChromeInset } from "@/shared/responsive/layout/use-chrome-inset"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { toast } from "sonner"
 import { cadPieceApi } from "../api/cad-piece.api"
 import type {
@@ -145,7 +146,16 @@ export function CadWorkspacePanel({
   onMobilePanelOpenChange?: (open: boolean) => void
 } = {}) {
   const isMobileLayout = layout === "mobile"
+  /**
+   * Mismo contrato que CadAiPanel / Nesting desktop:
+   * - CompactShell (isMobile): immersive slot ya limpia top → sin pad extra
+   * - layout mobile en tablet: la page section (CadPageCompact) posee el pad
+   * - layout desktop: este panel posee el pad (= PageShell fill de Nesting)
+   */
+  const { isMobile: isMobileShell } = useResponsive()
   const chromeInset = useChromeInset({ bottom: false })
+  const contentInsetStyle =
+    isMobileShell || isMobileLayout ? undefined : chromeInset
   const [internalPanelOpen, setInternalPanelOpen] = useState(false)
   const isPanelOpen =
     mobilePanelOpen !== undefined ? mobilePanelOpen : internalPanelOpen
@@ -805,10 +815,11 @@ export function CadWorkspacePanel({
 
   return (
     <div
-      className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden"
-      style={{ paddingTop: chromeInset.paddingTop }}
+      className="relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden px-3 pb-2 tablet:px-4 desktop:px-5 desktop:pb-3"
+      style={contentInsetStyle}
     >
-      <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3 p-2">
+      {/* gap-3 sin p-2: el pad horizontal/vertical lo da el root (= Nesting PageShell fill) */}
+      <div className="flex h-full min-h-0 w-full flex-1 items-stretch gap-3">
         {sidePanel}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">

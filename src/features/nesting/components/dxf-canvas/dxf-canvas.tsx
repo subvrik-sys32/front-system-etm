@@ -294,7 +294,6 @@ export function DxfCanvas({
     gridStyle,
   ])
 
-  // setToolpath estable; NO `sim` en deps (progress cambiaba identidad y reseteaba play)
   const setToolpath = sim.setToolpath
   useEffect(() => {
     collisionIndexRef.current = buildCollisionIndex(pieces)
@@ -303,8 +302,13 @@ export function DxfCanvas({
     const { segments, totalLength, fullPath } = buildToolpath(entities)
     setToolpath(segments, totalLength, fullPath)
     requestAnimationFrame(() => {
-      if (!view.hasUserInteracted()) {
-        view.fitToSheetOrEntities(canvasRef.current, entities, sheetSize, isCompact)
+      if (!view.hasUserInteracted() && sheetSize) {
+        view.fitToSheetOrEntities(
+          canvasRef.current,
+          entities,
+          sheetSize,
+          isCompact,
+        )
       }
       scheduleDraw()
     })
@@ -315,9 +319,31 @@ export function DxfCanvas({
     scheduleDraw()
   }, [scheduleDraw, sim.progress])
 
+  // Tema: la regla lee .dark en <html>; sin redibujar se queda el color anterior.
+  useEffect(() => {
+    const root = document.documentElement
+    const obs = new MutationObserver(() => scheduleDraw())
+    obs.observe(root, { attributes: true, attributeFilter: ["class"] })
+    return () => obs.disconnect()
+  }, [scheduleDraw])
+
+  // Ancho/alto de plancha: siempre re-fit (aunque el usuario haya pan/zoom).
+  useEffect(() => {
+    if (!sheetSize) return
+    const canvasEl = canvasRef.current
+    if (!canvasEl) return
+    view.allowAutoFit()
+    view.fitToSheetOrEntities(
+      canvasEl,
+      entitiesRef.current,
+      sheetSize,
+      isCompact,
+    )
+    scheduleDraw()
+  }, [sheetSize, isCompact, view, scheduleDraw])
+
   // Al cambiar el tamaño del contenedor (rotación, sheet panel, teclado
-  // móvil) re-fit: si no, el scale queda del tamaño anterior y se ve
-  // la plancha chica con hueco negro.
+  // móvil) re-fit solo si el usuario no interactuó; siempre redibujar.
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
@@ -327,9 +353,13 @@ export function DxfCanvas({
       raf = requestAnimationFrame(() => {
         const canvasEl = canvasRef.current
         if (!canvasEl) return
-        // No resetear zoom/pan del usuario (medir, acercar a un detalle, etc.)
-        if (!view.hasUserInteracted()) {
-          view.fitToSheetOrEntities(canvasEl, entitiesRef.current, sheetSize, isCompact)
+        if (!view.hasUserInteracted() && sheetSize) {
+          view.fitToSheetOrEntities(
+            canvasEl,
+            entitiesRef.current,
+            sheetSize,
+            isCompact,
+          )
         }
         scheduleDraw()
       })
@@ -345,8 +375,13 @@ export function DxfCanvas({
   useEffect(() => {
     const canvasEl = canvasRef.current
     if (!canvasEl) return
-    if (!view.hasUserInteracted()) {
-      view.fitToSheetOrEntities(canvasEl, entitiesRef.current, sheetSize, isCompact)
+    if (!view.hasUserInteracted() && sheetSize) {
+      view.fitToSheetOrEntities(
+        canvasEl,
+        entitiesRef.current,
+        sheetSize,
+        isCompact,
+      )
     }
     scheduleDraw()
   }, [isCompact, sheetSize, view, scheduleDraw])

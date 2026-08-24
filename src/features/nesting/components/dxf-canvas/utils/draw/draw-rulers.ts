@@ -2,6 +2,8 @@ import type { Point, ViewState } from "../../types/types"
 
 export const RULER_SIZE = 22
 const CORNER_RADIUS = 12
+/** Mínimo de px entre etiquetas mayores para que no se monten al achicar el viewport. */
+const MIN_LABEL_GAP_PX = 40
 
 function theme() {
   const dark =
@@ -13,6 +15,7 @@ function theme() {
 }
 
 function niceStep(scale: number): number {
+  // Más espacio entre majors cuando el viewport es chico: target ~px entre ticks
   const target = 80 / Math.max(scale, 1e-9)
   const pow = Math.pow(10, Math.floor(Math.log10(Math.max(target, 1e-9))))
   for (const m of [1, 2, 5, 10]) {
@@ -66,7 +69,10 @@ export function drawNestingRulers(
     screenToLocal(RULER_SIZE, canvasH, canvasW, canvasH, view),
     screenToLocal(canvasW, canvasH, canvasW, canvasH, view),
   ]
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+  let minX = Infinity,
+    maxX = -Infinity,
+    minY = Infinity,
+    maxY = -Infinity
   for (const p of corners) {
     minX = Math.min(minX, p.x)
     maxX = Math.max(maxX, p.x)
@@ -97,6 +103,9 @@ export function drawNestingRulers(
   ctx.stroke()
 
   ctx.font = "9px ui-sans-serif, system-ui, sans-serif"
+
+  // Eje X (regla superior): ticks siempre; texto solo si hay gap en px
+  let lastLabelX = -Infinity
   const x0 = Math.floor(minX / minor) * minor
   for (let wx = x0; wx <= maxX + minor; wx += minor) {
     const sx = localToScreen({ x: wx, y: minY }).x
@@ -107,13 +116,17 @@ export function drawNestingRulers(
     ctx.moveTo(sx + 0.5, RULER_SIZE)
     ctx.lineTo(sx + 0.5, RULER_SIZE - (isMajor ? 8 : 4))
     ctx.stroke()
-    if (isMajor) {
+    if (isMajor && sx - lastLabelX >= MIN_LABEL_GAP_PX) {
       ctx.fillStyle = text
       ctx.textAlign = "center"
       ctx.textBaseline = "top"
       ctx.fillText(fmt(wx), sx, 3)
+      lastLabelX = sx
     }
   }
+
+  // Eje Y (regla izquierda): igual, gap en píxeles de pantalla
+  let lastLabelY = -Infinity
   const y0 = Math.floor(minY / minor) * minor
   for (let wy = y0; wy <= maxY + minor; wy += minor) {
     const sy = localToScreen({ x: minX, y: wy }).y
@@ -124,7 +137,7 @@ export function drawNestingRulers(
     ctx.moveTo(RULER_SIZE, sy + 0.5)
     ctx.lineTo(RULER_SIZE - (isMajor ? 8 : 4), sy + 0.5)
     ctx.stroke()
-    if (isMajor) {
+    if (isMajor && Math.abs(sy - lastLabelY) >= MIN_LABEL_GAP_PX) {
       ctx.save()
       ctx.translate(10, sy)
       ctx.rotate(-Math.PI / 2)
@@ -133,8 +146,10 @@ export function drawNestingRulers(
       ctx.textBaseline = "middle"
       ctx.fillText(fmt(wy), 0, 0)
       ctx.restore()
+      lastLabelY = sy
     }
   }
+
   if (cursorCss) {
     const { x: cx, y: cy } = cursorCss
     ctx.fillStyle = "#3b82f6"

@@ -98,17 +98,23 @@ export function EngineeringPageContent() {
     setDialogOpen(true)
   }
 
-  const { isMobile } = useResponsive()
+  const { isMobile, isCompact } = useResponsive()
 
-  // Desktop: toggle en topbar (como tabs de departamento en bitácora).
-  usePageToolbar(<EngineeringViewToggle compact={isMobile} />)
+  // Igual bitácora: móvil/compact → TopBar sin toggle; toggle en el scroll.
+  usePageToolbar(isMobile || isCompact ? null : <EngineeringViewToggle />)
 
-  // Secundaria: picker centrado + contador — layout tipo bitácora (Día/fecha/entradas).
-  const secondaryBar = (
-    <div className="flex w-full shrink-0 select-none flex-col gap-3">
-      {/* Toggle vive en topbar; aquí solo picker + contador */}
-      <div className="flex items-center gap-2 tablet:hidden">
-        <div className="min-w-0 flex-1">
+  const body = (
+    <div className="flex w-full flex-col gap-2 select-none">
+      {/* Móvil: misma jerarquía que Bitácora (Producción | Ingeniería | Equipo) */}
+      {(isMobile || isCompact) && (
+        <div className="mt-2 mb-2 shrink-0">
+          <EngineeringViewToggle compact fullWidth />
+        </div>
+      )}
+
+      {/* Picker + contador */}
+      <div className="mb-3 flex min-w-0 shrink-0 items-center gap-2 tablet:hidden">
+        <div className="min-w-0 flex-1 overflow-hidden">
           <ContextPicker
             mode="projects"
             value={{ projectId, taskId: "" }}
@@ -117,9 +123,10 @@ export function EngineeringPageContent() {
         </div>
         <EntryCountBadge count={tasks.length} compact />
       </div>
-      <div className="hidden tablet:grid tablet:grid-cols-[1fr_auto_1fr] tablet:items-center tablet:gap-4">
+
+      <div className="mb-3 hidden shrink-0 tablet:grid tablet:grid-cols-[1fr_auto_1fr] tablet:items-center tablet:gap-4">
         <div />
-        <div className="justify-self-center">
+        <div className="min-w-0 max-w-md justify-self-center">
           <ContextPicker
             mode="projects"
             value={{ projectId, taskId: "" }}
@@ -130,12 +137,7 @@ export function EngineeringPageContent() {
           <EntryCountBadge count={tasks.length} />
         </div>
       </div>
-    </div>
-  )
 
-  const body = (
-    <div className="flex w-full flex-col gap-2 select-none">
-      <div className="mb-3 shrink-0">{secondaryBar}</div>
       {viewMode === "processes" ? (
         <div className="flex w-full flex-col max-md:mt-2">
           <EngineeringProcessBoard

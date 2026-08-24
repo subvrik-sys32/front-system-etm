@@ -98,7 +98,7 @@ export function UploadZone({
       <div
         className={cn(
           "mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col",
-          phoneLand ? "px-2 pb-1 pt-0" : compactChrome ? "px-3 pb-2 pt-1" : "px-4 pt-1 pb-4 sm:px-6 sm:pt-2 sm:pb-6",
+          phoneLand ? "px-2 pb-1 pt-0" : compactChrome ? "px-3 pb-2 pt-1" : "px-3 pt-1 pb-2 sm:px-5 sm:pt-2 sm:pb-3",
         )}
       >
         {/* Hero: solo desktop / tablet ancha */}

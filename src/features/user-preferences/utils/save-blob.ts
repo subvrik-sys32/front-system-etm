@@ -9,12 +9,10 @@ import {
 
 type SaveBlobOpts = {
   blob: Blob
-  /** Nombre original del archivo (se respeta tal cual, solo se sanitizan caracteres ilegales). */
   fileName: string
   mimeType?: string
 }
 
-/** Conserva el nombre original; solo limpia caracteres ilegales en FS. */
 function sanitizeDownloadName(originalName: string): string {
   const trimmed = (originalName || "archivo").trim() || "archivo"
   return trimmed.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_").slice(0, 180)
@@ -47,10 +45,6 @@ async function ensurePermission(
   return state === "granted"
 }
 
-/**
- * Guarda blob respetando preferencias de ubicación.
- * El nombre es SIEMPRE el original del archivo (no plantillas).
- */
 export async function saveBlobWithPreferences({
   blob,
   fileName,
@@ -76,6 +70,7 @@ export async function saveBlobWithPreferences({
         return
       } catch {
         await clearDirectoryHandle()
+        useUserPreferencesStore.getState().setRememberedFolderName(null)
       }
     }
   }
@@ -112,7 +107,11 @@ export async function pickAndRememberDownloadFolder(): Promise<boolean> {
       mode: "readwrite",
     })
     await saveDirectoryHandle(dir)
-    useUserPreferencesStore.getState().setRememberFolder(true)
+    const store = useUserPreferencesStore.getState()
+    store.setRememberFolder(true)
+    store.setRememberedFolderName(
+      typeof dir?.name === "string" && dir.name ? dir.name : "Carpeta elegida",
+    )
     return true
   } catch {
     return false

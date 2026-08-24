@@ -601,8 +601,9 @@ export function NestingPage() {
       activePanel={activePanel}
       onActivePanelChange={setActivePanel}
       footer={nestFooter}
-      widthClassName="w-full"
-      className="h-full"
+      /* Desktop: w-80 del ToolSidebar (panel + canvas). Compact: full width en el dialog. */
+      widthClassName={isCompact ? "w-full max-w-none" : undefined}
+      className={isCompact ? "h-full" : undefined}
       pieces={<PieceList ref={pieceListRef} {...pieceListProps} />}
       projectMaterial={
         <div className="flex w-full flex-col gap-3">

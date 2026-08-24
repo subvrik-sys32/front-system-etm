@@ -30,6 +30,7 @@ import {
   MoveHorizontal,
 } from "lucide-react"
 import type { MeasureTool, CanvasTool, TransformMode } from "../types/types"
+import { RULER_SIZE } from "../utils/draw/draw-rulers"
 import { TOOL_LABELS } from "../types/types"
 import {
   Popover,
@@ -152,9 +153,14 @@ export function CanvasToolbar({
 
   return (
     <div
-      className={`pointer-events-none absolute left-3 top-3 z-25 flex max-w-[calc(100%-1.5rem)] flex-col items-start gap-2 ${
+      className={`pointer-events-none absolute z-25 flex max-w-[calc(100%-1.5rem)] flex-col items-start gap-2 ${
         isCompact ? "right-3" : ""
       }`}
+      style={{
+        top: RULER_SIZE + 8,
+        left: RULER_SIZE + 8,
+        maxWidth: isCompact ? undefined : `calc(100% - ${RULER_SIZE + 16}px)`,
+      }}
     >
       {/* Fila superior: FAB + barra de herramientas */}
       <div className={`flex items-start gap-2 ${isCompact ? "w-full" : ""}`}>

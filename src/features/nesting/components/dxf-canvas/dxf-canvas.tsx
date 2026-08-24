@@ -9,6 +9,7 @@ import { CanvasToolbar } from "./components/canvas-toolbar"
 import { CanvasContextMenu } from "./components/canvas-context-menu"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { drawScene } from "./utils/draw/draw"
+import { drawNestingRulers, RULER_SIZE } from "./utils/draw/draw-rulers"
 import { buildToolpath, computeLayerList, piecesToEntities } from "./utils/entities"
 import { fmtMm } from "./utils/geometry-utils"
 import { findSmartSpansAtPoint } from "./utils/geometry-utils"
@@ -71,6 +72,7 @@ export function DxfCanvas({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const entitiesRef = useRef<Entity[]>([])
   const drawRafRef = useRef<number | null>(null)
+  const cursorCssRef = useRef<{ x: number; y: number } | null>(null)
 
   const draggingRef = useRef<{
     startX: number
@@ -252,6 +254,16 @@ export function DxfCanvas({
         smartSpans,
         areaHoverContour,
       })
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      drawNestingRulers(
+        ctx,
+        w,
+        h,
+        view.viewRef.current,
+        (pt) => view.localToScreen(canvas, pt),
+        cursorCssRef.current,
+      )
     })
   }, [
     view,
@@ -527,6 +539,16 @@ export function DxfCanvas({
     }
 
     const onPointerMove = (e: PointerEvent) => {
+      const c = canvasRef.current
+      if (c) {
+        const rect = c.getBoundingClientRect()
+        const sx = c.clientWidth / (rect.width || 1)
+        const sy = c.clientHeight / (rect.height || 1)
+        cursorCssRef.current = {
+          x: (e.clientX - rect.left) * sx,
+          y: (e.clientY - rect.top) * sy,
+        }
+      }
       if (pointersRef.current.has(e.pointerId)) {
         pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
       }
@@ -701,7 +723,7 @@ export function DxfCanvas({
           const hit = hitTestPieceAt(entitiesRef.current, rawPoint, view.viewRef.current.scale)
           if (hit !== null && selectedPieceIndices.includes(hit)) setCursor("move")
           else if (hit !== null) setCursor("pointer")
-          else setCursor("grab")
+          else setCursor(canvasTool === "pan" ? "grab" : "default")
         }
         // Sin herramienta: no mostrar cotas fantasma. Se llama siempre
         // al setter (no se lee smartSpans/snapCandidate, que no están
@@ -1094,9 +1116,10 @@ export function DxfCanvas({
           del canvas. Se fusionaron en un solo lugar. */}
       <div
         data-slot="canvas-status-bar"
-        className={`absolute bottom-3 left-3 z-20 flex items-center gap-2 rounded-full bg-muted/95 py-1.5 text-xs text-muted-foreground backdrop-blur-sm ${
+        className={`absolute bottom-3 z-20 flex items-center gap-2 rounded-full bg-muted/95 py-1.5 text-xs text-muted-foreground backdrop-blur-sm ${
           isCompact ? "px-2.5" : "px-3"
         }`}
+        style={{ left: RULER_SIZE + 8 }}
       >
         {selectedPieceIndices.length > 0 ? (
           <button
@@ -1212,11 +1235,10 @@ export function DxfCanvas({
       {/* Indicador modo interacción V/H superior — única fuente de verdad
           del modo activo (antes se repetía también en la barra de estado). */}
       <div
-        className={`pointer-events-none absolute right-3 z-20 flex items-center gap-1.5 transition-[top] duration-300 ${
-          // Solo mobile shell: toolbar full-width tapa la esquina.
-          // Tablet/desktop: hay hueco a la derecha → V/H siempre top-3.
-          toolsChromeOpen && isMobile ? "top-26" : "top-3"
-        }`}
+        className="pointer-events-none absolute right-3 z-20 flex items-center gap-1.5 transition-[top] duration-300"
+        style={{
+          top: toolsChromeOpen && isMobile ? RULER_SIZE + 88 : RULER_SIZE + 8,
+        }}
       >
         <div className="pointer-events-auto flex items-center gap-0.5 rounded-full bg-muted/90 p-1 backdrop-blur-sm">
           <button
@@ -1320,18 +1342,18 @@ export function DxfCanvas({
       )}
 
       {canvasTool === "zoomWindow" && !boxSelectScreen && (
-        <div className="pointer-events-none absolute left-1/2 top-16 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-xs">
+        <div className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-xs" style={{ top: RULER_SIZE + 56 }}>
           Arrastra un rectángulo para hacer zoom (Anticlick para salir)
         </div>
       )}
       {canvasTool === "rotate" && !rotatePivotScreen && (
-        <div className="pointer-events-none absolute left-1/2 top-16 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-xs">
+        <div className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow-xs" style={{ top: RULER_SIZE + 56 }}>
           Clic = pivot · arrastrar = ángulo (Shift = 15°) (Anticlick para salir)
         </div>
       )}
 
       {measure.activeTool !== "none" && (
-        <div className="absolute left-1/2 top-16 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground backdrop-blur-md transition-opacity duration-200">
+        <div className="absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-muted/90 px-3 py-1.5 text-[11px] text-muted-foreground backdrop-blur-md transition-opacity duration-200" style={{ top: RULER_SIZE + 56 }}>
           {measure.activeTool === "distance" &&
             (measure.pendingPoints.length === 0
               ? "Cota: clic en el primer punto (snap a arista/extremo)"
@@ -1354,7 +1376,7 @@ export function DxfCanvas({
       )}
 
       {collidingPieceIndices.length > 0 && (
-        <div className="absolute left-1/2 top-16 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-red-500/15 px-3 py-1.5 text-xs font-medium text-red-400 backdrop-blur-md">
+        <div className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-red-500/15 px-3 py-1.5 text-xs font-medium text-red-400 backdrop-blur-md" style={{ top: RULER_SIZE + 56 }}>
           <AlertTriangle className="h-3.5 w-3.5" />
           {collidingPieceIndices.length === 1
             ? "1 pieza se solapa con otra"
@@ -1365,7 +1387,7 @@ export function DxfCanvas({
       {/* Panel de mediciones con altura segura sobre la barra inferior */}
       {measure.measurements.length > 0 && (
         <div
-          className="absolute bottom-14 left-3 z-30 flex max-h-[40%] w-[min(15rem,calc(100%-1.5rem))] flex-col gap-1.5 rounded-2xl bg-popover/95 p-2.5 backdrop-blur-md sm:p-3"
+          className="absolute bottom-14 z-30 flex max-h-[40%] w-[min(15rem,calc(100%-1.5rem))] flex-col gap-1.5 rounded-2xl bg-popover/95 p-2.5 backdrop-blur-md sm:p-3" style={{ left: RULER_SIZE + 8 }}
           title="Mediciones activas"
         >
           {/*

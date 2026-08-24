@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Package, Plus } from "lucide-react"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
@@ -12,27 +13,31 @@ import { FormDialog } from "@/shared/ui/dialogs/form-dialog/form-dialog"
 import { TaskFormValue, useTaskForm } from "../../hooks/use-task-form"
 import { useTasks } from "../../hooks/use-tasks"
 
-import { TaskForm, TASK_FORM_STEP_COUNT, TaskFormWizardProgress } from "../form/task-form"
+import {
+  TaskForm,
+  TASK_FORM_STEP_COUNT,
+  TaskFormWizardProgress,
+} from "../form/task-form"
 
 import type { Task } from "../../types/task.types"
 import type { DetailAsset } from "@/features/detail-assets/types"
 import { detailAssetsApi } from "@/features/detail-assets/api/detail-assets.api"
+import { invalidateDetailAssetCaches } from "@/features/detail-assets/hooks/use-detail-assets"
 import { toast } from "sonner"
 import type { TaskFormErrors } from "../form/types"
 
-type Props={
-  open:boolean
-  onClose:()=>void
-  projectId?:string
-  task?:Task
-  promptOpenAfterCreate?:boolean
+type Props = {
+  open: boolean
+  onClose: () => void
+  projectId?: string
+  task?: Task
+  promptOpenAfterCreate?: boolean
 }
 
 function validateTask(
   form: TaskFormValue,
   projectLocked: boolean,
 ): TaskFormErrors {
-
   const errors: TaskFormErrors = {}
 
   if (!projectLocked && !form.projectId) {
@@ -71,43 +76,36 @@ function validateTask(
     errors.pieces = "Falta completar"
   }
 
-  const requiresAssembly =
-    form.route.includes("EN")
+  const requiresAssembly = form.route.includes("EN")
+  const requiresPaint = form.route.includes("PT")
 
-  const requiresPaint =
-    form.route.includes("PT")
-
-  if (
-    requiresAssembly &&
-    form.assemblyCount <= 0
-  ) {
-    errors.assemblyCount =
-      "Ingresa la cantidad ensamblada"
+  if (requiresAssembly && form.assemblyCount <= 0) {
+    errors.assemblyCount = "Ingresa la cantidad ensamblada"
   }
 
-  if (
-    requiresPaint &&
-    !form.colorId
-  ) {
-    errors.colorId =
-      "Selecciona un color"
+  if (requiresPaint && !form.colorId) {
+    errors.colorId = "Selecciona un color"
   }
 
-  if (
-    requiresPaint &&
-    form.paintKg <= 0
-  ) {
-    errors.paintKg =
-      "Ingresa los kg de pintura"
+  if (requiresPaint && form.paintKg <= 0) {
+    errors.paintKg = "Ingresa los kg de pintura"
   }
 
   return errors
-
 }
 
 const STEP_ERROR_KEYS: Record<number, (keyof TaskFormErrors)[]> = {
   0: ["projectId"],
-  1: ["reference", "lotNumber", "route", "deliveryDate", "priorityId", "colorId", "paintKg", "assemblyCount"],
+  1: [
+    "reference",
+    "lotNumber",
+    "route",
+    "deliveryDate",
+    "priorityId",
+    "colorId",
+    "paintKg",
+    "assemblyCount",
+  ],
   2: ["materialId", "thicknessId", "pieces"],
 }
 
@@ -116,231 +114,51 @@ export function TaskDialog({
   onClose,
   projectId,
   task,
-  promptOpenAfterCreate=false,
-}:Props){
+  promptOpenAfterCreate = false,
+}: Props) {
+  const { form, update, buildTask, canSave } = useTaskForm(task, projectId)
 
-  const{
-    form,
-    update,
-    buildTask,
-    canSave,
-  }=useTaskForm(
-    task,
-    projectId,
-  )
+  const { create, update: updateTask } = useTasks()
 
-  const{
-    create,
-    update:updateTask,
-  }=useTasks()
-
-  const router=useRouter()
-
+  const router = useRouter()
+  const qc = useQueryClient()
   const { isMobile } = useResponsive()
 
   const [step, setStep] = useState(0)
   const [stepAttempted, setStepAttempted] = useState<Set<number>>(new Set())
 
   useEffect(() => {
-
     if (open) {
       setStep(0)
       setStepAttempted(new Set())
     }
-
   }, [open])
 
-  const[
-    confirmOpenTask,
-    setConfirmOpenTask,
-  ]=useState(false)
+  const [confirmOpenTask, setConfirmOpenTask] = useState(false)
+  const [createdTaskId, setCreatedTaskId] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [attempted, setAttempted] = useState(false)
 
-  const[
-    createdTaskId,
-    setCreatedTaskId,
-  ]=useState<string|null>(null)
-
-  const[
-    saving,
-    setSaving,
-  ]=useState(false)
-
-  const[
-    attempted,
-    setAttempted,
-  ]=useState(false)
-
-  const projectLocked=!!projectId
+  const projectLocked = !!projectId
 
   const routeStarted =
     !!task &&
     task.workflowSteps.some(
-      step =>
-        step.status !== "PENDING" &&
-        step.status !== "QUEUE",
+      step => step.status !== "PENDING" && step.status !== "QUEUE",
     )
 
-  // Producción iniciada: no quitar procesos de la ruta original; sí agregar.
   const lockedRouteCodes =
     routeStarted && task ? [...task.route] : []
 
   const routeLocked = false
 
-  const errors=
-    validateTask(
-      form,
-      projectLocked,
-    )
+  const errors = validateTask(form, projectLocked)
+  const isValid = Object.keys(errors).length === 0
 
-  const isValid=
-    Object.keys(errors).length===0
-
-  const close=()=>{
-
+  const close = () => {
     setAttempted(false)
-
     onClose()
-
   }
-
-  const save=async()=>{
-
-    if(!isValid){
-
-      setAttempted(true)
-
-      return
-
-    }
-
-    setSaving(true)
-
-    try{
-
-      if(task){
-
-        const data=buildTask()
-
-        const updated = await updateTask({
-
-          id:task.id,
-
-          dto:data,
-
-        })
-
-        await uploadPendingDxfs(
-          (updated as Task | undefined)?.materialLines ?? task.materialLines,
-        )
-
-        close()
-
-        return
-
-      }
-
-      const createdTask=
-        await create(buildTask())
-
-      await uploadPendingDxfs(
-        (createdTask as Task)?.materialLines,
-      )
-
-      if(promptOpenAfterCreate){
-
-        setCreatedTaskId(
-          createdTask.id,
-        )
-
-        setConfirmOpenTask(true)
-
-        setSaving(false)
-
-        return
-
-      }
-
-      close()
-
-    }catch(error){
-
-      console.error(
-        "TASK SAVE ERROR",
-        error,
-      )
-
-      // No se llama reset() acá a propósito: si el guardado falla
-      // (ej. lote duplicado/menor, error de servidor), el
-      // formulario debe quedar tal cual el usuario lo dejó para que
-      // pueda corregir el campo puntual y reintentar — no perder
-      // todo lo que ya cargó.
-
-    }finally{
-
-      setSaving(false)
-
-    }
-
-  }
-
-  function stepHasErrors(stepIndex: number) {
-    return STEP_ERROR_KEYS[stepIndex].some(key => errors[key])
-  }
-
-  function handleWizardNext() {
-
-    if (stepHasErrors(step)) {
-
-      setStepAttempted(prev => new Set(prev).add(step))
-
-      return
-
-    }
-
-    setStep(current => current + 1)
-
-  }
-
-  function handleWizardBack() {
-    setStep(current => Math.max(0, current - 1))
-  }
-
-  const isLastStep = step === TASK_FORM_STEP_COUNT - 1
-
-  const showWizardFooter = isMobile && !isLastStep
-
-  const footerCancelLabel =
-    isMobile && step > 0
-      ? "Atrás"
-      : "Cancelar"
-
-  const footerOnCancelClick =
-    isMobile && step > 0
-      ? handleWizardBack
-      : close
-
-  const footerSaveLabel =
-    showWizardFooter
-      ? "Siguiente"
-      : task
-        ? "Guardar"
-        : "Crear tarea"
-
-  const footerSavingLabel =
-    task
-      ? "Guardando..."
-      : "Creando tarea..."
-
-  const footerCanSave =
-    showWizardFooter
-      ? !stepHasErrors(step)
-      : canSave && isValid
-
-  const footerOnSave =
-    showWizardFooter
-      ? handleWizardNext
-      : save
-
 
   const [materialQty, setMaterialQty] = useState(1)
   const [pendingDxfByIndex, setPendingDxfByIndex] = useState<
@@ -372,6 +190,7 @@ export function TaskDialog({
 
   const uploadPendingDxfs = async (
     materialLines: { id: string }[] | undefined,
+    resolvedTaskId?: string,
   ) => {
     if (!materialLines?.length) return
     for (const [idxStr, file] of Object.entries(pendingDxfByIndex)) {
@@ -385,20 +204,106 @@ export function TaskDialog({
       }
     }
     setPendingDxfByIndex({})
+    const id = resolvedTaskId ?? task?.id
+    if (id) {
+      invalidateDetailAssetCaches(qc, { taskId: id })
+    }
   }
+
+  const save = async () => {
+    if (!isValid) {
+      setAttempted(true)
+      return
+    }
+
+    setSaving(true)
+
+    try {
+      if (task) {
+        const data = buildTask()
+        const updated = await updateTask({
+          id: task.id,
+          dto: data,
+        })
+        await uploadPendingDxfs(
+          (updated as Task | undefined)?.materialLines ?? task.materialLines,
+          task.id,
+        )
+        close()
+        return
+      }
+
+      const createdTask = await create(buildTask())
+      await uploadPendingDxfs(
+        (createdTask as Task)?.materialLines,
+        createdTask.id,
+      )
+
+      if (promptOpenAfterCreate) {
+        setCreatedTaskId(createdTask.id)
+        setConfirmOpenTask(true)
+        setSaving(false)
+        return
+      }
+
+      close()
+    } catch (error) {
+      console.error("TASK SAVE ERROR", error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function stepHasErrors(stepIndex: number) {
+    return STEP_ERROR_KEYS[stepIndex].some(key => errors[key])
+  }
+
+  function handleWizardNext() {
+    if (stepHasErrors(step)) {
+      setStepAttempted(prev => new Set(prev).add(step))
+      return
+    }
+    setStep(current => current + 1)
+  }
+
+  function handleWizardBack() {
+    setStep(current => Math.max(0, current - 1))
+  }
+
+  const isLastStep = step === TASK_FORM_STEP_COUNT - 1
+  const showWizardFooter = isMobile && !isLastStep
+
+  const footerCancelLabel =
+    isMobile && step > 0 ? "Atrás" : "Cancelar"
+
+  const footerOnCancelClick =
+    isMobile && step > 0 ? handleWizardBack : close
+
+  const footerSaveLabel = showWizardFooter
+    ? "Siguiente"
+    : task
+      ? "Guardar"
+      : "Crear tarea"
+
+  const footerSavingLabel = task ? "Guardando..." : "Creando tarea..."
+
+  const footerCanSave = showWizardFooter
+    ? !stepHasErrors(step)
+    : canSave && isValid
+
+  const footerOnSave = showWizardFooter ? handleWizardNext : save
 
   const addMaterialLine = () => {
     const qty = Math.min(20, Math.max(1, Math.floor(materialQty) || 1))
-    const current =
-      form.materials?.length
-        ? form.materials
-        : [
-            {
-              materialId: form.materialId,
-              thicknessId: form.thicknessId,
-              pieces: form.pieces || 1,
-            },
-          ]
+    const current = form.materials?.length
+      ? form.materials
+      : [
+          {
+            materialId: form.materialId,
+            thicknessId: form.thicknessId,
+            pieces: form.pieces || 1,
+          },
+        ]
     const extra = Array.from({ length: qty }, () => ({
       materialId: "",
       thicknessId: "",
@@ -408,8 +313,7 @@ export function TaskDialog({
     setMaterialQty(1)
   }
 
-  const showAddMaterial =
-    !isMobile || step === TASK_FORM_STEP_COUNT - 1
+  const showAddMaterial = !isMobile || step === TASK_FORM_STEP_COUNT - 1
 
   const materialFooterStart = showAddMaterial ? (
     <div className="flex items-center gap-2">
@@ -470,22 +374,19 @@ export function TaskDialog({
     </div>
   ) : undefined
 
-  const visibleErrors =
-    isMobile
-      ? (stepAttempted.has(step) ? errors : undefined)
-      : (attempted ? errors : undefined)
+  const visibleErrors = isMobile
+    ? stepAttempted.has(step)
+      ? errors
+      : undefined
+    : attempted
+      ? errors
+      : undefined
 
-  return(
-
+  return (
     <>
-
       <FormDialog
         open={open}
-        title={
-          task
-            ? "Editar tarea"
-            : "Nueva tarea"
-        }
+        title={task ? "Editar tarea" : "Nueva tarea"}
         icon={Plus}
         canSave={footerCanSave}
         saving={saving}
@@ -493,18 +394,17 @@ export function TaskDialog({
         savingLabel={footerSavingLabel}
         cancelLabel={footerCancelLabel}
         onCancelClick={footerOnCancelClick}
-        subHeader={isMobile ? <TaskFormWizardProgress step={step} /> : undefined}
+        subHeader={
+          isMobile ? <TaskFormWizardProgress step={step} /> : undefined
+        }
         onClose={close}
         onSave={footerOnSave}
         footerStart={materialFooterStart}
       >
-
         <TaskForm
           form={{
             ...form,
-            projectId:
-              projectId ??
-              form.projectId,
+            projectId: projectId ?? form.projectId,
           }}
           update={update}
           projectLocked={projectLocked}
@@ -512,70 +412,35 @@ export function TaskDialog({
           lockedRouteCodes={lockedRouteCodes}
           step={step}
           errors={visibleErrors}
-        
+          taskId={task?.id}
           lineDxfById={lineDxfById}
           pendingDxfByIndex={pendingDxfByIndex}
           onPendingDxf={(index, file) =>
             setPendingDxfByIndex(prev => ({ ...prev, [index]: file }))
           }
         />
-
       </FormDialog>
 
       <ActionDialog
         open={confirmOpenTask}
         title="Abrir tarea"
-        description="
-          La tarea fue creada correctamente.
-          ¿Deseas abrirla ahora?
-        "
+        description="La tarea fue creada correctamente. ¿Deseas abrirla ahora?"
         cancelLabel="Más tarde"
         confirmLabel="Abrir"
-        onClose={()=>{
-
-          setCreatedTaskId(null)
-
+        onClose={() => {
           setConfirmOpenTask(false)
-
+          setCreatedTaskId(null)
           close()
-
         }}
-        onConfirm={()=>{
-
-          if(createdTaskId){
-
-            if(form.projectId){
-
-              sessionStorage.setItem(
-                "task-origin-project-id",
-                form.projectId,
-              )
-
-            }else{
-
-              sessionStorage.removeItem(
-                "task-origin-project-id",
-              )
-
-            }
-
-            router.push(
-              `/tasks?taskId=${createdTaskId}`,
-            )
-
+        onConfirm={() => {
+          if (createdTaskId) {
+            router.push(`/tasks?taskId=${encodeURIComponent(createdTaskId)}`)
           }
-
-          setCreatedTaskId(null)
-
           setConfirmOpenTask(false)
-
+          setCreatedTaskId(null)
           close()
-
         }}
       />
-
     </>
-
   )
-
 }

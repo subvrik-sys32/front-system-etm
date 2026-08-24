@@ -17,6 +17,7 @@ import { MaterialLineDxfControls } from "@/features/detail-assets/components/mat
 import type { DetailAsset } from "@/features/detail-assets/types"
 
 type MaterialSectionExtra = {
+  taskId?: string | null
   lineDxfById?: Record<string, DetailAsset | null | undefined>
   pendingDxfByIndex?: Record<number, File | null | undefined>
   onPendingDxf?: (index: number, file: File | null) => void
@@ -27,6 +28,7 @@ export function TaskMaterialSection({
   form,
   update,
   errors,
+  taskId,
   lineDxfById,
   pendingDxfByIndex,
   onPendingDxf,
@@ -97,7 +99,6 @@ export function TaskMaterialSection({
 
   return (
     <FormSection title="Material" icon={Package} trailing={totalLabel}>
-      {/* Filas planas dentro del panel (mismo ritmo que planchas del export) */}
       <div className="flex flex-col gap-2">
         {lines.map((line, index) => {
           const selectedMaterial = materials.find(
@@ -112,7 +113,6 @@ export function TaskMaterialSection({
               key={index}
               className={cn(
                 "grid grid-cols-1 gap-3",
-                // Mobile: card propia. Desktop: fila dentro del panel, sin caja extra.
                 isMobile && "rounded-xl bg-foreground/5 p-3",
                 "tablet:grid-cols-[1fr_1fr_5.5rem_auto]",
               )}
@@ -189,6 +189,7 @@ export function TaskMaterialSection({
                 </button>
                 <MaterialLineDxfControls
                   lineId={line.id}
+                  taskId={taskId}
                   dxf={line.id ? lineDxfById?.[line.id] : null}
                   pendingFile={pendingDxfByIndex?.[index]}
                   onPendingFile={file => onPendingDxf?.(index, file)}

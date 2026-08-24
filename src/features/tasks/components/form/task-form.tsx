@@ -25,6 +25,7 @@ export function TaskFormWizardProgress({ step }: { step: number }) {
 
 type Props = TaskFormSectionProps & {
   step?: number
+  taskId?: string | null
   lineDxfById?: Record<string, DetailAsset | null | undefined>
   pendingDxfByIndex?: Record<number, File | null | undefined>
   onPendingDxf?: (index: number, file: File | null) => void
@@ -39,21 +40,17 @@ export function TaskForm({
   lockedRouteCodes,
   errors,
   step = 0,
+  taskId,
   lineDxfById,
   pendingDxfByIndex,
   onPendingDxf,
   onDxfChanged,
 }: Props) {
-
   const { isMobile } = useResponsive()
 
-
   if (!isMobile) {
-
     return (
-
       <div className="space-y-3">
-
         <TaskProjectSection
           form={form}
           update={update}
@@ -73,35 +70,28 @@ export function TaskForm({
           form={form}
           update={update}
           errors={errors}
+          taskId={taskId}
           lineDxfById={lineDxfById}
           pendingDxfByIndex={pendingDxfByIndex}
           onPendingDxf={onPendingDxf}
           onDxfChanged={onDxfChanged}
         />
-
       </div>
-
     )
-
   }
 
   return (
-
     <>
-
       {step === 0 && (
-
         <TaskProjectSection
           form={form}
           update={update}
           projectLocked={projectLocked}
           errors={errors}
         />
-
       )}
 
       {step === 1 && (
-
         <TaskInfoSection
           form={form}
           update={update}
@@ -109,25 +99,20 @@ export function TaskForm({
           lockedRouteCodes={lockedRouteCodes}
           errors={errors}
         />
-
       )}
 
       {step === 2 && (
-
         <TaskMaterialSection
           form={form}
           update={update}
           errors={errors}
+          taskId={taskId}
           lineDxfById={lineDxfById}
           pendingDxfByIndex={pendingDxfByIndex}
           onPendingDxf={onPendingDxf}
           onDxfChanged={onDxfChanged}
         />
-
       )}
-
     </>
-
   )
-
 }

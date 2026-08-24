@@ -34,12 +34,12 @@ type Props = {
   taskId?: string
   projectId?: string
   readOnly?: boolean
-  /**
-   * Solo tareas: abre TaskDialog para agregar/editar líneas de material.
-   * NO se usa para subir DXF (eso es in-place aquí).
-   */
+  /** Solo tareas: abre TaskDialog para líneas de material (no para DXF). */
   onEditTask?: () => void
 }
+
+const iconBtn =
+  "flex size-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
 
 function EmptyHint({
   icon: Icon,
@@ -93,6 +93,8 @@ export function DetailAssetsDialog({
   const materialLines = taskQ.data?.materialLines ?? []
 
   const loading = isTask ? taskQ.loading : projectQ.loading
+  const dxfBusy =
+    mutations.uploadDxf.isPending || mutations.remove.isPending
 
   const noteFromServer =
     typeof noteAsset?.meta === "object" &&
@@ -261,8 +263,9 @@ export function DetailAssetsDialog({
                         {!readOnly && onEditTask && (
                           <button
                             type="button"
+                            disabled={dxfBusy}
                             onClick={requestEditMaterials}
-                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
+                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-foreground/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
                           >
                             <FilePenLine size={14} />
                             Editar materiales
@@ -303,7 +306,8 @@ export function DetailAssetsDialog({
                                     <button
                                       type="button"
                                       title="Ver plano"
-                                      className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
+                                      disabled={dxfBusy}
+                                      className={iconBtn}
                                       onClick={() =>
                                         setPreviewDxf({
                                           url: line.dxf!.publicUrl!,
@@ -318,7 +322,8 @@ export function DetailAssetsDialog({
                                     <button
                                       type="button"
                                       title="Descargar"
-                                      className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
+                                      disabled={dxfBusy}
+                                      className={iconBtn}
                                       onClick={async () => {
                                         try {
                                           const res = await fetch(
@@ -349,6 +354,7 @@ export function DetailAssetsDialog({
                                       accept=".dxf,application/dxf"
                                       className="hidden"
                                       id={`dxf-upload-${line.id}`}
+                                      disabled={dxfBusy}
                                       onChange={e => {
                                         const f = e.target.files?.[0]
                                         e.target.value = ""
@@ -377,11 +383,11 @@ export function DetailAssetsDialog({
                                           ? "Reemplazar DXF"
                                           : "Subir DXF"
                                       }
-                                      disabled={mutations.uploadDxf.isPending}
+                                      disabled={dxfBusy}
                                       className={
                                         line.dxf
-                                          ? "flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-foreground disabled:opacity-40"
-                                          : "inline-flex h-8 items-center gap-1.5 rounded-lg bg-foreground/10 px-2.5 text-xs font-semibold text-foreground transition hover:bg-foreground/15 disabled:opacity-40"
+                                          ? iconBtn
+                                          : "inline-flex h-8 items-center gap-1.5 rounded-lg bg-foreground/10 px-2.5 text-xs font-semibold text-foreground transition hover:bg-foreground/15 disabled:pointer-events-none disabled:opacity-40"
                                       }
                                       onClick={() =>
                                         document
@@ -391,7 +397,9 @@ export function DetailAssetsDialog({
                                           ?.click()
                                       }
                                     >
-                                      {line.dxf ? (
+                                      {mutations.uploadDxf.isPending ? (
+                                        <Spinner size={14} />
+                                      ) : line.dxf ? (
                                         <FilePenLine size={14} />
                                       ) : (
                                         <>
@@ -404,7 +412,8 @@ export function DetailAssetsDialog({
                                       <button
                                         type="button"
                                         title="Quitar DXF"
-                                        className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-destructive"
+                                        disabled={dxfBusy}
+                                        className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-foreground/10 hover:text-destructive disabled:pointer-events-none disabled:opacity-40"
                                         onClick={() =>
                                           mutations.remove.mutate(
                                             line.dxf!.id,

@@ -19,18 +19,18 @@ type Props = {
   dxf?: DetailAsset | null
   pendingFile?: File | null
   onPendingFile?: (file: File | null) => void
-  /** Notifica al form padre tras subir/quitar (invalidar cache local). */
   onChanged?: () => void
   disabled?: boolean
   className?: string
 }
 
 const btn =
-  "inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-foreground/5 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground disabled:opacity-40"
+  "inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-foreground/5 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
 
 /**
- * Subir / ver (visor nesting) / descargar / quitar DXF de una línea de material.
- * Icono dinámico: FileUp (importar) si no hay DXF; FilePenLine (editable) si hay.
+ * Subir / ver / descargar / quitar DXF.
+ * Sin DXF → FileUp | Con DXF → FilePenLine.
+ * Mientras busy: todos los botones (ojo, ↓, trash, upload) disabled + opacity-40.
  */
 export function MaterialLineDxfControls({
   lineId,
@@ -49,6 +49,7 @@ export function MaterialLineDxfControls({
 
   const hasDxf = Boolean(dxf?.publicUrl) || Boolean(pendingFile)
   const displayName = dxf?.originalName || pendingFile?.name || "plano.dxf"
+  const locked = Boolean(disabled || busy)
 
   async function upload(file: File) {
     if (!file.name.toLowerCase().endsWith(".dxf")) {
@@ -123,7 +124,7 @@ export function MaterialLineDxfControls({
         type="file"
         accept=".dxf,application/dxf,application/octet-stream,text/plain"
         className="hidden"
-        disabled={disabled || busy}
+        disabled={locked}
         onChange={e => {
           const f = e.target.files?.[0]
           e.target.value = ""
@@ -139,7 +140,7 @@ export function MaterialLineDxfControls({
               ? "Subir DXF"
               : "Elegir DXF (se sube al guardar)"
         }
-        disabled={disabled || busy}
+        disabled={locked}
         onClick={() => inputRef.current?.click()}
         className={btn}
       >
@@ -158,6 +159,7 @@ export function MaterialLineDxfControls({
               type="button"
               title={`Ver ${displayName}`}
               className={btn}
+              disabled={locked}
               onClick={() => setPreviewOpen(true)}
             >
               <Eye size={15} strokeWidth={2} />
@@ -165,7 +167,11 @@ export function MaterialLineDxfControls({
           ) : pendingFile ? (
             <span
               title={pendingFile.name}
-              className={cn(btn, "cursor-default text-sky-400")}
+              className={cn(
+                btn,
+                "cursor-default text-sky-400",
+                locked && "opacity-40",
+              )}
             >
               <Eye size={15} strokeWidth={2} />
             </span>
@@ -173,7 +179,7 @@ export function MaterialLineDxfControls({
           <button
             type="button"
             title="Descargar DXF"
-            disabled={busy}
+            disabled={locked}
             onClick={() => void download()}
             className={btn}
           >
@@ -182,7 +188,7 @@ export function MaterialLineDxfControls({
           <button
             type="button"
             title="Quitar DXF"
-            disabled={disabled || busy}
+            disabled={locked}
             onClick={() => void remove()}
             className={cn(btn, "hover:bg-red-500/15 hover:text-red-500")}
           >

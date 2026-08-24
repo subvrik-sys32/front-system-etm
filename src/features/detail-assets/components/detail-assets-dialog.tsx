@@ -5,6 +5,7 @@ import {
   Download,
   Eye,
   FilePenLine,
+  FileUp,
   ImageIcon,
   ImagePlus,
   MessageSquare,
@@ -14,10 +15,7 @@ import { Spinner } from "@/shared/ui/spinner/spinner"
 import { toast } from "sonner"
 import { saveBlobWithPreferences } from "@/features/user-preferences"
 
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { FormDialogHeader } from "@/shared/ui/dialogs/form-dialog/form-dialog-header"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { PhotoViewerDialog } from "@/shared/ui/media-lightbox/photo-viewer-dialog"
@@ -36,7 +34,10 @@ type Props = {
   taskId?: string
   projectId?: string
   readOnly?: boolean
-  /** Solo tareas: el padre abre TaskDialog. No hay upload suelto de DXF aquí. */
+  /**
+   * Solo tareas: abre TaskDialog para agregar/editar líneas de material.
+   * NO se usa para subir DXF (eso es in-place aquí).
+   */
   onEditTask?: () => void
 }
 
@@ -101,7 +102,7 @@ export function DetailAssetsDialog({
       : ""
   const noteText = note || noteFromServer
 
-  const requestEditTask = () => {
+  const requestEditMaterials = () => {
     onOpenChange(false)
     onEditTask?.()
   }
@@ -253,27 +254,28 @@ export function DetailAssetsDialog({
 
                   {isTask && (
                     <section className="flex flex-col gap-2">
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Planos DXF por material
-                      </h3>
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Planos DXF por material
+                        </h3>
+                        {!readOnly && onEditTask && (
+                          <button
+                            type="button"
+                            onClick={requestEditMaterials}
+                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
+                          >
+                            <FilePenLine size={14} />
+                            Editar materiales
+                          </button>
+                        )}
+                      </div>
+
                       {materialLines.length === 0 ? (
-                        <>
-                          <EmptyHint
-                            icon={FilePenLine}
-                            title="Sin líneas de material"
-                            description="Los planos DXF se asocian a cada material de la tarea. Editá la tarea para agregar materiales y planos."
-                          />
-                          {!readOnly && onEditTask && (
-                            <button
-                              type="button"
-                              onClick={requestEditTask}
-                              className="inline-flex items-center justify-center gap-1.5 self-start rounded-xl bg-foreground/5 px-3 py-2 text-xs font-medium text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
-                            >
-                              <FilePenLine size={14} />
-                              Editar tarea
-                            </button>
-                          )}
-                        </>
+                        <EmptyHint
+                          icon={FilePenLine}
+                          title="Sin líneas de material"
+                          description="Agregá materiales en la tarea para asociar planos DXF a cada línea."
+                        />
                       ) : (
                         <div className="flex flex-col gap-1.5">
                           {materialLines.map(line => (
@@ -340,36 +342,87 @@ export function DetailAssetsDialog({
                                     </button>
                                   </>
                                 )}
-                                {!readOnly && onEditTask && (
-                                  <button
-                                    type="button"
-                                    title={
-                                      line.dxf
-                                        ? "Editar plano en la tarea"
-                                        : "Agregar plano en la tarea"
-                                    }
-                                    className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
-                                    onClick={requestEditTask}
-                                  >
-                                    <FilePenLine size={14} />
-                                  </button>
-                                )}
-                                {!readOnly && line.dxf && (
-                                  <button
-                                    type="button"
-                                    title="Quitar DXF"
-                                    className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-destructive"
-                                    onClick={() =>
-                                      mutations.remove.mutate(line.dxf!.id, {
-                                        onSuccess: () =>
-                                          toast.success("DXF eliminado"),
-                                        onError: () =>
-                                          toast.error("No se pudo eliminar"),
-                                      })
-                                    }
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
+                                {!readOnly && (
+                                  <>
+                                    <input
+                                      type="file"
+                                      accept=".dxf,application/dxf"
+                                      className="hidden"
+                                      id={`dxf-upload-${line.id}`}
+                                      onChange={e => {
+                                        const f = e.target.files?.[0]
+                                        e.target.value = ""
+                                        if (!f) return
+                                        mutations.uploadDxf.mutate(
+                                          { lineId: line.id, file: f },
+                                          {
+                                            onSuccess: () =>
+                                              toast.success(
+                                                line.dxf
+                                                  ? "DXF reemplazado"
+                                                  : "DXF subido",
+                                              ),
+                                            onError: () =>
+                                              toast.error(
+                                                "No se pudo subir el DXF",
+                                              ),
+                                          },
+                                        )
+                                      }}
+                                    />
+                                    <button
+                                      type="button"
+                                      title={
+                                        line.dxf
+                                          ? "Reemplazar DXF"
+                                          : "Subir DXF"
+                                      }
+                                      disabled={mutations.uploadDxf.isPending}
+                                      className={
+                                        line.dxf
+                                          ? "flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-foreground disabled:opacity-40"
+                                          : "inline-flex h-8 items-center gap-1.5 rounded-lg bg-foreground/10 px-2.5 text-xs font-semibold text-foreground transition hover:bg-foreground/15 disabled:opacity-40"
+                                      }
+                                      onClick={() =>
+                                        document
+                                          .getElementById(
+                                            `dxf-upload-${line.id}`,
+                                          )
+                                          ?.click()
+                                      }
+                                    >
+                                      {line.dxf ? (
+                                        <FilePenLine size={14} />
+                                      ) : (
+                                        <>
+                                          <FileUp size={14} />
+                                          <span>Subir DXF</span>
+                                        </>
+                                      )}
+                                    </button>
+                                    {line.dxf && (
+                                      <button
+                                        type="button"
+                                        title="Quitar DXF"
+                                        className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-destructive"
+                                        onClick={() =>
+                                          mutations.remove.mutate(
+                                            line.dxf!.id,
+                                            {
+                                              onSuccess: () =>
+                                                toast.success("DXF eliminado"),
+                                              onError: () =>
+                                                toast.error(
+                                                  "No se pudo eliminar",
+                                                ),
+                                            },
+                                          )
+                                        }
+                                      >
+                                        <Trash2 size={14} />
+                                      </button>
+                                    )}
+                                  </>
                                 )}
                               </div>
                             </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Download, Eye, FileUp, Trash2 } from "lucide-react"
+import { Download, Eye, FilePenLine, FileUp, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { saveBlobWithPreferences } from "@/features/user-preferences"
 import { useQueryClient } from "@tanstack/react-query"
@@ -30,6 +30,7 @@ const btn =
 
 /**
  * Subir / ver (visor nesting) / descargar / quitar DXF de una línea de material.
+ * Icono dinámico: FileUp (importar) si no hay DXF; FilePenLine (editable) si hay.
  */
 export function MaterialLineDxfControls({
   lineId,
@@ -131,16 +132,27 @@ export function MaterialLineDxfControls({
       />
       <button
         type="button"
-        title={lineId ? "Subir DXF" : "Elegir DXF (se sube al guardar)"}
+        title={
+          hasDxf
+            ? "Reemplazar DXF"
+            : lineId
+              ? "Subir DXF"
+              : "Elegir DXF (se sube al guardar)"
+        }
         disabled={disabled || busy}
         onClick={() => inputRef.current?.click()}
         className={btn}
       >
-        {busy ? <Spinner size={15} /> : <FileUp size={15} strokeWidth={2} />}
+        {busy ? (
+          <Spinner size={15} />
+        ) : hasDxf ? (
+          <FilePenLine size={15} strokeWidth={2} />
+        ) : (
+          <FileUp size={15} strokeWidth={2} />
+        )}
       </button>
       {hasDxf && (
         <>
-          {/* Ojo = solo visor (nesting canvas) */}
           {dxf?.publicUrl ? (
             <button
               type="button"
@@ -158,7 +170,6 @@ export function MaterialLineDxfControls({
               <Eye size={15} strokeWidth={2} />
             </span>
           ) : null}
-          {/* Descarga aparte del ojo */}
           <button
             type="button"
             title="Descargar DXF"

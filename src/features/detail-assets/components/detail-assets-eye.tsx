@@ -5,15 +5,11 @@ import { Eye } from "lucide-react"
 
 import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
 import { cn } from "@/shared/utils/utils"
-import { TaskDialog } from "@/features/tasks/components/dialog/task-dialog"
-import type { Task } from "@/features/tasks/types/task.types"
 import { DetailAssetsDialog } from "./detail-assets-dialog"
 
 type Props = {
   taskId?: string
   projectId?: string
-  /** Si es tarea: permite abrir TaskDialog desde el dialog de assets. */
-  task?: Task
   readOnly?: boolean
   className?: string
   /**
@@ -23,32 +19,29 @@ type Props = {
   count?: number
   /** @deprecated Prefer `count`. */
   hasAssets?: boolean
+  /** Solo tareas: abre TaskDialog para editar líneas de material. */
+  onEditTask?: () => void
 }
 
 /**
  * Ojo de archivos/detalle en filas.
  * Sin N+1: el badge usa `count` del padre; los datos se piden
  * solo cuando el dialog abre.
- * TaskDialog vive aquí (no dentro de DetailAssetsDialog): el dialog
- * solo notifica onEditTask.
  */
 export function DetailAssetsEye({
   taskId,
   projectId,
-  task,
   readOnly,
   className,
   count: countProp,
   hasAssets,
+  onEditTask,
 }: Props) {
   const [open, setOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
 
   if (!taskId && !projectId) return null
 
   const count = countProp !== undefined ? countProp : hasAssets ? 1 : 0
-
-  const canEditTask = Boolean(task && taskId && !readOnly)
 
   return (
     <>
@@ -83,30 +76,14 @@ export function DetailAssetsEye({
           </span>
         )}
       </button>
-
       <DetailAssetsDialog
         open={open}
         onOpenChange={setOpen}
         taskId={taskId}
         projectId={projectId}
         readOnly={readOnly}
-        onEditTask={
-          canEditTask
-            ? () => {
-                setOpen(false)
-                setEditOpen(true)
-              }
-            : undefined
-        }
+        onEditTask={onEditTask}
       />
-
-      {canEditTask && task && (
-        <TaskDialog
-          open={editOpen}
-          task={task}
-          onClose={() => setEditOpen(false)}
-        />
-      )}
     </>
   )
 }

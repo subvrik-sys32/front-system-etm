@@ -24,13 +24,18 @@ export function invalidateDetailAssetCaches(
     void qc.invalidateQueries({ queryKey: taskDetailAssetsKey(scope.taskId) })
   }
   if (scope.projectId) {
-    void qc.invalidateQueries({ queryKey: projectDetailAssetsKey(scope.projectId) })
+    void qc.invalidateQueries({
+      queryKey: projectDetailAssetsKey(scope.projectId),
+    })
   }
   void qc.invalidateQueries({ queryKey: ["tasks"] })
   void qc.invalidateQueries({ queryKey: ["projects"] })
 }
 
-export function useTaskDetailAssets(taskId: string | undefined, enabled = true) {
+export function useTaskDetailAssets(
+  taskId: string | undefined,
+  enabled = true,
+) {
   const q = useQuery({
     queryKey: taskDetailAssetsKey(taskId ?? ""),
     enabled: Boolean(taskId) && enabled,
@@ -38,7 +43,8 @@ export function useTaskDetailAssets(taskId: string | undefined, enabled = true) 
   })
   return {
     data: q.data,
-    loading: q.isLoading,
+    // Spinner hasta el primer payload completo (taskAssets + materialLines)
+    loading: q.isPending || (q.isFetching && !q.data),
     refetch: q.refetch,
   }
 }
@@ -54,7 +60,7 @@ export function useProjectDetailAssets(
   })
   return {
     data: q.data ?? [],
-    loading: q.isLoading,
+    loading: q.isPending || (q.isFetching && !q.data),
     refetch: q.refetch,
   }
 }
@@ -74,7 +80,8 @@ export function useDetailAssetMutations(scope: {
 
   const uploadPhoto = useMutation({
     mutationFn: (file: File) => {
-      if (scope.taskId) return detailAssetsApi.uploadTaskPhoto(scope.taskId, file)
+      if (scope.taskId)
+        return detailAssetsApi.uploadTaskPhoto(scope.taskId, file)
       return detailAssetsApi.uploadProjectPhoto(scope.projectId!, file)
     },
     onSuccess: invalidate,
@@ -82,7 +89,8 @@ export function useDetailAssetMutations(scope: {
 
   const saveNote = useMutation({
     mutationFn: (text: string) => {
-      if (scope.taskId) return detailAssetsApi.upsertTaskNote(scope.taskId, text)
+      if (scope.taskId)
+        return detailAssetsApi.upsertTaskNote(scope.taskId, text)
       return detailAssetsApi.upsertProjectNote(scope.projectId!, text)
     },
     onSuccess: invalidate,

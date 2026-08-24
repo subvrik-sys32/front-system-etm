@@ -25,6 +25,7 @@ import { taskAccess } from "../access/task-access"
 
 import { TaskPriorityCell } from "../components/cells/task-priority-cell"
 import { TaskRowActions } from "../components/actions/task-row-actions"
+import { TaskDialog } from "../components/dialog/task-dialog"
 import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { TaskExpandedRow } from "../components/expanded-row/task-expanded-row"
 import { DragCell } from "@/shared/ui/entity-table-common/drag-cell"
@@ -68,10 +69,11 @@ type Props =
 
 function taskDetailAssetCount(task: Task): number {
   if (typeof task.detailAssetCount === "number") return task.detailAssetCount
-  const dxf = task.materialLines?.reduce(
-    (n, l) => n + (l.detailAssets?.length ?? 0),
-    0,
-  ) ?? 0
+  const dxf =
+    task.materialLines?.reduce(
+      (n, l) => n + (l.detailAssets?.length ?? 0),
+      0,
+    ) ?? 0
   return dxf
 }
 
@@ -79,7 +81,11 @@ export function TaskMobileCard(props: Props) {
   if (props.loading) {
     const opacity = props.opacity ?? 1
     return (
-      <div className="@container/trow rounded-xl bg-foreground/5" style={{ opacity }} aria-hidden>
+      <div
+        className="@container/trow rounded-xl bg-foreground/5"
+        style={{ opacity }}
+        aria-hidden
+      >
         <div className="flex items-center gap-1 px-1">
           <div className="flex min-w-0 flex-1 animate-pulse items-center gap-2.5 py-3 pr-2">
             <span className="inline-flex h-7 min-w-[2.75rem] shrink-0 items-center justify-center rounded-md bg-foreground/10 px-2" />
@@ -119,6 +125,7 @@ function TaskMobileCardReady({
 }) {
   const [showFields, setShowFields] = useState(false)
   const [showPipeline, setShowPipeline] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
 
   const { isMobile } = useResponsive()
   const isManualMode = useSortStore(s => s.taskSortMode === "manual")
@@ -130,14 +137,17 @@ function TaskMobileCardReady({
     router.push(`/projects?projectId=${task.project.id}`)
   }, [router, task.project.id])
 
-  const { bind: projectChipLongPress, pressed: projectChipPressed } = useLongPress({
-    onLongPress: goToProject,
-    threshold: 320,
-  })
-
+  const { bind: projectChipLongPress, pressed: projectChipPressed } =
+    useLongPress({
+      onLongPress: goToProject,
+      threshold: 320,
+    })
 
   const isTarget = searchParams.get("taskId") === task.id
-  const projectChipBadge = useBadgeColors(task.project?.client?.color ?? "#64748B", "subtle")
+  const projectChipBadge = useBadgeColors(
+    task.project?.client?.color ?? "#64748B",
+    "subtle",
+  )
 
   // Al colapsar: no resetear campos/pipeline en el mismo frame (evita salto).
   useEffect(() => {
@@ -178,8 +188,15 @@ function TaskMobileCardReady({
   const isCompleted = taskAccess.isCompleted(task)
   const isDimmed = isCompleted || (dimOthers && !expanded)
 
+  const openEditMaterials = () => setEditOpen(true)
+
   return (
-    <div className={cn("@container/trow rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
+    <div
+      className={cn(
+        "@container/trow rounded-xl bg-foreground/5",
+        isDimmed && "opacity-50",
+      )}
+    >
       <div className="flex items-center gap-1 px-1">
         <DragCell hidden={!isManualMode} />
 
@@ -187,7 +204,7 @@ function TaskMobileCardReady({
           role="button"
           tabIndex={0}
           onClick={handleRowToggle}
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault()
               handleRowToggle()
@@ -208,18 +225,18 @@ function TaskMobileCardReady({
                 ? "Mantén pulsado para abrir el proyecto"
                 : "Abrir proyecto"
             }
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation()
               if (!isMobile) goToProject()
             }}
-            onKeyDown={(e) => {
+            onKeyDown={e => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault()
                 e.stopPropagation()
                 if (!isMobile) goToProject()
               }
             }}
-            onPointerDown={(e) => e.stopPropagation()}
+            onPointerDown={e => e.stopPropagation()}
             {...(isMobile
               ? {
                   onTouchStart: (e: React.TouchEvent) => {
@@ -249,7 +266,9 @@ function TaskMobileCardReady({
               <p className="max-w-full truncate text-sm font-semibold leading-none text-foreground">
                 {task.reference}
               </p>
-              <span className="hidden shrink-0 self-center text-muted-foreground/80 md:inline">·</span>
+              <span className="hidden shrink-0 self-center text-muted-foreground/80 md:inline">
+                ·
+              </span>
               <span
                 className="hidden size-5 shrink-0 items-center justify-center self-center md:inline-flex"
                 title={stage.label}
@@ -260,7 +279,9 @@ function TaskMobileCardReady({
                   size={16}
                 />
               </span>
-              <span className="hidden shrink-0 self-center text-muted-foreground/80 md:inline">·</span>
+              <span className="hidden shrink-0 self-center text-muted-foreground/80 md:inline">
+                ·
+              </span>
               <span
                 className="hidden size-5 shrink-0 items-center justify-center self-center md:inline-flex"
                 title={status.label}
@@ -273,13 +294,11 @@ function TaskMobileCardReady({
               </span>
             </div>
 
-            {/* Mobile: cliente · iconos · prioridad | md+: cliente · prioridad (cliente y PM/prioridad se quedan abajo) */}
+            {/* Mobile: cliente · iconos · prioridad | md+: cliente · prioridad */}
             <div
               className={cn(
                 "mt-0.5 flex min-w-0 max-w-full items-center gap-1.5 text-xs transition-all duration-200",
-                expanded
-                  ? "max-h-0 opacity-0"
-                  : "max-h-5 opacity-100",
+                expanded ? "max-h-0 opacity-0" : "max-h-5 opacity-100",
               )}
             >
               <span
@@ -290,7 +309,9 @@ function TaskMobileCardReady({
                 {task.project.client.name}
               </span>
 
-              <span className="shrink-0 text-muted-foreground/80 md:hidden">·</span>
+              <span className="shrink-0 text-muted-foreground/80 md:hidden">
+                ·
+              </span>
               <span className="inline-flex shrink-0 items-center gap-1 md:hidden">
                 <EntityIconBadge
                   icon={stage.icon}
@@ -298,7 +319,9 @@ function TaskMobileCardReady({
                   size={12}
                 />
               </span>
-              <span className="shrink-0 text-muted-foreground/80 md:hidden">·</span>
+              <span className="shrink-0 text-muted-foreground/80 md:hidden">
+                ·
+              </span>
               <span className="inline-flex shrink-0 items-center gap-1 md:hidden">
                 <EntityIconBadge
                   icon={status.icon}
@@ -367,12 +390,12 @@ function TaskMobileCardReady({
               updatedAt={task.updatedAt}
               createdBy={task.createdBy}
               updatedBy={task.updatedBy}
-            workflowSteps={task.workflowSteps}
-          />
+              workflowSteps={task.workflowSteps}
+            />
             <DetailAssetsEye
               taskId={task.id}
-              task={task}
               count={taskDetailAssetCount(task)}
+              onEditTask={openEditMaterials}
             />
           </div>
         )}
@@ -385,8 +408,8 @@ function TaskMobileCardReady({
           >
             <DetailAssetsEye
               taskId={task.id}
-              task={task}
               count={taskDetailAssetCount(task)}
+              onEditTask={openEditMaterials}
             />
             <TaskRowActions task={task} className="gap-1" showAudit />
           </div>
@@ -408,7 +431,10 @@ function TaskMobileCardReady({
         </button>
       </div>
 
-      <CollapsibleHeightSection open={expanded} className="space-y-3 px-3 pb-3 pt-3">
+      <CollapsibleHeightSection
+        open={expanded}
+        className="space-y-3 px-3 pb-3 pt-3"
+      >
         <button
           type="button"
           onClick={() => setShowFields(v => !v)}
@@ -424,20 +450,36 @@ function TaskMobileCardReady({
                 className="size-1.5 shrink-0 rounded-full"
                 style={{ backgroundColor: task.project.client.color }}
               />
-              <span className="shrink-0 truncate">{task.project.client.name}</span>
+              <span className="shrink-0 truncate">
+                {task.project.client.name}
+              </span>
               <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span className="hidden truncate md:inline" style={{ color: stageInk }}>
+              <span
+                className="hidden truncate md:inline"
+                style={{ color: stageInk }}
+              >
                 {stage.label}
               </span>
               <span className="inline-flex md:hidden">
-                <EntityIconBadge icon={stage.icon} color={stage.color} size={13} />
+                <EntityIconBadge
+                  icon={stage.icon}
+                  color={stage.color}
+                  size={13}
+                />
               </span>
               <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span className="hidden truncate md:inline" style={{ color: statusInk }}>
+              <span
+                className="hidden truncate md:inline"
+                style={{ color: statusInk }}
+              >
                 {status.label}
               </span>
               <span className="inline-flex md:hidden">
-                <EntityIconBadge icon={status.icon} color={status.color} size={13} />
+                <EntityIconBadge
+                  icon={status.icon}
+                  color={status.color}
+                  size={13}
+                />
               </span>
             </span>
           )}
@@ -450,8 +492,15 @@ function TaskMobileCardReady({
           />
         </button>
 
-        <CollapsibleHeightSection open={showFields} className="flex flex-col gap-2">
-          <TaskPriorityCell task={task} triggerVariant="row" rowLabel="Prioridad" />
+        <CollapsibleHeightSection
+          open={showFields}
+          className="flex flex-col gap-2"
+        >
+          <TaskPriorityCell
+            task={task}
+            triggerVariant="row"
+            rowLabel="Prioridad"
+          />
         </CollapsibleHeightSection>
 
         {/* Desktop: acciones en el panel. Móvil: van en el row al expandir. */}
@@ -459,8 +508,8 @@ function TaskMobileCardReady({
           <div className="flex items-center justify-start gap-1">
             <DetailAssetsEye
               taskId={task.id}
-              task={task}
               count={taskDetailAssetCount(task)}
+              onEditTask={openEditMaterials}
             />
             <TaskRowActions task={task} showAudit />
           </div>
@@ -470,6 +519,12 @@ function TaskMobileCardReady({
           <TaskExpandedRow task={task} />
         </CollapsibleHeightSection>
       </CollapsibleHeightSection>
+
+      <TaskDialog
+        open={editOpen}
+        task={task}
+        onClose={() => setEditOpen(false)}
+      />
     </div>
   )
 }

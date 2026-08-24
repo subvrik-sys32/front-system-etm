@@ -434,7 +434,17 @@ export function TaskDialog({
         }}
         onConfirm={() => {
           if (createdTaskId) {
-            router.push(`/tasks?taskId=${encodeURIComponent(createdTaskId)}`)
+            if (form.projectId) {
+              sessionStorage.setItem(
+                "task-origin-project-id",
+                form.projectId,
+              )
+            } else {
+              sessionStorage.removeItem("task-origin-project-id")
+            }
+            router.push(
+              `/tasks?taskId=${encodeURIComponent(createdTaskId)}`,
+            )
           }
           setConfirmOpenTask(false)
           setCreatedTaskId(null)

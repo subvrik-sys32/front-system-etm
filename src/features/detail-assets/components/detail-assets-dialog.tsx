@@ -36,6 +36,8 @@ type Props = {
   taskId?: string
   projectId?: string
   readOnly?: boolean
+  /** Solo tareas: el padre abre TaskDialog. No hay upload suelto de DXF aquí. */
+  onEditTask?: () => void
 }
 
 function EmptyHint({
@@ -66,6 +68,7 @@ export function DetailAssetsDialog({
   taskId,
   projectId,
   readOnly = false,
+  onEditTask,
 }: Props) {
   const isTask = Boolean(taskId)
   const taskQ = useTaskDetailAssets(taskId, open && isTask)
@@ -97,6 +100,11 @@ export function DetailAssetsDialog({
       ? String((noteAsset.meta as { text?: string }).text ?? "")
       : ""
   const noteText = note || noteFromServer
+
+  const requestEditTask = () => {
+    onOpenChange(false)
+    onEditTask?.()
+  }
 
   return (
     <>
@@ -249,11 +257,23 @@ export function DetailAssetsDialog({
                         Planos DXF por material
                       </h3>
                       {materialLines.length === 0 ? (
-                        <EmptyHint
-                          icon={FilePenLine}
-                          title="Sin líneas de material"
-                          description="Los planos DXF se asocian a cada material de la tarea."
-                        />
+                        <>
+                          <EmptyHint
+                            icon={FilePenLine}
+                            title="Sin líneas de material"
+                            description="Los planos DXF se asocian a cada material de la tarea. Editá la tarea para agregar materiales y planos."
+                          />
+                          {!readOnly && onEditTask && (
+                            <button
+                              type="button"
+                              onClick={requestEditTask}
+                              className="inline-flex items-center justify-center gap-1.5 self-start rounded-xl bg-foreground/5 px-3 py-2 text-xs font-medium text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground"
+                            >
+                              <FilePenLine size={14} />
+                              Editar tarea
+                            </button>
+                          )}
+                        </>
                       ) : (
                         <div className="flex flex-col gap-1.5">
                           {materialLines.map(line => (
@@ -320,76 +340,36 @@ export function DetailAssetsDialog({
                                     </button>
                                   </>
                                 )}
-                                {!readOnly && (
-                                  <>
-                                    <input
-                                      type="file"
-                                      accept=".dxf,application/dxf"
-                                      className="hidden"
-                                      id={`dxf-upload-${line.id}`}
-                                      onChange={e => {
-                                        const f = e.target.files?.[0]
-                                        e.target.value = ""
-                                        if (!f) return
-                                        mutations.uploadDxf.mutate(
-                                          { lineId: line.id, file: f },
-                                          {
-                                            onSuccess: () =>
-                                              toast.success(
-                                                line.dxf
-                                                  ? "DXF reemplazado"
-                                                  : "DXF subido",
-                                              ),
-                                            onError: () =>
-                                              toast.error(
-                                                "No se pudo subir el DXF",
-                                              ),
-                                          },
-                                        )
-                                      }}
-                                    />
-                                    <button
-                                      type="button"
-                                      title={
-                                        line.dxf
-                                          ? "Reemplazar DXF"
-                                          : "Subir DXF"
-                                      }
-                                      disabled={mutations.uploadDxf.isPending}
-                                      className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-foreground disabled:opacity-40"
-                                      onClick={() =>
-                                        document
-                                          .getElementById(
-                                            `dxf-upload-${line.id}`,
-                                          )
-                                          ?.click()
-                                      }
-                                    >
-                                      <FilePenLine size={14} />
-                                    </button>
-                                    {line.dxf && (
-                                      <button
-                                        type="button"
-                                        title="Quitar DXF"
-                                        className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-destructive"
-                                        onClick={() =>
-                                          mutations.remove.mutate(
-                                            line.dxf!.id,
-                                            {
-                                              onSuccess: () =>
-                                                toast.success("DXF eliminado"),
-                                              onError: () =>
-                                                toast.error(
-                                                  "No se pudo eliminar",
-                                                ),
-                                            },
-                                          )
-                                        }
-                                      >
-                                        <Trash2 size={14} />
-                                      </button>
-                                    )}
-                                  </>
+                                {!readOnly && onEditTask && (
+                                  <button
+                                    type="button"
+                                    title={
+                                      line.dxf
+                                        ? "Editar plano en la tarea"
+                                        : "Agregar plano en la tarea"
+                                    }
+                                    className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
+                                    onClick={requestEditTask}
+                                  >
+                                    <FilePenLine size={14} />
+                                  </button>
+                                )}
+                                {!readOnly && line.dxf && (
+                                  <button
+                                    type="button"
+                                    title="Quitar DXF"
+                                    className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/10 hover:text-destructive"
+                                    onClick={() =>
+                                      mutations.remove.mutate(line.dxf!.id, {
+                                        onSuccess: () =>
+                                          toast.success("DXF eliminado"),
+                                        onError: () =>
+                                          toast.error("No se pudo eliminar"),
+                                      })
+                                    }
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
                                 )}
                               </div>
                             </div>

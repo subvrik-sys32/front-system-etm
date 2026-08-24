@@ -369,7 +369,11 @@ function TaskMobileCardReady({
               updatedBy={task.updatedBy}
             workflowSteps={task.workflowSteps}
           />
-            <DetailAssetsEye taskId={task.id} count={taskDetailAssetCount(task)} />
+            <DetailAssetsEye
+              taskId={task.id}
+              task={task}
+              count={taskDetailAssetCount(task)}
+            />
           </div>
         )}
 
@@ -379,7 +383,11 @@ function TaskMobileCardReady({
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
-            <DetailAssetsEye taskId={task.id} count={taskDetailAssetCount(task)} />
+            <DetailAssetsEye
+              taskId={task.id}
+              task={task}
+              count={taskDetailAssetCount(task)}
+            />
             <TaskRowActions task={task} className="gap-1" showAudit />
           </div>
         )}
@@ -449,7 +457,11 @@ function TaskMobileCardReady({
         {/* Desktop: acciones en el panel. Móvil: van en el row al expandir. */}
         {!isMobile && (
           <div className="flex items-center justify-start gap-1">
-            <DetailAssetsEye taskId={task.id} count={taskDetailAssetCount(task)} />
+            <DetailAssetsEye
+              taskId={task.id}
+              task={task}
+              count={taskDetailAssetCount(task)}
+            />
             <TaskRowActions task={task} showAudit />
           </div>
         )}

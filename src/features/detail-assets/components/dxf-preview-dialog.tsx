@@ -68,15 +68,24 @@ export function DxfPreviewDialog({
           type: "application/dxf",
         })
         const parsed = await cadParseApi.parseFile(file, ac.signal)
-        if (!parsed.valid || !parsed.pieces?.length) {
+        if (!parsed.valid) {
+          throw new Error("Geometría inválida")
+        }
+        // Preview = drawing (un solo espacio). pieces[] va normalizado
+        // por contorno a (0,0) y rompe la posición relativa del DXF.
+        const source = parsed.drawing
+          ? [parsed.drawing]
+          : parsed.pieces
+        if (!source?.length) {
           throw new Error("Geometría inválida")
         }
         setPieces(
-          parsed.pieces.map(p => ({
+          source.map(p => ({
             outline: p.outline.points,
             subOutlines: (p.subEntities ?? []).map(s => ({
               points: s.outline.points,
               color: s.color,
+              layer: s.layer,
             })),
           })),
         )

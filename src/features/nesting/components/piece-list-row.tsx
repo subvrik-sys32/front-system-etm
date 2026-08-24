@@ -46,7 +46,7 @@ export function PieceListRow({
     <div
       className={cn(
         "flex w-full box-border flex-col gap-2 rounded-lg border-0 bg-background/50 p-2.5 text-xs transition-colors hover:bg-background/70",
-        highlighted && "ring-1 ring-primary/40 bg-primary/10",
+        highlighted && "bg-primary/10",
         className
       )}
     >

@@ -8,6 +8,8 @@ export type CadParseResponse = {
   width?: number
   height?: number
   valid: boolean
+  /** Dibujo completo (preview). Preferir sobre pieces[] en visores. */
+  drawing?: NestingPiece
 }
 
 type ApiRequestConfig = AxiosRequestConfig & {

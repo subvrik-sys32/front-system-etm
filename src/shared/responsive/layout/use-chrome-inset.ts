@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { usePageSearchStore } from "@/shared/ui/entity-toolbar/page-search-store"
 import { isImmersiveRoute } from "@/shared/responsive/navigation/immersive-routes"
+import { useVisualViewportFrame } from "@/components/ui/popover/use-visual-viewport-frame"
 import {
   TOP_BAR_HEIGHT_PX,
   BOTTOM_NAV_HEIGHT_PX,
@@ -30,6 +31,7 @@ export function useChromeInset(options: Options = {}): CSSProperties {
   const { isMobile, isLandscape } = useResponsive()
   const pathname = usePathname()
   const immersive = isImmersiveRoute(pathname)
+  const { keyboardOpen } = useVisualViewportFrame()
   const searchOpen = usePageSearchStore(s => s.open && s.enabled)
   const searchExtra = searchOpen ? PAGE_SEARCH_BAR_HEIGHT_PX : 0
 
@@ -45,13 +47,16 @@ export function useChromeInset(options: Options = {}): CSSProperties {
       }
     }
 
+    // Teclado abierto: el viewport YA se achicó (resizes-content) y
+    // CompactShell ocultó el BottomNav. No reservar esos 80px otra vez.
     return {
       paddingTop: TOP_BAR_HEIGHT_PX + searchExtra,
       ...(bottom
         ? {
-            paddingBottom: isLandscape
-              ? "env(safe-area-inset-bottom, 0px)"
-              : `calc(${BOTTOM_NAV_HEIGHT_PX}px + env(safe-area-inset-bottom, 0px))`,
+            paddingBottom:
+              keyboardOpen || isLandscape
+                ? "env(safe-area-inset-bottom, 0px)"
+                : `calc(${BOTTOM_NAV_HEIGHT_PX}px + env(safe-area-inset-bottom, 0px))`,
           }
         : null),
     }

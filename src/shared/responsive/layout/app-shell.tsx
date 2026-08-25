@@ -19,6 +19,7 @@ import { TOP_BAR_HEIGHT_PX, BOTTOM_NAV_HEIGHT_PX } from "./chrome-constants"
 import { TopBar } from "@/shared/responsive/mobile/top-bar"
 import { useClearFocusOnNav } from "@/shared/hooks/use-clear-focus-on-nav"
 import { BottomNavigation } from "../mobile/bottom-navigation"
+import { useVisualViewportFrame } from "@/components/ui/popover/use-visual-viewport-frame"
 
 type Props = {
   children: ReactNode
@@ -158,6 +159,7 @@ function CompactShell({ children }: Props) {
 
   const isOpen = mode === "open"
   const immersive = isImmersiveRoute(pathname)
+  const { keyboardOpen } = useVisualViewportFrame()
 
   useEffect(() => {
     closeDrawer()
@@ -205,7 +207,7 @@ function CompactShell({ children }: Props) {
             className="absolute inset-x-0 z-10 overflow-hidden"
             style={{
               top: TOP_BAR_HEIGHT_PX,
-              bottom: BOTTOM_NAV_HEIGHT_PX,
+              bottom: keyboardOpen ? 0 : BOTTOM_NAV_HEIGHT_PX,
             }}
           >
             {children}
@@ -216,7 +218,7 @@ function CompactShell({ children }: Props) {
           </div>
         )}
 
-        <BottomNavigation />
+        {!keyboardOpen && <BottomNavigation />}
 
         {isOpen && (
           <button

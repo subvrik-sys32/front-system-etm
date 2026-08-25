@@ -176,6 +176,7 @@ export function DetailAssetsDialog({
                             ref={fileRef}
                             type="file"
                             accept="image/*"
+                            tabIndex={-1}
                             className="hidden"
                             disabled={photoUploading}
                             onChange={e => {
@@ -315,7 +316,15 @@ export function DetailAssetsDialog({
                           onChange={e => setNote(e.target.value)}
                           placeholder="Detalle libre, instrucciones de montaje, observaciones…"
                           rows={3}
-                          className="w-full resize-none rounded-xl bg-foreground/[0.04] px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 focus:ring-1 focus:ring-foreground/15"
+                          name="detail-note"
+                          autoComplete="off"
+                          autoCorrect="off"
+                          autoCapitalize="sentences"
+                          spellCheck={false}
+                          data-1p-ignore
+                          data-lpignore="true"
+                          enterKeyHint="done"
+                          className="w-full resize-none rounded-xl bg-foreground/[0.04] px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:ring-1 focus:ring-foreground/15 sm:text-sm"
                         />
                         <button
                           type="button"
@@ -434,6 +443,7 @@ export function DetailAssetsDialog({
                                   <>
                                     <input
                                       type="file"
+                                      tabIndex={-1}
                                       accept=".dxf,application/dxf"
                                       className="hidden"
                                       id={`dxf-upload-${line.id}`}

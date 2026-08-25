@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, ChangeEvent } from "react"
 import { Camera, Check, ImageIcon, Pencil, Reply, Send, X } from "lucide-react"
-import { IconAction } from "@/shared/ui/actions/icon-action"
+import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
+import { cn } from "@/shared/utils/utils"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { useVisualViewportFrame } from "@/components/ui/popover/use-visual-viewport-frame"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
@@ -236,12 +237,19 @@ export function CommentComposer({
             )}
 
             {!isEditing && (
-              <IconAction
-                icon={Camera}
-                disabled={!canCreate}
+              <button
+                type="button"
                 aria-label="Adjuntar foto"
+                title="Adjuntar foto"
+                disabled={!canCreate}
                 onClick={() => fileInputRef.current?.click()}
-              />
+                className={cn(
+                  CHROME_ICON_BTN,
+                  "size-8 rounded-[10px] disabled:cursor-not-allowed disabled:opacity-40",
+                )}
+              >
+                <Camera size={16} strokeWidth={2.25} />
+              </button>
             )}
 
             <button

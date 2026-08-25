@@ -118,7 +118,7 @@ const CommentComposerFieldInner = forwardRef<
           onEscapeRef.current?.()
         }
       }}
-      className="min-h-12 min-w-0 flex-1 bg-transparent py-2 text-sm leading-none text-foreground outline-none placeholder:text-muted-foreground/70"
+      className="min-h-15 min-w-0 flex-1 bg-transparent py-2 text-sm leading-none text-foreground outline-none placeholder:text-muted-foreground/70"
     />
   )
 })

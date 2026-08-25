@@ -1,0 +1,285 @@
+diff --git a/src/features/comments/components/comment-composer.tsx b/src/features/comments/components/comment-composer.tsx
+index a5f607d..e56c9f1 100644
+--- a/src/features/comments/components/comment-composer.tsx
++++ b/src/features/comments/components/comment-composer.tsx
+@@ -1,7 +1,7 @@
+ "use client"
+ 
+ import { useEffect, useRef, useState, KeyboardEvent, ChangeEvent } from "react"
+-import { Camera, Check, Pencil, Reply, Send, X } from "lucide-react"
++import { Camera, Check, ImageIcon, Pencil, Reply, Send, X } from "lucide-react"
+ import { IconAction } from "@/shared/ui/actions/icon-action"
+ import { Popover, PopoverAnchor } from "@/components/ui/popover"
+ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+@@ -27,9 +27,8 @@ export function CommentComposer({
+   replyingTo,
+   onCancelReply,
+ }: Props) {
+-
+-  const [message, setMessage] = useState("")
+   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
++  const [hasText, setHasText] = useState(false)
+   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+   const textareaRef = useRef<HTMLTextAreaElement>(null)
+   const fileInputRef = useRef<HTMLInputElement>(null)
+@@ -40,14 +39,17 @@ export function CommentComposer({
+ 
+   const isEditing = !!editingComment
+   const isReplying = !isEditing && !!replyingTo
++  const showContext = isEditing || isReplying || !!selectedImage
+ 
+   const { has } = usePermissions()
+   const canCreate = isEditing || has(PermissionCode.COMMENT_CREATE)
+-
+   const busy = updating
+ 
+   useEffect(() => {
+-    setMessage(editingComment?.message ?? "")
++    const el = textareaRef.current
++    if (el) el.value = editingComment?.message ?? ""
++    setHasText(Boolean(editingComment?.message?.trim()))
++    setMentionQuery(null)
+   }, [editingComment])
+ 
+   useEffect(() => {
+@@ -56,48 +58,49 @@ export function CommentComposer({
+     }
+   }, [replyingTo])
+ 
+-  const filteredUsers = mentionQuery === null
+-    ? []
+-    : users.filter(u =>
+-        u.username?.toLowerCase().includes(mentionQuery.toLowerCase()) ||
+-        u.name.toLowerCase().includes(mentionQuery.toLowerCase()),
+-      )
++  const filteredUsers =
++    mentionQuery === null
++      ? []
++      : users.filter(
++          u =>
++            u.username?.toLowerCase().includes(mentionQuery.toLowerCase()) ||
++            u.name.toLowerCase().includes(mentionQuery.toLowerCase()),
++        )
+ 
+   const mentionOpen = mentionQuery !== null && filteredUsers.length > 0
+ 
+-  const detectMentionQuery = (value: string, cursor: number) => {
+-    const upToCursor = value.slice(0, cursor)
+-    const match = upToCursor.match(/@([a-zA-Z0-9_.]*)$/)
++  const handleInput = (e: ChangeEvent<HTMLTextAreaElement>) => {
++    const el = e.currentTarget
++    const value = el.value
++    setHasText(value.trim().length > 0)
++    const cursor = el.selectionStart ?? value.length
++    const match = value.slice(0, cursor).match(/@([a-zA-Z0-9_.]*)$/)
+     const next = match ? match[1] : null
+     setMentionQuery(prev => (prev === next ? prev : next))
+   }
+ 
+-  const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+-    setMessage(e.target.value)
+-    detectMentionQuery(e.target.value, e.target.selectionStart)
+-  }
+-
+   const handleSelectMention = (username: string) => {
+-    const cursor = textareaRef.current?.selectionStart ?? message.length
+-    const upToCursor = message.slice(0, cursor)
+-    const afterCursor = message.slice(cursor)
+-
+-    const replaced = upToCursor.replace(/@([a-zA-Z0-9_.]*)$/, `@${username} `)
+-
+-    const newMessage = replaced + afterCursor
+-    setMessage(newMessage)
++    const el = textareaRef.current
++    if (!el) return
++    const cursor = el.selectionStart ?? el.value.length
++    const upToCursor = el.value.slice(0, cursor)
++    const afterCursor = el.value.slice(cursor)
++    el.value =
++      upToCursor.replace(/@([a-zA-Z0-9_.]*)$/, `@${username} `) + afterCursor
++    setHasText(el.value.trim().length > 0)
+     setMentionQuery(null)
+-
+-    requestAnimationFrame(() => textareaRef.current?.focus())
++    requestAnimationFrame(() => el.focus())
+   }
+ 
+-  const handleRemoveImage = () => {
++  const clearComposer = () => {
++    if (textareaRef.current) textareaRef.current.value = ""
++    setHasText(false)
+     setSelectedImage(null)
++    setMentionQuery(null)
+   }
+ 
+   const handleCancel = () => {
+-    setMessage("")
+-    setSelectedImage(null)
++    clearComposer()
+     onCancelEdit?.()
+     onCancelReply?.()
+   }
+@@ -105,21 +108,14 @@ export function CommentComposer({
+   const handleSelectImage = (e: ChangeEvent<HTMLInputElement>) => {
+     const file = e.target.files?.[0]
+     e.target.value = ""
+-
+     if (!file) return
+-
+     const reader = new FileReader()
+-
+-    reader.onload = () => {
+-      setSelectedImage(reader.result as string)
+-    }
+-
++    reader.onload = () => setSelectedImage(reader.result as string)
+     reader.readAsDataURL(file)
+   }
+ 
+   const handleSubmit = () => {
+-    const trimmed = message.trim()
+-
++    const trimmed = (textareaRef.current?.value ?? "").trim()
+     if ((!trimmed && !selectedImage) || busy || !canCreate) return
+ 
+     if (isEditing && editingComment) {
+@@ -132,22 +128,17 @@ export function CommentComposer({
+         imageBase64: selectedImage ?? undefined,
+         parentId: replyingTo?.id,
+       }).catch(() => {})
+-
+       onCancelReply?.()
+     }
+ 
+-    setMessage("")
+-    setSelectedImage(null)
+-    setMentionQuery(null)
++    clearComposer()
+   }
+ 
+   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+-    if (mentionQuery !== null && filteredUsers.length > 0) {
+-      if (e.key === "Escape") {
+-        e.preventDefault()
+-        setMentionQuery(null)
+-        return
+-      }
++    if (mentionQuery !== null && filteredUsers.length > 0 && e.key === "Escape") {
++      e.preventDefault()
++      setMentionQuery(null)
++      return
+     }
+ 
+     if (e.key === "Enter" && !e.shiftKey) {
+@@ -155,30 +146,33 @@ export function CommentComposer({
+       handleSubmit()
+     }
+ 
+-    if (e.key === "Escape" && (isEditing || isReplying) && mentionQuery === null) {
++    if (e.key === "Escape" && showContext && mentionQuery === null) {
+       handleCancel()
+     }
+   }
+ 
+-  const canSubmit =
+-    (!!message.trim() || !!selectedImage) && !busy && canCreate
++  const canSubmit = (hasText || !!selectedImage) && !busy && canCreate
+ 
+   return (
+     <div className="flex flex-col gap-1.5 rounded-2xl bg-foreground/[0.06] px-2 py-1.5">
+-      {(isEditing || isReplying) && (
++      {showContext && (
+         <div className="flex items-start gap-2 rounded-xl bg-foreground/[0.04] px-2.5 py-2">
+           <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground shadow-xs">
+             {isEditing ? (
+               <Pencil size={12} strokeWidth={2.2} />
+-            ) : (
++            ) : isReplying ? (
+               <Reply size={12} strokeWidth={2.2} />
++            ) : (
++              <ImageIcon size={12} strokeWidth={2.2} />
+             )}
+           </span>
+           <div className="min-w-0 flex-1">
+             <p className="text-[11px] font-medium text-foreground">
+               {isEditing
+                 ? "Editando mensaje"
+-                : `Respondiendo a ${replyingTo?.user.name}`}
++                : isReplying
++                  ? `Respondiendo a ${replyingTo?.user.name}`
++                  : "Foto adjunta"}
+             </p>
+             {isReplying && replyingTo && (
+               <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+@@ -190,12 +184,26 @@ export function CommentComposer({
+                 Esc para cancelar · Enter para guardar
+               </p>
+             )}
++            {selectedImage && (
++              <div className="relative mt-1.5 w-fit">
++                {/* eslint-disable-next-line @next/next/no-img-element */}
++                <img
++                  src={selectedImage}
++                  alt="Foto adjunta"
++                  className="size-12 rounded-lg object-cover"
++                />
++              </div>
++            )}
+           </div>
+           <button
+             type="button"
+             aria-label="Cancelar"
+             title="Cancelar"
+-            onClick={handleCancel}
++            onClick={
++              selectedImage && !isEditing && !isReplying
++                ? () => setSelectedImage(null)
++                : handleCancel
++            }
+             className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
+           >
+             <X size={14} strokeWidth={2.2} />
+@@ -212,25 +220,6 @@ export function CommentComposer({
+         onChange={handleSelectImage}
+       />
+ 
+-      {selectedImage && (
+-        <div className="relative w-fit px-1">
+-          {/* eslint-disable-next-line @next/next/no-img-element */}
+-          <img
+-            src={selectedImage}
+-            alt="Foto adjunta"
+-            className="size-12 rounded-lg object-cover"
+-          />
+-          <button
+-            type="button"
+-            onClick={handleRemoveImage}
+-            aria-label="Quitar foto"
+-            className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-popover text-foreground shadow-xs hover:bg-accent"
+-          >
+-            <X size={11} />
+-          </button>
+-        </div>
+-      )}
+-
+       <Popover
+         forceFloating
+         open={mentionOpen}
+@@ -252,8 +241,8 @@ export function CommentComposer({
+ 
+             <textarea
+               ref={textareaRef}
+-              value={message}
+-              onChange={handleChange}
++              defaultValue={editingComment?.message ?? ""}
++              onInput={handleInput}
+               onKeyDown={handleKeyDown}
+               disabled={busy || !canCreate}
+               rows={1}
+@@ -293,4 +282,4 @@ export function CommentComposer({
+       </Popover>
+     </div>
+   )
+-}
+\ No newline at end of file
++}

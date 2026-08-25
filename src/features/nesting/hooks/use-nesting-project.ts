@@ -483,10 +483,11 @@ export function useNestingProject() {
       const lote = Number.isFinite(base) ? String(base + sheetIndex) : nomenclatura.lote
       const t = resolveExportThicknessMm(sheet)
       const espesor =
-        t > 0
-          ? (Number.isInteger(Math.round(t * 100) / 100)
-              ? String(Math.round(t * 100) / 100)
-              : (Math.round(t * 100) / 100).toFixed(2))
+        t != null && t > 0
+          ? (() => {
+              const r = Math.round(t * 100) / 100
+              return Number.isInteger(r) ? String(r) : r.toFixed(2)
+            })()
           : nomenclatura.espesor
       return {
         ...nomenclatura,

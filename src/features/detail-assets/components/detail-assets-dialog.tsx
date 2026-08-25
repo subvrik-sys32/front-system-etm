@@ -27,6 +27,8 @@ import {
 } from "../hooks/use-detail-assets"
 import type { DetailAsset } from "../types"
 import { DxfPreviewDialog } from "./dxf-preview-dialog"
+import { useRouter } from "next/navigation"
+import { resolveEntityFocusHref } from "@/features/notifications/utils/resolve-entity-focus-href"
 
 type Props = {
   open: boolean
@@ -71,7 +73,9 @@ export function DetailAssetsDialog({
   readOnly = false,
   onEditTask,
 }: Props) {
+  const router = useRouter()
   const isTask = Boolean(taskId)
+  const entityHref = resolveEntityFocusHref({ taskId, projectId })
   const taskQ = useTaskDetailAssets(taskId, open && isTask)
   const projectQ = useProjectDetailAssets(projectId, open && !isTask)
   const mutations = useDetailAssetMutations({ taskId, projectId })
@@ -529,6 +533,15 @@ export function DetailAssetsDialog({
         src={previewPhoto}
         title="Foto de detalle"
         alt="Foto de detalle"
+        onOpenEntity={
+          entityHref
+            ? () => {
+                onOpenChange(false)
+                setPreviewPhoto(null)
+                router.push(entityHref)
+              }
+            : undefined
+        }
       />
     </>
   )

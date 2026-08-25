@@ -15,6 +15,8 @@ type Props = {
   src: string | null
   title?: string
   alt?: string
+  /** Deeplink a tarea / proyecto (mismo contrato que notificaciones). */
+  onOpenEntity?: () => void
 }
 
 /**
@@ -27,6 +29,7 @@ export function PhotoViewerDialog({
   src,
   title = "Foto",
   alt = "Foto",
+  onOpenEntity,
 }: Props) {
   return (
     <Dialog open={open && Boolean(src)} onOpenChange={onOpenChange}>
@@ -43,7 +46,12 @@ export function PhotoViewerDialog({
               <img
                 src={src}
                 alt={alt}
-                className="mx-auto max-h-[min(70dvh,36rem)] w-full rounded-xl bg-muted object-contain"
+                onClick={() => onOpenEntity?.()}
+                className={
+                  onOpenEntity
+                    ? "mx-auto max-h-[min(70dvh,36rem)] w-full cursor-pointer rounded-xl bg-muted object-contain"
+                    : "mx-auto max-h-[min(70dvh,36rem)] w-full rounded-xl bg-muted object-contain"
+                }
               />
               <a
                 href={src}

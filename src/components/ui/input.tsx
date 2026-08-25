@@ -7,19 +7,9 @@ export const Input = React.forwardRef<
   HTMLInputElement,
   React.ComponentProps<"input">
 >(
-  ({ className, onFocus, ...props }, ref) => (
+  ({ className, ...props }, ref) => (
     <input
       ref={ref}
-      onFocus={event => {
-        const input = event.currentTarget
-        requestAnimationFrame(() => {
-          try {
-            const length = input.value.length
-            input.setSelectionRange(length, length)
-          } catch {}
-        })
-        onFocus?.(event)
-      }}
       className={cn(
         "h-9 w-full min-w-0 rounded-xl px-3.5",
         "border border-transparent",

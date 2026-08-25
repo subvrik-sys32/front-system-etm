@@ -7,7 +7,15 @@ export type VisualViewportFrame = {
   left: number
   width: number
   height: number
+  /** Estimación total del teclado. No usar como padding si el layout ya se achicó. */
   keyboardInset: number
+  /**
+   * Solo lo que tapa el contenido cuando el layout NO se redujo.
+   * Con `interactiveWidget: resizes-content` el layout ya baja → overlayInset = 0
+   * (evita el hueco enorme). Si el teclado tapa sin achicar body, eleva el composer
+   * (incluye barra superior de accesos iOS/Android).
+   */
+  overlayInset: number
   keyboardOpen: boolean
 }
 
@@ -26,6 +34,7 @@ function measure(): VisualViewportFrame {
       width: 0,
       height: 0,
       keyboardInset: 0,
+      overlayInset: 0,
       keyboardOpen: false,
     }
   }
@@ -47,6 +56,10 @@ function measure(): VisualViewportFrame {
     ? Math.max(0, Math.round(layoutH - vv.height - vv.offsetTop))
     : 0
   const keyboardInset = Math.max(layoutInset, covered)
+  // Layout ya absorbió el teclado → no paddear.
+  // Si no, paddear solo lo que visualmente tapa (barra de accesos incluida).
+  const overlayInset =
+    layoutInset >= KEYBOARD_THRESHOLD_PX ? 0 : covered
 
   return {
     top: vv ? Math.round(vv.offsetTop) : 0,
@@ -54,11 +67,12 @@ function measure(): VisualViewportFrame {
     width: vv ? Math.round(vv.width) : layoutW,
     height: vv ? Math.round(vv.height) : layoutH,
     keyboardInset,
+    overlayInset,
     keyboardOpen: keyboardInset >= KEYBOARD_THRESHOLD_PX,
   }
 }
 
-/** Solo el sheet (Vaul): ¿hay teclado? El dialog large no usa esto. */
+/** Viewport frame: popover/sheet + composer (usa overlayInset). */
 export function useVisualViewportFrame(): VisualViewportFrame {
   const [frame, setFrame] = React.useState<VisualViewportFrame>(measure)
 

@@ -48,7 +48,8 @@ export function CommentComposer({
   const { has } = usePermissions()
   const canCreate = isEditing || has(PermissionCode.COMMENT_CREATE)
   const busy = updating
-  const { keyboardInset } = useVisualViewportFrame()
+  // overlayInset: 0 si layout ya se achicó; si no, eleva sobre barra del teclado.
+  const { overlayInset } = useVisualViewportFrame()
 
   useEffect(() => {
     fieldRef.current?.setValue(editingComment?.message ?? "")
@@ -124,7 +125,7 @@ export function CommentComposer({
   return (
     <div
       className="flex flex-col gap-1 rounded-2xl bg-foreground/[0.06] px-2 py-1"
-      style={keyboardInset ? { paddingBottom: keyboardInset } : undefined}
+      style={overlayInset > 0 ? { paddingBottom: overlayInset } : undefined}
     >
       {showContext && (
         <div className="flex items-start gap-2 rounded-xl bg-foreground/[0.04] px-2.5 py-2">

@@ -31,9 +31,16 @@ type Props = {
 }
 
 /**
- * Shell alineado a ExportDialog:
- * header fijo → body ScrollArea único → footer fijo.
- * Desktop: h 85vh. Mobile: max-h-dvh (forms wizard).
+ * Contrato FormDialog
+ * ──────────────────
+ * Estructura: header fijo → body ScrollArea → footer fijo.
+ *
+ * Mobile shell (isMobile: portrait Y landscape):
+ *   pantalla completa (size=large en DialogContent), rounded-none,
+ *   sin card centrada. Mismo look al rotar.
+ *
+ * Desktop / tablet (no mobile shell):
+ *   card centrada max-w-2xl, h ~85vh, rounded-2xl.
  */
 export function FormDialog({
   open,
@@ -63,11 +70,12 @@ export function FormDialog({
       <DialogContent
         size="large"
         className={cn(
-          "flex flex-col gap-0 overflow-hidden rounded-2xl p-0 text-foreground shadow-xs",
+          "flex flex-col gap-0 overflow-hidden p-0 text-foreground shadow-xs bg-popover",
+          // Mobile form (incl. landscape): full shell — DialogContent size=large aplica el resto.
+          // Desktop: card form centrada.
           isMobile
-            ? "max-h-dvh w-180 max-w-180 bg-popover"
-            : // Mismo contrato que ExportDialog; un poco más ancho por campos de form
-              "h-[85vh] max-h-[85vh] w-full max-w-2xl bg-popover",
+            ? "h-full w-full max-w-none rounded-none"
+            : "h-[85vh] max-h-[85vh] w-full max-w-2xl rounded-2xl",
         )}
       >
         <div className="shrink-0">

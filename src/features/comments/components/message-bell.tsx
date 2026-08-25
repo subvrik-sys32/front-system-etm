@@ -12,6 +12,14 @@ import {
 import { SearchField } from "@/shared/ui/search-field/search-field"
 
 import { cn } from "@/shared/utils/utils"
+import {
+  POPOVER_TITLE,
+  POPOVER_PRIMARY,
+  POPOVER_BODY,
+  POPOVER_META,
+  POPOVER_ACTION,
+  POPOVER_EMPTY,
+} from "@/shared/ui/popover-typography/popover-typography"
 import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { ALERT_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
@@ -171,17 +179,17 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
           {loading ? (
             <div className="flex min-h-48 flex-col items-center justify-center gap-2">
               <Spinner size={18} />
-              <p className="text-sm text-muted-foreground">Cargando...</p>
+              <p className={POPOVER_EMPTY}>Cargando...</p>
             </div>
           ) : error ? (
             <div className="flex min-h-48 flex-col items-center justify-center gap-2 px-4 text-center">
               <MessageSquare size={28} className="text-muted-foreground/80" />
-              <p className="text-sm text-muted-foreground">No se pudieron cargar</p>
+              <p className={POPOVER_EMPTY}>No se pudieron cargar</p>
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex min-h-48 flex-col items-center justify-center gap-2 px-4 text-center">
               <CheckCircle2 size={28} className="text-muted-foreground/80" />
-              <p className="text-sm text-muted-foreground">
+              <p className={POPOVER_EMPTY}>
                 {search.trim() ? "Sin resultados" : "Aún no escribiste mensajes"}
               </p>
             </div>
@@ -225,15 +233,15 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
                         onClick={() => openComment(c)}
                         className="w-full max-w-full overflow-hidden rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-foreground/5"
                       >
-                        <div className="flex min-w-0 items-center gap-1.5 text-xs">
-                          <span className="min-w-0 flex-1 truncate text-foreground">
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <span className={cn("min-w-0 flex-1 truncate", POPOVER_PRIMARY)}>
                             {ctx || scopeBadge(c)}
                           </span>
-                          <span className="shrink-0 text-[10px] text-muted-foreground/80">
+                          <span className={cn("shrink-0", POPOVER_META)}>
                             {formatCommentDate(c.createdAt)}
                           </span>
                         </div>
-                        <p className="mt-0.5 flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                        <p className={cn("mt-0.5 flex items-center gap-1.5 uppercase tracking-wide", POPOVER_META)}>
                           {scopeBadge(c)}
                           {typeof isHistorical === "boolean" && (
                             <span
@@ -263,11 +271,11 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
                             </div>
                           )}
                           {c.message ? (
-                            <p className="line-clamp-1 min-w-0 flex-1 overflow-hidden break-all text-xs text-muted-foreground">
+                            <p className={cn("line-clamp-1 min-w-0 flex-1 overflow-hidden break-all", POPOVER_BODY)}>
                               {c.message}
                             </p>
                           ) : c.imageUrl ? (
-                            <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <p className={cn("flex items-center gap-1", POPOVER_BODY)}>
                               <ImageIcon size={12} /> Foto
                             </p>
                           ) : null}
@@ -284,7 +292,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
 
       <div className="flex h-10 shrink-0 items-center justify-center p-2 select-none">
         {comments.length === 0 && !loading ? (
-          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <div className={cn("flex items-center justify-center gap-1.5", POPOVER_META)}>
             <CheckCircle2 size={13} className="shrink-0 text-muted-foreground/80" />
             Sin mensajes
           </div>
@@ -294,7 +302,10 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
             onClick={() => {
               void queryClient.invalidateQueries({ queryKey: ["comments", "mine"] })
             }}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
+            className={cn(
+              "flex w-full items-center justify-center gap-1.5 rounded-lg py-2 transition-colors hover:bg-foreground/5 hover:text-foreground",
+              POPOVER_ACTION,
+            )}
           >
             Actualizar
           </button>
@@ -334,7 +345,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
         className="z-40 flex h-[min(32rem,75dvh)] w-90 max-w-[min(22.5rem,calc(100vw-1.5rem))] flex-col overflow-hidden border-none p-0 text-foreground shadow-xs select-none"
       >
         <div className="flex shrink-0 items-center px-3.5 pt-3">
-          <span className="text-sm font-semibold text-foreground">Mensajes</span>
+          <span className={POPOVER_TITLE}>Mensajes</span>
         </div>
         {panelBody}
       </PopoverContent>

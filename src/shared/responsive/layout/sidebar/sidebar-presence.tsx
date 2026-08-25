@@ -3,6 +3,11 @@
 import { useMemo, useState, useRef } from "react"
 import { Users, ChevronDown, ChevronUp } from "lucide-react"
 import { SearchField } from "@/shared/ui/search-field/search-field"
+import {
+  POPOVER_PRIMARY,
+  POPOVER_META,
+  POPOVER_ACTION,
+} from "@/shared/ui/popover-typography/popover-typography"
 
 import { cn } from "@/shared/utils/utils"
 import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
@@ -72,7 +77,7 @@ function UserRow({ user }: { user: PresenceUser }) {
         </div>
 
         <div className="min-w-0 flex-1">
-          <span className="block truncate text-xs font-medium text-muted-foreground">
+          <span className={cn("block truncate", POPOVER_PRIMARY)}>
             {user.name}
           </span>
         </div>
@@ -80,9 +85,9 @@ function UserRow({ user }: { user: PresenceUser }) {
 
       <div className="flex items-center gap-1.5 shrink-0 pl-2">
         {user.online ? (
-          <span className="text-[10px] text-muted-foreground font-mono">Activo</span>
+          <span className={cn(POPOVER_META, "font-mono")}>Activo</span>
         ) : user.lastSeenAt ? (
-          <span className="text-[10px] text-muted-foreground truncate max-w-27.5">
+          <span className={cn(POPOVER_META, "max-w-27.5 truncate")}>
             Hace {formatNotificationDate(user.lastSeenAt)}
           </span>
         ) : null}

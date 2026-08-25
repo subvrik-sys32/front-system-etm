@@ -92,7 +92,10 @@ export function DialogContent({
   ...props
 }: DialogContentProps) {
   const { isMobile } = useResponsive()
-  const isFullscreenMobile = size === "large" && isMobile
+  // Contrato form mobile (portrait + landscape del shell móvil):
+  // size=large + isMobile → pantalla completa, no card centrada.
+  // Landscape NO cambia el contrato: mismo form que portrait.
+  const isMobileForm = size === "large" && isMobile
 
   return (
     <DialogPortal>
@@ -105,9 +108,8 @@ export function DialogContent({
         className={cn(
           "fixed left-1/2 top-1/2 z-40 w-full max-w-lg max-h-[90vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden overscroll-contain rounded-2xl bg-popover p-6 shadow-xs outline-none select-none",
           className,
-          // Móvil large: llena el body. resizes-content achica el body;
-          // esta caja es h-full → el flex del consumidor (header / hilo / input) hace el resto.
-          isFullscreenMobile && [
+          // Form mobile: llena el body (resizes-content). Header/body/footer del FormDialog.
+          isMobileForm && [
             "inset-0",
             "left-0",
             "right-0",
@@ -132,10 +134,10 @@ export function DialogContent({
             className={cn(
               "absolute right-3 top-3 z-10",
               DIALOG_CLOSE_BTN_CLASS,
-              isFullscreenMobile && "h-9 w-9 bg-foreground/5"
+              isMobileForm && "h-9 w-9 bg-foreground/5"
             )}
           >
-            <X size={isFullscreenMobile ? 18 : 16} strokeWidth={2} />
+            <X size={isMobileForm ? 18 : 16} strokeWidth={2} />
           </DialogClose>
         )}
       </DialogPrimitive.Content>

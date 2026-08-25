@@ -24,6 +24,8 @@ import { CommentList } from "./comment-list"
 import { EmptyComments } from "./empty-comments"
 import type { Comment, CommentTarget } from "../types/comment.types"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { cn } from "@/shared/utils/utils"
 
 type Props = {
   target: CommentTarget
@@ -46,6 +48,7 @@ export function CommentHistoryDialog({
   onEditComment,
   readOnly = false,
 }: Props) {
+  const { isMobile } = useResponsive()
   const [search, setSearch] = useState("")
   const [pendingDelete, setPendingDelete] = useState<Comment | null>(null)
   const [editingComment, setEditingComment] = useState<Comment | null>(null)
@@ -110,7 +113,13 @@ export function CommentHistoryDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           size="large"
-          className="flex h-full flex-col gap-0 overflow-hidden p-0 text-foreground shadow-xs sm:h-[min(40rem,85dvh)] sm:max-h-[85dvh] sm:max-w-180 sm:rounded-2xl"
+          className={cn(
+            "flex flex-col gap-0 overflow-hidden p-0 text-foreground shadow-xs bg-popover",
+            // Mismo contrato FormDialog: mobile (portrait+landscape) full; desktop card.
+            isMobile
+              ? "h-full w-full max-w-none rounded-none"
+              : "h-[min(40rem,85dvh)] max-h-[85dvh] w-full max-w-180 rounded-2xl",
+          )}
           onPointerDownOutside={preventNestedDialogClose}
           onInteractOutside={preventNestedDialogClose}
         >

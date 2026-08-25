@@ -8,6 +8,12 @@ import { Spinner } from "@/shared/ui/spinner/spinner"
 import { toast } from "sonner"
 
 import { cn } from "@/shared/utils/utils"
+import {
+  POPOVER_TITLE,
+  POPOVER_EMPTY,
+  POPOVER_META,
+  POPOVER_ACTION,
+} from "@/shared/ui/popover-typography/popover-typography"
 import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { ALERT_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
 import { useSidebarStore } from "@/shared/stores/sidebar-store"
@@ -163,7 +169,10 @@ export function NotificationBell({
           type="button"
           onClick={() => markAllAsRead()}
           disabled={loading || visibleNotifications.length === 0}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground disabled:cursor-not-allowed disabled:text-muted-foreground/70 disabled:hover:bg-transparent"
+          className={cn(
+            "flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors hover:bg-foreground/10 hover:text-foreground disabled:cursor-not-allowed disabled:text-muted-foreground/70 disabled:hover:bg-transparent",
+            POPOVER_ACTION,
+          )}
         >
           <Eraser size={13} />
           Limpiar
@@ -185,7 +194,7 @@ export function NotificationBell({
           {loading ? (
             <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
               <Spinner size={20} className="text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">
+              <p className={POPOVER_META}>
                 Cargando notificaciones...
               </p>
             </div>
@@ -194,7 +203,7 @@ export function NotificationBell({
               <div className="flex size-10 items-center justify-center rounded-full bg-foreground/5 text-muted-foreground">
                 <Bell size={18} />
               </div>
-              <p className="text-xs font-medium text-muted-foreground">
+              <p className={cn(POPOVER_EMPTY, "font-medium")}>
                 No tienes notificaciones pendientes
               </p>
             </div>
@@ -220,7 +229,7 @@ export function NotificationBell({
 
       <div className="flex h-10 shrink-0 items-center justify-center p-2 select-none">
         {notifications.length === 0 && !loading ? (
-          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <div className={cn("flex items-center justify-center gap-1.5", POPOVER_META)}>
             <CheckCircle2 size={13} className="shrink-0 text-muted-foreground/80" />
             Estás al día
           </div>
@@ -228,7 +237,10 @@ export function NotificationBell({
           <button
             type="button"
             onClick={handleOpenHistory}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
+            className={cn(
+              "flex w-full items-center justify-center gap-1.5 rounded-lg py-2 transition-colors hover:bg-foreground/5 hover:text-foreground",
+              POPOVER_ACTION,
+            )}
           >
             <History size={13} />
             Ver más
@@ -266,7 +278,7 @@ export function NotificationBell({
             className="z-40 flex w-full min-w-90 max-w-lg flex-col overflow-hidden p-0 border-none text-foreground shadow-xs select-none"
           >
             <div className="flex shrink-0 items-center px-3.5 pt-3">
-              <span className="text-sm font-semibold text-foreground">
+              <span className={POPOVER_TITLE}>
                 Notificaciones
               </span>
             </div>

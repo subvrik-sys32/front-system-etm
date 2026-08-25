@@ -68,7 +68,8 @@ export function CommentComposer({
   const detectMentionQuery = (value: string, cursor: number) => {
     const upToCursor = value.slice(0, cursor)
     const match = upToCursor.match(/@([a-zA-Z0-9_.]*)$/)
-    setMentionQuery(match ? match[1] : null)
+    const next = match ? match[1] : null
+    setMentionQuery(prev => (prev === next ? prev : next))
   }
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -230,7 +231,15 @@ export function CommentComposer({
         </div>
       )}
 
-      <div className="flex items-center gap-1">
+      <Popover
+        forceFloating
+        open={mentionOpen}
+        onOpenChange={next => {
+          if (!next) setMentionQuery(null)
+        }}
+      >
+        <PopoverAnchor asChild>
+          <div className="flex items-center gap-1">
             {!isEditing && (
               <div className="flex size-9 shrink-0 items-center justify-center">
                 <IconAction
@@ -272,25 +281,16 @@ export function CommentComposer({
                 <Send className="size-4" />
               )}
             </button>
-      </div>
+          </div>
+        </PopoverAnchor>
 
-      {mentionOpen && (
-        <Popover
-          forceFloating
-          open
-          onOpenChange={next => {
-            if (!next) setMentionQuery(null)
-          }}
-        >
-          <PopoverAnchor asChild>
-            <span className="sr-only" />
-          </PopoverAnchor>
+        {mentionOpen ? (
           <MentionSuggestions
             users={filteredUsers}
             onSelect={handleSelectMention}
           />
-        </Popover>
-      )}
+        ) : null}
+      </Popover>
     </div>
   )
 }

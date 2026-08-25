@@ -51,15 +51,7 @@ export function PhotoViewerDialog({
               <img
                 src={src}
                 alt={alt}
-                onClick={e => {
-                  e.stopPropagation()
-                  onOpenEntity?.()
-                }}
-                className={
-                  onOpenEntity
-                    ? "mx-auto max-h-[min(70dvh,36rem)] w-full cursor-pointer rounded-xl bg-muted object-contain"
-                    : "mx-auto max-h-[min(70dvh,36rem)] w-full rounded-xl bg-muted object-contain"
-                }
+                className="mx-auto max-h-[min(70dvh,36rem)] w-full rounded-xl bg-muted object-contain"
               />
               <div className="flex flex-col gap-2">
                 {onOpenEntity && (

@@ -251,11 +251,9 @@ export function DetailAssetsDialog({
                                 })
                               }}
                             />
-                            {inherited && (
-                              <span className="absolute bottom-1 left-1 rounded bg-background/90 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
-                                Proyecto
-                              </span>
-                            )}
+                            <span className="absolute bottom-1 left-1 rounded bg-background/90 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+                              {scope === "project" ? "Proyecto" : "Tarea"}
+                            </span>
                             {!readOnly && !inherited && (
                               <button
                                 type="button"

@@ -126,7 +126,7 @@ function ProcessDesktopKpiStrip({
     )
   }
 
-  const prodColor = "#f99d9d"
+  const prodColor = "#4F46E5"
   const materialColor = task.material.color ?? "#64748B"
   const timeColor = "#0EA5E9"
   const progressColor = "#22C55E"

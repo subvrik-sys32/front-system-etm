@@ -16,6 +16,7 @@ import { parsePdf } from "../cad/pdf-parser"
 import { parseCadLocal } from "../cad/parse-cad-local"
 import { scanMaterialData, type MaterialData } from "../cad/thickness-scanner"
 import type { PieceOutline, SubEntity } from "../engine/types"
+import { toast } from "sonner"
 
 export interface PieceListHandle {
   triggerImport: () => void
@@ -237,11 +238,22 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
       continue
     }
 
-    const messages: string[] = []
-    if (duplicated.length > 0) messages.push(`Duplicados: ${duplicated.join(", ")}`)
-    if (rejected.length > 0) messages.push(`Rechazados: ${rejected.join(", ")}`)
-
-    setErrorMsg(messages.length > 0 ? messages.join(" | ") : null)
+    if (duplicated.length > 0) {
+      toast.message(
+        duplicated.length === 1
+          ? "Ese archivo ya está en la lista"
+          : `${duplicated.length} archivos ya estaban en la lista`,
+      )
+    }
+    if (rejected.length > 0) {
+      setErrorMsg(
+        rejected.length === 1
+          ? rejected[0]
+          : `${rejected.length} archivos no se importaron`,
+      )
+    } else {
+      setErrorMsg(null)
+    }
     if (newRows.length > 0) onAddCad(newRows)
     } finally {
       setImporting(false)

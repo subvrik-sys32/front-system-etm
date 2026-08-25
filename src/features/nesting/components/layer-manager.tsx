@@ -24,41 +24,48 @@ export function LayerManager({ layers, hiddenKeys, onToggle, onShowAll }: LayerM
 
   return (
     <div className="flex flex-col rounded-xl bg-muted/80 p-1 transition-colors dark:bg-foreground/5">
-      {/* Header: no anidar button dentro de button */}
-      <div className="flex w-full items-center gap-1 rounded-lg px-1 py-1">
+      <div className="flex w-full items-center justify-between rounded-lg px-2 py-2">
         <button
           type="button"
           onClick={() => setIsExpanded((prev) => !prev)}
-          className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2 py-2 text-left hover:bg-foreground/5"
+          className="flex min-w-0 flex-1 items-center gap-2 text-left hover:bg-foreground/5 rounded-lg"
         >
           <Layers className="h-3.5 w-3.5 shrink-0 text-primary" />
           <span className="truncate text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Capas ({layers.length})
           </span>
-          <ChevronRight
-            className={`ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
-              isExpanded ? "rotate-90" : ""
-            }`}
-          />
         </button>
-
-        {hiddenKeys.size > 0 && (
+        <div className="flex shrink-0 items-center gap-1">
+          {hiddenKeys.size > 0 && (
+            <button
+              type="button"
+              onClick={onShowAll}
+              className="rounded-lg px-2 py-1 text-[10px] text-primary hover:bg-foreground/5"
+            >
+              Mostrar todas
+            </button>
+          )}
           <button
             type="button"
-            onClick={onShowAll}
-            className="shrink-0 rounded-lg px-2 py-1.5 text-[10px] text-primary hover:bg-foreground/5 hover:text-primary"
+            onClick={() => setIsExpanded((prev) => !prev)}
+            className="rounded-lg p-0.5"
+            aria-label={isExpanded ? "Colapsar capas" : "Expandir capas"}
           >
-            Mostrar todas
+            <ChevronRight
+              className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
+                isExpanded ? "rotate-90" : ""
+              }`}
+            />
           </button>
-        )}
+        </div>
       </div>
 
       <div
-        className={`flex flex-col gap-1 overflow-hidden transition-all duration-200 ease-in-out ${
-          isExpanded ? "mt-2 max-h-125 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+        className={`flex flex-col gap-3 overflow-hidden transition-all duration-200 ease-in-out ${
+          isExpanded ? "mt-2 max-h-150 opacity-100 p-1" : "max-h-0 opacity-0 pointer-events-none"
         }`}
       >
-        <div className="flex flex-col gap-1 rounded-lg bg-background p-2.5 dark:bg-foreground/5">
+        <div className="flex flex-col rounded-lg bg-background p-2.5 dark:bg-foreground/5">
           {layers.map((layer) => {
             const isHidden = hiddenKeys.has(layer.key.toUpperCase())
             return (
@@ -66,7 +73,7 @@ export function LayerManager({ layers, hiddenKeys, onToggle, onShowAll }: LayerM
                 key={layer.key}
                 type="button"
                 onClick={() => onToggle(layer.key)}
-                className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition-colors ${
+                className={`flex items-center justify-between gap-2 px-1 py-1.5 text-left text-xs last:border-0 transition-colors ${
                   isHidden ? "text-muted-foreground/80" : "text-foreground hover:bg-foreground/5"
                 }`}
               >

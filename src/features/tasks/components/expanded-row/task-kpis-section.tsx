@@ -45,11 +45,14 @@ function KpiSignalChip({
   color,
   value,
   title,
+  variant = "subtle",
 }: {
   icon: typeof Layers3
   color: string
   value: string
   title: string
+  /** colors en dialog usan solid — misma fuente visual. */
+  variant?: "subtle" | "solid"
 }) {
   return (
     <span title={title} className="inline-flex shrink-0">
@@ -57,6 +60,7 @@ function KpiSignalChip({
         label={value}
         color={color}
         iconComponent={Icon}
+        variant={variant}
         width="content"
       />
     </span>
@@ -268,6 +272,7 @@ export function TaskKpisSection({
       color: string
       value: string
       title: string
+      variant?: "subtle" | "solid"
     }[] = [
       {
         key: "lote",
@@ -297,9 +302,11 @@ export function TaskKpisSection({
         ? {
             key: "pintura",
             icon: Palette,
+            // Misma fuente que EntitySelect colors (task.color.color) + solid como el dialog
             color: task.color?.color ?? "#64748B",
             value: task.color?.name.toUpperCase() ?? "—",
             title: task.paintKg ? `Pintura · ${task.paintKg} KG` : "Pintura",
+            variant: "solid" as const,
           }
         : {
             key: "acabado",

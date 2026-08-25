@@ -182,6 +182,13 @@ export function TaskExpandedRow({
 
   }, [activeView, commentsDialogOpen, isMobile, task.id, setActiveTarget])
 
+  // Compact: no toggle Workflow↔KPIs (ambos van juntos en el panel).
+  useEffect(() => {
+    if (isCompact && activeView === "kpis") {
+      setActiveView("workflow")
+    }
+  }, [isCompact, activeView])
+
   const handleViewChange = (
     next: "workflow" | "comments" | "kpis",
   ) => {
@@ -208,14 +215,18 @@ export function TaskExpandedRow({
               options={[
                 {
                   value: "workflow",
-                  label: "Workflow",
+                  label: isCompact ? "Detalle" : "Workflow",
                   icon: ClipboardList,
                 },
-                {
-                  value: "kpis",
-                  label: "KPIs",
-                  icon: Activity,
-                },
+                ...(!isCompact
+                  ? ([
+                      {
+                        value: "kpis" as const,
+                        label: "KPIs",
+                        icon: Activity,
+                      },
+                    ] as const)
+                  : []),
                 {
                   value: "comments",
                   label: "Mensajes",
@@ -254,7 +265,19 @@ export function TaskExpandedRow({
           panels={[
             {
               value: "workflow",
-              content: (
+              // Compact: ruta + KPIs juntos (sin toggle entre ellos).
+              // Desktop: solo panel producción (KPIs en header al elegir tab KPIs).
+              content: isCompact ? (
+                <div className="flex w-full flex-col gap-3">
+                  <TaskProductionPanel
+                    task={task}
+                    indicatorsExpanded={indicatorsExpanded}
+                    onIndicatorsExpandedChange={setIndicatorsExpanded}
+                    showCollapseButton
+                  />
+                  <TaskKpisSection task={task} />
+                </div>
+              ) : (
                 <TaskProductionPanel
                   task={task}
                   indicatorsExpanded={indicatorsExpanded}
@@ -265,10 +288,8 @@ export function TaskExpandedRow({
             },
             {
               value: "kpis",
-              // Desktop: KPIs viven en el header. Móvil: panel debajo.
-              content: isMobile ? (
-                <TaskKpisSection task={task} />
-              ) : null,
+              // Solo desktop (header). Compact no usa este tab.
+              content: null,
             },
             // Mensajes: CommentHistoryDialog (no panel inline)
           ]}

@@ -1,0 +1,124 @@
+diff --git a/src/features/tasks/components/expanded-row/task-expanded-row.tsx b/src/features/tasks/components/expanded-row/task-expanded-row.tsx
+index 8671f92..8183bae 100644
+--- a/src/features/tasks/components/expanded-row/task-expanded-row.tsx
++++ b/src/features/tasks/components/expanded-row/task-expanded-row.tsx
+@@ -182,6 +182,13 @@ export function TaskExpandedRow({
+ 
+   }, [activeView, commentsDialogOpen, isMobile, task.id, setActiveTarget])
+ 
++  // Compact: no toggle Workflow↔KPIs (ambos van juntos en el panel).
++  useEffect(() => {
++    if (isCompact && activeView === "kpis") {
++      setActiveView("workflow")
++    }
++  }, [isCompact, activeView])
++
+   const handleViewChange = (
+     next: "workflow" | "comments" | "kpis",
+   ) => {
+@@ -208,14 +215,18 @@ export function TaskExpandedRow({
+               options={[
+                 {
+                   value: "workflow",
+-                  label: "Workflow",
++                  label: isCompact ? "Detalle" : "Workflow",
+                   icon: ClipboardList,
+                 },
+-                {
+-                  value: "kpis",
+-                  label: "KPIs",
+-                  icon: Activity,
+-                },
++                ...(!isCompact
++                  ? ([
++                      {
++                        value: "kpis" as const,
++                        label: "KPIs",
++                        icon: Activity,
++                      },
++                    ] as const)
++                  : []),
+                 {
+                   value: "comments",
+                   label: "Mensajes",
+@@ -254,7 +265,19 @@ export function TaskExpandedRow({
+           panels={[
+             {
+               value: "workflow",
+-              content: (
++              // Compact: ruta + KPIs juntos (sin toggle entre ellos).
++              // Desktop: solo panel producción (KPIs en header al elegir tab KPIs).
++              content: isCompact ? (
++                <div className="flex w-full flex-col gap-3">
++                  <TaskProductionPanel
++                    task={task}
++                    indicatorsExpanded={indicatorsExpanded}
++                    onIndicatorsExpandedChange={setIndicatorsExpanded}
++                    showCollapseButton
++                  />
++                  <TaskKpisSection task={task} />
++                </div>
++              ) : (
+                 <TaskProductionPanel
+                   task={task}
+                   indicatorsExpanded={indicatorsExpanded}
+@@ -265,10 +288,8 @@ export function TaskExpandedRow({
+             },
+             {
+               value: "kpis",
+-              // Desktop: KPIs viven en el header. Móvil: panel debajo.
+-              content: isMobile ? (
+-                <TaskKpisSection task={task} />
+-              ) : null,
++              // Solo desktop (header). Compact no usa este tab.
++              content: null,
+             },
+             // Mensajes: CommentHistoryDialog (no panel inline)
+           ]}
+diff --git a/src/features/tasks/components/expanded-row/task-kpis-section.tsx b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+index d829647..a838edd 100644
+--- a/src/features/tasks/components/expanded-row/task-kpis-section.tsx
++++ b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+@@ -45,11 +45,14 @@ function KpiSignalChip({
+   color,
+   value,
+   title,
++  variant = "subtle",
+ }: {
+   icon: typeof Layers3
+   color: string
+   value: string
+   title: string
++  /** colors en dialog usan solid — misma fuente visual. */
++  variant?: "subtle" | "solid"
+ }) {
+   return (
+     <span title={title} className="inline-flex shrink-0">
+@@ -57,6 +60,7 @@ function KpiSignalChip({
+         label={value}
+         color={color}
+         iconComponent={Icon}
++        variant={variant}
+         width="content"
+       />
+     </span>
+@@ -268,6 +272,7 @@ export function TaskKpisSection({
+       color: string
+       value: string
+       title: string
++      variant?: "subtle" | "solid"
+     }[] = [
+       {
+         key: "lote",
+@@ -297,9 +302,11 @@ export function TaskKpisSection({
+         ? {
+             key: "pintura",
+             icon: Palette,
++            // Misma fuente que EntitySelect colors (task.color.color) + solid como el dialog
+             color: task.color?.color ?? "#64748B",
+             value: task.color?.name.toUpperCase() ?? "—",
+             title: task.paintKg ? `Pintura · ${task.paintKg} KG` : "Pintura",
++            variant: "solid" as const,
+           }
+         : {
+             key: "acabado",

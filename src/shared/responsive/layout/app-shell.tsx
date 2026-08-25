@@ -31,19 +31,27 @@ function DesktopTopBar() {
 
   // Overlay como mobile: contenido scrollea debajo con blur.
   return (
-    <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-11 items-center gap-2 overflow-visible px-3">
+    <header
+      className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center gap-2 overflow-visible px-3"
+      style={{
+        paddingTop: "env(safe-area-inset-top, 0px)",
+        height: "calc(2.75rem + env(safe-area-inset-top, 0px))",
+      }}
+    >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-14 backdrop-blur-xl"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 backdrop-blur-xl"
         style={{
+          height: "calc(3.5rem + env(safe-area-inset-top, 0px))",
           maskImage: "linear-gradient(to bottom, black 40%, transparent)",
           WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent)",
         }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-14 bg-background/65"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 bg-background/65"
         style={{
+          height: "calc(3.5rem + env(safe-area-inset-top, 0px))",
           maskImage: "linear-gradient(to bottom, black 30%, transparent)",
           WebkitMaskImage: "linear-gradient(to bottom, black 30%, transparent)",
         }}

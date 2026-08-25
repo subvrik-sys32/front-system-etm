@@ -72,7 +72,7 @@ export function PopoverContent({
   // de layout actual contra el máximo visto, no innerHeight vs
   // visualViewport — esa comparación daba ~0 bajo resizes-content, que es
   // el modo que usa el viewport meta ahora).
-  const { keyboardOpen } = useVisualViewportFrame()
+  const { keyboardOpen, height: vvHeight } = useVisualViewportFrame()
 
   // Solo expandir cuando hay teclado real + foco (no F12 sin teclado visual)
   const expandForKeyboard = isInputFocused && keyboardOpen
@@ -82,8 +82,10 @@ export function PopoverContent({
   }, [isOpen])
 
   if (isSheet) {
+    // Con teclado: altura real del visualViewport (no dvh suelto).
+    // Sin teclado: medida del contenido, capped.
     const sheetHeight = expandForKeyboard
-      ? `${SHEET_CONFIG.FIXED_HEIGHT_RATIO * 100}dvh`
+      ? `${Math.max(200, Math.round(vvHeight * SHEET_CONFIG.FIXED_HEIGHT_RATIO))}px`
       : measuredHeight != null
         ? `min(${measuredHeight + SHEET_CONFIG.CHROME_OVERHEAD_PX}px, ${SHEET_CONFIG.MAX_HEIGHT_RATIO * 100}dvh)`
         : undefined

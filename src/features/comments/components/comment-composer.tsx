@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, ChangeEvent } from "react"
 import { Camera, Check, ImageIcon, Pencil, Reply, Send, X } from "lucide-react"
-import { IconAction } from "@/shared/ui/actions/icon-action"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { useVisualViewportFrame } from "@/components/ui/popover/use-visual-viewport-frame"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
@@ -48,8 +47,12 @@ export function CommentComposer({
   const { has } = usePermissions()
   const canCreate = isEditing || has(PermissionCode.COMMENT_CREATE)
   const busy = updating
-  // overlayInset: 0 si layout ya se achicó; si no, eleva sobre barra del teclado.
-  const { overlayInset } = useVisualViewportFrame()
+  // overlayInset: 0 si layout ya se achicó; si no, eleva sobre el teclado.
+  // CHROME_GAP: residual barra de accesos iOS/Android (~10px) solo con teclado.
+  const { overlayInset, keyboardOpen } = useVisualViewportFrame()
+  const KEYBOARD_CHROME_GAP = 10
+  const padBottom =
+    Math.max(0, overlayInset) + (keyboardOpen ? KEYBOARD_CHROME_GAP : 0)
 
   useEffect(() => {
     fieldRef.current?.setValue(editingComment?.message ?? "")
@@ -125,7 +128,7 @@ export function CommentComposer({
   return (
     <div
       className="flex flex-col gap-1 rounded-2xl bg-foreground/[0.06] px-2 py-1"
-      style={overlayInset > 0 ? { paddingBottom: overlayInset } : undefined}
+      style={padBottom > 0 ? { paddingBottom: padBottom } : undefined}
     >
       {showContext && (
         <div className="flex items-start gap-2 rounded-xl bg-foreground/[0.04] px-2.5 py-2">
@@ -203,13 +206,16 @@ export function CommentComposer({
         ) : null}
           <div className="flex items-center gap-1">
             {!isEditing && (
-              <div className="flex size-8 shrink-0 items-center justify-center">
-                <IconAction
-                  icon={Camera}
-                  disabled={!canCreate}
-                  onClick={() => fileInputRef.current?.click()}
-                />
-              </div>
+              <button
+                type="button"
+                aria-label="Adjuntar foto"
+                title="Adjuntar foto"
+                disabled={!canCreate}
+                onClick={() => fileInputRef.current?.click()}
+                className="flex size-8 shrink-0 items-center justify-center rounded-[10px] text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground disabled:opacity-40"
+              >
+                <Camera size={16} strokeWidth={2.25} />
+              </button>
             )}
 
             <CommentComposerField

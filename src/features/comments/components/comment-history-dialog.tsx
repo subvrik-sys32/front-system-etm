@@ -79,6 +79,17 @@ export function CommentHistoryDialog({
     )
   }, [comments, search])
 
+  const threadEndRef = useRef<HTMLDivElement>(null)
+
+  // Chat: anclar al final (mensajes nacen desde el input hacia arriba).
+  useEffect(() => {
+    if (!open || loading) return
+    const id = requestAnimationFrame(() => {
+      threadEndRef.current?.scrollIntoView({ block: "end" })
+    })
+    return () => cancelAnimationFrame(id)
+  }, [open, loading, filteredComments.length])
+
   const handleEdit = (comment: Comment) => {
     if (onEditComment) {
       onEditComment(comment)
@@ -128,7 +139,7 @@ export function CommentHistoryDialog({
 
           {/* Thread — área de burbujas */}
           <ScrollArea className="min-h-0 flex-1">
-            <div className="flex flex-col gap-3 px-4 py-4">
+            <div className="flex min-h-full flex-col justify-end gap-3 px-4 py-4">
               {loading ? (
                 <div className="flex min-h-48 flex-col items-center justify-center gap-2.5">
                   <Spinner size={18} />
@@ -139,12 +150,15 @@ export function CommentHistoryDialog({
                   <EmptyComments />
                 </div>
               ) : (
-                <CommentList
-                  comments={filteredComments}
-                  onEdit={handleEdit}
-                  onDelete={setPendingDelete}
-                  onReply={readOnly ? undefined : setReplyingTo}
-                />
+                <>
+                  <CommentList
+                    comments={filteredComments}
+                    onEdit={handleEdit}
+                    onDelete={setPendingDelete}
+                    onReply={readOnly ? undefined : setReplyingTo}
+                  />
+                  <div ref={threadEndRef} aria-hidden className="h-px w-full shrink-0" />
+                </>
               )}
             </div>
           </ScrollArea>

@@ -57,7 +57,8 @@ export function useChromeInset(options: Options = {}): CSSProperties {
     }
   }
 
+  // Desktop/tablet: despejar topbar + safe-area (notch / barra del browser).
   return {
-    paddingTop: DESKTOP_TOP_BAR_HEIGHT_PX,
+    paddingTop: `calc(${DESKTOP_TOP_BAR_HEIGHT_PX}px + env(safe-area-inset-top, 0px))`,
   }
 }

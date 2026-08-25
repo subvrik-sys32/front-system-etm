@@ -19,16 +19,9 @@ type Props = {
   onEscape?: () => void
 }
 
-const MAX_FIELD_PX = 96
-
 function mentionAtCursor(value: string, cursor: number) {
   const match = value.slice(0, cursor).match(/@([a-zA-Z0-9_.]*)$/)
   return match ? match[1] : null
-}
-
-function fitHeight(el: HTMLTextAreaElement) {
-  el.style.height = "auto"
-  el.style.height = `${Math.min(el.scrollHeight, MAX_FIELD_PX)}px`
 }
 
 const CommentComposerFieldInner = forwardRef<
@@ -46,7 +39,7 @@ const CommentComposerFieldInner = forwardRef<
   },
   ref,
 ) {
-  const elRef = useRef<HTMLTextAreaElement>(null)
+  const elRef = useRef<HTMLInputElement>(null)
   const hasTextRef = useRef(Boolean(defaultValue.trim()))
   const mentionRef = useRef<string | null>(null)
   const onHasTextRef = useRef(onHasText)
@@ -64,7 +57,6 @@ const CommentComposerFieldInner = forwardRef<
       const el = elRef.current
       if (!el) return
       el.value = value
-      fitHeight(el)
       syncFlags(value, value.length)
     },
     focus: () => elRef.current?.focus(),
@@ -72,7 +64,6 @@ const CommentComposerFieldInner = forwardRef<
       const el = elRef.current
       if (!el) return
       el.value = ""
-      fitHeight(el)
       syncFlags("", 0)
     },
   }))
@@ -91,11 +82,15 @@ const CommentComposerFieldInner = forwardRef<
   }
 
   return (
-    <textarea
+    <input
       ref={elRef}
+      type="text"
+      inputMode="text"
+      enterKeyHint="send"
+      name="etm_thread_draft"
+      id="etm_thread_draft"
       defaultValue={defaultValue}
       disabled={disabled}
-      rows={1}
       placeholder={placeholder}
       autoComplete="off"
       autoCorrect="off"
@@ -103,14 +98,12 @@ const CommentComposerFieldInner = forwardRef<
       spellCheck={false}
       data-form-type="other"
       data-lpignore="true"
-      enterKeyHint="send"
       onInput={e => {
         const el = e.currentTarget
-        fitHeight(el)
         syncFlags(el.value, el.selectionStart ?? el.value.length)
       }}
       onKeyDown={e => {
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (e.key === "Enter") {
           e.preventDefault()
           onSubmitRef.current()
           return
@@ -125,7 +118,7 @@ const CommentComposerFieldInner = forwardRef<
           onEscapeRef.current?.()
         }
       }}
-      className="themed-scrollbar-y max-h-24 min-h-9 min-w-0 flex-1 resize-none overflow-y-auto bg-transparent py-2 text-base leading-snug text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-sm"
+      className="min-h-9 min-w-0 flex-1 bg-transparent py-2 text-base leading-none text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-sm"
     />
   )
 })

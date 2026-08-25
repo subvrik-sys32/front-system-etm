@@ -215,7 +215,7 @@ export function CommentComposer({
                   ? "Sin permiso para comentar"
                   : isEditing
                     ? "Edita tu mensaje…"
-                    : "Mensaje…  @mencionar"
+                    : "Escribe…  @mencionar"
               }
               onHasText={setHasText}
               onMention={setMentionQuery}

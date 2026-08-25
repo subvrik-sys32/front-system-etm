@@ -16,16 +16,15 @@ type Props = {
   label: string
   active?: boolean
   badge?: React.ReactNode
-  /** Fondo del círculo FAB (clases de tema). Default: bg-muted sólido. */
   accentClassName?: string
 } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children">
 
-/**
- * Activo = ring primary + fill sólido (bg-foreground/15).
- * Nunca opacity / bg translúcido al press.
- */
+/** Settings chip activo / sidebar selected — no primary a tope. */
+export const FAB_BRAND =
+  "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground shadow-xs"
+
 const FAB_ACTIVE =
-  "ring-2 ring-primary ring-offset-2 ring-offset-background bg-muted text-foreground"
+  "ring-2 ring-primary ring-offset-2 ring-offset-background bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground"
 
 export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
   (

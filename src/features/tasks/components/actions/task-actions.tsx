@@ -22,6 +22,7 @@ import {
 
 import {
   FabTrigger,
+  FAB_BRAND,
 } from "@/shared/ui/speed-dial-fab/fab-trigger"
 
 import {
@@ -110,7 +111,7 @@ export function TaskCreateDialAction(){
         label="NUEVA TAREA"
         disabled={!canCreate}
         onClick={handleOpen}
-        accentClassName="bg-primary text-primary-foreground shadow-xs"
+        accentClassName={FAB_BRAND}
         className={!canCreate ? "cursor-not-allowed opacity-40" : undefined}
       />
 

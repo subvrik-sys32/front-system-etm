@@ -6,7 +6,7 @@ import { Plus } from "lucide-react"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { PrimaryAction } from "@/shared/ui/actions/primary-action"
-import { FabTrigger } from "@/shared/ui/speed-dial-fab/fab-trigger"
+import { FabTrigger, FAB_BRAND } from "@/shared/ui/speed-dial-fab/fab-trigger"
 
 import { EngineeringTaskDialog } from "./engineering-task-dialog"
 
@@ -54,7 +54,7 @@ export function EngineeringCreateDialAction() {
         label="NUEVA TAREA"
         disabled={!canCreate}
         onClick={handleOpen}
-        accentClassName="bg-primary text-primary-foreground"
+        accentClassName={FAB_BRAND}
       />
       {dialog}
     </>

@@ -1,0 +1,158 @@
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 9247bfd..67f1cfb 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -25,10 +25,9 @@ export const viewport: Viewport = {
+   initialScale: 1,
+   maximumScale: 1,
+   userScalable: false,
+-  // Default de iOS / Chrome: solo se achica el visual viewport.
+-  // El ERP (body fixed, shells h-full) no se comprime con el teclado.
+-  // Chat / form large se ancla al hueco visible (visualViewport).
+-  interactiveWidget: "resizes-visual",
++  // El teclado achica el layout. Body fixed + h-full y Dialog large
++  // (flex-col) heredan: header/composer quietos, el hilo absorbe.
++  interactiveWidget: "resizes-content",
+ }
+ 
+ const THEME_INIT_SCRIPT = `
+diff --git a/src/components/ui/dialog.tsx b/src/components/ui/dialog.tsx
+index 3bb5926..801c7f8 100644
+--- a/src/components/ui/dialog.tsx
++++ b/src/components/ui/dialog.tsx
+@@ -6,7 +6,6 @@ import { X } from "lucide-react"
+ 
+ import { cn } from "@/shared/utils/utils"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+-import { useVisualViewportFrame } from "@/components/ui/popover/use-visual-viewport-frame"
+ 
+ type DialogProps = React.ComponentProps<typeof DialogPrimitive.Root>
+ type DialogTriggerProps = React.ComponentProps<typeof DialogPrimitive.Trigger>
+@@ -90,12 +89,10 @@ export function DialogContent({
+   children,
+   showCloseButton = true,
+   size = "default",
+-  style,
+   ...props
+ }: DialogContentProps) {
+   const { isMobile } = useResponsive()
+   const isFullscreenMobile = size === "large" && isMobile
+-  const frame = useVisualViewportFrame()
+ 
+   return (
+     <DialogPortal>
+@@ -105,27 +102,19 @@ export function DialogContent({
+         onOpenAutoFocus={(event) => {
+           event.preventDefault()
+         }}
+-        style={
+-          isFullscreenMobile
+-            ? {
+-                ...style,
+-                position: "fixed",
+-                top: `${frame.top}px`,
+-                left: `${frame.left}px`,
+-                width: `${frame.width}px`,
+-                height: `${frame.height}px`,
+-                maxHeight: `${frame.height}px`,
+-                right: "auto",
+-                bottom: "auto",
+-                transform: "none",
+-              }
+-            : style
+-        }
+         className={cn(
+           "fixed left-1/2 top-1/2 z-40 w-full max-w-lg max-h-[90vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden overscroll-contain rounded-2xl bg-popover p-6 shadow-xs outline-none select-none",
+           className,
+-          // Móvil large: anulamos transformaciones y anchos máximos para que el style del frame mande directo
++          // Móvil large: llena el body. resizes-content achica el body;
++          // esta caja es h-full → el flex del consumidor (header / hilo / input) hace el resto.
+           isFullscreenMobile && [
++            "inset-0",
++            "left-0",
++            "right-0",
++            "top-0",
++            "bottom-0",
++            "h-full",
++            "w-full",
+             "max-w-none",
+             "max-h-none",
+             "translate-x-0",
+diff --git a/src/components/ui/popover/use-visual-viewport-frame.ts b/src/components/ui/popover/use-visual-viewport-frame.ts
+index 2cd3024..1e2aba0 100644
+--- a/src/components/ui/popover/use-visual-viewport-frame.ts
++++ b/src/components/ui/popover/use-visual-viewport-frame.ts
+@@ -13,6 +13,11 @@ export type VisualViewportFrame = {
+ 
+ const KEYBOARD_THRESHOLD_PX = 50
+ 
++let stableLayoutHeight =
++  typeof window !== "undefined" ? window.innerHeight : 0
++let stableLayoutWidth =
++  typeof window !== "undefined" ? window.innerWidth : 0
++
+ function measure(): VisualViewportFrame {
+   if (typeof window === "undefined") {
+     return {
+@@ -25,29 +30,30 @@ function measure(): VisualViewportFrame {
+     }
+   }
+ 
+-  const vv = window.visualViewport
+   const layoutH = window.innerHeight
+   const layoutW = window.innerWidth
+-  const height = vv ? Math.round(vv.height) : layoutH
+-  const width = vv ? Math.round(vv.width) : layoutW
+-  const top = vv ? Math.round(vv.offsetTop) : 0
+-  const left = vv ? Math.round(vv.offsetLeft) : 0
+-  const keyboardInset = Math.max(0, Math.round(layoutH - height))
++
++  if (layoutW !== stableLayoutWidth) {
++    stableLayoutWidth = layoutW
++    stableLayoutHeight = layoutH
++  }
++  if (layoutH > stableLayoutHeight) {
++    stableLayoutHeight = layoutH
++  }
++
++  const keyboardInset = Math.max(0, Math.round(stableLayoutHeight - layoutH))
+ 
+   return {
+-    top,
+-    left,
+-    width,
+-    height,
++    top: 0,
++    left: 0,
++    width: layoutW,
++    height: layoutH,
+     keyboardInset,
+     keyboardOpen: keyboardInset >= KEYBOARD_THRESHOLD_PX,
+   }
+ }
+ 
+-/**
+- * Hueco visible + teclado. Con resizes-visual el layout no se achica;
+- * visualViewport sí. Un solo medidor para sheet y dialog large.
+- */
++/** Solo el sheet (Vaul): ¿hay teclado? El dialog large no usa esto. */
+ export function useVisualViewportFrame(): VisualViewportFrame {
+   const [frame, setFrame] = React.useState<VisualViewportFrame>(measure)
+ 
+@@ -62,16 +68,12 @@ export function useVisualViewportFrame(): VisualViewportFrame {
+     window.addEventListener("resize", tick)
+     window.addEventListener("focusin", tick)
+     window.addEventListener("focusout", tick)
+-    window.visualViewport?.addEventListener("resize", tick)
+-    window.visualViewport?.addEventListener("scroll", tick)
+ 
+     return () => {
+       cancelAnimationFrame(raf)
+       window.removeEventListener("resize", tick)
+       window.removeEventListener("focusin", tick)
+       window.removeEventListener("focusout", tick)
+-      window.visualViewport?.removeEventListener("resize", tick)
+-      window.visualViewport?.removeEventListener("scroll", tick)
+     }
+   }, [])
+ 

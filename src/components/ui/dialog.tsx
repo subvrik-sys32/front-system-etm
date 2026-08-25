@@ -6,7 +6,6 @@ import { X } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
-import { useVisualViewportFrame } from "@/components/ui/popover/use-visual-viewport-frame"
 
 type DialogProps = React.ComponentProps<typeof DialogPrimitive.Root>
 type DialogTriggerProps = React.ComponentProps<typeof DialogPrimitive.Trigger>
@@ -90,12 +89,10 @@ export function DialogContent({
   children,
   showCloseButton = true,
   size = "default",
-  style,
   ...props
 }: DialogContentProps) {
   const { isMobile } = useResponsive()
   const isFullscreenMobile = size === "large" && isMobile
-  const frame = useVisualViewportFrame()
 
   return (
     <DialogPortal>
@@ -105,27 +102,19 @@ export function DialogContent({
         onOpenAutoFocus={(event) => {
           event.preventDefault()
         }}
-        style={
-          isFullscreenMobile
-            ? {
-                ...style,
-                position: "fixed",
-                top: `${frame.top}px`,
-                left: `${frame.left}px`,
-                width: `${frame.width}px`,
-                height: `${frame.height}px`,
-                maxHeight: `${frame.height}px`,
-                right: "auto",
-                bottom: "auto",
-                transform: "none",
-              }
-            : style
-        }
         className={cn(
           "fixed left-1/2 top-1/2 z-40 w-full max-w-lg max-h-[90vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden overscroll-contain rounded-2xl bg-popover p-6 shadow-xs outline-none select-none",
           className,
-          // Móvil large: anulamos transformaciones y anchos máximos para que el style del frame mande directo
+          // Móvil large: llena el body. resizes-content achica el body;
+          // esta caja es h-full → el flex del consumidor (header / hilo / input) hace el resto.
           isFullscreenMobile && [
+            "inset-0",
+            "left-0",
+            "right-0",
+            "top-0",
+            "bottom-0",
+            "h-full",
+            "w-full",
             "max-w-none",
             "max-h-none",
             "translate-x-0",

@@ -25,10 +25,9 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  // Default de iOS / Chrome: solo se achica el visual viewport.
-  // El ERP (body fixed, shells h-full) no se comprime con el teclado.
-  // Chat / form large se ancla al hueco visible (visualViewport).
-  interactiveWidget: "resizes-visual",
+  // El teclado achica el layout. Body fixed + h-full y Dialog large
+  // (flex-col) heredan: header/composer quietos, el hilo absorbe.
+  interactiveWidget: "resizes-content",
 }
 
 const THEME_INIT_SCRIPT = `

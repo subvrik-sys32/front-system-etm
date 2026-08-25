@@ -13,6 +13,11 @@ export type VisualViewportFrame = {
 
 const KEYBOARD_THRESHOLD_PX = 50
 
+let stableLayoutHeight =
+  typeof window !== "undefined" ? window.innerHeight : 0
+let stableLayoutWidth =
+  typeof window !== "undefined" ? window.innerWidth : 0
+
 function measure(): VisualViewportFrame {
   if (typeof window === "undefined") {
     return {
@@ -25,29 +30,30 @@ function measure(): VisualViewportFrame {
     }
   }
 
-  const vv = window.visualViewport
   const layoutH = window.innerHeight
   const layoutW = window.innerWidth
-  const height = vv ? Math.round(vv.height) : layoutH
-  const width = vv ? Math.round(vv.width) : layoutW
-  const top = vv ? Math.round(vv.offsetTop) : 0
-  const left = vv ? Math.round(vv.offsetLeft) : 0
-  const keyboardInset = Math.max(0, Math.round(layoutH - height))
+
+  if (layoutW !== stableLayoutWidth) {
+    stableLayoutWidth = layoutW
+    stableLayoutHeight = layoutH
+  }
+  if (layoutH > stableLayoutHeight) {
+    stableLayoutHeight = layoutH
+  }
+
+  const keyboardInset = Math.max(0, Math.round(stableLayoutHeight - layoutH))
 
   return {
-    top,
-    left,
-    width,
-    height,
+    top: 0,
+    left: 0,
+    width: layoutW,
+    height: layoutH,
     keyboardInset,
     keyboardOpen: keyboardInset >= KEYBOARD_THRESHOLD_PX,
   }
 }
 
-/**
- * Hueco visible + teclado. Con resizes-visual el layout no se achica;
- * visualViewport sí. Un solo medidor para sheet y dialog large.
- */
+/** Solo el sheet (Vaul): ¿hay teclado? El dialog large no usa esto. */
 export function useVisualViewportFrame(): VisualViewportFrame {
   const [frame, setFrame] = React.useState<VisualViewportFrame>(measure)
 
@@ -62,16 +68,12 @@ export function useVisualViewportFrame(): VisualViewportFrame {
     window.addEventListener("resize", tick)
     window.addEventListener("focusin", tick)
     window.addEventListener("focusout", tick)
-    window.visualViewport?.addEventListener("resize", tick)
-    window.visualViewport?.addEventListener("scroll", tick)
 
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener("resize", tick)
       window.removeEventListener("focusin", tick)
       window.removeEventListener("focusout", tick)
-      window.visualViewport?.removeEventListener("resize", tick)
-      window.visualViewport?.removeEventListener("scroll", tick)
     }
   }, [])
 

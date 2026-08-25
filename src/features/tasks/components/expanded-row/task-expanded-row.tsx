@@ -56,14 +56,14 @@ function TaskDesktopRouteStrip({ task }: { task: Task }) {
     : undefined
 
   return (
-    <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2 overflow-visible">
+    <div className="flex h-8 min-w-0 flex-1 flex-nowrap items-center justify-end gap-2">
       <TaskRouteViewer
         variant="inline"
         taskId={task.id}
         route={task.route}
         currentProcess={currentStep?.processCode}
       />
-      <div className="flex min-w-[10rem] max-w-[16rem] flex-1 items-center gap-2 rounded-xl bg-foreground/5 px-2.5 py-1.5">
+      <div className="flex h-8 min-h-8 min-w-[11rem] max-w-[18rem] flex-1 items-center gap-2 self-center rounded-lg bg-foreground/5 px-2.5">
         <div className="flex min-w-0 shrink items-center gap-1">
           {StatusIcon && (
             <StatusIcon size={12} className="shrink-0 text-muted-foreground" />

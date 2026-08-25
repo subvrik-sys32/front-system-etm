@@ -316,14 +316,6 @@ export function DetailAssetsDialog({
                           onChange={e => setNote(e.target.value)}
                           placeholder="Detalle libre, instrucciones de montaje, observaciones…"
                           rows={3}
-                          name="detail-note"
-                          autoComplete="off"
-                          autoCorrect="off"
-                          autoCapitalize="sentences"
-                          spellCheck={false}
-                          data-1p-ignore
-                          data-lpignore="true"
-                          enterKeyHint="done"
                           className="w-full resize-none rounded-xl bg-foreground/[0.04] px-3 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground/70 focus:ring-1 focus:ring-foreground/15 sm:text-sm"
                         />
                         <button

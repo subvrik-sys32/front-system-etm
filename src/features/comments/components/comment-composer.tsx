@@ -264,14 +264,6 @@ export function CommentComposer({
               onKeyDown={handleKeyDown}
               disabled={busy || !canCreate}
               rows={1}
-              name="chat-message"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="sentences"
-              spellCheck={false}
-              data-1p-ignore
-              data-lpignore="true"
-              enterKeyHint="send"
               placeholder={
                 !canCreate
                   ? "Sin permiso para comentar"

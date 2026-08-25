@@ -10,12 +10,6 @@ export const Input = React.forwardRef<
   ({ className, ...props }, ref) => (
     <input
       ref={ref}
-      autoComplete="off"
-      autoCorrect="off"
-      autoCapitalize="off"
-      spellCheck={false}
-      data-1p-ignore
-      data-lpignore="true"
       className={cn(
         "h-9 w-full min-w-0 rounded-xl px-3.5",
         "border border-transparent",

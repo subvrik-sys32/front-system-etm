@@ -25,17 +25,14 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  // Contrato de teclado (una sola fuente de altura):
-  // 1. body position:fixed;inset:0 + h-full en shells → el layout
-  //    hereda el viewport, no lo recalcula con dvh.
-  // 2. resizes-content → el navegador ACHICA ese viewport cuando
-  //    abre el teclado. Cabecera = primer hijo, se queda arriba.
-  //    No overlays-content: ese modo flota el teclado y Chrome
-  //    scrollea el focused input (salto al escribir).
-  // 3. Con teclado abierto el BottomNav se oculta (CompactShell +
-  //    useChromeInset). Si no, 80px de nav + teclado dejan la
-  //    lista en 0 (hueco negro). El hook solo informa keyboardOpen;
-  //    no posiciona nada a mano.
+  // resizes-content (no overlays-content): con overlays-content el teclado
+  // flota SOBRE el contenido sin achicar el layout, y el navegador compensa
+  // haciendo scroll nativo para llevar el input enfocado a la vista — eso es
+  // lo que se sentía como que los inputs de abajo "se corrían" al escribir,
+  // reajustándose con cada cambio del teclado predictivo. Con resizes-content
+  // el layout se achica de verdad para hacerle espacio al teclado, así que el
+  // input queda arriba de él sin necesidad de ese scroll compensatorio. Los
+  // hooks de teclado (use-visual-viewport-frame.ts) ya asumían este modo.
   interactiveWidget: "resizes-content",
 }
 

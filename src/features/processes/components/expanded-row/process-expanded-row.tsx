@@ -117,10 +117,16 @@ function ProcessDesktopKpiStrip({
     )
   }
 
-  /** Vacío estilo Ingresar (sin guión). */
+  /** Misma tipografía/pill que ProcessEditableValue placeholder "Ingresar". */
   function EmptyPill({ label }: { label: string }) {
     return (
-      <span className="inline-flex max-w-full items-center truncate rounded-md bg-foreground/10 px-1.5 py-0.5 text-[10px] font-semibold leading-none">
+      <span
+        className={
+          "inline-flex max-w-full items-center truncate rounded-md " +
+          "bg-foreground/10 px-1.5 py-0.5 font-inherit text-[length:inherit] " +
+          "font-semibold leading-inherit text-inherit"
+        }
+      >
         {label}
       </span>
     )
@@ -143,7 +149,7 @@ function ProcessDesktopKpiStrip({
         {inQty != null && String(inQty).trim() !== "" ? (
           <span className="tabular-nums">{inQty}</span>
         ) : (
-          <EmptyPill label="Sin IN" />
+          <span className="text-[10px] font-semibold opacity-55">Sin entrada</span>
         )}
         {showOutput && (
           <>

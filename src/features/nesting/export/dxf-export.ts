@@ -178,12 +178,21 @@ export function writeSheetDxfEntities(
 
   // Etiqueta PLANCHA N - espesor - material (arriba del marco)
   if (label) {
-    const textH = Math.max(40, Math.min(120, height * 0.04))
+    // Altura legible en planchas grandes y mosaicos (ref. planos de planta)
+    const textH = Math.max(50, Math.min(150, height * 0.055))
     const text = formatSheetExportLabel({
       ...label,
       thicknessMm: label.thicknessMm ?? sheet.thicknessMm,
     })
-    out += writeTextR12(ox, oy + height + textH * 0.35, textH, text)
+    // Y por encima del borde superior del marco (espacio DXF Y↑)
+    out += writeTextR12(
+      ox + textH * 0.15,
+      oy + height + textH * 1.15,
+      textH,
+      text,
+      "LEYENDA",
+      2, // ACI amarillo
+    )
   }
 
   for (const piece of sheet.pieces) {

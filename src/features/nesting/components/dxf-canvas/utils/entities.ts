@@ -11,8 +11,11 @@ export function piecesToEntities(
   pieces.forEach((piece, pieceIndex) => {
     if (piece.subOutlines.length > 0) {
       for (const sub of piece.subOutlines) {
-        const color = sub.color ?? "#22c55e"
-        const layerKey = (sub.layer ?? color).toUpperCase()
+        const layerKey = (sub.layer ?? "").toUpperCase()
+        const isLegend = layerKey.includes("LEYENDA") || Boolean(sub.text)
+        const color = isLegend
+          ? "#EAB308"
+          : (sub.color ?? "#22c55e")
         if (hidden.has(layerKey) || hidden.has(color.toUpperCase())) continue
 
         // Etiqueta TEXT del DXF (PLANCHA N, etc.)
@@ -22,7 +25,7 @@ export function piecesToEntities(
             position: sub.points[0],
             text: sub.text,
             height: sub.textHeight && sub.textHeight > 0 ? sub.textHeight : 12,
-            color,
+            color: "#EAB308",
             pieceIndex,
             layer: sub.layer,
           })

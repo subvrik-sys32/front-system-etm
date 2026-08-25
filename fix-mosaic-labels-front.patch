@@ -1,0 +1,55 @@
+diff --git a/src/features/nesting/components/dxf-canvas/utils/entities.ts b/src/features/nesting/components/dxf-canvas/utils/entities.ts
+index 5cb5d2f..c7897a7 100644
+--- a/src/features/nesting/components/dxf-canvas/utils/entities.ts
++++ b/src/features/nesting/components/dxf-canvas/utils/entities.ts
+@@ -11,8 +11,11 @@ export function piecesToEntities(
+   pieces.forEach((piece, pieceIndex) => {
+     if (piece.subOutlines.length > 0) {
+       for (const sub of piece.subOutlines) {
+-        const color = sub.color ?? "#22c55e"
+-        const layerKey = (sub.layer ?? color).toUpperCase()
++        const layerKey = (sub.layer ?? "").toUpperCase()
++        const isLegend = layerKey.includes("LEYENDA") || Boolean(sub.text)
++        const color = isLegend
++          ? "#EAB308"
++          : (sub.color ?? "#22c55e")
+         if (hidden.has(layerKey) || hidden.has(color.toUpperCase())) continue
+ 
+         // Etiqueta TEXT del DXF (PLANCHA N, etc.)
+@@ -22,7 +25,7 @@ export function piecesToEntities(
+             position: sub.points[0],
+             text: sub.text,
+             height: sub.textHeight && sub.textHeight > 0 ? sub.textHeight : 12,
+-            color,
++            color: "#EAB308",
+             pieceIndex,
+             layer: sub.layer,
+           })
+diff --git a/src/features/nesting/export/dxf-export.ts b/src/features/nesting/export/dxf-export.ts
+index cad3d58..dacfea1 100644
+--- a/src/features/nesting/export/dxf-export.ts
++++ b/src/features/nesting/export/dxf-export.ts
+@@ -178,12 +178,21 @@ export function writeSheetDxfEntities(
+ 
+   // Etiqueta PLANCHA N - espesor - material (arriba del marco)
+   if (label) {
+-    const textH = Math.max(40, Math.min(120, height * 0.04))
++    // Altura legible en planchas grandes y mosaicos (ref. planos de planta)
++    const textH = Math.max(50, Math.min(150, height * 0.055))
+     const text = formatSheetExportLabel({
+       ...label,
+       thicknessMm: label.thicknessMm ?? sheet.thicknessMm,
+     })
+-    out += writeTextR12(ox, oy + height + textH * 0.35, textH, text)
++    // Y por encima del borde superior del marco (espacio DXF Y↑)
++    out += writeTextR12(
++      ox + textH * 0.15,
++      oy + height + textH * 1.15,
++      textH,
++      text,
++      "LEYENDA",
++      2, // ACI amarillo
++    )
+   }
+ 
+   for (const piece of sheet.pieces) {

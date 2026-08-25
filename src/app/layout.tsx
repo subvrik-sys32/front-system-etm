@@ -10,6 +10,7 @@ import { Sonner } from "@/components/ui/sonner"
 import { RealtimeProvider } from "@/shared/realtime/realtime-provider"
 import { ResponsiveProvider } from "@/shared/responsive/responsive-context"
 import { ThemeProvider } from "@/shared/theme"
+import { HintProvider } from "@/shared/ui/hint/hint-provider"
 
 const geist = Geist({
   subsets: ["latin"],
@@ -85,6 +86,7 @@ export default function RootLayout({
                 </div>
 
                 <Sonner />
+                <HintProvider />
               </ResponsiveProvider>
             </ThemeProvider>
           </RealtimeProvider>

@@ -28,6 +28,8 @@ import {
 import {
   useResponsive,
 } from "@/shared/responsive/hooks/use-responsive"
+import { useThemeStore } from "@/shared/theme"
+import { getGlassSurface } from "@/shared/utils/badge-colors"
 
 type Props = {
   task: Task
@@ -36,6 +38,38 @@ type Props = {
 }
 
 const PIEZAS_COLOR = "#c44a4a"
+
+
+function KpiSignalChip({
+  icon: Icon,
+  color,
+  value,
+  title,
+}: {
+  icon: typeof Layers3
+  color: string
+  value: string
+  title: string
+}) {
+  const resolved = useThemeStore(s => s.resolved)
+  const glass = getGlassSurface(color, resolved)
+
+  return (
+    <div
+      title={title}
+      className="flex h-8 min-h-8 max-w-[11rem] shrink-0 select-none items-center gap-1.5 overflow-hidden rounded-lg px-2.5"
+      style={{ background: glass.background }}
+    >
+      <Icon size={13} className="shrink-0" style={{ color: glass.text }} />
+      <span
+        className="truncate text-[11px] font-bold tabular-nums leading-none tracking-wide"
+        style={{ color: glass.text }}
+      >
+        {value}
+      </span>
+    </div>
+  )
+}
 
 export function TaskKpisSection({
   task,
@@ -234,10 +268,61 @@ export function TaskKpisSection({
     return null
   }
 
+  // Header desktop: solo señal (valor), sin labels duplicados.
   if (isCompact) {
+    const signal: {
+      key: string
+      icon: typeof Layers3
+      color: string
+      value: string
+      title: string
+    }[] = [
+      {
+        key: "lote",
+        icon: Layers3,
+        color: "#b8a42a",
+        value: `L${task.lotNumber}`,
+        title: "Lote",
+      },
+      {
+        key: "material",
+        icon: Package,
+        color: task.material.color,
+        value: `${task.material.name.toUpperCase()} · ${task.thickness.name}`,
+        title: "Material / espesor",
+      },
+      {
+        key: "piezas",
+        icon: Puzzle,
+        color: PIEZAS_COLOR,
+        value:
+          hasAssemblyProcess && task.assemblyCount > 1
+            ? `${task.pieces} · ${task.assemblyCount} und`
+            : `${task.pieces}`,
+        title: "Piezas",
+      },
+      hasPaintProcess
+        ? {
+            key: "pintura",
+            icon: Palette,
+            color: task.color?.color ?? "#64748B",
+            value: task.color?.name.toUpperCase() ?? "—",
+            title: task.paintKg ? `Pintura · ${task.paintKg} KG` : "Pintura",
+          }
+        : {
+            key: "acabado",
+            icon: Sparkles,
+            color: "#BBBBBB",
+            value: "NATURAL",
+            title: "Acabado",
+          },
+    ]
+
     return (
       <div className="flex h-8 min-w-0 flex-1 items-center justify-end gap-1.5 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden">
-        {cards}
+        {signal.map(chip => (
+          <KpiSignalChip key={chip.key} {...chip} />
+        ))}
       </div>
     )
   }

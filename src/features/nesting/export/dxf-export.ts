@@ -148,7 +148,7 @@ export function formatSheetExportLabel(info: SheetLabelInfo): string {
     const raw = String(info.lote).trim().replace(/^L/i, "")
     parts.push(`L${raw}`)
   }
-  return parts.join(" - ")
+  return parts.join(" - ").toUpperCase()
 }
 
 export function writeSheetDxfEntities(
@@ -176,18 +176,16 @@ export function writeSheetDxfEntities(
   ]
   out += writePolylineR12(frame, "MARCO_CHAPA", 7)
 
-  // Etiqueta PLANCHA N - espesor - material (arriba del marco)
+  // Etiqueta SOBRE el marco (Y-down del canvas/nesting: y menor = arriba)
   if (label) {
-    // Altura legible en planchas grandes y mosaicos (ref. planos de planta)
-    const textH = Math.max(50, Math.min(150, height * 0.055))
+    const textH = Math.max(70, Math.min(180, height * 0.07))
     const text = formatSheetExportLabel({
       ...label,
       thicknessMm: label.thicknessMm ?? sheet.thicknessMm,
     })
-    // Y por encima del borde superior del marco (espacio DXF Y↑)
     out += writeTextR12(
-      ox + textH * 0.15,
-      oy + height + textH * 1.15,
+      ox + textH * 0.1,
+      oy - textH * 0.25,
       textH,
       text,
       "LEYENDA",

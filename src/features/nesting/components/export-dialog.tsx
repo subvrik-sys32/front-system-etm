@@ -275,7 +275,7 @@ export function ExportDialog({
 
                 <div className="flex flex-col gap-1">
                   <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Lote inicial
+                    Lote
                   </label>
                   <Input
                     className={fieldCls(baseErrors.lote)}
@@ -318,8 +318,8 @@ export function ExportDialog({
 
               <p className="text-[10px] text-muted-foreground">
                 Material general aplica a mosaico e individuales. Si una plancha
-                tiene material propio, ese gana. Lote: inicial + correlativo por
-                plancha.
+                tiene material propio, ese gana. El lote es único para todo el
+                paquete de nesting.
               </p>
 
               {attempted && !baseReady && (
@@ -431,14 +431,9 @@ export function ExportDialog({
                     const resolved = materialFor(group.startIndex)
                     const needMat =
                       rowAttempt === group.startIndex && !resolved
-                    const baseLote = parseInt(
-                      String(nomenclatura.lote || "1").replace(/^L/i, ""),
-                      10,
-                    )
-                    const loteLabel = Number.isFinite(baseLote)
-                      ? ` · L${baseLote + index}`
+                    const loteLabel = nomenclatura.lote?.trim()
+                      ? ` · L${nomenclatura.lote.trim()}`
                       : ""
-
                     return (
                       <div
                         key={group.startIndex}

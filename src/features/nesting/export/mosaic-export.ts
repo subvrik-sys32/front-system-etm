@@ -9,16 +9,16 @@ const MARGIN_MM = 200
 function tileOrigin(
   index: number,
   cols: number,
-  rows: number,
+  _rows: number,
   width: number,
   height: number,
 ): Point2D {
+  // Menor → mayor, izquierda → derecha, arriba → abajo (sin invertir filas)
   const row = Math.floor(index / cols)
   const col = index % cols
-  const invertedRow = rows - 1 - row
   return {
     x: col * (width + MARGIN_MM),
-    y: invertedRow * (height + MARGIN_MM),
+    y: row * (height + MARGIN_MM),
   }
 }
 
@@ -49,6 +49,8 @@ export function generateMosaicDxf(
   const baseLoteNum = parseBaseLote(opts.baseLote)
 
   const groups = groupIdenticalSheets(sheets.filter((s) => s.pieces.length > 0))
+    .slice()
+    .sort((a, b) => a.startIndex - b.startIndex)
   if (groups.length === 0) {
     return ["  0", "SECTION", "  2", "ENTITIES", "  0", "ENDSEC", "  0", "EOF", ""].join("\n")
   }
@@ -56,6 +58,14 @@ export function generateMosaicDxf(
   const cols = Math.max(1, Math.ceil(Math.sqrt(groups.length)))
   const rows = Math.max(1, Math.ceil(groups.length / cols))
   const { width, height } = sheetConfig
+
+  // Lote único del paquete (no correlativo por plancha)
+  const loteUnico =
+    baseLoteNum != null
+      ? baseLoteNum
+      : opts.baseLote != null && String(opts.baseLote).trim() !== ""
+        ? String(opts.baseLote).trim().replace(/^L/i, "")
+        : undefined
 
   let entities = ""
   for (let i = 0; i < groups.length; i++) {
@@ -69,7 +79,7 @@ export function generateMosaicDxf(
       thicknessMm: g.sheet.thicknessMm,
       material: mat,
       pieces: g.sheet.pieces.length,
-      lote: baseLoteNum != null ? baseLoteNum + i : undefined,
+      lote: loteUnico,
     }
     entities += writeSheetDxfEntities(
       g.sheet,

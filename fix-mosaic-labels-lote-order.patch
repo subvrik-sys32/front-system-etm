@@ -1,0 +1,159 @@
+diff --git a/src/features/nesting/components/export-dialog.tsx b/src/features/nesting/components/export-dialog.tsx
+index 7168363..6a8fdd1 100644
+--- a/src/features/nesting/components/export-dialog.tsx
++++ b/src/features/nesting/components/export-dialog.tsx
+@@ -275,7 +275,7 @@ export function ExportDialog({
+ 
+                 <div className="flex flex-col gap-1">
+                   <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+-                    Lote inicial
++                    Lote
+                   </label>
+                   <Input
+                     className={fieldCls(baseErrors.lote)}
+@@ -318,8 +318,8 @@ export function ExportDialog({
+ 
+               <p className="text-[10px] text-muted-foreground">
+                 Material general aplica a mosaico e individuales. Si una plancha
+-                tiene material propio, ese gana. Lote: inicial + correlativo por
+-                plancha.
++                tiene material propio, ese gana. El lote es único para todo el
++                paquete de nesting.
+               </p>
+ 
+               {attempted && !baseReady && (
+@@ -431,14 +431,9 @@ export function ExportDialog({
+                     const resolved = materialFor(group.startIndex)
+                     const needMat =
+                       rowAttempt === group.startIndex && !resolved
+-                    const baseLote = parseInt(
+-                      String(nomenclatura.lote || "1").replace(/^L/i, ""),
+-                      10,
+-                    )
+-                    const loteLabel = Number.isFinite(baseLote)
+-                      ? ` · L${baseLote + index}`
++                    const loteLabel = nomenclatura.lote?.trim()
++                      ? ` · L${nomenclatura.lote.trim()}`
+                       : ""
+-
+                     return (
+                       <div
+                         key={group.startIndex}
+diff --git a/src/features/nesting/export/dxf-export.ts b/src/features/nesting/export/dxf-export.ts
+index dacfea1..23a8985 100644
+--- a/src/features/nesting/export/dxf-export.ts
++++ b/src/features/nesting/export/dxf-export.ts
+@@ -148,7 +148,7 @@ export function formatSheetExportLabel(info: SheetLabelInfo): string {
+     const raw = String(info.lote).trim().replace(/^L/i, "")
+     parts.push(`L${raw}`)
+   }
+-  return parts.join(" - ")
++  return parts.join(" - ").toUpperCase()
+ }
+ 
+ export function writeSheetDxfEntities(
+@@ -176,18 +176,16 @@ export function writeSheetDxfEntities(
+   ]
+   out += writePolylineR12(frame, "MARCO_CHAPA", 7)
+ 
+-  // Etiqueta PLANCHA N - espesor - material (arriba del marco)
++  // Etiqueta SOBRE el marco (Y-down del canvas/nesting: y menor = arriba)
+   if (label) {
+-    // Altura legible en planchas grandes y mosaicos (ref. planos de planta)
+-    const textH = Math.max(50, Math.min(150, height * 0.055))
++    const textH = Math.max(70, Math.min(180, height * 0.07))
+     const text = formatSheetExportLabel({
+       ...label,
+       thicknessMm: label.thicknessMm ?? sheet.thicknessMm,
+     })
+-    // Y por encima del borde superior del marco (espacio DXF Y↑)
+     out += writeTextR12(
+-      ox + textH * 0.15,
+-      oy + height + textH * 1.15,
++      ox + textH * 0.1,
++      oy - textH * 0.25,
+       textH,
+       text,
+       "LEYENDA",
+diff --git a/src/features/nesting/export/mosaic-export.ts b/src/features/nesting/export/mosaic-export.ts
+index b72f4d8..5b92cc4 100644
+--- a/src/features/nesting/export/mosaic-export.ts
++++ b/src/features/nesting/export/mosaic-export.ts
+@@ -9,16 +9,16 @@ const MARGIN_MM = 200
+ function tileOrigin(
+   index: number,
+   cols: number,
+-  rows: number,
++  _rows: number,
+   width: number,
+   height: number,
+ ): Point2D {
++  // Menor → mayor, izquierda → derecha, arriba → abajo (sin invertir filas)
+   const row = Math.floor(index / cols)
+   const col = index % cols
+-  const invertedRow = rows - 1 - row
+   return {
+     x: col * (width + MARGIN_MM),
+-    y: invertedRow * (height + MARGIN_MM),
++    y: row * (height + MARGIN_MM),
+   }
+ }
+ 
+@@ -49,6 +49,8 @@ export function generateMosaicDxf(
+   const baseLoteNum = parseBaseLote(opts.baseLote)
+ 
+   const groups = groupIdenticalSheets(sheets.filter((s) => s.pieces.length > 0))
++    .slice()
++    .sort((a, b) => a.startIndex - b.startIndex)
+   if (groups.length === 0) {
+     return ["  0", "SECTION", "  2", "ENTITIES", "  0", "ENDSEC", "  0", "EOF", ""].join("\n")
+   }
+@@ -57,6 +59,14 @@ export function generateMosaicDxf(
+   const rows = Math.max(1, Math.ceil(groups.length / cols))
+   const { width, height } = sheetConfig
+ 
++  // Lote único del paquete (no correlativo por plancha)
++  const loteUnico =
++    baseLoteNum != null
++      ? baseLoteNum
++      : opts.baseLote != null && String(opts.baseLote).trim() !== ""
++        ? String(opts.baseLote).trim().replace(/^L/i, "")
++        : undefined
++
+   let entities = ""
+   for (let i = 0; i < groups.length; i++) {
+     const g = groups[i]
+@@ -69,7 +79,7 @@ export function generateMosaicDxf(
+       thicknessMm: g.sheet.thicknessMm,
+       material: mat,
+       pieces: g.sheet.pieces.length,
+-      lote: baseLoteNum != null ? baseLoteNum + i : undefined,
++      lote: loteUnico,
+     }
+     entities += writeSheetDxfEntities(
+       g.sheet,
+diff --git a/src/features/nesting/hooks/use-nesting-project.ts b/src/features/nesting/hooks/use-nesting-project.ts
+index 4cf61f3..d455006 100644
+--- a/src/features/nesting/hooks/use-nesting-project.ts
++++ b/src/features/nesting/hooks/use-nesting-project.ts
+@@ -478,9 +478,9 @@ export function useNestingProject() {
+ 
+ 
+   const nomForSheet = useCallback(
+-    (sheet: NestedSheet, sheetIndex: number): Nomenclatura => {
+-      const base = parseInt(String(nomenclatura.lote || "1").replace(/^L/i, ""), 10)
+-      const lote = Number.isFinite(base) ? String(base + sheetIndex) : nomenclatura.lote
++    (sheet: NestedSheet, _sheetIndex: number): Nomenclatura => {
++      // Lote único del paquete de nesting (el del input), no correlativo
++      const lote = nomenclatura.lote
+       const t = resolveExportThicknessMm(sheet)
+       const espesor =
+         t != null && t > 0
+@@ -716,6 +716,7 @@ export function useNestingProject() {
+   )
+ 
+   const handleNewProject = useCallback(() => {
++    setSheetMaterials({})
+     setRows([])
+     setSettings(defaultProjectSettings())
+     setMachine(defaultMachineSettings())

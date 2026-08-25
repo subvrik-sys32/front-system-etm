@@ -478,9 +478,9 @@ export function useNestingProject() {
 
 
   const nomForSheet = useCallback(
-    (sheet: NestedSheet, sheetIndex: number): Nomenclatura => {
-      const base = parseInt(String(nomenclatura.lote || "1").replace(/^L/i, ""), 10)
-      const lote = Number.isFinite(base) ? String(base + sheetIndex) : nomenclatura.lote
+    (sheet: NestedSheet, _sheetIndex: number): Nomenclatura => {
+      // Lote único del paquete de nesting (el del input), no correlativo
+      const lote = nomenclatura.lote
       const t = resolveExportThicknessMm(sheet)
       const espesor =
         t != null && t > 0
@@ -716,6 +716,7 @@ export function useNestingProject() {
   )
 
   const handleNewProject = useCallback(() => {
+    setSheetMaterials({})
     setRows([])
     setSettings(defaultProjectSettings())
     setMachine(defaultMachineSettings())

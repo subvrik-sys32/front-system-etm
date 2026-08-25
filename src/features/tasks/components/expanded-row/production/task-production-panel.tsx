@@ -386,13 +386,6 @@ export function TaskProductionPanel({
     <>
 
       {/* Ruta vive en el header del expanded (inline). Aquí solo progreso. */}
-      <div className="hidden h-full min-h-0 w-full flex-col justify-center rounded-xl bg-foreground/5 p-4 xl:flex">
-        <div className="flex justify-center">
-          <div className="w-full max-w-3xl rounded-xl bg-foreground/5 px-5 py-3.5">
-            {progressContent}
-          </div>
-        </div>
-      </div>
 
       <div className="w-full xl:hidden flex flex-col">
 

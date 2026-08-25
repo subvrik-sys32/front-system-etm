@@ -14,8 +14,8 @@ type Props = {
   route: ProcessCode[]
   currentProcess?: ProcessCode
   /**
-   * panel — centrado bajo el toggle (producción).
-   * inline — franja en el header del expanded, al lado de actions.
+   * panel — centrado (legacy / móvil en panel).
+   * inline — header expanded desktop.
    */
   variant?: "panel" | "inline"
 }
@@ -36,17 +36,17 @@ export function TaskRouteViewer({
   return (
     <div
       className={cn(
-        "min-w-0",
+        "min-w-0 overflow-visible",
         inline
-          ? "flex max-w-full justify-end overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden"
+          ? "flex max-w-full justify-end"
           : "flex justify-center",
       )}
     >
       <div
         className={cn(
-          "flex items-center",
+          "flex items-center overflow-visible",
           inline
-            ? "min-w-max flex-nowrap gap-1.5 py-0.5"
+            ? "min-w-max flex-nowrap gap-1.5 pt-4"
             : "flex-wrap justify-center gap-2 pt-5",
         )}
       >
@@ -58,15 +58,10 @@ export function TaskRouteViewer({
           const isCurrent = currentProcess === processCode
 
           return (
-            <div key={processCode} className="relative shrink-0">
+            <div key={processCode} className="relative shrink-0 overflow-visible">
               {isCurrent && (
                 <span
-                  className={cn(
-                    "pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[9px] font-bold uppercase tracking-widest",
-                    inline
-                      ? "-top-3.5 hidden sm:block"
-                      : "-top-4.5 hidden sm:block",
-                  )}
+                  className="pointer-events-none absolute -top-4 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap text-[9px] font-bold uppercase tracking-widest"
                   style={{ color: process.color }}
                 >
                   Actual

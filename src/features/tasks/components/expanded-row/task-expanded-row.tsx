@@ -31,6 +31,9 @@ import {
 import { TaskRowActions } from "../actions/task-row-actions"
 import { TaskRouteViewer } from "./production/task-route-viewer"
 import { getCurrentStep } from "@/features/workflow/selectors/get-current-step"
+import { createWorkflowView } from "@/features/workflow/view/create-workflow-view"
+import { WORKFLOW_STATUS_DEFINITIONS } from "@/features/workflow/constants/workflow-status-definitions"
+import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
 import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
 import { useActiveCommentContextStore } from "@/features/comments/store/active-comment-context-store"
@@ -39,6 +42,51 @@ import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 
 type Props = {
   task: Task
+}
+
+
+function TaskDesktopRouteStrip({ task }: { task: Task }) {
+  const currentStep = getCurrentStep(task.workflowSteps)
+  const workflowView = createWorkflowView(task.workflowSteps)
+  const statusDef = currentStep
+    ? WORKFLOW_STATUS_DEFINITIONS[currentStep.status]
+    : null
+  const StatusIcon = statusDef?.icon
+    ? ENTITY_ICONS[statusDef.icon]
+    : undefined
+
+  return (
+    <div className="flex min-w-0 flex-1 flex-col items-stretch gap-2 overflow-visible">
+      <TaskRouteViewer
+        variant="inline"
+        taskId={task.id}
+        route={task.route}
+        currentProcess={currentStep?.processCode}
+      />
+      <div className="w-full min-w-0 rounded-xl bg-foreground/5 px-3 py-2">
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-1.5">
+            {StatusIcon && (
+              <StatusIcon size={13} className="shrink-0 text-muted-foreground" />
+            )}
+            <span className="truncate text-xs font-bold uppercase tracking-wide text-foreground">
+              {statusDef?.label ?? "Sin estado"}
+            </span>
+          </div>
+          <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-muted-foreground">
+            {workflowView.completedSteps}/{workflowView.totalSteps} ·{" "}
+            <span className="text-foreground">{workflowView.progress}%</span>
+          </span>
+        </div>
+        <div className="mt-1.5 h-2 w-full min-w-0 overflow-hidden rounded-full bg-foreground/5">
+          <div
+            className="h-full rounded-full bg-cyan-500 transition-all"
+            style={{ width: `${workflowView.progress}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function TaskExpandedRow({
@@ -189,16 +237,8 @@ export function TaskExpandedRow({
             />
             <TaskRowActions task={task} className="gap-1" showAudit />
           </div>
-          {/* Ruta en el espacio libre, a la derecha de actions */}
-          {task.route?.length > 0 && (
-            <div className="min-w-0 flex-1 pt-3 sm:pt-3.5">
-              <TaskRouteViewer
-                variant="inline"
-                taskId={task.id}
-                route={task.route}
-                currentProcess={getCurrentStep(task.workflowSteps)?.processCode}
-              />
-            </div>
+          {!isMobile && task.route?.length > 0 && (
+            <TaskDesktopRouteStrip task={task} />
           )}
         </div>
 

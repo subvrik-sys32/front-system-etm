@@ -407,24 +407,22 @@ function ProcessMobileCardReady({
             />
         </CollapsibleHeightSection>
 
-        {/* Al expandir: auditoría + materiales + ojo (mismas que el row colapsado) */}
-        <div
-          className="flex items-center justify-start gap-1"
-          onClick={e => e.stopPropagation()}
-          onPointerDown={e => e.stopPropagation()}
-        >
-          <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
-          <TaskMaterialInfo task={task} alwaysShow />
-          <EntityAuditInfo
-            createdAt={task.createdAt}
-            updatedAt={task.updatedAt}
-            createdBy={task.createdBy}
-            updatedBy={task.updatedBy}
-            workflowSteps={task.workflowSteps}
-          />
-        </div>
-
-        <ProcessExpandedRow processTask={processTask} />
+        <ProcessExpandedRow
+          processTask={processTask}
+          headerActions={
+            <>
+              <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
+              <TaskMaterialInfo task={task} alwaysShow />
+              <EntityAuditInfo
+                createdAt={task.createdAt}
+                updatedAt={task.updatedAt}
+                createdBy={task.createdBy}
+                updatedBy={task.updatedBy}
+                workflowSteps={task.workflowSteps}
+              />
+            </>
+          }
+        />
       </CollapsibleHeightSection>
     </div>
   )

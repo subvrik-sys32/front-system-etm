@@ -35,6 +35,8 @@ import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
 
 type Props = {
   processTask: ProcessTask
+  /** Ojo / materiales / auditoría — misma fila que toggle + KPIs. */
+  headerActions?: ReactNode
 }
 
 
@@ -198,11 +200,11 @@ function ProcessDesktopKpiStrip({
         {startedLabel ? (
           <>
             <span className="tabular-nums">{startedLabel}</span>
-            {completedLabel && (
-              <>
-                <span className="opacity-50">→</span>
-                <span className="tabular-nums">{completedLabel}</span>
-              </>
+            <span className="opacity-50">→</span>
+            {completedLabel ? (
+              <span className="tabular-nums">{completedLabel}</span>
+            ) : (
+              <EmptyPill label="No finalizado" />
             )}
           </>
         ) : (
@@ -228,6 +230,7 @@ function ProcessDesktopKpiStrip({
 
 export function ProcessExpandedRow({
   processTask,
+  headerActions,
 }: Props) {
   const { isMobile, ready } = useResponsive()
   const searchParams = useSearchParams()
@@ -430,8 +433,8 @@ export function ProcessExpandedRow({
   return (
     <EntityExpandedRow rowId={processTask.task.id}>
       <EntityExpandedContent>
-        <div className="mb-2 flex flex-nowrap items-center gap-2 select-none">
-          <div className="min-w-0 shrink-0">
+        <div className="mb-2 flex min-w-0 flex-nowrap items-center gap-2 select-none">
+          <div className="shrink-0">
             <EntityExpandedToggle<ProcessView>
               value={activeView}
               onChange={(next) => {
@@ -466,14 +469,25 @@ export function ProcessExpandedRow({
               ]}
             />
           </div>
-          {/* Desktop: chips DynamicBadge por campo (mismo formato que tareas) */}
+          {headerActions ? (
+            <div
+              className="flex shrink-0 items-center gap-1"
+              onClick={e => e.stopPropagation()}
+              onPointerDown={e => e.stopPropagation()}
+            >
+              {headerActions}
+            </div>
+          ) : null}
+          {/* Desktop: chips en la misma fila (toggle · actions · KPIs) */}
           {!isMobile && activeView === "kpis" && (
-            <ProcessDesktopKpiStrip
-              processTask={processTask}
-              percent={percent}
-              statusLabel={statusLabel}
-              nextProcessLabel={nextProcessLabel}
-            />
+            <div className="min-w-0 flex-1">
+              <ProcessDesktopKpiStrip
+                processTask={processTask}
+                percent={percent}
+                statusLabel={statusLabel}
+                nextProcessLabel={nextProcessLabel}
+              />
+            </div>
           )}
         </div>
 

@@ -15,35 +15,35 @@ function closestHintEl(node: EventTarget | null): HTMLElement | null {
   return el
 }
 
-function readLabel(el: HTMLElement): string {
-  const existing = el.getAttribute("data-hint")?.trim()
-  if (existing) return existing
+/** Siempre gana el `title` vivo (React lo reescribe al cambiar el estado). */
+function consumeLabel(el: HTMLElement): string {
   const title = el.getAttribute("title")?.trim()
-  if (!title) return ""
-  el.setAttribute("data-hint", title)
-  el.removeAttribute("title")
-  return title
+  if (title) {
+    el.setAttribute("data-hint", title)
+    el.removeAttribute("title")
+    return title
+  }
+  return el.getAttribute("data-hint")?.trim() ?? ""
 }
 
-/**
- * Intercepta `title` nativo en todo el ERP y lo pinta con el bubble de diseño.
- * Un solo listener en document — no hay que envolver cada botón.
- */
 export function HintProvider() {
   const [tip, setTip] = useState<Tip | null>(null)
   const current = useRef<HTMLElement | null>(null)
+  const textRef = useRef("")
 
   useEffect(() => {
     const hide = () => {
       current.current = null
+      textRef.current = ""
       setTip(null)
     }
 
     const showFor = (el: HTMLElement) => {
-      const text = readLabel(el)
+      const text = consumeLabel(el)
       if (!text) return
       const r = el.getBoundingClientRect()
       current.current = el
+      textRef.current = text
       setTip({
         text,
         top: r.bottom + GAP,
@@ -57,16 +57,20 @@ export function HintProvider() {
         if (current.current) hide()
         return
       }
-      if (el === current.current) return
+      const next = consumeLabel(el)
+      if (!next) {
+        hide()
+        return
+      }
+      if (el === current.current && next === textRef.current) return
       showFor(el)
     }
 
     const onOut = (e: PointerEvent) => {
+      if (!current.current) return
       const next = closestHintEl(e.relatedTarget)
-      if (next && next === current.current) return
-      if (current.current && !current.current.contains(e.relatedTarget as Node)) {
-        hide()
-      }
+      if (next === current.current) return
+      if (!current.current.contains(e.relatedTarget as Node)) hide()
     }
 
     document.addEventListener("pointerover", onOver, true)

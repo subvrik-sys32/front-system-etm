@@ -33,6 +33,7 @@ import {
   Trash2,
   MousePointer2,
   Hand,
+  Type,
 } from "lucide-react"
 import type { MeasureTool, CanvasTool, TransformMode } from "../types/types"
 import { RULER_SIZE } from "../utils/draw/draw-rulers"
@@ -314,11 +315,11 @@ export function CanvasToolbar({
 
           {onToggleLabels && (
             <ToolBtn
-              title={showLabels ? "Ocultar etiquetas" : "Mostrar etiquetas"}
+              title={showLabels ? "Ocultar etiquetas de plancha" : "Mostrar etiquetas de plancha"}
               onClick={onToggleLabels}
               active={showLabels}
             >
-              <Hash size={16} strokeWidth={1.75} />
+              <Type size={16} strokeWidth={1.75} />
             </ToolBtn>
           )}
 

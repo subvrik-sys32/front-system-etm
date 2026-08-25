@@ -123,6 +123,7 @@ export function DxfCanvas({
   const snapGuidesRef = useRef<SnapGuide[]>([])
 
   const [showGrid, setShowGrid] = useState(true)
+  const [showLabels, setShowLabels] = useState(true)
   const [snapEnabled, setSnapEnabled] = useState(true)
   const [gridStyle, setGridStyle] = useState<"dots" | "lines" | "cross" | "none">("lines")
   const [snapCandidate, setSnapCandidate] = useState<SnapCandidate | null>(null)
@@ -233,7 +234,9 @@ export function DxfCanvas({
   const setToolpath = sim.setToolpath
   useEffect(() => {
     collisionIndexRef.current = buildCollisionIndex(pieces)
-    const entities = piecesToEntities(pieces, hiddenKeys)
+    const entities = piecesToEntities(pieces, hiddenKeys).filter(
+      (e) => showLabels || e.kind !== "text",
+    )
     entitiesRef.current = entities
     const { segments, totalLength, fullPath } = buildToolpath(entities)
     setToolpath(segments, totalLength, fullPath)
@@ -244,7 +247,7 @@ export function DxfCanvas({
       scheduleDraw()
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pieces, sheetSize, hiddenKeys, view, setToolpath])
+  }, [pieces, sheetSize, hiddenKeys, showLabels, view, setToolpath])
 
   useEffect(() => {
     scheduleDraw()
@@ -469,6 +472,8 @@ export function DxfCanvas({
         onOpenChange={setToolsChromeOpen}
         showGrid={showGrid}
         onToggleGrid={() => setShowGrid((v) => !v)}
+        showLabels={showLabels}
+        onToggleLabels={() => setShowLabels((v) => !v)}
         onZoomIn={() => handleZoom("in")}
         onZoomOut={() => handleZoom("out")}
         onFit={handleFit}

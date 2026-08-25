@@ -139,18 +139,18 @@ export function CommentHistoryDialog({
 
           {/* Thread — área de burbujas */}
           <ScrollArea className="min-h-0 flex-1">
-            <div className="flex min-h-full flex-col justify-end gap-3 px-4 py-4">
+            <div className="flex min-h-full flex-col px-4 py-4">
               {loading ? (
-                <div className="flex min-h-48 flex-col items-center justify-center gap-2.5">
+                <div className="flex flex-1 flex-col items-center justify-center gap-2.5">
                   <Spinner size={18} />
                   <p className="text-sm text-muted-foreground">Cargando...</p>
                 </div>
               ) : filteredComments.length === 0 ? (
-                <div className="flex min-h-48 flex-col items-center justify-center">
+                <div className="flex flex-1 flex-col items-center justify-center">
                   <EmptyComments />
                 </div>
               ) : (
-                <>
+                <div className="mt-auto flex flex-col gap-3">
                   <CommentList
                     comments={filteredComments}
                     onEdit={handleEdit}
@@ -158,7 +158,7 @@ export function CommentHistoryDialog({
                     onReply={readOnly ? undefined : setReplyingTo}
                   />
                   <div ref={threadEndRef} aria-hidden className="h-px w-full shrink-0" />
-                </>
+                </div>
               )}
             </div>
           </ScrollArea>

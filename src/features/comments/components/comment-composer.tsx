@@ -127,7 +127,7 @@ export function CommentComposer({
 
   return (
     <div
-      className="flex flex-col gap-1 rounded-2xl bg-foreground/[0.06] px-2 py-1"
+      className="flex flex-col gap-1 rounded-2xl bg-foreground/[0.06] px-2.5 py-1.5"
       style={padBottom > 0 ? { paddingBottom: padBottom } : undefined}
     >
       {showContext && (
@@ -204,20 +204,7 @@ export function CommentComposer({
             />
           </div>
         ) : null}
-          <div className="flex items-center gap-1">
-            {!isEditing && (
-              <button
-                type="button"
-                aria-label="Adjuntar foto"
-                title="Adjuntar foto"
-                disabled={!canCreate}
-                onClick={() => fileInputRef.current?.click()}
-                className="flex size-8 shrink-0 items-center justify-center rounded-[10px] text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground disabled:opacity-40"
-              >
-                <Camera size={16} strokeWidth={2.25} />
-              </button>
-            )}
-
+          <div className="flex items-center gap-1.5">
             <CommentComposerField
               ref={fieldRef}
               defaultValue={editingComment?.message ?? ""}
@@ -244,6 +231,19 @@ export function CommentComposer({
                 className="flex size-8 shrink-0 items-center justify-center rounded-[10px] text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
               >
                 <X size={16} strokeWidth={2.2} />
+              </button>
+            )}
+
+            {!isEditing && (
+              <button
+                type="button"
+                aria-label="Adjuntar foto"
+                title="Adjuntar foto"
+                disabled={!canCreate}
+                onClick={() => fileInputRef.current?.click()}
+                className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-muted text-muted-foreground shadow-xs transition-colors hover:bg-muted/80 hover:text-foreground disabled:opacity-40"
+              >
+                <Camera size={16} strokeWidth={2.25} />
               </button>
             )}
 

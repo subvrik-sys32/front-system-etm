@@ -56,27 +56,12 @@ export function TaskRouteViewer({
           const isCurrent = currentProcess === processCode
 
           return (
-            <div
-              key={processCode}
-              className="relative shrink-0 rounded-lg transition-[box-shadow,filter] duration-300"
-              style={
-                isCurrent
-                  ? {
-                      // Glow suave del color de dominio — sin ring duro
-                      boxShadow: `0 0 0 1px color-mix(in srgb, ${process.color} 45%, transparent), 0 0 14px color-mix(in srgb, ${process.color} 40%, transparent)`,
-                      filter: "brightness(1.06)",
-                    }
-                  : undefined
-              }
-            >
-              {/* Pip vivo: marca “actual” sin texto flotante ni borde grueso */}
+            <div key={processCode} className="relative shrink-0">
+              {/* Actual: solo pip + badge active/pulse — sin ring ni glow */}
               {isCurrent && (
                 <span
-                  className="pointer-events-none absolute -right-0.5 -top-0.5 z-10 size-2 rounded-full shadow-xs"
-                  style={{
-                    backgroundColor: process.color,
-                    boxShadow: `0 0 6px ${process.color}`,
-                  }}
+                  className="pointer-events-none absolute -right-0.5 -top-0.5 z-10 size-2 rounded-full"
+                  style={{ backgroundColor: process.color }}
                   aria-hidden
                 />
               )}

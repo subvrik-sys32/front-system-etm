@@ -312,8 +312,8 @@ export function TaskKpisSection({
 
     return (
       <div className="flex h-8 min-w-0 flex-1 items-center justify-end gap-1.5 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden">
-        {signal.map(chip => (
-          <KpiSignalChip key={chip.key} {...chip} />
+        {signal.map(({ key, ...chip }) => (
+          <KpiSignalChip key={key} {...chip} />
         ))}
       </div>
     )

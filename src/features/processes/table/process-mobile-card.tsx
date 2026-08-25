@@ -129,6 +129,12 @@ function ProcessMobileCardReady({
   const project = processAccess.project(processTask)
   const priority = processAccess.priority(processTask)
   const operator = processAccess.operator(processTask)
+  const coCount = processTask.workflowStep?.coOperatorIds?.length ?? 0
+  const operatorLabel = operator
+    ? coCount > 0
+      ? `${operator.name} +${coCount}`
+      : operator.name
+    : null
 
   // Al colapsar el row, resetear showFields al terminar la animación (no en el mismo frame).
   useEffect(() => {
@@ -261,10 +267,10 @@ function ProcessMobileCardReady({
                     size={12}
                   />
                 </span>
-                {operator ? (
+                {operatorLabel ? (
                   <OperatorNameText
-                    name={operator.name}
-                    color={operator.color}
+                    name={operatorLabel}
+                    color={operator?.color}
                     className="hidden truncate md:inline"
                   />
                 ) : (

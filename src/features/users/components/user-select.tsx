@@ -90,15 +90,12 @@ export function UserSelect(props: Props) {
     ? ENTITY_ICONS[primary.icon]
     : undefined
 
+  // Orden estable del catálogo: no subir seleccionados al tope.
   const filteredItems = useMemo(() => {
     const search = query.trim().toLowerCase()
-    const source = search
-      ? items.filter(u => u.name.toLowerCase().includes(search))
-      : items
-    const selected = values.filter(u => source.some(s => s.id === u.id))
-    const rest = source.filter(u => !selectedIds.has(u.id))
-    return [...selected, ...rest]
-  }, [items, query, values, selectedIds])
+    if (!search) return items
+    return items.filter(u => u.name.toLowerCase().includes(search))
+  }, [items, query])
 
   const close = () => {
     setOpen(false)

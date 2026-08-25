@@ -96,16 +96,30 @@ export function ProcessOperatorCell({
     return primary ? [primary, ...cos] : cos
   }, [processTask.workflowStep, byId])
 
+  const selectedIds = useMemo(
+    () => new Set(selectedValues.map(u => u.id)),
+    [selectedValues],
+  )
+
   const itemMeta = useMemo(() => {
     const map = new Map<
       string,
       { description?: string; descriptionColor?: string }
     >()
     for (const { user, availability } of areaOperators) {
-      map.set(user.id, availabilityMeta(availability))
+      if (selectedIds.has(user.id)) {
+        const isPrimary = selectedValues[0]?.id === user.id
+        // Seleccionado en este step: no mostrar "Libre"
+        map.set(user.id, {
+          description: isPrimary ? "Principal" : "Co-operario",
+          descriptionColor: isPrimary ? "#F59E0B" : "#A78BFA",
+        })
+      } else {
+        map.set(user.id, availabilityMeta(availability))
+      }
     }
     return map
-  }, [areaOperators])
+  }, [areaOperators, selectedIds, selectedValues])
 
   return (
     <UserSelect

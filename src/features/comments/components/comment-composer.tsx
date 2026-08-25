@@ -11,7 +11,6 @@ import { useUpdateComment } from "../hooks/use-update-comment"
 import { useMentionableUsers } from "../hooks/use-mentionable-users"
 import { MentionSuggestions } from "./mention-suggestions"
 import type { Comment, CommentTarget } from "../types/comment.types"
-import { flushSync } from "react-dom"
 
 type Props = {
   target: CommentTarget
@@ -136,16 +135,9 @@ export function CommentComposer({
       onCancelReply?.()
     }
 
-    flushSync(() => {
-      setMessage("")
-      setSelectedImage(null)
-      setMentionQuery(null)
-    })
-
-    const el = textareaRef.current
-    if (el) {
-      void el.offsetHeight
-    }
+    setMessage("")
+    setSelectedImage(null)
+    setMentionQuery(null)
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -238,15 +230,7 @@ export function CommentComposer({
         </div>
       )}
 
-      <Popover
-        forceFloating
-        open={mentionOpen}
-        onOpenChange={next => {
-          if (!next) setMentionQuery(null)
-        }}
-      >
-        <PopoverAnchor asChild>
-          <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1">
             {!isEditing && (
               <div className="flex size-9 shrink-0 items-center justify-center">
                 <IconAction
@@ -288,16 +272,25 @@ export function CommentComposer({
                 <Send className="size-4" />
               )}
             </button>
-          </div>
-        </PopoverAnchor>
+      </div>
 
-        {mentionOpen && (
+      {mentionOpen && (
+        <Popover
+          forceFloating
+          open
+          onOpenChange={next => {
+            if (!next) setMentionQuery(null)
+          }}
+        >
+          <PopoverAnchor asChild>
+            <span className="sr-only" />
+          </PopoverAnchor>
           <MentionSuggestions
             users={filteredUsers}
             onSelect={handleSelectMention}
           />
-        )}
-      </Popover>
+        </Popover>
+      )}
     </div>
   )
 }

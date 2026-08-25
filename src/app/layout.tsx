@@ -10,7 +10,6 @@ import { Sonner } from "@/components/ui/sonner"
 import { RealtimeProvider } from "@/shared/realtime/realtime-provider"
 import { ResponsiveProvider } from "@/shared/responsive/responsive-context"
 import { ThemeProvider } from "@/shared/theme"
-import { HintProvider } from "@/shared/ui/hint/hint-provider"
 
 const geist = Geist({
   subsets: ["latin"],
@@ -26,8 +25,15 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover",
-  interactiveWidget: "overlays-content",
+  // resizes-content (no overlays-content): con overlays-content el teclado
+  // flota SOBRE el contenido sin achicar el layout, y el navegador compensa
+  // haciendo scroll nativo para llevar el input enfocado a la vista — eso es
+  // lo que se sentía como que los inputs de abajo "se corrían" al escribir,
+  // reajustándose con cada cambio del teclado predictivo. Con resizes-content
+  // el layout se achica de verdad para hacerle espacio al teclado, así que el
+  // input queda arriba de él sin necesidad de ese scroll compensatorio. Los
+  // hooks de teclado (use-visual-viewport-frame.ts) ya asumían este modo.
+  interactiveWidget: "resizes-content",
 }
 
 const THEME_INIT_SCRIPT = `
@@ -87,7 +93,6 @@ export default function RootLayout({
                 </div>
 
                 <Sonner />
-                <HintProvider />
               </ResponsiveProvider>
             </ThemeProvider>
           </RealtimeProvider>

@@ -123,11 +123,17 @@ function DesktopShell({ children }: Props) {
   }
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-sidebar text-foreground select-none">
+    // h-full (no h-dvh): el <body> en layout.tsx ya es position:fixed +
+    // inset:0, así que su tamaño lo resuelve el motor de render en vivo
+    // contra el viewport real, frame a frame — no depende de que el
+    // navegador "adivine" el alto en la primera pintura, que es justo el
+    // bug de dvh/svh en Chrome/Android (se recalculan mal al volver de
+    // segundo plano). Heredar con h-full evita reintroducir ese cálculo.
+    <div className="flex h-full overflow-hidden bg-sidebar text-foreground select-none">
       <AppSidebar />
       <main
         onTransitionEnd={handleTransitionEnd}
-        className="relative z-10 flex h-dvh min-w-0 flex-1 flex-col overflow-hidden bg-background"
+        className="relative z-10 flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-background"
         style={{
           borderRadius,
           transition: `border-radius ${TRANSITION_TIMING}`,
@@ -167,13 +173,9 @@ function CompactShell({ children }: Props) {
   }, [isOpen, closeDrawer])
 
   return (
-    // h-svh (no h-dvh): dvh asume, en la primera pintura en Chrome/Android,
-    // que la barra de direcciones ya está colapsada — calcula MÁS alto del
-    // que hay realmente visible, y el TopBar (que vive en top:0 de este
-    // contenedor) nace empujado detrás de esa barra hasta el primer scroll.
-    // svh usa el peor caso (barra visible) así que el layout siempre
-    // arranca bien alineado, aunque no se "expanda" solo al ocultarse la barra.
-    <div className="relative h-svh overflow-hidden bg-sidebar text-foreground select-none">
+    // h-full por la misma razón que en DesktopShell: heredar el tamaño ya
+    // resuelto por el <body fixed inset-0>, no recalcularlo con dvh/svh.
+    <div className="relative h-full overflow-hidden bg-sidebar text-foreground select-none">
       <div
         className="absolute inset-y-0 left-0 z-0"
         style={{ width: DRAWER_WIDTH_PX }}

@@ -15,7 +15,7 @@ import {
 import { SHEET_CONFIG } from "./sheet-config"
 import { suppressDismissClickThrough } from "./suppress-dismiss-click-through"
 import { useSmoothResize } from "./use-smooth-resize"
-import { useVirtualKeyboardOpen } from "./use-virtual-keyboard-open"
+import { useVisualViewportFrame } from "./use-visual-viewport-frame"
 
 type PopoverContentProps = React.ComponentProps<
   typeof PopoverPrimitive.Content
@@ -68,7 +68,11 @@ export function PopoverContent({
   const measuredHeight = size.height ?? lastMeasuredHeightRef.current
 
   const [isInputFocused, setIsInputFocused] = React.useState(false)
-  const keyboardOpen = useVirtualKeyboardOpen()
+  // keyboardOpen ya viene calculado para resizes-content (compara el alto
+  // de layout actual contra el máximo visto, no innerHeight vs
+  // visualViewport — esa comparación daba ~0 bajo resizes-content, que es
+  // el modo que usa el viewport meta ahora).
+  const { keyboardOpen } = useVisualViewportFrame()
 
   // Solo expandir cuando hay teclado real + foco (no F12 sin teclado visual)
   const expandForKeyboard = isInputFocused && keyboardOpen

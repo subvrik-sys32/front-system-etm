@@ -99,12 +99,12 @@ export function CommentHistoryDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           size="large"
-          className="flex h-[min(40rem,85dvh)] max-h-[85dvh] w-full max-w-180 flex-col gap-0 overflow-hidden rounded-2xl p-0 text-foreground shadow-xs"
+          className="flex h-full flex-col gap-0 overflow-hidden p-0 text-foreground shadow-xs sm:h-[min(40rem,85dvh)] sm:max-h-[85dvh] sm:max-w-180 sm:rounded-2xl"
           onPointerDownOutside={preventNestedDialogClose}
           onInteractOutside={preventNestedDialogClose}
         >
-          {/* Header — mismo peso que CAD AI / FormDialog */}
-          <DialogHeader className="shrink-0 px-4 py-3">
+          {/* Barra fija del chat — no scrollea con el hilo */}
+          <DialogHeader className="z-10 shrink-0 border-b border-border/40 bg-popover px-4 py-3">
             <div className="flex items-center gap-3">
               <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-foreground shadow-xs">
                 <MessageSquare size={18} strokeWidth={2.4} />

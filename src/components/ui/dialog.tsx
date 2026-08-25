@@ -40,11 +40,11 @@ type DialogContentProps =
     showCloseButton?: boolean
     // "default": diálogo centrado, sin cambios entre breakpoints
     // (usado por confirmaciones chicas como ActionDialog).
-    // "large": formularios grandes (Nueva tarea, Editar perfil,
-    // Nuevo usuario) — en mobile se vuelve pantalla completa
-    // (edge-to-edge, sin esquinas redondeadas); en desktop se
-    // comporta exactamente igual que "default" más el ancho que
-    // el propio consumidor defina vía className.
+    // "large": form / chat a pantalla en móvil.
+    // Móvil: inset-0 + h-full del body (resizes-content achica el
+    // body → el dialog se achica por abajo). Cabecera shrink-0 fija;
+    // body flex-1 scrollea; composer shrink-0 sube con el teclado.
+    // No dvh (otro viewport). Desktop: card; el consumidor pone max-w/h.
     size?: "default" | "large"
   }
 
@@ -209,18 +209,15 @@ export function DialogContent({
           "outline-none",
           "select-none",
           className,
-          // Override de pantalla completa: se coloca AL FINAL a
-          // propósito — tailwind-merge resuelve conflictos de
-          // utilidades quedándose con la última, así que esto
-          // siempre gana sobre el className que pase FormDialog
-          // (ej. w-180 max-w-180) o cualquier otro consumidor,
-          // sin que cada uno tenga que saber de responsive.
+          // Último gana (tw-merge). Móvil large = body, no dvh.
           isFullscreenMobile && [
             "inset-0",
             "left-0",
+            "right-0",
             "top-0",
-            "w-screen",
-            "h-dvh",
+            "bottom-0",
+            "h-full",
+            "w-full",
             "max-w-none",
             "max-h-none",
             "translate-x-0",

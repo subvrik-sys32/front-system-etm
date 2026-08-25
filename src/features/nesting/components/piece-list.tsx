@@ -1,7 +1,7 @@
 "use client"
 
 import { forwardRef, memo, useEffect, useImperativeHandle, useRef, useState, useMemo } from "react"
-import { Import, FileWarning, AlertTriangle, Layers, Search, X, Trash2, ListOrdered, Ruler } from "lucide-react"
+import { FilePlus, FileWarning, AlertTriangle, Layers, Search, X, Trash2, ListOrdered, Ruler } from "lucide-react"
 import {
   EntityExpandedToggle,
   type EntityExpandedToggleOption,
@@ -10,9 +10,10 @@ import { PieceListRow } from "./piece-list-row"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Spinner } from "@/shared/ui/spinner/spinner"
 import { isSupportedCadFile, isPdfFile } from "../cad/cad-file-types"
 import { parsePdf } from "../cad/pdf-parser"
-import { cadParseApi } from "../api/cad-parse.api"
+import { parseCadLocal } from "../cad/parse-cad-local"
 import { scanMaterialData, type MaterialData } from "../cad/thickness-scanner"
 import type { PieceOutline, SubEntity } from "../engine/types"
 
@@ -185,7 +186,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
 
       if (isSupportedCadFile(file.name)) {
         try {
-          const parsed = await cadParseApi.parseFile(file)
+          const parsed = parseCadLocal(file.name, await file.text())
           if (!parsed.valid || !parsed.pieces?.length) {
             rejected.push(`${file.name} (geometría inválida)`)
             continue
@@ -221,7 +222,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
           }
           existingFileNames.add(file.name.toLowerCase())
         } catch {
-          rejected.push(`${file.name} (error al parsear en servidor)`)
+          rejected.push(`${file.name} (error al parsear)`)
         }
         continue
       }
@@ -315,8 +316,8 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
       onDrop={handleDrop}
     >
       {isDraggingOver && (
-        <div className="absolute inset-0 z-50 bg-black/85 backdrop-blur-sm border-2 border-dashed border-primary/50 flex flex-col items-center justify-center gap-2 p-4 text-center rounded-xl animate-in fade-in duration-150 pointer-events-none">
-          <Import className="h-8 w-8 text-primary animate-bounce" />
+        <div className="absolute inset-0 z-50 bg-background border-2 border-dashed border-primary/50 flex flex-col items-center justify-center gap-2 p-4 text-center rounded-xl animate-in fade-in duration-150 pointer-events-none">
+          <Spinner size={28} />
           <p className="text-xs font-semibold text-foreground">Suelta tus archivos CAD aquí</p>
         </div>
       )}
@@ -352,7 +353,7 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
             </Button>
           )}
           <Button size="icon-sm" variant="ghost" onClick={() => fileInputRef.current?.click()} disabled={disabled} title="Importar archivos">
-            <Import className="h-4 w-4" />
+            <FilePlus className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -405,10 +406,10 @@ export const PieceList = memo(forwardRef<PieceListHandle, PieceListProps>(functi
       />
 
       {importing && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 rounded-xl bg-background/80 backdrop-blur-sm">
-          <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 rounded-xl bg-background">
+          <Spinner size={28} />
           <p className="text-sm font-medium text-foreground">Importando piezas…</p>
-          <p className="text-xs text-muted-foreground">DXF/GEO en servidor · PDF local</p>
+          <p className="text-xs text-muted-foreground">Parse local · sin red</p>
         </div>
       )}
       {errorMsg && (

@@ -55,10 +55,10 @@ export function LayerManager({ layers, hiddenKeys, onToggle, onShowAll }: LayerM
 
       <div
         className={`flex flex-col gap-1 overflow-hidden transition-all duration-200 ease-in-out ${
-          isExpanded ? "mt-2 max-h-125 opacity-100 p-1" : "max-h-0 opacity-0 pointer-events-none"
+          isExpanded ? "mt-2 max-h-125 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
         }`}
       >
-        <div className="flex flex-col gap-1 rounded-lg bg-background p-1 dark:bg-foreground/5">
+        <div className="flex flex-col gap-1 rounded-lg bg-background p-2.5 dark:bg-foreground/5">
           {layers.map((layer) => {
             const isHidden = hiddenKeys.has(layer.key.toUpperCase())
             return (

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
 const GAP = 6
+const PAD = 8
 
 type Tip = { text: string; top: number; left: number }
 
@@ -15,7 +16,6 @@ function closestHintEl(node: EventTarget | null): HTMLElement | null {
   return el
 }
 
-/** Siempre gana el `title` vivo (React lo reescribe al cambiar el estado). */
 function consumeLabel(el: HTMLElement): string {
   const title = el.getAttribute("title")?.trim()
   if (title) {
@@ -24,6 +24,22 @@ function consumeLabel(el: HTMLElement): string {
     return title
   }
   return el.getAttribute("data-hint")?.trim() ?? ""
+}
+
+function place(el: HTMLElement, text: string): Tip {
+  const r = el.getBoundingClientRect()
+  const estW = Math.min(280, Math.max(64, text.length * 6.2 + 16))
+  const estH = 24
+  let left = r.left + r.width / 2
+  let top = r.bottom + GAP
+  const minL = PAD + estW / 2
+  const maxL = window.innerWidth - PAD - estW / 2
+  left = Math.min(Math.max(left, minL), Math.max(minL, maxL))
+  if (top + estH + PAD > window.innerHeight) {
+    top = r.top - GAP - estH
+  }
+  if (top < PAD) top = PAD
+  return { text, top, left }
 }
 
 export function HintProvider() {
@@ -41,14 +57,9 @@ export function HintProvider() {
     const showFor = (el: HTMLElement) => {
       const text = consumeLabel(el)
       if (!text) return
-      const r = el.getBoundingClientRect()
       current.current = el
       textRef.current = text
-      setTip({
-        text,
-        top: r.bottom + GAP,
-        left: r.left + r.width / 2,
-      })
+      setTip(place(el, text))
     }
 
     const onOver = (e: PointerEvent) => {
@@ -73,11 +84,26 @@ export function HintProvider() {
       if (!current.current.contains(e.relatedTarget as Node)) hide()
     }
 
+    const mo = new MutationObserver(muts => {
+      for (const m of muts) {
+        if (m.type !== "attributes" || m.attributeName !== "title") continue
+        const el = m.target
+        if (!(el instanceof HTMLElement) || !el.hasAttribute("title")) continue
+        consumeLabel(el)
+      }
+    })
+    mo.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["title"],
+      subtree: true,
+    })
+
     document.addEventListener("pointerover", onOver, true)
     document.addEventListener("pointerout", onOut, true)
     window.addEventListener("scroll", hide, true)
     window.addEventListener("resize", hide)
     return () => {
+      mo.disconnect()
       document.removeEventListener("pointerover", onOver, true)
       document.removeEventListener("pointerout", onOut, true)
       window.removeEventListener("scroll", hide, true)
@@ -90,7 +116,7 @@ export function HintProvider() {
   return createPortal(
     <span
       role="tooltip"
-      className="pointer-events-none fixed z-300 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-popover px-2 py-1 text-[10px] font-medium text-popover-foreground shadow-md ring-0 sm:block"
+      className="pointer-events-none fixed z-300 hidden max-w-[min(18rem,calc(100vw-1rem))] -translate-x-1/2 truncate rounded-md bg-popover px-2 py-1 text-[10px] font-medium text-popover-foreground shadow-md sm:block"
       style={{ top: tip.top, left: tip.left }}
     >
       {tip.text}

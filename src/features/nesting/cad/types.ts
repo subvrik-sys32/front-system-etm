@@ -10,6 +10,10 @@ export interface CadEntity {
   layer: string
   /** Color hexadecimal, ej. "#00FF00" (corte) o "#FFA500" (doblez/marca). */
   color: string
+  /** Etiqueta TEXT (PLANCHA N, etc.). outline.points[0] = inserción. */
+  text?: string
+  /** Altura DXF (código 40). */
+  textHeight?: number
 }
 
 /**

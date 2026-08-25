@@ -50,6 +50,7 @@ const mdBtnRed =
 const mdBtnActive = "bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary"
 const mdDivider = "mx-0.5 h-5 w-px shrink-0 bg-foreground/10"
 
+/** Tooltip nativo del ERP: `title` + `aria-label` (EntityToggle, FAB, PrimaryAction…). */
 function ToolBtn({
   title,
   onClick,
@@ -76,22 +77,9 @@ function ToolBtn({
       tabIndex={tabIndex}
       onClick={onClick}
       onPointerDown={(e) => e.stopPropagation()}
-      className={`group/tool relative ${mdBtn} ${active ? mdBtnActive : ""} ${className ?? ""}`}
+      className={`${mdBtn} ${active ? mdBtnActive : ""} ${className ?? ""}`}
     >
       {children}
-      <span
-        className="
-          pointer-events-none absolute left-1/2 top-[calc(100%+6px)] z-50
-          -translate-x-1/2 whitespace-nowrap rounded-md
-          bg-popover px-2 py-1 text-[10px] font-medium text-popover-foreground
-          shadow-md ring-1 ring-border
-          opacity-0 transition-opacity duration-150
-          group-hover/tool:opacity-100
-          max-sm:hidden
-        "
-      >
-        {title}
-      </span>
     </button>
   )
 }
@@ -99,6 +87,8 @@ function ToolBtn({
 export interface CanvasToolbarProps {
   showGrid: boolean
   onToggleGrid: () => void
+  showLabels?: boolean
+  onToggleLabels?: () => void
   onZoomIn: () => void
   onZoomOut: () => void
   onFit: () => void
@@ -155,6 +145,8 @@ const SPEEDS = [0.5, 1, 2, 4] as const
 export function CanvasToolbar({
   showGrid,
   onToggleGrid,
+  showLabels = true,
+  onToggleLabels,
   onZoomIn,
   onZoomOut,
   onFit,
@@ -320,28 +312,25 @@ export function CanvasToolbar({
             )}
           </ToolBtn>
 
+          {onToggleLabels && (
+            <ToolBtn
+              title={showLabels ? "Ocultar etiquetas" : "Mostrar etiquetas"}
+              onClick={onToggleLabels}
+              active={showLabels}
+            >
+              <Hash size={16} strokeWidth={1.75} />
+            </ToolBtn>
+          )}
+
           {onGridStyleChange && (
             <Popover open={displayOpen} onOpenChange={setDisplayOpen}>
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className={`group/tool relative ${mdBtn} ${showGrid && gridStyle !== "none" ? mdBtnActive : ""}`}
+                  className={`${mdBtn} ${showGrid && gridStyle !== "none" ? mdBtnActive : ""}`}
                   title="Estilo de fondo"
                   aria-label="Estilo de fondo"
                 >
-                  <span
-                    className="
-                      pointer-events-none absolute left-1/2 top-[calc(100%+6px)] z-50
-                      -translate-x-1/2 whitespace-nowrap rounded-md
-                      bg-popover px-2 py-1 text-[10px] font-medium text-popover-foreground
-                      shadow-md ring-1 ring-border
-                      opacity-0 transition-opacity duration-150
-                      group-hover/tool:opacity-100
-                      max-sm:hidden
-                    "
-                  >
-                    Estilo de fondo
-                  </span>
                   {gridStyle === "lines" ? (
                     <Hash size={16} strokeWidth={1.75} />
                   ) : gridStyle === "cross" ? (

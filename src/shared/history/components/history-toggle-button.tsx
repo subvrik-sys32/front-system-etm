@@ -22,7 +22,9 @@ export function HistoryToggleButton({ count, active, onClick }: Props) {
       <span
         className={cn(
           "flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none shadow-xs select-none",
-          SIDEBAR_COUNT_BADGE,
+          active
+            ? "bg-primary text-primary-foreground"
+            : SIDEBAR_COUNT_BADGE,
         )}
       >
         {count > 9 ? "9+" : count}

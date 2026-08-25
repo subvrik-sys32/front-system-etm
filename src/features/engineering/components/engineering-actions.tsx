@@ -7,6 +7,9 @@ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { PrimaryAction } from "@/shared/ui/actions/primary-action"
 import { FabTrigger } from "@/shared/ui/speed-dial-fab/fab-trigger"
+import {
+  SIDEBAR_COUNT_BADGE,
+} from "@/shared/responsive/layout/sidebar/sidebar-row"
 
 import { EngineeringTaskDialog } from "./engineering-task-dialog"
 
@@ -54,7 +57,7 @@ export function EngineeringCreateDialAction() {
         label="NUEVA TAREA"
         disabled={!canCreate}
         onClick={handleOpen}
-        accentClassName="bg-primary text-primary-foreground"
+        accentClassName={SIDEBAR_COUNT_BADGE}
       />
       {dialog}
     </>

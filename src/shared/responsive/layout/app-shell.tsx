@@ -15,7 +15,11 @@ import { usePageTitleStore } from "@/shared/responsive/navigation/page-title-sto
 import { usePageActionsStore } from "@/shared/responsive/navigation/page-actions-store"
 import { usePageToolbarStore } from "@/shared/responsive/navigation/page-toolbar-store"
 import { isImmersiveRoute } from "@/shared/responsive/navigation/immersive-routes"
-import { TOP_BAR_HEIGHT_PX, BOTTOM_NAV_HEIGHT_PX } from "./chrome-constants"
+import {
+  TOP_BAR_HEIGHT_PX,
+  BOTTOM_NAV_HEIGHT_PX,
+  DESKTOP_TOP_PAD_PX,
+} from "./chrome-constants"
 import { TopBar } from "@/shared/responsive/mobile/top-bar"
 import { useClearFocusOnNav } from "@/shared/hooks/use-clear-focus-on-nav"
 import { BottomNavigation } from "../mobile/bottom-navigation"
@@ -34,15 +38,16 @@ function DesktopTopBar() {
     <header
       className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center gap-2 overflow-visible px-3"
       style={{
-        paddingTop: "env(safe-area-inset-top, 0px)",
-        height: "calc(2.75rem + env(safe-area-inset-top, 0px))",
+        // respiro real (desktop safe-area suele ser 0) + notch si existe
+        paddingTop: `calc(${DESKTOP_TOP_PAD_PX}px + env(safe-area-inset-top, 0px))`,
+        height: `calc(2.75rem + ${DESKTOP_TOP_PAD_PX}px + env(safe-area-inset-top, 0px))`,
       }}
     >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 backdrop-blur-xl"
         style={{
-          height: "calc(3.5rem + env(safe-area-inset-top, 0px))",
+          height: `calc(3.5rem + ${DESKTOP_TOP_PAD_PX}px + env(safe-area-inset-top, 0px))`,
           maskImage: "linear-gradient(to bottom, black 40%, transparent)",
           WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent)",
         }}
@@ -51,7 +56,7 @@ function DesktopTopBar() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 bg-background/65"
         style={{
-          height: "calc(3.5rem + env(safe-area-inset-top, 0px))",
+          height: `calc(3.5rem + ${DESKTOP_TOP_PAD_PX}px + env(safe-area-inset-top, 0px))`,
           maskImage: "linear-gradient(to bottom, black 30%, transparent)",
           WebkitMaskImage: "linear-gradient(to bottom, black 30%, transparent)",
         }}

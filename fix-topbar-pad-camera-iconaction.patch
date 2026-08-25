@@ -1,0 +1,93 @@
+diff --git a/src/features/comments/components/comment-composer.tsx b/src/features/comments/components/comment-composer.tsx
+index 96faa4b..73e7ced 100644
+--- a/src/features/comments/components/comment-composer.tsx
++++ b/src/features/comments/components/comment-composer.tsx
+@@ -2,6 +2,7 @@
+ 
+ import { useEffect, useRef, useState, ChangeEvent } from "react"
+ import { Camera, Check, ImageIcon, Pencil, Reply, Send, X } from "lucide-react"
++import { IconAction } from "@/shared/ui/actions/icon-action"
+ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+ import { useVisualViewportFrame } from "@/components/ui/popover/use-visual-viewport-frame"
+ import { usePermissions } from "@/features/permissions/hooks/use-permissions"
+@@ -235,16 +236,12 @@ export function CommentComposer({
+             )}
+ 
+             {!isEditing && (
+-              <button
+-                type="button"
+-                aria-label="Adjuntar foto"
+-                title="Adjuntar foto"
++              <IconAction
++                icon={Camera}
+                 disabled={!canCreate}
++                aria-label="Adjuntar foto"
+                 onClick={() => fileInputRef.current?.click()}
+-                className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-muted text-muted-foreground shadow-xs transition-colors hover:bg-muted/80 hover:text-foreground disabled:opacity-40"
+-              >
+-                <Camera size={16} strokeWidth={2.25} />
+-              </button>
++              />
+             )}
+ 
+             <button
+diff --git a/src/shared/responsive/layout/app-shell.tsx b/src/shared/responsive/layout/app-shell.tsx
+index ac0e96c..bab1d64 100644
+--- a/src/shared/responsive/layout/app-shell.tsx
++++ b/src/shared/responsive/layout/app-shell.tsx
+@@ -15,7 +15,11 @@ import { usePageTitleStore } from "@/shared/responsive/navigation/page-title-sto
+ import { usePageActionsStore } from "@/shared/responsive/navigation/page-actions-store"
+ import { usePageToolbarStore } from "@/shared/responsive/navigation/page-toolbar-store"
+ import { isImmersiveRoute } from "@/shared/responsive/navigation/immersive-routes"
+-import { TOP_BAR_HEIGHT_PX, BOTTOM_NAV_HEIGHT_PX } from "./chrome-constants"
++import {
++  TOP_BAR_HEIGHT_PX,
++  BOTTOM_NAV_HEIGHT_PX,
++  DESKTOP_TOP_PAD_PX,
++} from "./chrome-constants"
+ import { TopBar } from "@/shared/responsive/mobile/top-bar"
+ import { useClearFocusOnNav } from "@/shared/hooks/use-clear-focus-on-nav"
+ import { BottomNavigation } from "../mobile/bottom-navigation"
+@@ -34,15 +38,16 @@ function DesktopTopBar() {
+     <header
+       className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center gap-2 overflow-visible px-3"
+       style={{
+-        paddingTop: "env(safe-area-inset-top, 0px)",
+-        height: "calc(2.75rem + env(safe-area-inset-top, 0px))",
++        // respiro real (desktop safe-area suele ser 0) + notch si existe
++        paddingTop: `calc(${DESKTOP_TOP_PAD_PX}px + env(safe-area-inset-top, 0px))`,
++        height: `calc(2.75rem + ${DESKTOP_TOP_PAD_PX}px + env(safe-area-inset-top, 0px))`,
+       }}
+     >
+       <div
+         aria-hidden
+         className="pointer-events-none absolute inset-x-0 top-0 -z-10 backdrop-blur-xl"
+         style={{
+-          height: "calc(3.5rem + env(safe-area-inset-top, 0px))",
++          height: `calc(3.5rem + ${DESKTOP_TOP_PAD_PX}px + env(safe-area-inset-top, 0px))`,
+           maskImage: "linear-gradient(to bottom, black 40%, transparent)",
+           WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent)",
+         }}
+@@ -51,7 +56,7 @@ function DesktopTopBar() {
+         aria-hidden
+         className="pointer-events-none absolute inset-x-0 top-0 -z-10 bg-background/65"
+         style={{
+-          height: "calc(3.5rem + env(safe-area-inset-top, 0px))",
++          height: `calc(3.5rem + ${DESKTOP_TOP_PAD_PX}px + env(safe-area-inset-top, 0px))`,
+           maskImage: "linear-gradient(to bottom, black 30%, transparent)",
+           WebkitMaskImage: "linear-gradient(to bottom, black 30%, transparent)",
+         }}
+diff --git a/src/shared/responsive/layout/chrome-constants.ts b/src/shared/responsive/layout/chrome-constants.ts
+index 026b493..a46b236 100644
+--- a/src/shared/responsive/layout/chrome-constants.ts
++++ b/src/shared/responsive/layout/chrome-constants.ts
+@@ -14,5 +14,7 @@ export const BOTTOM_NAV_HEIGHT_PX = 80
+ /** pt-1 + h-10 input + mb-2 (mismo gap que empty mt-2). */
+ export const PAGE_SEARCH_BAR_HEIGHT_PX = 52
+ 
+-/** Reserva top desktop = alto del blur del topbar (h-16), no solo h-14 del header. */
+-export const DESKTOP_TOP_BAR_HEIGHT_PX = 64
++/** Aire entre el borde superior del viewport y el topbar (desktop/tablet). */
++export const DESKTOP_TOP_PAD_PX = 10
++/** Reserva top desktop = pad + blur del topbar (antes 64; +pad para no pegar al browser). */
++export const DESKTOP_TOP_BAR_HEIGHT_PX = 74

@@ -14,5 +14,7 @@ export const BOTTOM_NAV_HEIGHT_PX = 80
 /** pt-1 + h-10 input + mb-2 (mismo gap que empty mt-2). */
 export const PAGE_SEARCH_BAR_HEIGHT_PX = 52
 
-/** Reserva top desktop = alto del blur del topbar (h-16), no solo h-14 del header. */
-export const DESKTOP_TOP_BAR_HEIGHT_PX = 64
+/** Aire entre el borde superior del viewport y el topbar (desktop/tablet). */
+export const DESKTOP_TOP_PAD_PX = 10
+/** Reserva top desktop = pad + blur del topbar (antes 64; +pad para no pegar al browser). */
+export const DESKTOP_TOP_BAR_HEIGHT_PX = 74

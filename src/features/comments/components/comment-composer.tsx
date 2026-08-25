@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, ChangeEvent } from "react"
 import { Camera, Check, ImageIcon, Pencil, Reply, Send, X } from "lucide-react"
 import { IconAction } from "@/shared/ui/actions/icon-action"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+import { useVisualViewportFrame } from "@/components/ui/popover/use-visual-viewport-frame"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { useCreateComment } from "../hooks/use-create-comment"
 import { useUpdateComment } from "../hooks/use-update-comment"
@@ -47,6 +48,7 @@ export function CommentComposer({
   const { has } = usePermissions()
   const canCreate = isEditing || has(PermissionCode.COMMENT_CREATE)
   const busy = updating
+  const { keyboardInset } = useVisualViewportFrame()
 
   useEffect(() => {
     fieldRef.current?.setValue(editingComment?.message ?? "")
@@ -120,7 +122,10 @@ export function CommentComposer({
   const canSubmit = (hasText || !!selectedImage) && !busy && canCreate
 
   return (
-    <div className="flex flex-col gap-1.5 rounded-2xl bg-foreground/[0.06] px-2 py-1.5">
+    <div
+      className="flex flex-col gap-1.5 rounded-2xl bg-foreground/[0.06] px-2 py-1.5"
+      style={keyboardInset ? { paddingBottom: keyboardInset } : undefined}
+    >
       {showContext && (
         <div className="flex items-start gap-2 rounded-xl bg-foreground/[0.04] px-2.5 py-2">
           <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground shadow-xs">

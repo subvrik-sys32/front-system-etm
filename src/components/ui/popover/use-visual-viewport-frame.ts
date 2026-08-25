@@ -41,13 +41,18 @@ function measure(): VisualViewportFrame {
     stableLayoutHeight = layoutH
   }
 
-  const keyboardInset = Math.max(0, Math.round(stableLayoutHeight - layoutH))
+  const layoutInset = Math.max(0, Math.round(stableLayoutHeight - layoutH))
+  const vv = window.visualViewport
+  const covered = vv
+    ? Math.max(0, Math.round(layoutH - vv.height - vv.offsetTop))
+    : 0
+  const keyboardInset = Math.max(layoutInset, covered)
 
   return {
-    top: 0,
-    left: 0,
-    width: layoutW,
-    height: layoutH,
+    top: vv ? Math.round(vv.offsetTop) : 0,
+    left: vv ? Math.round(vv.offsetLeft) : 0,
+    width: vv ? Math.round(vv.width) : layoutW,
+    height: vv ? Math.round(vv.height) : layoutH,
     keyboardInset,
     keyboardOpen: keyboardInset >= KEYBOARD_THRESHOLD_PX,
   }
@@ -68,12 +73,16 @@ export function useVisualViewportFrame(): VisualViewportFrame {
     window.addEventListener("resize", tick)
     window.addEventListener("focusin", tick)
     window.addEventListener("focusout", tick)
+    window.visualViewport?.addEventListener("resize", tick)
+    window.visualViewport?.addEventListener("scroll", tick)
 
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener("resize", tick)
       window.removeEventListener("focusin", tick)
       window.removeEventListener("focusout", tick)
+      window.visualViewport?.removeEventListener("resize", tick)
+      window.visualViewport?.removeEventListener("scroll", tick)
     }
   }, [])
 

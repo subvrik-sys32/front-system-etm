@@ -142,6 +142,9 @@ export function RealtimeProvider({
               {
                 id: `notification:${notification.id}`,
                 duration: Infinity,
+                unstyled: true,
+                className:
+                  "!bg-transparent !border-0 !p-0 !shadow-none !w-auto !max-w-none !min-w-0 !rounded-none",
               },
             )
           } else if (!notification.read) {

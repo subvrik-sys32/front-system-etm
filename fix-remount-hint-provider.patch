@@ -1,0 +1,20 @@
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 67f1cfb..d208a03 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -10,6 +10,7 @@ import { Sonner } from "@/components/ui/sonner"
+ import { RealtimeProvider } from "@/shared/realtime/realtime-provider"
+ import { ResponsiveProvider } from "@/shared/responsive/responsive-context"
+ import { ThemeProvider } from "@/shared/theme"
++import { HintProvider } from "@/shared/ui/hint/hint-provider"
+ 
+ const geist = Geist({
+   subsets: ["latin"],
+@@ -87,6 +88,7 @@ export default function RootLayout({
+                 </div>
+ 
+                 <Sonner />
++                <HintProvider />
+               </ResponsiveProvider>
+             </ThemeProvider>
+           </RealtimeProvider>

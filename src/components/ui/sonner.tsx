@@ -14,12 +14,12 @@ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 export function Sonner() {
   const theme = useThemeStore(s => s.resolved)
-  const { isMobile, ready } = useResponsive()
+  const { isCompact, ready } = useResponsive()
 
   return (
     <Toaster
       theme={theme}
-      position={ready && isMobile ? "bottom-center" : "bottom-right"}
+      position={ready && isCompact ? "bottom-center" : "bottom-right"}
       gap={8}
       offset={16}
       visibleToasts={4}

@@ -31,7 +31,7 @@ export function NotificationToast({
       : ""
 
   return (
-    <div className="relative grid w-[min(100vw-2rem,22rem)] grid-cols-[auto_1fr] items-center gap-3 rounded-xl border border-border bg-card p-3.5 pr-8 text-left text-foreground shadow-toast overflow-hidden">
+    <div className="relative mx-auto grid w-[min(100vw-2rem,22rem)] grid-cols-[auto_1fr] items-center gap-3 rounded-xl border border-border bg-card p-3.5 pr-8 text-left text-foreground shadow-toast overflow-hidden">
       {onDismiss && (
         <button
           type="button"

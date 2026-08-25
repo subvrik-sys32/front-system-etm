@@ -144,7 +144,7 @@ export function RealtimeProvider({
                 duration: Infinity,
                 unstyled: true,
                 className:
-                  "!bg-transparent !border-0 !p-0 !shadow-none !w-auto !max-w-none !min-w-0 !rounded-none",
+                  "!flex !w-full !max-w-none !justify-center !border-0 !bg-transparent !p-0 !shadow-none !rounded-none",
               },
             )
           } else if (!notification.read) {

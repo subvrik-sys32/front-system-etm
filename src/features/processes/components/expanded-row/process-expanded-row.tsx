@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { useSearchParams } from "next/navigation"
-import { Activity, ArrowRight, Clock, MessageSquare, Puzzle } from "lucide-react"
+import { Activity, ArrowRight, Clock, Clock3, MessageSquare, Package, Puzzle, Layers3 } from "lucide-react"
 
 import type { ProcessTask } from "../../types/process.types"
 
@@ -14,6 +14,13 @@ import {
 } from "@/shared/ui/entity-expanded-row"
 
 import { KpiCarousel, type KpiItem } from "@/shared/ui/mini-card/kpi-carousel"
+import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
+import { ProcessEditableValue } from "./cards/process-editable-value"
+import { useWorkflowStepField } from "@/features/workflow/hooks/use-workflow-step-field"
+import { getWorkflowStepContext } from "@/features/workflow/utils/get-workflow-step-context"
+import { getGlassSurface } from "@/shared/utils/badge-colors"
+import { useThemeStore } from "@/shared/theme"
+import { workflowAccess } from "@/features/workflow/access/workflow-access"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { getProcessProgress } from "@/features/processes/selectors/get-process-progress"
 import { useActiveCommentContextStore } from "@/features/comments/store/active-comment-context-store"
@@ -30,6 +37,171 @@ import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
 
 type Props = {
   processTask: ProcessTask
+}
+
+
+
+/** 4 chips (= 4 cards) con detalle; producción editable (Ingresar). */
+function ProcessDesktopKpiStrip({
+  processTask,
+  percent,
+  statusLabel,
+  nextProcessLabel,
+}: {
+  processTask: ProcessTask
+  percent: number
+  statusLabel: string
+  nextProcessLabel: string
+}) {
+  const task = processTask.task
+  const step = processTask.workflowStep
+  const code = step?.processCode
+  const resolved = useThemeStore(s => s.resolved)
+  const updateField = useWorkflowStepField()
+  const { stepId, locked } = getWorkflowStepContext(processTask)
+
+  const started = workflowAccess.startedAt(processTask)
+  const completed = workflowAccess.completedAt(processTask)
+  const fmtTime = (v: string | null) =>
+    v
+      ? new Date(v).toLocaleTimeString("es-PE", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "—"
+
+  const showOutput = code != null && ["CT", "PL", "SD", "PT"].includes(code)
+  const showPlRt = code === "CT"
+  const plRtSuffix =
+    task.plRt?.replace(/\d+/g, "").trim() ?? ""
+
+  const toNumber = (value: unknown): number | null => {
+    if (value == null) return null
+    const text = String(value).trim()
+    if (text === "") return null
+    const n = Number(text)
+    return Number.isFinite(n) ? n : null
+  }
+
+  const ChipShell = ({
+    color,
+    icon: Icon,
+    title,
+    children,
+  }: {
+    color: string
+    icon: typeof Activity
+    title: string
+    children: ReactNode
+  }) => {
+    const glass = getGlassSurface(color, resolved)
+    return (
+      <div
+        title={title}
+        className="flex h-8 min-h-8 shrink-0 select-none items-center gap-1.5 overflow-hidden rounded-lg px-2.5"
+        style={{ background: glass.background, color: glass.text }}
+      >
+        <Icon size={13} className="shrink-0 opacity-90" style={{ color: glass.text }} />
+        <div className="flex min-w-0 items-center gap-1.5 text-[11px] font-bold leading-none tracking-wide">
+          {children}
+        </div>
+      </div>
+    )
+  }
+
+  const muted = (label: string, color: string) => {
+    const glass = getGlassSurface(color, resolved)
+    return (
+      <span
+        className="text-[8px] font-bold uppercase tracking-wider opacity-70"
+        style={{ color: glass.textMuted }}
+      >
+        {label}
+      </span>
+    )
+  }
+
+  return (
+    <div className="flex h-8 min-w-0 flex-1 items-center justify-end gap-1.5 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden">
+      {/* Producción */}
+      <ChipShell color="#f99d9d" icon={Puzzle} title="Producción">
+        {muted("In", "#f99d9d")}
+        <span className="tabular-nums">{processTask.inputQuantity ?? "—"}</span>
+        {showOutput && (
+          <>
+            <span className="opacity-50">→</span>
+            {muted("Out", "#f99d9d")}
+            <span className="min-w-[2.5rem] tabular-nums">
+              <ProcessEditableValue
+                numeric
+                value={step?.piecesOutput ?? null}
+                disabled={locked}
+                onSave={async value => {
+                  if (!stepId) return
+                  const piecesOutput = toNumber(value)
+                  await updateField(stepId, { piecesOutput }, { piecesOutput })
+                }}
+              />
+            </span>
+          </>
+        )}
+        {showPlRt && (
+          <>
+            <span className="opacity-40">·</span>
+            {muted("PL/RT", "#f99d9d")}
+            <span className="min-w-[2.5rem] tabular-nums">
+              <ProcessEditableValue
+                numeric
+                value={step?.plRtReal ?? null}
+                suffix={plRtSuffix}
+                disabled={locked}
+                onSave={async value => {
+                  if (!stepId) return
+                  const plRtReal = toNumber(value)
+                  await updateField(stepId, { plRtReal }, { plRtReal })
+                }}
+              />
+            </span>
+          </>
+        )}
+      </ChipShell>
+
+      {/* Material */}
+      <ChipShell color={task.material.color} icon={Package} title="Material">
+        <span className="tabular-nums">{`L${task.lotNumber}`}</span>
+        <span className="opacity-40">·</span>
+        <span>{task.material.name.toUpperCase()}</span>
+        <span className="opacity-40">·</span>
+        <span className="tabular-nums">{task.pieces}</span>
+        <span className="opacity-40">·</span>
+        <span>{task.thickness.name}</span>
+      </ChipShell>
+
+      {/* Jornada */}
+      <ChipShell color="#0EA5E9" icon={Clock3} title="Jornada">
+        <span className="tabular-nums">{fmtTime(started)}</span>
+        {completed && (
+          <>
+            <span className="opacity-50">→</span>
+            <span className="tabular-nums">{fmtTime(completed)}</span>
+          </>
+        )}
+      </ChipShell>
+
+      {/* Progreso */}
+      <ChipShell color="#22C55E" icon={Activity} title="Progreso">
+        <span className="tabular-nums">{`${percent}%`}</span>
+        <span className="opacity-40">·</span>
+        <span>{statusLabel}</span>
+        {nextProcessLabel && nextProcessLabel !== "-" && (
+          <>
+            <span className="opacity-40">·</span>
+            <span>{nextProcessLabel}</span>
+          </>
+        )}
+      </ChipShell>
+    </div>
+  )
 }
 
 export function ProcessExpandedRow({
@@ -236,36 +408,51 @@ export function ProcessExpandedRow({
   return (
     <EntityExpandedRow rowId={processTask.task.id}>
       <EntityExpandedContent>
-        <div className="mb-2 flex items-center justify-end select-none">
-          <EntityExpandedToggle<ProcessView>
-            value={activeView}
-            onChange={(next) => {
-              if (next === "comments") {
-                setCommentsDialogOpen(true)
-                // No cambiar activeView: el slider sigue en KPIs
-                return
-              }
-              setActiveView(next)
-            }}
-            options={[
-              {
-                value: "kpis",
-                label: "KPIs",
-                icon: Activity,
-              },
-              ...(workflowStepId
-                ? ([
-                    {
-                      value: "comments",
-                      label: "Mensajes",
-                      icon: MessageSquare,
-                      // Badge solo con mensajes reales — no “composer” vacío
-                      ...(totalComments > 0 ? { count: totalComments } : {}),
-                    },
-                  ] as { value: ProcessView; label: string; icon: typeof MessageSquare; count?: number }[])
-                : []),
-            ]}
-          />
+        <div className="mb-2 flex flex-nowrap items-center gap-2 select-none">
+          <div className="min-w-0 shrink-0">
+            <EntityExpandedToggle<ProcessView>
+              value={activeView}
+              onChange={(next) => {
+                if (next === "comments") {
+                  setCommentsDialogOpen(true)
+                  return
+                }
+                setActiveView(next)
+              }}
+              className="w-auto"
+              options={[
+                {
+                  value: "kpis",
+                  label: "KPIs",
+                  icon: Activity,
+                },
+                ...(workflowStepId
+                  ? ([
+                      {
+                        value: "comments",
+                        label: "Mensajes",
+                        icon: MessageSquare,
+                        ...(totalComments > 0 ? { count: totalComments } : {}),
+                      },
+                    ] as {
+                      value: ProcessView
+                      label: string
+                      icon: typeof MessageSquare
+                      count?: number
+                    }[])
+                  : []),
+              ]}
+            />
+          </div>
+          {/* Desktop: chips DynamicBadge por campo (mismo formato que tareas) */}
+          {!isMobile && activeView === "kpis" && (
+            <ProcessDesktopKpiStrip
+              processTask={processTask}
+              percent={percent}
+              statusLabel={statusLabel}
+              nextProcessLabel={nextProcessLabel}
+            />
+          )}
         </div>
 
         <EntityExpandedSlider
@@ -273,21 +460,25 @@ export function ProcessExpandedRow({
           panels={[
             {
               value: "kpis" as const,
-              content: !ready ? null : (
-                <KpiCarousel
-                  cards={cards}
-                  items={items}
-                  summary={{
-                    icon: Activity,
-                    color: "#22C55E",
-                    label: "Progreso",
-                    values: [
-                      { label: "Estado", value: statusLabel },
-                      { label: "Avance", value: `${percent}%` },
-                    ],
-                  }}
-                />
-              ),
+              // Desktop: KPIs en el header (cards completas). Móvil: carousel.
+              content:
+                !ready || !isMobile
+                  ? null
+                  : (
+                      <KpiCarousel
+                        cards={cards}
+                        items={items}
+                        summary={{
+                          icon: Activity,
+                          color: "#22C55E",
+                          label: "Progreso",
+                          values: [
+                            { label: "Estado", value: statusLabel },
+                            { label: "Avance", value: `${percent}%` },
+                          ],
+                        }}
+                      />
+                    ),
             },
           ]}
         />

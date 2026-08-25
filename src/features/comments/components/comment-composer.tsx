@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, KeyboardEvent, ChangeEvent } from "react"
+import { useEffect, useRef, useState, KeyboardEvent, ChangeEvent, FormEvent } from "react"
 import { Camera, Check, ImageIcon, Pencil, Reply, Send, X } from "lucide-react"
 import { IconAction } from "@/shared/ui/actions/icon-action"
 import { Popover, PopoverAnchor } from "@/components/ui/popover"
@@ -69,7 +69,7 @@ export function CommentComposer({
 
   const mentionOpen = mentionQuery !== null && filteredUsers.length > 0
 
-  const handleInput = (e: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInput = (e: FormEvent<HTMLTextAreaElement>) => {
     const el = e.currentTarget
     const value = el.value
     setHasText(value.trim().length > 0)

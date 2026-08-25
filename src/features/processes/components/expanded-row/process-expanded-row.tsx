@@ -14,12 +14,10 @@ import {
 } from "@/shared/ui/entity-expanded-row"
 
 import { KpiCarousel, type KpiItem } from "@/shared/ui/mini-card/kpi-carousel"
-import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
 import { ProcessEditableValue } from "./cards/process-editable-value"
 import { useWorkflowStepField } from "@/features/workflow/hooks/use-workflow-step-field"
 import { getWorkflowStepContext } from "@/features/workflow/utils/get-workflow-step-context"
-import { getGlassSurface } from "@/shared/utils/badge-colors"
-import { useThemeStore } from "@/shared/theme"
+import { useBadgeColors } from "@/shared/utils/use-badge-colors"
 import { workflowAccess } from "@/features/workflow/access/workflow-access"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { getProcessProgress } from "@/features/processes/selectors/get-process-progress"
@@ -41,7 +39,7 @@ type Props = {
 
 
 
-/** 4 chips (= 4 cards) con detalle; producción editable (Ingresar). */
+/** 4 chips KPI — look DynamicBadge; vacíos tipo Ingresar; editable sin estirar. */
 function ProcessDesktopKpiStrip({
   processTask,
   percent,
@@ -56,7 +54,6 @@ function ProcessDesktopKpiStrip({
   const task = processTask.task
   const step = processTask.workflowStep
   const code = step?.processCode
-  const resolved = useThemeStore(s => s.resolved)
   const updateField = useWorkflowStepField()
   const { stepId, locked } = getWorkflowStepContext(processTask)
 
@@ -68,7 +65,7 @@ function ProcessDesktopKpiStrip({
           hour: "2-digit",
           minute: "2-digit",
         })
-      : "—"
+      : null
 
   const showOutput = code != null && ["CT", "PL", "SD", "PT"].includes(code)
   const showPlRt = code === "CT"
@@ -83,7 +80,8 @@ function ProcessDesktopKpiStrip({
     return Number.isFinite(n) ? n : null
   }
 
-  const ChipShell = ({
+  /** Misma piel/altura que DynamicBadge (ruta). */
+  function KpiBadgeShell({
     color,
     icon: Icon,
     title,
@@ -93,113 +91,137 @@ function ProcessDesktopKpiStrip({
     icon: typeof Activity
     title: string
     children: ReactNode
-  }) => {
-    const glass = getGlassSurface(color, resolved)
+  }) {
+    const badge = useBadgeColors(color ?? "#64748B", "subtle")
     return (
       <div
         title={title}
-        className="flex h-8 min-h-8 shrink-0 select-none items-center gap-1.5 overflow-hidden rounded-lg px-2.5"
-        style={{ background: glass.background, color: glass.text }}
+        className="inline-flex h-8 max-w-full shrink-0 select-none items-center gap-1.5 overflow-hidden rounded-lg px-2.5 shadow-xs"
+        style={{ backgroundColor: badge.background, color: badge.text }}
       >
-        <Icon size={13} className="shrink-0 opacity-90" style={{ color: glass.text }} />
-        <div className="flex min-w-0 items-center gap-1.5 text-[11px] font-bold leading-none tracking-wide">
+        <Icon size={14} className="shrink-0 opacity-90" style={{ color: badge.text }} />
+        <div className="flex min-w-0 items-center gap-1.5 text-xs font-semibold leading-none tracking-[0.06em]">
           {children}
         </div>
       </div>
     )
   }
 
-  const muted = (label: string, color: string) => {
-    const glass = getGlassSurface(color, resolved)
+  function mutedLabel(label: string) {
     return (
-      <span
-        className="text-[8px] font-bold uppercase tracking-wider opacity-70"
-        style={{ color: glass.textMuted }}
-      >
+      <span className="text-[8px] font-bold uppercase tracking-wider opacity-70">
         {label}
       </span>
     )
   }
 
+  /** Vacío estilo Ingresar (sin guión). */
+  function EmptyPill({ label }: { label: string }) {
+    return (
+      <span className="inline-flex max-w-full items-center truncate rounded-md bg-foreground/10 px-1.5 py-0.5 text-[10px] font-semibold leading-none">
+        {label}
+      </span>
+    )
+  }
+
+  const prodColor = "#f99d9d"
+  const materialColor = task.material.color ?? "#64748B"
+  const timeColor = "#0EA5E9"
+  const progressColor = "#22C55E"
+
+  const inQty = processTask.inputQuantity
+  const startedLabel = fmtTime(started)
+  const completedLabel = completed ? fmtTime(completed) : null
+
   return (
     <div className="flex h-8 min-w-0 flex-1 items-center justify-end gap-1.5 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden">
       {/* Producción */}
-      <ChipShell color="#f99d9d" icon={Puzzle} title="Producción">
-        {muted("In", "#f99d9d")}
-        <span className="tabular-nums">{processTask.inputQuantity ?? "—"}</span>
+      <KpiBadgeShell color={prodColor} icon={Puzzle} title="Producción">
+        {mutedLabel("In")}
+        {inQty != null && String(inQty).trim() !== "" ? (
+          <span className="tabular-nums">{inQty}</span>
+        ) : (
+          <EmptyPill label="Sin IN" />
+        )}
         {showOutput && (
           <>
             <span className="opacity-50">→</span>
-            {muted("Out", "#f99d9d")}
-            <span className="min-w-[2.5rem] tabular-nums">
-              <ProcessEditableValue
-                numeric
-                value={step?.piecesOutput ?? null}
-                disabled={locked}
-                onSave={async value => {
-                  if (!stepId) return
-                  const piecesOutput = toNumber(value)
-                  await updateField(stepId, { piecesOutput }, { piecesOutput })
-                }}
-              />
-            </span>
+            {mutedLabel("Out")}
+            <ProcessEditableValue
+              inline
+              numeric
+              value={step?.piecesOutput ?? null}
+              disabled={locked}
+              placeholder="Ingresar"
+              onSave={async value => {
+                if (!stepId) return
+                const piecesOutput = toNumber(value)
+                await updateField(stepId, { piecesOutput }, { piecesOutput })
+              }}
+            />
           </>
         )}
         {showPlRt && (
           <>
             <span className="opacity-40">·</span>
-            {muted("PL/RT", "#f99d9d")}
-            <span className="min-w-[2.5rem] tabular-nums">
-              <ProcessEditableValue
-                numeric
-                value={step?.plRtReal ?? null}
-                suffix={plRtSuffix}
-                disabled={locked}
-                onSave={async value => {
-                  if (!stepId) return
-                  const plRtReal = toNumber(value)
-                  await updateField(stepId, { plRtReal }, { plRtReal })
-                }}
-              />
-            </span>
+            {mutedLabel("PL/RT")}
+            <ProcessEditableValue
+              inline
+              numeric
+              value={step?.plRtReal ?? null}
+              suffix={plRtSuffix}
+              disabled={locked}
+              placeholder="Ingresar"
+              onSave={async value => {
+                if (!stepId) return
+                const plRtReal = toNumber(value)
+                await updateField(stepId, { plRtReal }, { plRtReal })
+              }}
+            />
           </>
         )}
-      </ChipShell>
+      </KpiBadgeShell>
 
       {/* Material */}
-      <ChipShell color={task.material.color} icon={Package} title="Material">
+      <KpiBadgeShell color={materialColor} icon={Package} title="Material">
         <span className="tabular-nums">{`L${task.lotNumber}`}</span>
         <span className="opacity-40">·</span>
-        <span>{task.material.name.toUpperCase()}</span>
+        <span className="truncate">{task.material.name.toUpperCase()}</span>
         <span className="opacity-40">·</span>
         <span className="tabular-nums">{task.pieces}</span>
         <span className="opacity-40">·</span>
-        <span>{task.thickness.name}</span>
-      </ChipShell>
+        <span className="truncate">{task.thickness.name}</span>
+      </KpiBadgeShell>
 
       {/* Jornada */}
-      <ChipShell color="#0EA5E9" icon={Clock3} title="Jornada">
-        <span className="tabular-nums">{fmtTime(started)}</span>
-        {completed && (
+      <KpiBadgeShell color={timeColor} icon={Clock3} title="Jornada">
+        {startedLabel ? (
           <>
-            <span className="opacity-50">→</span>
-            <span className="tabular-nums">{fmtTime(completed)}</span>
+            <span className="tabular-nums">{startedLabel}</span>
+            {completedLabel && (
+              <>
+                <span className="opacity-50">→</span>
+                <span className="tabular-nums">{completedLabel}</span>
+              </>
+            )}
           </>
+        ) : (
+          <EmptyPill label="Sin empezar" />
         )}
-      </ChipShell>
+      </KpiBadgeShell>
 
       {/* Progreso */}
-      <ChipShell color="#22C55E" icon={Activity} title="Progreso">
+      <KpiBadgeShell color={progressColor} icon={Activity} title="Progreso">
         <span className="tabular-nums">{`${percent}%`}</span>
         <span className="opacity-40">·</span>
-        <span>{statusLabel}</span>
+        <span className="truncate">{statusLabel}</span>
         {nextProcessLabel && nextProcessLabel !== "-" && (
           <>
             <span className="opacity-40">·</span>
-            <span>{nextProcessLabel}</span>
+            <span className="truncate">{nextProcessLabel}</span>
           </>
         )}
-      </ChipShell>
+      </KpiBadgeShell>
     </div>
   )
 }

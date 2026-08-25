@@ -15,6 +15,8 @@ type EditableProps = {
   numeric?: boolean
   disabled?: boolean
   treatZeroAsEmpty?: boolean
+  /** En chips KPI: sin w-full para no estirar el badge. */
+  inline?: boolean
   onSave: (
     value: string | null
   ) => void | Promise<void>
@@ -27,6 +29,7 @@ export function ProcessEditableValue({
   numeric,
   disabled,
   treatZeroAsEmpty = true,
+  inline = false,
   onSave,
 }: EditableProps) {
   const [editing, setEditing] = useState(false)
@@ -81,7 +84,13 @@ export function ProcessEditableValue({
 
   if (editing && !disabled) {
     return (
-      <div className="relative flex w-full min-w-0 items-center">
+      <div
+        className={
+          inline
+            ? "relative inline-flex w-[3.25rem] max-w-[3.25rem] shrink-0 items-center"
+            : "relative flex w-full min-w-0 items-center"
+        }
+      >
         <input
           ref={inputRef}
           type={numeric ? "number" : "text"}
@@ -101,7 +110,11 @@ export function ProcessEditableValue({
             if (event.key === "Enter") save()
             if (event.key === "Escape") setEditing(false)
           }}
-          className="block w-full min-w-0 border-0 bg-transparent p-0 pr-5 text-left font-inherit leading-inherit text-inherit outline-none disabled:opacity-60"
+          className={
+            inline
+              ? "block w-full min-w-0 border-0 bg-transparent p-0 text-center font-inherit tabular-nums leading-inherit text-inherit outline-none disabled:opacity-60"
+              : "block w-full min-w-0 border-0 bg-transparent p-0 pr-5 text-left font-inherit leading-inherit text-inherit outline-none disabled:opacity-60"
+          }
         />
 
         {saving && (
@@ -140,8 +153,12 @@ export function ProcessEditableValue({
       }}
       className={
         disabled
-          ? "block w-full min-w-0 truncate cursor-default text-left font-inherit leading-inherit text-inherit opacity-50"
-          : "block w-full min-w-0 truncate cursor-pointer text-left font-inherit leading-inherit text-inherit"
+          ? inline
+            ? "inline-flex max-w-[4.5rem] shrink-0 cursor-default truncate font-inherit leading-inherit text-inherit opacity-50"
+            : "block w-full min-w-0 truncate cursor-default text-left font-inherit leading-inherit text-inherit opacity-50"
+          : inline
+            ? "inline-flex max-w-[4.5rem] shrink-0 cursor-pointer truncate font-inherit leading-inherit text-inherit"
+            : "block w-full min-w-0 truncate cursor-pointer text-left font-inherit leading-inherit text-inherit"
       }
     >
       {hasValue

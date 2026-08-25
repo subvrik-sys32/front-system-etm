@@ -85,7 +85,7 @@ export function FilesPreferencesSection() {
                 className={cn(
                   "flex flex-col items-center justify-center gap-0.5 rounded-md px-2 py-2 text-center transition",
                   active
-                    ? "bg-background text-foreground shadow-xs"
+                    ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -127,7 +127,7 @@ export function FilesPreferencesSection() {
               className={cn(
                 "flex min-w-0 cursor-pointer select-none items-center gap-2.5 rounded-md px-3 py-2.5 transition-colors",
                 rememberFolder
-                  ? "bg-background text-foreground shadow-xs"
+                  ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground shadow-xs"
                   : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
               )}
             >

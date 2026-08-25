@@ -45,7 +45,7 @@ function ModeGrid<T extends string>({
             className={cn(
               "flex flex-col items-start gap-0.5 rounded-md px-3 py-2 text-left transition",
               active
-                ? "bg-background text-foreground shadow-xs ring-1 ring-foreground/10"
+                ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground shadow-xs"
                 : "bg-muted/50 text-muted-foreground hover:bg-muted/70 hover:text-foreground dark:bg-muted/40",
             )}
           >
@@ -91,7 +91,7 @@ function DirectionToggle({
           className={cn(
             "rounded-md px-3 py-1.5 text-xs font-semibold transition",
             value === d.id
-              ? "bg-background text-foreground shadow-xs"
+              ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground shadow-xs"
               : "text-muted-foreground hover:text-foreground",
           )}
         >

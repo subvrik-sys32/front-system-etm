@@ -85,7 +85,7 @@ export function SettingsDialog({ open, onClose }: Props) {
                     className={cn(
                       "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition",
                       active
-                        ? "bg-foreground/15 text-foreground"
+                        ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground"
                         : "text-muted-foreground hover:bg-foreground/8 hover:text-foreground",
                     )}
                   >
@@ -127,9 +127,9 @@ export function SettingsDialog({ open, onClose }: Props) {
                     type="button"
                     onClick={() => setSection(s.id)}
                     className={cn(
-                      "flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm font-medium transition",
+                      "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium transition",
                       active
-                        ? "bg-foreground/12 text-foreground"
+                        ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground"
                         : "text-muted-foreground hover:bg-foreground/6 hover:text-foreground",
                     )}
                   >

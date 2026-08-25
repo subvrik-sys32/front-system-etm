@@ -14,7 +14,7 @@ import { PageShell } from "@/shared/responsive/layout/page-shell"
 export default function AccessPage() {
   usePageTitle("Acceso")
   const { isMobile } = useResponsive()
-  usePageActions(isMobile ? null : <UserActions />)
+  usePageActions(null)
 
   return (
     <PageShell mode={isMobile ? "list" : "fill"}>

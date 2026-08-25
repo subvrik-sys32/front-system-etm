@@ -23,6 +23,7 @@ import { PermissionGroup } from "./permissions/permission-group"
 import { PermissionsModeTabs, type PermissionsMode } from "./permissions-mode-tabs"
 import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
 import { UserDialog } from "@/features/admin/users/components/dialog/user-dialog"
+import { UserActions } from "@/features/admin/users/components/actions/user-actions"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import {
@@ -268,6 +269,7 @@ export function RolePermissionsPageContent() {
       : (
           <div className="flex min-w-0 items-center justify-end gap-2">
             <EntityToolbarSearch value={search} onChange={setSearch} />
+            <UserActions />
             <PermissionsModeTabs mode={mode} onChange={handleModeChange} />
           </div>
         ),

@@ -50,11 +50,10 @@ export function ActivityLogActions({
           }}
           aria-label="Registrar actividad"
           className={cn(
-            "fixed bottom-22 right-4 z-30 flex size-12 items-center justify-center rounded-full transition duration-200",
+            "fixed bottom-22 right-4 z-30 flex size-12 items-center justify-center rounded-full shadow-xs",
             canCreate
-              ? "bg-white text-black hover:scale-105 hover:bg-neutral-100 active:scale-95"
-              : "cursor-not-allowed bg-foreground/20 text-foreground/40",
-            "shadow-[0_12px_32px_rgba(0,0,0,0.55),0_4px_10px_rgba(255,255,255,0.08)]",
+              ? "bg-primary text-primary-foreground"
+              : "cursor-not-allowed bg-muted text-muted-foreground",
           )}
         >
           <Plus size={20} strokeWidth={2.5} />

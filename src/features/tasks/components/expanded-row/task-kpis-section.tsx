@@ -19,6 +19,7 @@ import type {
 import {
   ProcessMiniCard,
 } from "@/shared/ui/mini-card/process-mini-card"
+import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
 
 import {
   KpiCarousel,
@@ -28,8 +29,6 @@ import {
 import {
   useResponsive,
 } from "@/shared/responsive/hooks/use-responsive"
-import { useThemeStore } from "@/shared/theme"
-import { getGlassSurface } from "@/shared/utils/badge-colors"
 
 type Props = {
   task: Task
@@ -40,6 +39,7 @@ type Props = {
 const PIEZAS_COLOR = "#c44a4a"
 
 
+/** Mismo lenguaje visual que chips de ruta (DynamicBadge). */
 function KpiSignalChip({
   icon: Icon,
   color,
@@ -51,23 +51,15 @@ function KpiSignalChip({
   value: string
   title: string
 }) {
-  const resolved = useThemeStore(s => s.resolved)
-  const glass = getGlassSurface(color, resolved)
-
   return (
-    <div
-      title={title}
-      className="flex h-8 min-h-8 max-w-[11rem] shrink-0 select-none items-center gap-1.5 overflow-hidden rounded-lg px-2.5"
-      style={{ background: glass.background }}
-    >
-      <Icon size={13} className="shrink-0" style={{ color: glass.text }} />
-      <span
-        className="truncate text-[11px] font-bold tabular-nums leading-none tracking-wide"
-        style={{ color: glass.text }}
-      >
-        {value}
-      </span>
-    </div>
+    <span title={title} className="inline-flex shrink-0">
+      <DynamicBadge
+        label={value}
+        color={color}
+        iconComponent={Icon}
+        width="content"
+      />
+    </span>
   )
 }
 

@@ -14,8 +14,8 @@ type Props = {
   route: ProcessCode[]
   currentProcess?: ProcessCode
   /**
-   * panel — centrado (legacy / móvil en panel).
-   * inline — header expanded desktop.
+   * panel — centrado (legacy / móvil).
+   * inline — misma fila que toggle/actions/barra (desktop).
    */
   variant?: "panel" | "inline"
 }
@@ -36,17 +36,15 @@ export function TaskRouteViewer({
   return (
     <div
       className={cn(
-        "min-w-0 overflow-visible",
-        inline
-          ? "flex max-w-full justify-end"
-          : "flex justify-center",
+        "min-w-0",
+        inline ? "flex max-w-full justify-end" : "flex justify-center",
       )}
     >
       <div
         className={cn(
-          "flex items-center overflow-visible",
+          "flex items-center",
           inline
-            ? "min-w-max flex-nowrap items-center gap-1.5 pt-3.5"
+            ? "min-w-max flex-nowrap gap-1.5"
             : "flex-wrap justify-center gap-2 pt-5",
         )}
       >
@@ -58,26 +56,47 @@ export function TaskRouteViewer({
           const isCurrent = currentProcess === processCode
 
           return (
-            <div key={processCode} className="relative shrink-0 overflow-visible">
+            <div
+              key={processCode}
+              className="relative shrink-0 rounded-lg transition-[box-shadow,filter] duration-300"
+              style={
+                isCurrent
+                  ? {
+                      // Glow suave del color de dominio — sin ring duro
+                      boxShadow: `0 0 0 1px color-mix(in srgb, ${process.color} 45%, transparent), 0 0 14px color-mix(in srgb, ${process.color} 40%, transparent)`,
+                      filter: "brightness(1.06)",
+                    }
+                  : undefined
+              }
+            >
+              {/* Pip vivo: marca “actual” sin texto flotante ni borde grueso */}
               {isCurrent && (
                 <span
-                  className="pointer-events-none absolute -top-4 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap text-[9px] font-bold uppercase tracking-widest"
-                  style={{ color: process.color }}
-                >
-                  Actual
-                </span>
+                  className="pointer-events-none absolute -right-0.5 -top-0.5 z-10 size-2 rounded-full shadow-xs"
+                  style={{
+                    backgroundColor: process.color,
+                    boxShadow: `0 0 6px ${process.color}`,
+                  }}
+                  aria-hidden
+                />
               )}
-
               <button
                 type="button"
                 disabled={!enabled}
-                title={process.name ?? processCode}
+                title={
+                  isCurrent
+                    ? `${process.label} · Actual`
+                    : process.label
+                }
+                aria-current={isCurrent ? "step" : undefined}
                 onClick={e => {
                   e.stopPropagation()
                   sessionStorage.removeItem("process-origin-code")
                   sessionStorage.removeItem("process-origin-focus-task-id")
                   sessionStorage.setItem("process-origin-task-id", taskId)
-                  router.push(`/processes?code=${processCode}&taskId=${taskId}`)
+                  router.push(
+                    `/processes?code=${processCode}&taskId=${taskId}`,
+                  )
                 }}
                 className="transition-all duration-200 disabled:pointer-events-none"
               >

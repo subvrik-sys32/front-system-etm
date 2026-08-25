@@ -237,7 +237,7 @@ export function ExportDialog({
                   </label>
                   <Input
                     className={fieldCls(baseErrors.proyecto)}
-                    placeholder="Nº ej. 130"
+                    placeholder="130"
                     inputMode="numeric"
                     value={nomenclatura.proyecto}
                     onChange={e =>
@@ -263,7 +263,7 @@ export function ExportDialog({
                   </label>
                   <Input
                     className={fieldCls()}
-                    placeholder="Opc. ej. EM"
+                    placeholder="EM"
                     value={nomenclatura.tag}
                     onChange={e =>
                       onNomenclaturaChange({
@@ -279,7 +279,7 @@ export function ExportDialog({
                   </label>
                   <Input
                     className={fieldCls(baseErrors.lote)}
-                    placeholder="Nº ej. 1"
+                    placeholder="1"
                     inputMode="numeric"
                     value={nomenclatura.lote}
                     onChange={e =>

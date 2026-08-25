@@ -19,12 +19,7 @@ type Props = {
   accentClassName?: string
 } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children">
 
-/** Settings chip activo / sidebar selected — no primary a tope. */
-export const FAB_BRAND =
-  "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground shadow-xs"
-
-const FAB_ACTIVE =
-  "ring-2 ring-primary ring-offset-2 ring-offset-background bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground"
+const FAB_ACTIVE = "bg-muted text-foreground"
 
 export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
   (

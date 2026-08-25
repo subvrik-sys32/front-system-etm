@@ -46,7 +46,7 @@ export function ActivityTypeActions() {
           className={cn(
             "fixed bottom-22 right-4 z-30 flex size-12 items-center justify-center rounded-full shadow-xs",
             canManage
-              ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground shadow-xs"
+              ? "bg-primary text-primary-foreground shadow-xs"
               : "cursor-not-allowed bg-muted text-muted-foreground",
           )}
         >

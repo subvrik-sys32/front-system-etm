@@ -145,7 +145,6 @@ export function SpeedDialFab({ actions, className }: Props) {
           className={cn(
             "flex size-12 items-center justify-center rounded-full shadow-xs",
             "bg-muted text-foreground",
-            dialOpen && "bg-muted text-foreground ring-2 ring-primary ring-offset-2 ring-offset-background",
           )}
         >
           {dialOpen ? (

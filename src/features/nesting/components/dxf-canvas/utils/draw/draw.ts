@@ -71,6 +71,7 @@ export interface DrawContext {
   /** Cuadrícula en coords mundo (se adapta al zoom). */
   gridStyle?: "dots" | "lines" | "cross" | "none"
   showGrid?: boolean
+  sheetLabel?: string
   /** Spans H/V por raycast (cota inteligente). */
   smartSpans?: {
     h: { a: { x: number; y: number }; b: { x: number; y: number }; value: number } | null
@@ -128,6 +129,15 @@ export function drawScene(d: DrawContext) {
     ctx.strokeStyle = resolveSheetStroke()
     ctx.lineWidth = 1.5 / scale
     ctx.strokeRect(0, 0, sheetSize.width, sheetSize.height)
+    if (d.sheetLabel) {
+      const textH = Math.max(12, Math.min(28, sheetSize.height * 0.035))
+      ctx.save()
+      ctx.fillStyle = "#ffff00"
+      ctx.font = `${textH}px ui-sans-serif, system-ui, sans-serif`
+      ctx.textBaseline = "bottom"
+      ctx.fillText(d.sheetLabel, 4, -4)
+      ctx.restore()
+    }
   }
 
   const simActive = simProgress > 0.001

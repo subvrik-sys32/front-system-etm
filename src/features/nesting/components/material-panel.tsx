@@ -9,6 +9,7 @@ import {
   Layers,
   Save,
   Sliders,
+  ListTodo,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -115,6 +116,11 @@ export function MaterialPanel({
               <button type="button" className={btn} title="Exportar" onClick={projectActions.onExport}>
                 <FileUp className="h-4 w-4" strokeWidth={1.5} />
               </button>
+              {projectActions.onCreateTask && (
+                <button type="button" className={btn} title="Crear tarea" onClick={projectActions.onCreateTask}>
+                  <ListTodo className="h-4 w-4" strokeWidth={1.5} />
+                </button>
+              )}
             </div>
           </div>
         </div>

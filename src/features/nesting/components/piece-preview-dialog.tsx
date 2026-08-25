@@ -55,7 +55,7 @@ export function PiecePreviewDialog({
         size="large"
         className="flex h-[75vh] w-full max-w-3xl flex-col gap-0 overflow-hidden p-0 [&>button]:hidden"
       >
-        <DialogHeader className="flex flex-row items-center justify-between shrink-0 px-5 py-3 border-b border-border gap-4">
+        <DialogHeader className="flex flex-row items-center justify-between shrink-0 px-5 py-3 gap-4">
           <div className="min-w-0 flex-1">
             <DialogTitle className="text-sm font-semibold text-foreground truncate">
               {row?.fileName ?? ""}

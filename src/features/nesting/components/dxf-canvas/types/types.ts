@@ -121,6 +121,8 @@ export interface DxfCanvasProps {
    * use-measurements.ts).
    */
   sheetKey?: string | number
+  /** Etiqueta PLANCHA / Q encima del marco (toggle T). */
+  sheetLabel?: string
   /** Historial de plancha (opcional). */
   onUndo?: () => void
   onRedo?: () => void

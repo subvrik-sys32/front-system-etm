@@ -80,7 +80,7 @@ export function PieceListRow({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 pt-2 border-t border-border w-full">
+      <div className="flex items-center justify-between gap-2 w-full">
         <div className="min-w-0 flex-1 flex items-center gap-1 text-[10px] text-muted-foreground truncate">
           <span className="shrink-0">
             {row.width.toFixed(0)}×{row.height.toFixed(0)}

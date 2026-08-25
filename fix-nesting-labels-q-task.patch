@@ -1,0 +1,228 @@
+diff --git a/src/features/nesting/components/dxf-canvas/dxf-canvas.tsx b/src/features/nesting/components/dxf-canvas/dxf-canvas.tsx
+index 5d5bac4..8e28c74 100644
+--- a/src/features/nesting/components/dxf-canvas/dxf-canvas.tsx
++++ b/src/features/nesting/components/dxf-canvas/dxf-canvas.tsx
+@@ -51,6 +51,7 @@ export function DxfCanvas({
+   onTransformModeChange,
+   rotationStep = 90,
+   sheetKey,
++  sheetLabel,
+   className,
+   onUndo,
+   onRedo,
+@@ -198,6 +199,7 @@ export function DxfCanvas({
+         boxSelectScreen,
+         showGrid,
+         gridStyle,
++        sheetLabel: showLabels ? sheetLabel : undefined,
+         smartSpans,
+         areaHoverContour,
+       })
+@@ -229,6 +231,8 @@ export function DxfCanvas({
+     boxSelectScreen,
+     showGrid,
+     gridStyle,
++    sheetLabel,
++    showLabels,
+   ])
+ 
+   const setToolpath = sim.setToolpath
+diff --git a/src/features/nesting/components/dxf-canvas/types/types.ts b/src/features/nesting/components/dxf-canvas/types/types.ts
+index 7d1d5bc..79715ca 100644
+--- a/src/features/nesting/components/dxf-canvas/types/types.ts
++++ b/src/features/nesting/components/dxf-canvas/types/types.ts
+@@ -121,6 +121,8 @@ export interface DxfCanvasProps {
+    * use-measurements.ts).
+    */
+   sheetKey?: string | number
++  /** Etiqueta PLANCHA / Q encima del marco (toggle T). */
++  sheetLabel?: string
+   /** Historial de plancha (opcional). */
+   onUndo?: () => void
+   onRedo?: () => void
+diff --git a/src/features/nesting/components/dxf-canvas/utils/draw/draw.ts b/src/features/nesting/components/dxf-canvas/utils/draw/draw.ts
+index 609315e..f8c0b7f 100644
+--- a/src/features/nesting/components/dxf-canvas/utils/draw/draw.ts
++++ b/src/features/nesting/components/dxf-canvas/utils/draw/draw.ts
+@@ -71,6 +71,7 @@ export interface DrawContext {
+   /** Cuadrícula en coords mundo (se adapta al zoom). */
+   gridStyle?: "dots" | "lines" | "cross" | "none"
+   showGrid?: boolean
++  sheetLabel?: string
+   /** Spans H/V por raycast (cota inteligente). */
+   smartSpans?: {
+     h: { a: { x: number; y: number }; b: { x: number; y: number }; value: number } | null
+@@ -128,6 +129,15 @@ export function drawScene(d: DrawContext) {
+     ctx.strokeStyle = resolveSheetStroke()
+     ctx.lineWidth = 1.5 / scale
+     ctx.strokeRect(0, 0, sheetSize.width, sheetSize.height)
++    if (d.sheetLabel) {
++      const textH = Math.max(12, Math.min(28, sheetSize.height * 0.035))
++      ctx.save()
++      ctx.fillStyle = "#ffff00"
++      ctx.font = `${textH}px ui-sans-serif, system-ui, sans-serif`
++      ctx.textBaseline = "bottom"
++      ctx.fillText(d.sheetLabel, 4, -4)
++      ctx.restore()
++    }
+   }
+ 
+   const simActive = simProgress > 0.001
+diff --git a/src/features/nesting/components/material-panel.tsx b/src/features/nesting/components/material-panel.tsx
+index edfd078..29c083f 100644
+--- a/src/features/nesting/components/material-panel.tsx
++++ b/src/features/nesting/components/material-panel.tsx
+@@ -9,6 +9,7 @@ import {
+   Layers,
+   Save,
+   Sliders,
++  ListTodo,
+ } from "lucide-react"
+ 
+ import { Button } from "@/components/ui/button"
+@@ -115,6 +116,11 @@ export function MaterialPanel({
+               <button type="button" className={btn} title="Exportar" onClick={projectActions.onExport}>
+                 <FileUp className="h-4 w-4" strokeWidth={1.5} />
+               </button>
++              {projectActions.onCreateTask && (
++                <button type="button" className={btn} title="Crear tarea" onClick={projectActions.onCreateTask}>
++                  <ListTodo className="h-4 w-4" strokeWidth={1.5} />
++                </button>
++              )}
+             </div>
+           </div>
+         </div>
+diff --git a/src/features/nesting/components/nesting-page.tsx b/src/features/nesting/components/nesting-page.tsx
+index dc52521..7452673 100644
+--- a/src/features/nesting/components/nesting-page.tsx
++++ b/src/features/nesting/components/nesting-page.tsx
+@@ -20,6 +20,7 @@ import { piecesCollide } from "../engine/polygon-collision"
+ import type { NestedSheet } from "../engine/types"
+ import type { BridgeSettings } from "../export/dxf-export"
+ import { formatSheetRangeLabel } from "../utils/svg-render"
++import { formatSheetExportLabel } from "../export/dxf-export"
+ import { useNestingProject } from "../hooks/use-nesting-project"
+ import { useSheetHistory } from "../hooks/use-sheet-history"
+ import { useCanvasPieces } from "../hooks/use-canvas-pieces"
+@@ -33,6 +34,7 @@ import { ExportDialog } from "./export-dialog"
+ import { DiagnosticsDialog } from "./diagnostics-dialog"
+ import { ProjectDialog } from "./project-dialog"
+ import { PiecePreviewDialog } from "./piece-preview-dialog"
++import { TaskDialog } from "@/features/tasks/components/dialog/task-dialog"
+ import { MaterialPanel } from "./material-panel"
+ import { PieceList, type PieceListHandle, type PieceListProps } from "./piece-list"
+ import { PieceListRow } from "./piece-list-row"
+@@ -98,6 +100,7 @@ export function NestingPage() {
+   const pendingSelectRef = useRef<number[] | null>(null)
+ 
+   const [previewRowId, setPreviewRowId] = useState<string | null>(null)
++  const [taskDialogOpen, setTaskDialogOpen] = useState(false)
+   const [activeGroupIndex, setActiveGroupIndex] = useState(0)
+   const [selectedPieceIndices, setSelectedPieceIndices] = useState<number[]>([])
+   const [lockedPieceIndices, setLockedPieceIndices] = useState<number[]>([])
+@@ -390,6 +393,18 @@ export function NestingPage() {
+   )
+ 
+   const sheetStats = project.getSheetStats(activeGroupIndex)
++
++  const canvasSheetLabel = activeGroup
++    ? formatSheetExportLabel({
++        startIndex: activeGroup.startIndex,
++        count: activeGroup.count,
++        thicknessMm: activeGroup.sheet.thicknessMm,
++        material: project.nomenclatura?.material,
++        pieces: activeGroup.sheet.pieces?.length,
++        lote: project.nomenclatura?.lote,
++      })
++    : undefined
++
+   const selectedPiece =
+     selectedPieceIndices.length > 0
+       ? canvasPieces[selectedPieceIndices[selectedPieceIndices.length - 1]]
+@@ -622,6 +637,7 @@ export function NestingPage() {
+                   setProjectDialogOpen(true)
+                 },
+                 onExport: () => setExportDialogOpen(true),
++                onCreateTask: () => setTaskDialogOpen(true),
+               }}
+             />
+         </div>
+@@ -757,6 +773,7 @@ export function NestingPage() {
+                     onTransformModeChange={setTransformMode}
+                     onDeleteSelected={() => handleDeleteSelected()}
+                     sheetKey={activeGroupIndex}
++                    sheetLabel={canvasSheetLabel}
+                   />
+                 ) : (
+                   <div className="flex h-full flex-col items-center justify-center gap-1.5 px-6 text-center">
+@@ -853,6 +870,7 @@ export function NestingPage() {
+                   onTransformModeChange={setTransformMode}
+                   onDeleteSelected={() => handleDeleteSelected()}
+                   sheetKey={activeGroupIndex}
++                  sheetLabel={canvasSheetLabel}
+                 />
+               ) : (
+                 <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+@@ -1006,6 +1024,7 @@ export function NestingPage() {
+         maquina={project.machine.maquina}
+       />
+ 
++      <TaskDialog open={taskDialogOpen} onClose={() => setTaskDialogOpen(false)} />
+       <PiecePreviewDialog
+         row={previewRow}
+         onClose={() => setPreviewRowId(null)}
+diff --git a/src/features/nesting/components/piece-list-row.tsx b/src/features/nesting/components/piece-list-row.tsx
+index 57805af..249f2bb 100644
+--- a/src/features/nesting/components/piece-list-row.tsx
++++ b/src/features/nesting/components/piece-list-row.tsx
+@@ -80,7 +80,7 @@ export function PieceListRow({
+         </div>
+       </div>
+ 
+-      <div className="flex items-center justify-between gap-2 pt-2 border-t border-border w-full">
++      <div className="flex items-center justify-between gap-2 w-full">
+         <div className="min-w-0 flex-1 flex items-center gap-1 text-[10px] text-muted-foreground truncate">
+           <span className="shrink-0">
+             {row.width.toFixed(0)}×{row.height.toFixed(0)}
+diff --git a/src/features/nesting/components/piece-preview-dialog.tsx b/src/features/nesting/components/piece-preview-dialog.tsx
+index f3be2b0..4352586 100644
+--- a/src/features/nesting/components/piece-preview-dialog.tsx
++++ b/src/features/nesting/components/piece-preview-dialog.tsx
+@@ -55,7 +55,7 @@ export function PiecePreviewDialog({
+         size="large"
+         className="flex h-[75vh] w-full max-w-3xl flex-col gap-0 overflow-hidden p-0 [&>button]:hidden"
+       >
+-        <DialogHeader className="flex flex-row items-center justify-between shrink-0 px-5 py-3 border-b border-border gap-4">
++        <DialogHeader className="flex flex-row items-center justify-between shrink-0 px-5 py-3 gap-4">
+           <div className="min-w-0 flex-1">
+             <DialogTitle className="text-sm font-semibold text-foreground truncate">
+               {row?.fileName ?? ""}
+diff --git a/src/features/nesting/export/dxf-export.ts b/src/features/nesting/export/dxf-export.ts
+index 23a8985..9e593ce 100644
+--- a/src/features/nesting/export/dxf-export.ts
++++ b/src/features/nesting/export/dxf-export.ts
+@@ -142,7 +142,7 @@ export function formatSheetExportLabel(info: SheetLabelInfo): string {
+     parts.push(mat.toUpperCase())
+   }
+   if (info.pieces != null && info.pieces > 0) {
+-    parts.push(`${info.pieces}p`)
++    parts.push(`Q${info.pieces}`)
+   }
+   if (info.lote != null && String(info.lote).trim() !== "") {
+     const raw = String(info.lote).trim().replace(/^L/i, "")
+diff --git a/src/features/nesting/export/nomenclatura.ts b/src/features/nesting/export/nomenclatura.ts
+index 36747af..afae5e5 100644
+--- a/src/features/nesting/export/nomenclatura.ts
++++ b/src/features/nesting/export/nomenclatura.ts
+@@ -49,9 +49,9 @@ export function buildSheetFileName(
+ export function buildMosaicFileName(
+   nom: Nomenclatura,
+   totalPieces: number,
+-  uniqueSheetCount: number,
++  _uniqueSheetCount?: number,
+ ): string {
+-  return `${buildBaseName(nom)}_Q${totalPieces}_P${String(uniqueSheetCount).padStart(2, "0")}_MOSAICO`
++  return `${buildBaseName(nom)}_Q${totalPieces}_MOSAICO`
+ }
+ 
+ export function buildProjectReportName(

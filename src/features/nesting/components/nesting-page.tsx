@@ -20,6 +20,7 @@ import { piecesCollide } from "../engine/polygon-collision"
 import type { NestedSheet } from "../engine/types"
 import type { BridgeSettings } from "../export/dxf-export"
 import { formatSheetRangeLabel } from "../utils/svg-render"
+import { formatSheetExportLabel } from "../export/dxf-export"
 import { useNestingProject } from "../hooks/use-nesting-project"
 import { useSheetHistory } from "../hooks/use-sheet-history"
 import { useCanvasPieces } from "../hooks/use-canvas-pieces"
@@ -33,6 +34,7 @@ import { ExportDialog } from "./export-dialog"
 import { DiagnosticsDialog } from "./diagnostics-dialog"
 import { ProjectDialog } from "./project-dialog"
 import { PiecePreviewDialog } from "./piece-preview-dialog"
+import { TaskDialog } from "@/features/tasks/components/dialog/task-dialog"
 import { MaterialPanel } from "./material-panel"
 import { PieceList, type PieceListHandle, type PieceListProps } from "./piece-list"
 import { PieceListRow } from "./piece-list-row"
@@ -98,6 +100,7 @@ export function NestingPage() {
   const pendingSelectRef = useRef<number[] | null>(null)
 
   const [previewRowId, setPreviewRowId] = useState<string | null>(null)
+  const [taskDialogOpen, setTaskDialogOpen] = useState(false)
   const [activeGroupIndex, setActiveGroupIndex] = useState(0)
   const [selectedPieceIndices, setSelectedPieceIndices] = useState<number[]>([])
   const [lockedPieceIndices, setLockedPieceIndices] = useState<number[]>([])
@@ -390,6 +393,18 @@ export function NestingPage() {
   )
 
   const sheetStats = project.getSheetStats(activeGroupIndex)
+
+  const canvasSheetLabel = activeGroup
+    ? formatSheetExportLabel({
+        startIndex: activeGroup.startIndex,
+        count: activeGroup.count,
+        thicknessMm: activeGroup.sheet.thicknessMm,
+        material: project.nomenclatura?.material,
+        pieces: activeGroup.sheet.pieces?.length,
+        lote: project.nomenclatura?.lote,
+      })
+    : undefined
+
   const selectedPiece =
     selectedPieceIndices.length > 0
       ? canvasPieces[selectedPieceIndices[selectedPieceIndices.length - 1]]
@@ -622,6 +637,7 @@ export function NestingPage() {
                   setProjectDialogOpen(true)
                 },
                 onExport: () => setExportDialogOpen(true),
+                onCreateTask: () => setTaskDialogOpen(true),
               }}
             />
         </div>
@@ -757,6 +773,7 @@ export function NestingPage() {
                     onTransformModeChange={setTransformMode}
                     onDeleteSelected={() => handleDeleteSelected()}
                     sheetKey={activeGroupIndex}
+                    sheetLabel={canvasSheetLabel}
                   />
                 ) : (
                   <div className="flex h-full flex-col items-center justify-center gap-1.5 px-6 text-center">
@@ -853,6 +870,7 @@ export function NestingPage() {
                   onTransformModeChange={setTransformMode}
                   onDeleteSelected={() => handleDeleteSelected()}
                   sheetKey={activeGroupIndex}
+                  sheetLabel={canvasSheetLabel}
                 />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
@@ -1006,6 +1024,7 @@ export function NestingPage() {
         maquina={project.machine.maquina}
       />
 
+      <TaskDialog open={taskDialogOpen} onClose={() => setTaskDialogOpen(false)} />
       <PiecePreviewDialog
         row={previewRow}
         onClose={() => setPreviewRowId(null)}

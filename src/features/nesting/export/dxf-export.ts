@@ -142,7 +142,7 @@ export function formatSheetExportLabel(info: SheetLabelInfo): string {
     parts.push(mat.toUpperCase())
   }
   if (info.pieces != null && info.pieces > 0) {
-    parts.push(`${info.pieces}p`)
+    parts.push(`Q${info.pieces}`)
   }
   if (info.lote != null && String(info.lote).trim() !== "") {
     const raw = String(info.lote).trim().replace(/^L/i, "")

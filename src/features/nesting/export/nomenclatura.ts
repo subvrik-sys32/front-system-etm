@@ -49,9 +49,9 @@ export function buildSheetFileName(
 export function buildMosaicFileName(
   nom: Nomenclatura,
   totalPieces: number,
-  uniqueSheetCount: number,
+  _uniqueSheetCount?: number,
 ): string {
-  return `${buildBaseName(nom)}_Q${totalPieces}_P${String(uniqueSheetCount).padStart(2, "0")}_MOSAICO`
+  return `${buildBaseName(nom)}_Q${totalPieces}_MOSAICO`
 }
 
 export function buildProjectReportName(

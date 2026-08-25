@@ -51,6 +51,7 @@ export function DxfCanvas({
   onTransformModeChange,
   rotationStep = 90,
   sheetKey,
+  sheetLabel,
   className,
   onUndo,
   onRedo,
@@ -198,6 +199,7 @@ export function DxfCanvas({
         boxSelectScreen,
         showGrid,
         gridStyle,
+        sheetLabel: showLabels ? sheetLabel : undefined,
         smartSpans,
         areaHoverContour,
       })
@@ -229,6 +231,8 @@ export function DxfCanvas({
     boxSelectScreen,
     showGrid,
     gridStyle,
+    sheetLabel,
+    showLabels,
   ])
 
   const setToolpath = sim.setToolpath

@@ -108,7 +108,7 @@ export function PropertiesPanel({
         : selectedPiece.pieceId
 
     return (
-      <div className="flex flex-col rounded-xl bg-muted/80 dark:bg-foreground/5 p-1 transition-colors">
+      <div className="flex w-full flex-col gap-1">
         <div
           role="button"
           tabIndex={0}
@@ -158,7 +158,7 @@ export function PropertiesPanel({
             isExpanded ? "mt-2 max-h-200 opacity-100 p-1" : "max-h-0 opacity-0 pointer-events-none"
           }`}
         >
-          <div className="flex flex-col rounded-lg bg-background dark:bg-foreground/5 p-2.5">
+          <div className="flex flex-col px-2 pb-2">
             <StatRow label="Nombre" value={name} />
             <StatRow
               label="Ancho × Alto"
@@ -279,7 +279,7 @@ export function PropertiesPanel({
 
   if (sheetStats) {
     return (
-      <div className="flex flex-col rounded-xl bg-muted/80 dark:bg-foreground/5 p-1 transition-colors">
+      <div className="flex w-full flex-col gap-1">
         <div
           role="button"
           tabIndex={0}
@@ -306,10 +306,10 @@ export function PropertiesPanel({
 
         <div
           className={`flex flex-col gap-3 overflow-hidden transition-all duration-200 ease-in-out ${
-            isExpanded ? "mt-2 max-h-150 opacity-100 p-1" : "max-h-0 opacity-0 pointer-events-none"
+            isExpanded ? "mt-1 max-h-150 opacity-100" : "max-h-0 opacity-0 pointer-events-none"
           }`}
         >
-          <div className="flex flex-col rounded-lg bg-background dark:bg-foreground/5 p-2.5">
+          <div className="flex flex-col px-2 pb-2">
             <StatRow label="Piezas" value={String(sheetStats.pieceCount)} />
             <StatRow label="Aprovechamiento" value={`${sheetStats.usagePercent.toFixed(1)}%`} />
             <StatRow label="Área plancha" value={`${(sheetStats.sheetArea / 1_000_000).toFixed(3)} m²`} />

@@ -344,6 +344,14 @@ export function useNestingProject() {
   const handleClearAll = useCallback(() => {
     setRows([])
     setForgivenIds(new Set())
+    setSheetMaterials({})
+    setSettings(prev => ({
+      ...prev,
+      proyecto: "",
+      tag: "",
+      lote: "",
+      material: "",
+    }))
     clearSheets()
     sheetEditsRef.current = {}
     void clearNestingDraft(); memoryDraftCache = null

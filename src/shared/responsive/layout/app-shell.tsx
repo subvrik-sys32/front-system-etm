@@ -31,10 +31,10 @@ function DesktopTopBar() {
 
   // Overlay como mobile: contenido scrollea debajo con blur.
   return (
-    <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-14 items-center gap-2 overflow-visible px-3">
+    <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex h-11 items-center gap-2 overflow-visible px-3">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-16 backdrop-blur-xl"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-14 backdrop-blur-xl"
         style={{
           maskImage: "linear-gradient(to bottom, black 40%, transparent)",
           WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent)",
@@ -42,7 +42,7 @@ function DesktopTopBar() {
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-16 bg-background/65"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-14 bg-background/65"
         style={{
           maskImage: "linear-gradient(to bottom, black 30%, transparent)",
           WebkitMaskImage: "linear-gradient(to bottom, black 30%, transparent)",
@@ -56,7 +56,7 @@ function DesktopTopBar() {
           {title ? (
             <div
               title={title}
-              className="inline-flex max-w-[10rem] items-center rounded-full bg-muted px-2.5 py-1.5 shadow-xs backdrop-blur-xl desktop:max-w-[14rem]"
+              className="inline-flex max-w-[10rem] items-center rounded-full bg-chrome px-2.5 py-1.5 shadow-xs backdrop-blur-xl desktop:max-w-[14rem]"
             >
               <span className="truncate text-sm font-semibold text-foreground">
                 {title}
@@ -134,9 +134,8 @@ function DesktopShell({ children }: Props) {
         }}
       >
         <DesktopTopBar />
-        {/* Full-bleed under topbar (blur overlay). Content clears top via useChromeInset
-            — same SSOT as AppListScroll. */}
-        <div className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-hidden">
+        {/* Contenido a pantalla completa; el topbar flota encima con blur. */}
+        <div className="absolute inset-0 flex min-h-0 min-w-0 flex-col">
           {children}
         </div>
       </main>
@@ -168,7 +167,13 @@ function CompactShell({ children }: Props) {
   }, [isOpen, closeDrawer])
 
   return (
-    <div className="relative h-dvh overflow-hidden bg-sidebar text-foreground select-none">
+    // h-svh (no h-dvh): dvh asume, en la primera pintura en Chrome/Android,
+    // que la barra de direcciones ya está colapsada — calcula MÁS alto del
+    // que hay realmente visible, y el TopBar (que vive en top:0 de este
+    // contenedor) nace empujado detrás de esa barra hasta el primer scroll.
+    // svh usa el peor caso (barra visible) así que el layout siempre
+    // arranca bien alineado, aunque no se "expanda" solo al ocultarse la barra.
+    <div className="relative h-svh overflow-hidden bg-sidebar text-foreground select-none">
       <div
         className="absolute inset-y-0 left-0 z-0"
         style={{ width: DRAWER_WIDTH_PX }}

@@ -15,11 +15,14 @@ export type SearchFieldProps = {
   disabled?: boolean
   id?: string
   "aria-label"?: string
+  /** ms antes de notificar al padre (filtro). Default 160. */
+  debounceMs?: number
 }
 
 /**
- * Campo de búsqueda estándar del ERP.
- * Misma métrica que SidebarPresence: h-9, icon 14, text-base sm:text-sm.
+ * Búsqueda del ERP.
+ * El input es local: cada tecla no re-renderiza la lista.
+ * El padre recibe el valor debounceado para filtrar.
  */
 export const SearchField = React.forwardRef<HTMLInputElement, SearchFieldProps>(
   function SearchField(
@@ -33,9 +36,26 @@ export const SearchField = React.forwardRef<HTMLInputElement, SearchFieldProps>(
       disabled,
       id,
       "aria-label": ariaLabel,
+      debounceMs = 160,
     },
     ref,
   ) {
+    const [draft, setDraft] = React.useState(value)
+    const onChangeRef = React.useRef(onChange)
+    onChangeRef.current = onChange
+
+    React.useEffect(() => {
+      setDraft(value)
+    }, [value])
+
+    React.useEffect(() => {
+      if (draft === value) return
+      const t = window.setTimeout(() => {
+        onChangeRef.current(draft)
+      }, debounceMs)
+      return () => window.clearTimeout(t)
+    }, [draft, value, debounceMs])
+
     return (
       <div
         className={cn(
@@ -47,18 +67,22 @@ export const SearchField = React.forwardRef<HTMLInputElement, SearchFieldProps>(
         <input
           ref={ref}
           id={id}
-          type="search"
-          value={value}
+          type="text"
+          inputMode="search"
+          enterKeyHint="search"
+          autoCorrect="off"
+          autoCapitalize="off"
+          autoComplete="off"
+          spellCheck={false}
+          value={draft}
           disabled={disabled}
           autoFocus={autoFocus}
           aria-label={ariaLabel ?? placeholder}
-          onChange={e => onChange(e.target.value)}
+          onChange={e => setDraft(e.target.value)}
           placeholder={placeholder}
           className={cn(
             "min-w-0 flex-1 bg-transparent text-base leading-none text-foreground outline-none placeholder:text-muted-foreground/80 sm:text-sm",
             "disabled:cursor-not-allowed disabled:opacity-50",
-            // sin chrome nativo de type=search
-            "[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden",
             inputClassName,
           )}
         />

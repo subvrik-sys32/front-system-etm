@@ -1,0 +1,28 @@
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 3f00552..f402684 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -26,6 +26,7 @@ export const viewport: Viewport = {
+   initialScale: 1,
+   maximumScale: 1,
+   userScalable: false,
++  viewportFit: "cover",
+   interactiveWidget: "overlays-content",
+ }
+ 
+diff --git a/src/shared/responsive/mobile/bottom-navigation.tsx b/src/shared/responsive/mobile/bottom-navigation.tsx
+index 9ec6831..9fa8aa2 100644
+--- a/src/shared/responsive/mobile/bottom-navigation.tsx
++++ b/src/shared/responsive/mobile/bottom-navigation.tsx
+@@ -20,10 +20,7 @@ export function BottomNavigation() {
+ 
+   return (
+     <div
+-      className="pointer-events-none absolute inset-x-0 bottom-0 z-20"
+-      style={{
+-        paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
+-      }}
++      className="pointer-events-none absolute inset-x-0 bottom-0 z-20 pb-3 [@media(display-mode:standalone)]:pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]"
+     >
+       {/* Blur progresivo (mismo patrón que iOS/Instagram): el
+           backdrop-blur y el oscurecido arrancan en 0% arriba del

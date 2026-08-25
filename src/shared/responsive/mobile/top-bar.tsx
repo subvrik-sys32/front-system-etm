@@ -13,6 +13,7 @@ import { usePageToolbarStore } from "@/shared/responsive/navigation/page-toolbar
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
 import { usePageSearchStore } from "@/shared/ui/entity-toolbar/page-search-store"
+import { SearchField } from "@/shared/ui/search-field/search-field"
 import { TOP_BAR_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
 import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { cn } from "@/shared/utils/utils"
@@ -148,17 +149,12 @@ export function TopBar() {
         >
           {/* h-10 fijo: con o sin texto la altura no cambia.
               mb-2 = mismo aire que empty state (mt-2) hacia los rows. */}
-          <div className="mb-2 flex h-9 items-center gap-2 rounded-xl bg-card px-2.5 shadow-xs">
-            <Search
-              size={14}
-              strokeWidth={2}
-              className="shrink-0 text-muted-foreground"
-            />
-            <input
+          <div className="mb-2 flex h-9 items-center gap-1 rounded-xl bg-card pr-1 shadow-xs">
+            <SearchField
               value={searchValue}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={setSearchQuery}
               placeholder={searchPlaceholder}
-              className="min-w-0 flex-1 bg-transparent text-base leading-none text-foreground outline-none placeholder:text-muted-foreground/80 sm:text-sm"
+              className="h-9 min-w-0 flex-1 bg-transparent px-2.5 shadow-none"
             />
             <button
               type="button"

@@ -20,10 +20,7 @@ export function BottomNavigation() {
 
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 bottom-0 z-20"
-      style={{
-        paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
-      }}
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-20 pb-3 [@media(display-mode:standalone)]:pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]"
     >
       {/* Blur progresivo (mismo patrón que iOS/Instagram): el
           backdrop-blur y el oscurecido arrancan en 0% arriba del

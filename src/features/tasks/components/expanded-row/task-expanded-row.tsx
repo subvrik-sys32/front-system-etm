@@ -91,7 +91,7 @@ function TaskDesktopRouteStrip({ task }: { task: Task }) {
 export function TaskExpandedRow({
   task,
 }: Props) {
-  const { isMobile } = useResponsive()
+  const { isMobile, isCompact } = useResponsive()
   const searchParams = useSearchParams()
 
   const urlTaskId = searchParams.get("taskId")
@@ -236,8 +236,8 @@ export function TaskExpandedRow({
             />
             <TaskRowActions task={task} className="gap-1" showAudit />
           </div>
-          {/* Desktop: el hueco libre alterna Workflow (ruta) ↔ KPIs */}
-          {!isMobile && (
+          {/* Solo desktop (no tablet/compact): chips de ruta + barra pendiente + KPIs */}
+          {!isCompact && (
             <div className="min-w-0 flex-1">
               {activeView === "workflow" && task.route?.length > 0 && (
                 <TaskDesktopRouteStrip task={task} />

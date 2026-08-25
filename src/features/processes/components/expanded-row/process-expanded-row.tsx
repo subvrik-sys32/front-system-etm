@@ -238,7 +238,7 @@ export function ProcessExpandedRow({
   processTask,
   headerActions,
 }: Props) {
-  const { isMobile, ready } = useResponsive()
+  const { isMobile, isCompact, ready } = useResponsive()
   const searchParams = useSearchParams()
 
   const urlTaskId = searchParams.get("taskId")
@@ -484,8 +484,8 @@ export function ProcessExpandedRow({
               {headerActions}
             </div>
           ) : null}
-          {/* Desktop: chips en la misma fila (toggle · actions · KPIs) */}
-          {!isMobile && activeView === "kpis" && (
+          {/* Solo desktop (no tablet/compact): KPIs chip strip */}
+          {!isCompact && activeView === "kpis" && (
             <div className="min-w-0 flex-1">
               <ProcessDesktopKpiStrip
                 processTask={processTask}

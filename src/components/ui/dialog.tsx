@@ -7,6 +7,7 @@ import { X } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { useVisualViewportFrame } from "@/components/ui/popover/use-visual-viewport-frame"
 
 type DialogProps =
   React.ComponentProps<
@@ -169,6 +170,7 @@ export function DialogContent({
   children,
   showCloseButton = true,
   size = "default",
+  style,
   ...props
 }: DialogContentProps) {
 
@@ -176,6 +178,8 @@ export function DialogContent({
 
   const isFullscreenMobile =
     size === "large" && isMobile
+
+  const frame = useVisualViewportFrame()
 
   return (
 
@@ -190,6 +194,21 @@ export function DialogContent({
         onOpenAutoFocus={event => {
           event.preventDefault()
         }}
+        style={
+          isFullscreenMobile
+            ? {
+                ...style,
+                top: frame.top,
+                left: frame.left,
+                width: frame.width || undefined,
+                height: frame.height || undefined,
+                right: "auto",
+                bottom: "auto",
+                transform: "none",
+                maxHeight: "none",
+              }
+            : style
+        }
         className={cn(
           "fixed",
           "left-1/2",

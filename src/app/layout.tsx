@@ -25,15 +25,10 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  // resizes-content (no overlays-content): con overlays-content el teclado
-  // flota SOBRE el contenido sin achicar el layout, y el navegador compensa
-  // haciendo scroll nativo para llevar el input enfocado a la vista — eso es
-  // lo que se sentía como que los inputs de abajo "se corrían" al escribir,
-  // reajustándose con cada cambio del teclado predictivo. Con resizes-content
-  // el layout se achica de verdad para hacerle espacio al teclado, así que el
-  // input queda arriba de él sin necesidad de ese scroll compensatorio. Los
-  // hooks de teclado (use-visual-viewport-frame.ts) ya asumían este modo.
-  interactiveWidget: "resizes-content",
+  // Default de iOS / Chrome: solo se achica el visual viewport.
+  // El ERP (body fixed, shells h-full) no se comprime con el teclado.
+  // Chat / form large se ancla al hueco visible (visualViewport).
+  interactiveWidget: "resizes-visual",
 }
 
 const THEME_INIT_SCRIPT = `

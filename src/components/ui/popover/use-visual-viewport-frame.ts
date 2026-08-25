@@ -7,20 +7,11 @@ export type VisualViewportFrame = {
   left: number
   width: number
   height: number
-  /** px desde el alto de layout "de verdad" (sin teclado) hasta el actual ≈ teclado */
   keyboardInset: number
   keyboardOpen: boolean
 }
 
 const KEYBOARD_THRESHOLD_PX = 50
-
-// Máximo window.innerHeight visto hasta ahora, y el ancho con el que
-// se registró (para resetear al rotar — la rotación cambia el ancho,
-// el teclado no).
-let stableLayoutHeight =
-  typeof window !== "undefined" ? window.innerHeight : 0
-let stableLayoutWidth =
-  typeof window !== "undefined" ? window.innerWidth : 0
 
 function measure(): VisualViewportFrame {
   if (typeof window === "undefined") {
@@ -34,51 +25,28 @@ function measure(): VisualViewportFrame {
     }
   }
 
+  const vv = window.visualViewport
   const layoutH = window.innerHeight
   const layoutW = window.innerWidth
-
-  // Rotación (el ancho cambió, el teclado no lo cambia): el alto de
-  // referencia viejo ya no vale, arrancamos de nuevo desde acá.
-  if (layoutW !== stableLayoutWidth) {
-    stableLayoutWidth = layoutW
-    stableLayoutHeight = layoutH
-  }
-
-  if (layoutH > stableLayoutHeight) {
-    stableLayoutHeight = layoutH
-  }
-
-  // Con interactiveWidget: resizes-content (ver app/layout.tsx), el
-  // navegador achica window.innerHeight DE VERDAD cuando aparece el
-  // teclado — así que comparar el alto actual contra el mayor que
-  // vimos hasta ahora YA da el alto del teclado directamente. No
-  // hace falta compararlo contra visualViewport: bajo este modo,
-  // innerHeight y visualViewport.height se achican juntos, así que
-  // compararlos entre sí siempre daría ~0 (por eso el cálculo viejo,
-  // pensado para overlays-content, dejó de servir al cambiar de modo).
-  const keyboardInset = Math.max(
-    0,
-    Math.round(stableLayoutHeight - layoutH),
-  )
+  const height = vv ? Math.round(vv.height) : layoutH
+  const width = vv ? Math.round(vv.width) : layoutW
+  const top = vv ? Math.round(vv.offsetTop) : 0
+  const left = vv ? Math.round(vv.offsetLeft) : 0
+  const keyboardInset = Math.max(0, Math.round(layoutH - height))
 
   return {
-    top: 0,
-    left: 0,
-    width: layoutW,
-    height: layoutH,
+    top,
+    left,
+    width,
+    height,
     keyboardInset,
     keyboardOpen: keyboardInset >= KEYBOARD_THRESHOLD_PX,
   }
 }
 
 /**
- * Bajo interactiveWidget: resizes-content, el navegador ya hace todo
- * el trabajo de achicar el viewport de layout con el teclado — este
- * hook solo expone esa medición (y calcula si el teclado está
- * abierto) para los pocos casos que necesitan saberlo explícitamente
- * (ej. un sheet que quiere ocupar más alto con teclado abierto).
- * Ya NO se usa para posicionar nada a mano (bottom, top, etc) —
- * eso ahora lo resuelve el propio CSS (fixed + dvh) automáticamente.
+ * Hueco visible + teclado. Con resizes-visual el layout no se achica;
+ * visualViewport sí. Un solo medidor para sheet y dialog large.
  */
 export function useVisualViewportFrame(): VisualViewportFrame {
   const [frame, setFrame] = React.useState<VisualViewportFrame>(measure)
@@ -94,12 +62,16 @@ export function useVisualViewportFrame(): VisualViewportFrame {
     window.addEventListener("resize", tick)
     window.addEventListener("focusin", tick)
     window.addEventListener("focusout", tick)
+    window.visualViewport?.addEventListener("resize", tick)
+    window.visualViewport?.addEventListener("scroll", tick)
 
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener("resize", tick)
       window.removeEventListener("focusin", tick)
       window.removeEventListener("focusout", tick)
+      window.visualViewport?.removeEventListener("resize", tick)
+      window.visualViewport?.removeEventListener("scroll", tick)
     }
   }, [])
 

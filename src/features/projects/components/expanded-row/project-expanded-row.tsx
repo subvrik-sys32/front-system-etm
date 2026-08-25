@@ -23,6 +23,8 @@ import {
 } from "@/shared/ui/entity-expanded-row"
 
 import { ProjectTasksList } from "./project-tasks-list"
+import { ProjectRowActions } from "../actions/project-row-actions"
+import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
 import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
 
@@ -309,30 +311,43 @@ export function ProjectExpandedRow({
   return (
     <EntityExpandedRow rowId={project.id}>
       <EntityExpandedContent>
-        <div className="mb-2 flex items-center justify-end select-none">
-          <EntityExpandedToggle
-            value={activeView}
-            onChange={handleViewChange}
-            options={[
-              {
-                value: "tasks",
-                label: "Tareas",
-                icon: ClipboardList,
-                count: totalTasks,
-              },
-              {
-                value: "kpis",
-                label: "KPIs",
-                icon: Activity,
-              },
-              {
-                value: "comments",
-                label: "Mensajes",
-                icon: MessageSquare,
-                count: totalComments,
-              },
-            ]}
-          />
+        <div className="mb-2 flex flex-wrap items-center gap-2 select-none">
+          <div className="min-w-0 flex-1">
+            <EntityExpandedToggle
+              value={activeView}
+              onChange={handleViewChange}
+              options={[
+                {
+                  value: "tasks",
+                  label: "Tareas",
+                  icon: ClipboardList,
+                  count: totalTasks,
+                },
+                {
+                  value: "kpis",
+                  label: "KPIs",
+                  icon: Activity,
+                },
+                {
+                  value: "comments",
+                  label: "Mensajes",
+                  icon: MessageSquare,
+                  count: totalComments,
+                },
+              ]}
+            />
+          </div>
+          <div
+            className="flex shrink-0 items-center gap-1"
+            onClick={e => e.stopPropagation()}
+            onPointerDown={e => e.stopPropagation()}
+          >
+            <DetailAssetsEye
+              projectId={project.id}
+              count={project.detailAssetCount ?? 0}
+            />
+            <ProjectRowActions project={project} className="gap-1" showAudit />
+          </div>
         </div>
 
         <EntityExpandedSlider

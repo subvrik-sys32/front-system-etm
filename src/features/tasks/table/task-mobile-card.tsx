@@ -504,18 +504,6 @@ function TaskMobileCardReady({
           />
         </CollapsibleHeightSection>
 
-        {/* Desktop: acciones en el panel. Móvil: van en el row al expandir. */}
-        {!isMobile && (
-          <div className="flex items-center justify-start gap-1">
-            <DetailAssetsEye
-              taskId={task.id}
-              count={taskDetailAssetCount(task)}
-              onEditTask={openEditMaterials}
-            />
-            <TaskRowActions task={task} showAudit />
-          </div>
-        )}
-
         <CollapsibleHeightSection open={showPipeline}>
           <TaskExpandedRow task={task} />
         </CollapsibleHeightSection>

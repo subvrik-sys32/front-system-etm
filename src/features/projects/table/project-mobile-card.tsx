@@ -165,7 +165,6 @@ function ProjectMobileCardReady({
   // Historial: siempre opaco. Activos: se opacitan si otro activo está expandido.
   const isDimmed = isCompleted || (dimOthers && !expanded)
   // Móvil expandido: acciones en el row; burbuja de conteo cede el sitio
-  const actionsOnRow = isMobile && expanded
   const stageInk = useDomainInk(project.stage.color)
   const statusInk = useDomainInk(project.status.color)
 
@@ -260,7 +259,7 @@ function ProjectMobileCardReady({
           </div>
 
           {/* Solo si hay cantidad — cero no se muestra (menos ruido visual) */}
-          {!actionsOnRow &&
+          {!expanded &&
             ((project.taskCount ?? 0) > 0 ||
               (project.commentCount ?? 0) > 0) && (
             <span className="flex shrink-0 items-center gap-1">
@@ -316,24 +315,6 @@ function ProjectMobileCardReady({
           </div>
         )}
 
-        {/* Móvil expandido: lápiz / borrar + nueva tarea en el row */}
-        {actionsOnRow && (
-          <div
-            className="flex shrink-0 items-center gap-1 pr-0.5"
-            onClick={e => e.stopPropagation()}
-          >
-            <DetailAssetsEye projectId={project.id} count={project.detailAssetCount ?? 0} />
-            <ProjectRowActions project={project} className="gap-1" showAudit />
-            <IconAction
-              icon={Plus}
-              disabled={!canCreateTask}
-              onClick={() => {
-                if (!canCreateTask) return
-                setNewTaskOpen(true)
-              }}
-            />
-          </div>
-        )}
 
         <button
           type="button"
@@ -385,14 +366,6 @@ function ProjectMobileCardReady({
             <ProjectStatusCell project={project} triggerVariant="row" rowLabel="Estado" />
             <ProjectPmCell project={project} triggerVariant="row" rowLabel="PM" />
         </CollapsibleHeightSection>
-
-        {/* Desktop: acciones en el panel expandido. Móvil: ya están en el row. */}
-        {!isMobile && (
-          <div className="flex items-center justify-start gap-1">
-            <DetailAssetsEye projectId={project.id} count={project.detailAssetCount ?? 0} />
-            <ProjectRowActions project={project} showAudit />
-          </div>
-        )}
 
         <CollapsibleHeightSection open={showPipeline}>
           <ProjectExpandedRow project={project} tasks={tasks} />

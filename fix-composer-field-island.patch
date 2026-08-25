@@ -1,0 +1,285 @@
+diff --git a/src/features/comments/components/comment-composer-field.tsx b/src/features/comments/components/comment-composer-field.tsx
+new file mode 100644
+index 0000000..486e343
+--- /dev/null
++++ b/src/features/comments/components/comment-composer-field.tsx
+@@ -0,0 +1,129 @@
++"use client"
++
++import { useRef, useImperativeHandle, forwardRef, memo } from "react"
++
++export type CommentComposerFieldHandle = {
++  getValue: () => string
++  setValue: (value: string) => void
++  focus: () => void
++  clear: () => void
++}
++
++type Props = {
++  defaultValue?: string
++  disabled?: boolean
++  placeholder: string
++  onHasText: (has: boolean) => void
++  onMention: (query: string | null) => void
++  onSubmit: () => void
++  onEscape?: () => void
++}
++
++function mentionAtCursor(value: string, cursor: number) {
++  const match = value.slice(0, cursor).match(/@([a-zA-Z0-9_.]*)$/)
++  return match ? match[1] : null
++}
++
++/**
++ * Isla del input (mismo criterio que SearchField).
++ * Cada tecla se queda en el DOM. El padre solo se entera si cambia
++ * "hay texto", el token @, Enter o Escape.
++ */
++const CommentComposerFieldInner = forwardRef<
++  CommentComposerFieldHandle,
++  Props
++>(function CommentComposerField(
++  {
++    defaultValue = "",
++    disabled,
++    placeholder,
++    onHasText,
++    onMention,
++    onSubmit,
++    onEscape,
++  },
++  ref,
++) {
++  const elRef = useRef<HTMLTextAreaElement>(null)
++  const hasTextRef = useRef(Boolean(defaultValue.trim()))
++  const mentionRef = useRef<string | null>(null)
++  const onHasTextRef = useRef(onHasText)
++  const onMentionRef = useRef(onMention)
++  const onSubmitRef = useRef(onSubmit)
++  const onEscapeRef = useRef(onEscape)
++  onHasTextRef.current = onHasText
++  onMentionRef.current = onMention
++  onSubmitRef.current = onSubmit
++  onEscapeRef.current = onEscape
++
++  useImperativeHandle(ref, () => ({
++    getValue: () => elRef.current?.value ?? "",
++    setValue: (value: string) => {
++      const el = elRef.current
++      if (!el) return
++      el.value = value
++      syncFlags(value, value.length)
++    },
++    focus: () => elRef.current?.focus(),
++    clear: () => {
++      const el = elRef.current
++      if (!el) return
++      el.value = ""
++      syncFlags("", 0)
++    },
++  }))
++
++  function syncFlags(value: string, cursor: number) {
++    const has = value.trim().length > 0
++    if (has !== hasTextRef.current) {
++      hasTextRef.current = has
++      onHasTextRef.current(has)
++    }
++    const mention = mentionAtCursor(value, cursor)
++    if (mention !== mentionRef.current) {
++      mentionRef.current = mention
++      onMentionRef.current(mention)
++    }
++  }
++
++  return (
++    <textarea
++      ref={elRef}
++      defaultValue={defaultValue}
++      disabled={disabled}
++      rows={1}
++      placeholder={placeholder}
++      autoCorrect="off"
++      autoCapitalize="off"
++      autoComplete="off"
++      spellCheck={false}
++      onInput={e => {
++        const el = e.currentTarget
++        syncFlags(el.value, el.selectionStart ?? el.value.length)
++      }}
++      onKeyDown={e => {
++        if (e.key === "Enter" && !e.shiftKey) {
++          e.preventDefault()
++          onSubmitRef.current()
++          return
++        }
++        if (e.key === "Escape") {
++          if (mentionRef.current !== null) {
++            e.preventDefault()
++            mentionRef.current = null
++            onMentionRef.current(null)
++            return
++          }
++          onEscapeRef.current?.()
++        }
++      }}
++      className="max-h-24 min-h-9 flex-1 resize-none bg-transparent py-2 text-[15px] leading-snug text-foreground outline-none placeholder:text-muted-foreground/70"
++    />
++  )
++})
++
++export const CommentComposerField = memo(CommentComposerFieldInner, (a, b) => (
++  a.defaultValue === b.defaultValue &&
++  a.disabled === b.disabled &&
++  a.placeholder === b.placeholder
++))
+diff --git a/src/features/comments/components/comment-composer.tsx b/src/features/comments/components/comment-composer.tsx
+index 67173f6..a4f3827 100644
+--- a/src/features/comments/components/comment-composer.tsx
++++ b/src/features/comments/components/comment-composer.tsx
+@@ -1,6 +1,6 @@
+ "use client"
+ 
+-import { useEffect, useRef, useState, KeyboardEvent, ChangeEvent, FormEvent } from "react"
++import { useEffect, useRef, useState, ChangeEvent } from "react"
+ import { Camera, Check, ImageIcon, Pencil, Reply, Send, X } from "lucide-react"
+ import { IconAction } from "@/shared/ui/actions/icon-action"
+ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+@@ -9,6 +9,10 @@ import { useCreateComment } from "../hooks/use-create-comment"
+ import { useUpdateComment } from "../hooks/use-update-comment"
+ import { useMentionableUsers } from "../hooks/use-mentionable-users"
+ import { MentionSuggestions } from "./mention-suggestions"
++import {
++  CommentComposerField,
++  type CommentComposerFieldHandle,
++} from "./comment-composer-field"
+ import type { Comment, CommentTarget } from "../types/comment.types"
+ 
+ type Props = {
+@@ -29,7 +33,7 @@ export function CommentComposer({
+   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
+   const [hasText, setHasText] = useState(false)
+   const [selectedImage, setSelectedImage] = useState<string | null>(null)
+-  const textareaRef = useRef<HTMLTextAreaElement>(null)
++  const fieldRef = useRef<CommentComposerFieldHandle>(null)
+   const fileInputRef = useRef<HTMLInputElement>(null)
+ 
+   const { createComment } = useCreateComment(target)
+@@ -45,16 +49,12 @@ export function CommentComposer({
+   const busy = updating
+ 
+   useEffect(() => {
+-    const el = textareaRef.current
+-    if (el) el.value = editingComment?.message ?? ""
+-    setHasText(Boolean(editingComment?.message?.trim()))
++    fieldRef.current?.setValue(editingComment?.message ?? "")
+     setMentionQuery(null)
+   }, [editingComment])
+ 
+   useEffect(() => {
+-    if (replyingTo) {
+-      requestAnimationFrame(() => textareaRef.current?.focus())
+-    }
++    if (replyingTo) requestAnimationFrame(() => fieldRef.current?.focus())
+   }, [replyingTo])
+ 
+   const filteredUsers =
+@@ -68,32 +68,16 @@ export function CommentComposer({
+ 
+   const mentionOpen = mentionQuery !== null && filteredUsers.length > 0
+ 
+-  const handleInput = (e: FormEvent<HTMLTextAreaElement>) => {
+-    const el = e.currentTarget
+-    const value = el.value
+-    setHasText(value.trim().length > 0)
+-    const cursor = el.selectionStart ?? value.length
+-    const match = value.slice(0, cursor).match(/@([a-zA-Z0-9_.]*)$/)
+-    const next = match ? match[1] : null
+-    setMentionQuery(prev => (prev === next ? prev : next))
+-  }
+-
+   const handleSelectMention = (username: string) => {
+-    const el = textareaRef.current
+-    if (!el) return
+-    const cursor = el.selectionStart ?? el.value.length
+-    const upToCursor = el.value.slice(0, cursor)
+-    const afterCursor = el.value.slice(cursor)
+-    el.value =
+-      upToCursor.replace(/@([a-zA-Z0-9_.]*)$/, `@${username} `) + afterCursor
+-    setHasText(el.value.trim().length > 0)
++    const current = fieldRef.current?.getValue() ?? ""
++    const replaced = current.replace(/@([a-zA-Z0-9_.]*)$/, `@${username} `)
++    fieldRef.current?.setValue(replaced)
+     setMentionQuery(null)
+-    requestAnimationFrame(() => el.focus())
++    fieldRef.current?.focus()
+   }
+ 
+   const clearComposer = () => {
+-    if (textareaRef.current) textareaRef.current.value = ""
+-    setHasText(false)
++    fieldRef.current?.clear()
+     setSelectedImage(null)
+     setMentionQuery(null)
+   }
+@@ -114,7 +98,7 @@ export function CommentComposer({
+   }
+ 
+   const handleSubmit = () => {
+-    const trimmed = (textareaRef.current?.value ?? "").trim()
++    const trimmed = (fieldRef.current?.getValue() ?? "").trim()
+     if ((!trimmed && !selectedImage) || busy || !canCreate) return
+ 
+     if (isEditing && editingComment) {
+@@ -133,23 +117,6 @@ export function CommentComposer({
+     clearComposer()
+   }
+ 
+-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+-    if (mentionQuery !== null && filteredUsers.length > 0 && e.key === "Escape") {
+-      e.preventDefault()
+-      setMentionQuery(null)
+-      return
+-    }
+-
+-    if (e.key === "Enter" && !e.shiftKey) {
+-      e.preventDefault()
+-      handleSubmit()
+-    }
+-
+-    if (e.key === "Escape" && showContext && mentionQuery === null) {
+-      handleCancel()
+-    }
+-  }
+-
+   const canSubmit = (hasText || !!selectedImage) && !busy && canCreate
+ 
+   return (
+@@ -239,13 +206,10 @@ export function CommentComposer({
+               </div>
+             )}
+ 
+-            <textarea
+-              ref={textareaRef}
++            <CommentComposerField
++              ref={fieldRef}
+               defaultValue={editingComment?.message ?? ""}
+-              onInput={handleInput}
+-              onKeyDown={handleKeyDown}
+               disabled={busy || !canCreate}
+-              rows={1}
+               placeholder={
+                 !canCreate
+                   ? "Sin permiso para comentar"
+@@ -253,7 +217,10 @@ export function CommentComposer({
+                     ? "Edita tu mensaje…"
+                     : "Mensaje…  @mencionar"
+               }
+-              className="max-h-24 min-h-9 flex-1 resize-none bg-transparent py-2 text-[15px] leading-snug text-foreground outline-none placeholder:text-muted-foreground/70"
++              onHasText={setHasText}
++              onMention={setMentionQuery}
++              onSubmit={handleSubmit}
++              onEscape={showContext ? handleCancel : undefined}
+             />
+ 
+             <button

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, KeyboardEvent, ChangeEvent, FormEvent } from "react"
+import { useEffect, useRef, useState, ChangeEvent } from "react"
 import { Camera, Check, ImageIcon, Pencil, Reply, Send, X } from "lucide-react"
 import { IconAction } from "@/shared/ui/actions/icon-action"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
@@ -9,6 +9,10 @@ import { useCreateComment } from "../hooks/use-create-comment"
 import { useUpdateComment } from "../hooks/use-update-comment"
 import { useMentionableUsers } from "../hooks/use-mentionable-users"
 import { MentionSuggestions } from "./mention-suggestions"
+import {
+  CommentComposerField,
+  type CommentComposerFieldHandle,
+} from "./comment-composer-field"
 import type { Comment, CommentTarget } from "../types/comment.types"
 
 type Props = {
@@ -29,7 +33,7 @@ export function CommentComposer({
   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
   const [hasText, setHasText] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fieldRef = useRef<CommentComposerFieldHandle>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { createComment } = useCreateComment(target)
@@ -45,16 +49,12 @@ export function CommentComposer({
   const busy = updating
 
   useEffect(() => {
-    const el = textareaRef.current
-    if (el) el.value = editingComment?.message ?? ""
-    setHasText(Boolean(editingComment?.message?.trim()))
+    fieldRef.current?.setValue(editingComment?.message ?? "")
     setMentionQuery(null)
   }, [editingComment])
 
   useEffect(() => {
-    if (replyingTo) {
-      requestAnimationFrame(() => textareaRef.current?.focus())
-    }
+    if (replyingTo) requestAnimationFrame(() => fieldRef.current?.focus())
   }, [replyingTo])
 
   const filteredUsers =
@@ -68,32 +68,16 @@ export function CommentComposer({
 
   const mentionOpen = mentionQuery !== null && filteredUsers.length > 0
 
-  const handleInput = (e: FormEvent<HTMLTextAreaElement>) => {
-    const el = e.currentTarget
-    const value = el.value
-    setHasText(value.trim().length > 0)
-    const cursor = el.selectionStart ?? value.length
-    const match = value.slice(0, cursor).match(/@([a-zA-Z0-9_.]*)$/)
-    const next = match ? match[1] : null
-    setMentionQuery(prev => (prev === next ? prev : next))
-  }
-
   const handleSelectMention = (username: string) => {
-    const el = textareaRef.current
-    if (!el) return
-    const cursor = el.selectionStart ?? el.value.length
-    const upToCursor = el.value.slice(0, cursor)
-    const afterCursor = el.value.slice(cursor)
-    el.value =
-      upToCursor.replace(/@([a-zA-Z0-9_.]*)$/, `@${username} `) + afterCursor
-    setHasText(el.value.trim().length > 0)
+    const current = fieldRef.current?.getValue() ?? ""
+    const replaced = current.replace(/@([a-zA-Z0-9_.]*)$/, `@${username} `)
+    fieldRef.current?.setValue(replaced)
     setMentionQuery(null)
-    requestAnimationFrame(() => el.focus())
+    fieldRef.current?.focus()
   }
 
   const clearComposer = () => {
-    if (textareaRef.current) textareaRef.current.value = ""
-    setHasText(false)
+    fieldRef.current?.clear()
     setSelectedImage(null)
     setMentionQuery(null)
   }
@@ -114,7 +98,7 @@ export function CommentComposer({
   }
 
   const handleSubmit = () => {
-    const trimmed = (textareaRef.current?.value ?? "").trim()
+    const trimmed = (fieldRef.current?.getValue() ?? "").trim()
     if ((!trimmed && !selectedImage) || busy || !canCreate) return
 
     if (isEditing && editingComment) {
@@ -131,23 +115,6 @@ export function CommentComposer({
     }
 
     clearComposer()
-  }
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (mentionQuery !== null && filteredUsers.length > 0 && e.key === "Escape") {
-      e.preventDefault()
-      setMentionQuery(null)
-      return
-    }
-
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmit()
-    }
-
-    if (e.key === "Escape" && showContext && mentionQuery === null) {
-      handleCancel()
-    }
   }
 
   const canSubmit = (hasText || !!selectedImage) && !busy && canCreate
@@ -239,13 +206,10 @@ export function CommentComposer({
               </div>
             )}
 
-            <textarea
-              ref={textareaRef}
+            <CommentComposerField
+              ref={fieldRef}
               defaultValue={editingComment?.message ?? ""}
-              onInput={handleInput}
-              onKeyDown={handleKeyDown}
               disabled={busy || !canCreate}
-              rows={1}
               placeholder={
                 !canCreate
                   ? "Sin permiso para comentar"
@@ -253,7 +217,10 @@ export function CommentComposer({
                     ? "Edita tu mensaje…"
                     : "Mensaje…  @mencionar"
               }
-              className="max-h-24 min-h-9 flex-1 resize-none bg-transparent py-2 text-[15px] leading-snug text-foreground outline-none placeholder:text-muted-foreground/70"
+              onHasText={setHasText}
+              onMention={setMentionQuery}
+              onSubmit={handleSubmit}
+              onEscape={showContext ? handleCancel : undefined}
             />
 
             <button

@@ -12,7 +12,6 @@ import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
 import { cn } from "@/shared/utils/utils"
 import type { WorkflowStep } from "@/features/workflow/types/workflow.types"
 import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 type AuditUser = { id: string; name: string }
 
@@ -101,8 +100,7 @@ export function EntityAuditInfo({
                 Flujo de trabajo
               </p>
             </div>
-            <ScrollArea className="max-h-52">
-            <ul className="flex flex-col gap-1 px-2 pb-3">
+            <ul className="flex max-h-52 flex-col gap-1 overflow-y-auto overscroll-y-contain themed-scrollbar-y px-2 pb-3">
               {steps.map(step => {
                 const def = PROCESS_DEFINITIONS[step.processCode]
                 const processName = def?.label ?? step.processCode
@@ -134,7 +132,6 @@ export function EntityAuditInfo({
                 )
               })}
             </ul>
-            </ScrollArea>
           </>
         )}
       </PopoverContent>

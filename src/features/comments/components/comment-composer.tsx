@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, KeyboardEvent, ChangeEvent, FormEvent } from "react"
 import { Camera, Check, ImageIcon, Pencil, Reply, Send, X } from "lucide-react"
 import { IconAction } from "@/shared/ui/actions/icon-action"
-import { Popover, PopoverAnchor } from "@/components/ui/popover"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { useCreateComment } from "../hooks/use-create-comment"
@@ -220,14 +219,15 @@ export function CommentComposer({
         onChange={handleSelectImage}
       />
 
-      <Popover
-        forceFloating
-        open={mentionOpen}
-        onOpenChange={next => {
-          if (!next) setMentionQuery(null)
-        }}
-      >
-        <PopoverAnchor asChild>
+      <div className="relative">
+        {mentionOpen ? (
+          <div className="absolute bottom-full left-0 z-50 mb-2">
+            <MentionSuggestions
+              users={filteredUsers}
+              onSelect={handleSelectMention}
+            />
+          </div>
+        ) : null}
           <div className="flex items-center gap-1">
             {!isEditing && (
               <div className="flex size-9 shrink-0 items-center justify-center">
@@ -271,15 +271,7 @@ export function CommentComposer({
               )}
             </button>
           </div>
-        </PopoverAnchor>
-
-        {mentionOpen ? (
-          <MentionSuggestions
-            users={filteredUsers}
-            onSelect={handleSelectMention}
-          />
-        ) : null}
-      </Popover>
+      </div>
     </div>
   )
 }

@@ -22,7 +22,10 @@ export function CommentList({ comments, onEdit, onDelete, onReply }: Props) {
     }))
   }
 
-  const topLevel = comments.filter(c => !c.parentId)
+  const byCreatedAsc = (a: Comment, b: Comment) =>
+    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+
+  const topLevel = comments.filter(c => !c.parentId).sort(byCreatedAsc)
 
   const repliesByParent = new Map<string, Comment[]>()
 
@@ -31,6 +34,10 @@ export function CommentList({ comments, onEdit, onDelete, onReply }: Props) {
     const list = repliesByParent.get(comment.parentId) ?? []
     list.push(comment)
     repliesByParent.set(comment.parentId, list)
+  }
+
+  for (const [id, list] of repliesByParent) {
+    repliesByParent.set(id, [...list].sort(byCreatedAsc))
   }
 
   const topLevelIds = new Set(topLevel.map(c => c.id))

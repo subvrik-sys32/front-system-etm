@@ -1,0 +1,49 @@
+diff --git a/src/components/ui/sonner.tsx b/src/components/ui/sonner.tsx
+index c4d71a5..d11ab42 100644
+--- a/src/components/ui/sonner.tsx
++++ b/src/components/ui/sonner.tsx
+@@ -10,14 +10,16 @@ import {
+ 
+ import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { useThemeStore } from "@/shared/theme"
++import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ 
+ export function Sonner() {
+   const theme = useThemeStore(s => s.resolved)
++  const { isMobile, ready } = useResponsive()
+ 
+   return (
+     <Toaster
+       theme={theme}
+-      position="bottom-right"
++      position={ready && isMobile ? "bottom-center" : "bottom-right"}
+       gap={8}
+       offset={16}
+       visibleToasts={4}
+diff --git a/src/features/comments/components/comment-list.tsx b/src/features/comments/components/comment-list.tsx
+index 4d4ca93..c289763 100644
+--- a/src/features/comments/components/comment-list.tsx
++++ b/src/features/comments/components/comment-list.tsx
+@@ -22,7 +22,10 @@ export function CommentList({ comments, onEdit, onDelete, onReply }: Props) {
+     }))
+   }
+ 
+-  const topLevel = comments.filter(c => !c.parentId)
++  const byCreatedAsc = (a: Comment, b: Comment) =>
++    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
++
++  const topLevel = comments.filter(c => !c.parentId).sort(byCreatedAsc)
+ 
+   const repliesByParent = new Map<string, Comment[]>()
+ 
+@@ -33,6 +36,10 @@ export function CommentList({ comments, onEdit, onDelete, onReply }: Props) {
+     repliesByParent.set(comment.parentId, list)
+   }
+ 
++  for (const [id, list] of repliesByParent) {
++    repliesByParent.set(id, [...list].sort(byCreatedAsc))
++  }
++
+   const topLevelIds = new Set(topLevel.map(c => c.id))
+   const orphanReplies = comments.filter(
+     c => c.parentId && !topLevelIds.has(c.parentId),

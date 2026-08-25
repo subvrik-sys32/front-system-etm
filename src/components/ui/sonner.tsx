@@ -10,14 +10,16 @@ import {
 
 import { Spinner } from "@/shared/ui/spinner/spinner"
 import { useThemeStore } from "@/shared/theme"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 export function Sonner() {
   const theme = useThemeStore(s => s.resolved)
+  const { isMobile, ready } = useResponsive()
 
   return (
     <Toaster
       theme={theme}
-      position="bottom-right"
+      position={ready && isMobile ? "bottom-center" : "bottom-right"}
       gap={8}
       offset={16}
       visibleToasts={4}

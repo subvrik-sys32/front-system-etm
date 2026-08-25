@@ -123,7 +123,7 @@ export function CommentComposer({
 
   return (
     <div
-      className="flex flex-col gap-1.5 rounded-2xl bg-foreground/[0.06] px-2 py-1.5"
+      className="flex flex-col gap-1 rounded-2xl bg-foreground/[0.06] px-2 py-1"
       style={keyboardInset ? { paddingBottom: keyboardInset } : undefined}
     >
       {showContext && (
@@ -202,7 +202,7 @@ export function CommentComposer({
         ) : null}
           <div className="flex items-center gap-1">
             {!isEditing && (
-              <div className="flex size-9 shrink-0 items-center justify-center">
+              <div className="flex size-8 shrink-0 items-center justify-center">
                 <IconAction
                   icon={Camera}
                   disabled={!canCreate}
@@ -234,7 +234,7 @@ export function CommentComposer({
                 aria-label="Borrar mensaje"
                 title="Borrar mensaje"
                 onClick={() => fieldRef.current?.clear()}
-                className="flex size-9 shrink-0 items-center justify-center rounded-[10px] text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
+                className="flex size-8 shrink-0 items-center justify-center rounded-[10px] text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
               >
                 <X size={16} strokeWidth={2.2} />
               </button>
@@ -246,7 +246,7 @@ export function CommentComposer({
               title={isEditing ? "Guardar" : "Enviar"}
               disabled={!canSubmit}
               onClick={handleSubmit}
-              className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-foreground text-background shadow-xs transition disabled:opacity-40"
+              className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-foreground text-background shadow-xs transition disabled:opacity-40"
             >
               {isEditing ? (
                 <Check className="size-4" strokeWidth={2.4} />

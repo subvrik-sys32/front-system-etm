@@ -11,17 +11,24 @@ import {
 import { Spinner } from "@/shared/ui/spinner/spinner"
 import { useThemeStore } from "@/shared/theme"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { BOTTOM_NAV_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
+import { cn } from "@/shared/utils/utils"
 
 export function Sonner() {
   const theme = useThemeStore(s => s.resolved)
-  const { isCompact, ready } = useResponsive()
+  const { isMobile, ready } = useResponsive()
+  const mobile = ready && isMobile
 
   return (
     <Toaster
       theme={theme}
-      position={ready && isCompact ? "bottom-center" : "bottom-right"}
+      position={mobile ? "bottom-center" : "bottom-right"}
       gap={8}
-      offset={16}
+      offset={mobile ? BOTTOM_NAV_HEIGHT_PX : 16}
+      className={cn(
+        mobile &&
+          "!left-1/2 !right-auto !w-[min(100vw-1.5rem,22rem)] !-translate-x-1/2",
+      )}
       visibleToasts={4}
       icons={{
         success: <CheckCircle2 className="size-4 text-emerald-500" />,

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useMemo } from "react"
 import { MessageSquare, Trash2 } from "lucide-react"
 import { SearchField } from "@/shared/ui/search-field/search-field"
 import { Spinner } from "@/shared/ui/spinner/spinner"
@@ -55,7 +55,6 @@ export function CommentHistoryDialog({
   const { deleteComment } = useDeleteComment(target)
 
   const targetId = getTargetId(target)
-
   const markedReadRef = useRef<string | null>(null)
 
   useEffect(() => {
@@ -70,12 +69,15 @@ export function CommentHistoryDialog({
       })
   }, [open, target.scope, targetId, target])
 
-  const filteredComments = search.trim()
-    ? comments.filter(c =>
-        c.message.toLowerCase().includes(search.toLowerCase()) ||
-        c.user.name.toLowerCase().includes(search.toLowerCase()),
-      )
-    : comments
+  // 🚀 Optimización Senior: useMemo para que el filtrado no congele la UI al escribir en la búsqueda
+  const filteredComments = useMemo(() => {
+    if (!search.trim()) return comments
+    const query = search.toLowerCase()
+    return comments.filter(c =>
+      c.message.toLowerCase().includes(query) ||
+      c.user.name.toLowerCase().includes(query),
+    )
+  }, [comments, search])
 
   const handleEdit = (comment: Comment) => {
     if (onEditComment) {
@@ -83,13 +85,11 @@ export function CommentHistoryDialog({
       onOpenChange(false)
       return
     }
-
     setEditingComment(comment)
   }
 
   const handleConfirmDelete = () => {
     if (!pendingDelete) return
-
     deleteComment(pendingDelete)
     setPendingDelete(null)
   }
@@ -103,7 +103,7 @@ export function CommentHistoryDialog({
           onPointerDownOutside={preventNestedDialogClose}
           onInteractOutside={preventNestedDialogClose}
         >
-          {/* Barra fija del chat — no scrollea con el hilo */}
+          {/* Barra fija del chat */}
           <DialogHeader className="z-10 shrink-0 border-b border-border/40 bg-popover px-4 py-3">
             <div className="flex items-center gap-3">
               <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-foreground shadow-xs">
@@ -126,7 +126,7 @@ export function CommentHistoryDialog({
             />
           </DialogHeader>
 
-          {/* Thread — área de burbujas (como iteration-panel CAD) */}
+          {/* Thread — área de burbujas */}
           <ScrollArea className="min-h-0 flex-1">
             <div className="flex flex-col gap-3 px-4 py-4">
               {loading ? (
@@ -141,8 +141,6 @@ export function CommentHistoryDialog({
               ) : (
                 <CommentList
                   comments={filteredComments}
-                  // Historial/finalizada: no crear ni responder, pero sí borrar/editar lo propio
-                  // (el backend ya lo permite; antes onDelete quedaba undefined y el ícono no hacía nada).
                   onEdit={handleEdit}
                   onDelete={setPendingDelete}
                   onReply={readOnly ? undefined : setReplyingTo}
@@ -151,7 +149,7 @@ export function CommentHistoryDialog({
             </div>
           </ScrollArea>
 
-          {/* Composer abajo — contrato chat */}
+          {/* Composer abajo */}
           <div className="shrink-0 bg-card px-3 py-3">
             {readOnly && !editingComment ? (
               <p className="rounded-xl bg-foreground/5 px-3 py-2.5 text-center text-xs text-muted-foreground">

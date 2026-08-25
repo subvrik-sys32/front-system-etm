@@ -46,7 +46,7 @@ export function TaskRouteViewer({
         className={cn(
           "flex items-center overflow-visible",
           inline
-            ? "min-w-max flex-nowrap gap-1.5 pt-4"
+            ? "min-w-max flex-nowrap items-center gap-1.5 pt-3.5"
             : "flex-wrap justify-center gap-2 pt-5",
         )}
       >

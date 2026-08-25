@@ -56,34 +56,32 @@ function TaskDesktopRouteStrip({ task }: { task: Task }) {
     : undefined
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col items-stretch gap-2 overflow-visible">
+    <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2 overflow-visible">
       <TaskRouteViewer
         variant="inline"
         taskId={task.id}
         route={task.route}
         currentProcess={currentStep?.processCode}
       />
-      <div className="w-full min-w-0 rounded-xl bg-foreground/5 px-3 py-2">
-        <div className="flex min-w-0 items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-1.5">
-            {StatusIcon && (
-              <StatusIcon size={13} className="shrink-0 text-muted-foreground" />
-            )}
-            <span className="truncate text-xs font-bold uppercase tracking-wide text-foreground">
-              {statusDef?.label ?? "Sin estado"}
-            </span>
-          </div>
-          <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-muted-foreground">
-            {workflowView.completedSteps}/{workflowView.totalSteps} ·{" "}
-            <span className="text-foreground">{workflowView.progress}%</span>
+      <div className="flex min-w-[10rem] max-w-[16rem] flex-1 items-center gap-2 rounded-xl bg-foreground/5 px-2.5 py-1.5">
+        <div className="flex min-w-0 shrink items-center gap-1">
+          {StatusIcon && (
+            <StatusIcon size={12} className="shrink-0 text-muted-foreground" />
+          )}
+          <span className="truncate text-[10px] font-bold uppercase tracking-wide text-foreground">
+            {statusDef?.label ?? "—"}
           </span>
         </div>
-        <div className="mt-1.5 h-2 w-full min-w-0 overflow-hidden rounded-full bg-foreground/5">
+        <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-foreground/10">
           <div
             className="h-full rounded-full bg-cyan-500 transition-all"
             style={{ width: `${workflowView.progress}%` }}
           />
         </div>
+        <span className="shrink-0 whitespace-nowrap text-[10px] font-semibold tabular-nums text-muted-foreground">
+          {workflowView.completedSteps}/{workflowView.totalSteps}
+          <span className="text-foreground"> · {workflowView.progress}%</span>
+        </span>
       </div>
     </div>
   )
@@ -200,7 +198,7 @@ export function TaskExpandedRow({
       rowId={task.id}
     >
       <EntityExpandedContent>
-        <div className="mb-2 flex flex-wrap items-center gap-2 select-none">
+        <div className="mb-2 flex flex-nowrap items-center gap-2 select-none">
           <div className="min-w-0 shrink-0">
             <EntityExpandedToggle
               value={activeView}

@@ -174,22 +174,35 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
         />
       </div>
 
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="px-2 pb-2">
+      <div className="relative min-h-0 w-full flex-1">
+        {/* Spacer invisible: misma altura mínima que NotificationBell (py-14 + icono). */}
+        <div
+          className="invisible flex flex-col items-center justify-center gap-2 px-2 py-14 text-center"
+          aria-hidden
+        >
+          <div className="size-10 shrink-0 rounded-full" />
+          <p className="text-xs font-medium">Aún no escribiste mensajes</p>
+        </div>
+
+        <ScrollArea className="absolute inset-0 overscroll-contain px-2 pb-2">
           {loading ? (
-            <div className="flex min-h-48 flex-col items-center justify-center gap-2">
-              <Spinner size={18} />
-              <p className={POPOVER_EMPTY}>Cargando...</p>
+            <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+              <Spinner size={20} className="text-muted-foreground" />
+              <p className={POPOVER_META}>Cargando mensajes...</p>
             </div>
           ) : error ? (
-            <div className="flex min-h-48 flex-col items-center justify-center gap-2 px-4 text-center">
-              <MessageSquare size={28} className="text-muted-foreground/80" />
-              <p className={POPOVER_EMPTY}>No se pudieron cargar</p>
+            <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center">
+              <div className="flex size-10 items-center justify-center rounded-full bg-foreground/5 text-muted-foreground">
+                <MessageSquare size={18} />
+              </div>
+              <p className={cn(POPOVER_EMPTY, "font-medium")}>No se pudieron cargar</p>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="flex min-h-48 flex-col items-center justify-center gap-2 px-4 text-center">
-              <CheckCircle2 size={28} className="text-muted-foreground/80" />
-              <p className={POPOVER_EMPTY}>
+            <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center">
+              <div className="flex size-10 items-center justify-center rounded-full bg-foreground/5 text-muted-foreground">
+                <CheckCircle2 size={18} />
+              </div>
+              <p className={cn(POPOVER_EMPTY, "font-medium")}>
                 {search.trim() ? "Sin resultados" : "Aún no escribiste mensajes"}
               </p>
             </div>
@@ -287,8 +300,8 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
               })}
             </ul>
           )}
-        </div>
-      </ScrollArea>
+        </ScrollArea>
+      </div>
 
       <div className="flex h-10 shrink-0 items-center justify-center p-2 select-none">
         {comments.length === 0 && !loading ? (
@@ -342,7 +355,7 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
         side="right"
         align="start"
         sideOffset={8}
-        className="z-40 flex h-[min(32rem,75dvh)] w-90 max-w-[min(22.5rem,calc(100vw-1.5rem))] flex-col overflow-hidden border-none p-0 text-foreground shadow-xs select-none"
+        className="z-40 flex w-full min-w-90 max-w-lg flex-col overflow-hidden border-none p-0 text-foreground shadow-xs select-none"
       >
         <div className="flex shrink-0 items-center px-3.5 pt-3">
           <span className={POPOVER_TITLE}>Mensajes</span>

@@ -24,7 +24,7 @@ export const FAB_PLUS =
 
 /** Historial activo: fill blanco, cifra en azul de negocio. */
 export const FAB_PLUS_ACTIVE =
-  "bg-white text-fab-plus shadow-xs"
+  "bg-fab-plus-muted text-fab-plus shadow-xs"
 
 const FAB_ACTIVE = "bg-muted text-foreground"
 

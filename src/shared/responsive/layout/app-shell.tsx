@@ -217,7 +217,7 @@ function CompactShell({ children }: Props) {
             data-immersive-slot
             className="absolute inset-x-0 z-10 overflow-hidden"
             style={{
-              top: TOP_BAR_HEIGHT_PX,
+              top: `calc(${TOP_BAR_HEIGHT_PX}px + env(safe-area-inset-top, 0px))`,
               bottom: BOTTOM_NAV_HEIGHT_PX,
             }}
           >

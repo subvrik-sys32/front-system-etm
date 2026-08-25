@@ -46,7 +46,8 @@ export function useChromeInset(options: Options = {}): CSSProperties {
     }
 
     return {
-      paddingTop: TOP_BAR_HEIGHT_PX + searchExtra,
+      // TOP_BAR_HEIGHT_PX ya incluye TOP_PAD; + safe-area (notch).
+      paddingTop: `calc(${TOP_BAR_HEIGHT_PX}px + ${searchExtra}px + env(safe-area-inset-top, 0px))`,
       ...(bottom
         ? {
             paddingBottom: isLandscape

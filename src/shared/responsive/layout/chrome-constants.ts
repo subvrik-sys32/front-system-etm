@@ -1,20 +1,31 @@
-// Con esto, TopBar/BottomNavigation y quien necesite compensar su
-// espacio (AppListScroll, y cualquier página que no pase por ahí)
-// leen el MISMO número con nombre. Si el TopBar cambia de alto algún
-// día, se cambia una vez, acá.
+// shared/responsive/layout/chrome-constants.ts
 
-/** Alto real del TopBar flotante (h-14 = 3.5rem). */
-export const TOP_BAR_HEIGHT_PX = 56
+/**
+ * Aire entre el borde superior del viewport y el chrome del topbar.
+ * Mismo valor en mobile y desktop (safe-area se suma aparte).
+ */
+export const TOP_PAD_PX = 10
 
-/** Espacio reservado para el BottomNavigation flotante (pill +
- * padding + safe-area aproximado). */
+/** @deprecated usar TOP_PAD_PX */
+export const DESKTOP_TOP_PAD_PX = TOP_PAD_PX
+
+/** Altura del contenido del topbar mobile (h-14), sin pad ni safe-area. */
+export const TOP_BAR_CONTENT_HEIGHT_PX = 56
+
+/**
+ * Reserva top mobile = contenido + respiro.
+ * Los consumers suman env(safe-area-inset-top) cuando aplica.
+ */
+export const TOP_BAR_HEIGHT_PX = TOP_BAR_CONTENT_HEIGHT_PX + TOP_PAD_PX
+
+/** Bottom nav + FAB clearance. */
 export const BOTTOM_NAV_HEIGHT_PX = 80
-/** Alto de la barra de búsqueda expandida bajo el TopBar (móvil). */
-/** Input ~36px + mismo aire que topbar→rows (~8). */
+
 /** pt-1 + h-10 input + mb-2 (mismo gap que empty mt-2). */
 export const PAGE_SEARCH_BAR_HEIGHT_PX = 52
 
-/** Aire entre el borde superior del viewport y el topbar (desktop/tablet). */
-export const DESKTOP_TOP_PAD_PX = 10
-/** Reserva top desktop = pad + blur del topbar (antes 64; +pad para no pegar al browser). */
-export const DESKTOP_TOP_BAR_HEIGHT_PX = 74
+/**
+ * Reserva top desktop = blur del topbar (~64) + pad.
+ * Antes 64; +pad para no pegar al browser.
+ */
+export const DESKTOP_TOP_BAR_HEIGHT_PX = 64 + TOP_PAD_PX

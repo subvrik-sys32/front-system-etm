@@ -14,7 +14,11 @@ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { useMobileNavStore } from "@/shared/responsive/navigation/mobile-nav-store"
 import { usePageSearchStore } from "@/shared/ui/entity-toolbar/page-search-store"
 import { SearchField } from "@/shared/ui/search-field/search-field"
-import { TOP_BAR_HEIGHT_PX } from "@/shared/responsive/layout/chrome-constants"
+import {
+  TOP_BAR_HEIGHT_PX,
+  TOP_BAR_CONTENT_HEIGHT_PX,
+  TOP_PAD_PX,
+} from "@/shared/responsive/layout/chrome-constants"
 import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { cn } from "@/shared/utils/utils"
 
@@ -52,19 +56,27 @@ export function TopBar() {
 
   return (
     <>
-      <header className="absolute inset-x-0 top-0 z-20 flex h-14 shrink-0 items-center gap-1.5 px-2.5">
+      <header
+        className="absolute inset-x-0 top-0 z-20 flex shrink-0 items-center gap-1.5 px-2.5"
+        style={{
+          paddingTop: `calc(${TOP_PAD_PX}px + env(safe-area-inset-top, 0px))`,
+          height: `calc(${TOP_BAR_CONTENT_HEIGHT_PX}px + ${TOP_PAD_PX}px + env(safe-area-inset-top, 0px))`,
+        }}
+      >
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-16 backdrop-blur-xl"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 backdrop-blur-xl"
           style={{
+            height: `calc(4rem + ${TOP_PAD_PX}px + env(safe-area-inset-top, 0px))`,
             maskImage: "linear-gradient(to bottom, black 40%, transparent)",
             WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent)",
           }}
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-16 bg-background/65"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 bg-background/65"
           style={{
+            height: `calc(4rem + ${TOP_PAD_PX}px + env(safe-area-inset-top, 0px))`,
             maskImage: "linear-gradient(to bottom, black 30%, transparent)",
             WebkitMaskImage: "linear-gradient(to bottom, black 30%, transparent)",
           }}
@@ -145,7 +157,7 @@ export function TopBar() {
       {searchEnabled && searchOpen && (
         <div
           className="absolute inset-x-0 z-20 px-3 pt-1"
-          style={{ top: TOP_BAR_HEIGHT_PX }}
+          style={{ top: `calc(${TOP_BAR_HEIGHT_PX}px + env(safe-area-inset-top, 0px))` }}
         >
           {/* h-10 fijo: con o sin texto la altura no cambia.
               mb-2 = mismo aire que empty state (mt-2) hacia los rows. */}

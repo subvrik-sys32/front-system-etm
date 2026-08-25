@@ -29,17 +29,20 @@ import {
   useResponsive,
 } from "@/shared/responsive/hooks/use-responsive"
 
-type Props={
-  task:Task
+type Props = {
+  task: Task
+  /** compact: fila h-8 para header desktop (junto a toggle/ruta). */
+  density?: "default" | "compact"
 }
 
 const PIEZAS_COLOR = "#c44a4a"
 
 export function TaskKpisSection({
   task,
-}:Props){
-
+  density = "default",
+}: Props) {
   const { isMobile, ready } = useResponsive()
+  const isCompact = density === "compact"
 
   const hasAssemblyProcess=
     task.route.includes("EN")
@@ -47,7 +50,7 @@ export function TaskKpisSection({
   const hasPaintProcess=
     task.route.includes("PT")
 
-  const cardSize = isMobile ? "large" : "default"
+  const cardSize = isCompact ? "compact" : isMobile ? "large" : "default"
 
   const cards = [
 
@@ -229,6 +232,14 @@ export function TaskKpisSection({
 
   if (!ready) {
     return null
+  }
+
+  if (isCompact) {
+    return (
+      <div className="flex h-8 min-w-0 flex-1 items-center justify-end gap-1.5 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden">
+        {cards}
+      </div>
+    )
   }
 
   return (

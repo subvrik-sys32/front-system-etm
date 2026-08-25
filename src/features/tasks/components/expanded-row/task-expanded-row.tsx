@@ -199,12 +199,7 @@ export function TaskExpandedRow({
       rowId={task.id}
     >
       <EntityExpandedContent>
-        <div className={cn(
-          "mb-2 flex gap-2 select-none",
-          activeView === "kpis" && !isMobile
-            ? "flex-wrap items-start"
-            : "flex-nowrap items-center",
-        )}>
+        <div className="mb-2 flex flex-nowrap items-center gap-2 select-none">
           <div className="min-w-0 shrink-0">
             <EntityExpandedToggle
               value={activeView}
@@ -248,7 +243,7 @@ export function TaskExpandedRow({
                 <TaskDesktopRouteStrip task={task} />
               )}
               {activeView === "kpis" && (
-                <TaskKpisSection task={task} />
+                <TaskKpisSection task={task} density="compact" />
               )}
             </div>
           )}

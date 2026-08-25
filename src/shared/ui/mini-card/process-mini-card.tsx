@@ -21,7 +21,7 @@ type CardProps = {
   /** Hex de dominio (proceso o color de pintura de catálogo). */
   color: string
   rows: Row[]
-  size?: "default" | "large"
+  size?: "default" | "large" | "compact"
 }
 
 export function ProcessMiniCard({
@@ -39,6 +39,43 @@ export function ProcessMiniCard({
   const labelColor = glass.textMuted
   const valueColor = glass.text
   const isLarge = size === "large"
+  const isCompact = size === "compact"
+
+  // Compact: misma altura que chips de ruta (h-8), fila horizontal
+  if (isCompact) {
+    return (
+      <div
+        className="flex h-8 min-h-8 min-w-0 shrink-0 select-none items-center gap-2 overflow-hidden rounded-lg px-2.5"
+        style={{ background: glass.background }}
+      >
+        <Icon size={13} className="shrink-0" style={{ color: titleColor }} />
+        <span
+          className="shrink-0 text-[9px] font-bold uppercase tracking-[0.12em]"
+          style={{ color: titleColor }}
+        >
+          {label}
+        </span>
+        <div className="flex min-w-0 items-center gap-2">
+          {rows.map(row => (
+            <div key={row.label} className="flex min-w-0 items-baseline gap-1">
+              <span
+                className="hidden text-[8px] font-bold uppercase tracking-wider sm:inline"
+                style={{ color: labelColor }}
+              >
+                {row.label}
+              </span>
+              <span
+                className="truncate text-[11px] font-bold tabular-nums leading-none"
+                style={{ color: valueColor }}
+              >
+                {row.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div

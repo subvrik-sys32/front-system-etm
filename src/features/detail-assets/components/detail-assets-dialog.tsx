@@ -107,6 +107,13 @@ export function DetailAssetsDialog({
   const materialLines = taskQ.data?.materialLines ?? []
 
   const loading = isTask ? taskQ.loading : projectQ.loading
+  const photoUploading = mutations.uploadPhoto.isPending
+  const removingId = mutations.remove.isPending
+    ? (mutations.remove.variables as string | undefined)
+    : undefined
+  const uploadingDxfLineId = mutations.uploadDxf.isPending
+    ? mutations.uploadDxf.variables?.lineId
+    : undefined
   const dxfBusy =
     mutations.uploadDxf.isPending || mutations.remove.isPending
 
@@ -158,6 +165,7 @@ export function DetailAssetsDialog({
                             type="file"
                             accept="image/*"
                             className="hidden"
+                            disabled={photoUploading}
                             onChange={e => {
                               const f = e.target.files?.[0]
                               e.target.value = ""
@@ -170,10 +178,20 @@ export function DetailAssetsDialog({
                           />
                           <button
                             type="button"
+                            disabled={photoUploading}
                             onClick={() => fileRef.current?.click()}
-                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
+                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-foreground/10 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                           >
-                            <ImagePlus size={14} /> Añadir
+                            {photoUploading ? (
+                              <>
+                                <Spinner size={14} />
+                                Subiendo…
+                              </>
+                            ) : (
+                              <>
+                                <ImagePlus size={14} /> Añadir
+                              </>
+                            )}
                           </button>
                         </>
                       )}
@@ -198,7 +216,7 @@ export function DetailAssetsDialog({
                           return (
                           <div
                             key={p.id}
-                            className="group relative size-20 overflow-hidden rounded-xl bg-muted"
+                            className={`group relative size-20 overflow-hidden rounded-xl bg-muted ${removingId === p.id ? "opacity-60" : ""}`}
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -218,13 +236,23 @@ export function DetailAssetsDialog({
                               <button
                                 type="button"
                                 title="Eliminar"
-                                className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-md bg-background/90 text-muted-foreground opacity-0 shadow-xs transition group-hover:opacity-100 hover:text-destructive"
+                                disabled={removingId === p.id || photoUploading}
+                                className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-md bg-background/90 text-muted-foreground opacity-0 shadow-xs transition group-hover:opacity-100 hover:text-destructive disabled:opacity-100"
                                 onClick={e => {
                                   e.stopPropagation()
-                                  mutations.remove.mutate(p.id)
+                                  mutations.remove.mutate(p.id, {
+                                    onSuccess: () =>
+                                      toast.success("Foto eliminada"),
+                                    onError: () =>
+                                      toast.error("No se pudo eliminar"),
+                                  })
                                 }}
                               >
-                                <Trash2 size={12} />
+                                {removingId === p.id ? (
+                                  <Spinner size={12} />
+                                ) : (
+                                  <Trash2 size={12} />
+                                )}
                               </button>
                             )}
                           </div>
@@ -429,8 +457,13 @@ export function DetailAssetsDialog({
                                           ?.click()
                                       }
                                     >
-                                      {mutations.uploadDxf.isPending ? (
-                                        <Spinner size={14} />
+                                      {uploadingDxfLineId === line.id ? (
+                                        <>
+                                          <Spinner size={14} />
+                                          {line.dxf ? null : (
+                                            <span>Subiendo…</span>
+                                          )}
+                                        </>
                                       ) : line.dxf ? (
                                         <FilePenLine size={14} />
                                       ) : (
@@ -460,7 +493,11 @@ export function DetailAssetsDialog({
                                           )
                                         }
                                       >
-                                        <Trash2 size={14} />
+                                        {removingId === line.dxf?.id ? (
+                                          <Spinner size={14} />
+                                        ) : (
+                                          <Trash2 size={14} />
+                                        )}
                                       </button>
                                     )}
                                   </>

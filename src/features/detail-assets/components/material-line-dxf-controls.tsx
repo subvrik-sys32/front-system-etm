@@ -44,7 +44,7 @@ export function MaterialLineDxfControls({
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const qc = useQueryClient()
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<"upload" | "remove" | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
 
   const hasDxf = Boolean(dxf?.publicUrl) || Boolean(pendingFile)
@@ -61,7 +61,7 @@ export function MaterialLineDxfControls({
       toast.success(`DXF listo: ${file.name}`)
       return
     }
-    setBusy(true)
+    setBusy("upload")
     try {
       await detailAssetsApi.uploadMaterialLineDxf(lineId, file)
       invalidateDetailAssetCaches(qc, { taskId: taskId ?? undefined })
@@ -70,7 +70,7 @@ export function MaterialLineDxfControls({
     } catch {
       toast.error("No se pudo subir el DXF")
     } finally {
-      setBusy(false)
+      setBusy(null)
     }
   }
 
@@ -80,7 +80,7 @@ export function MaterialLineDxfControls({
       return
     }
     if (!dxf?.id) return
-    setBusy(true)
+    setBusy("remove")
     try {
       await detailAssetsApi.remove(dxf.id)
       invalidateDetailAssetCaches(qc, { taskId: taskId ?? undefined })
@@ -89,7 +89,7 @@ export function MaterialLineDxfControls({
     } catch {
       toast.error("No se pudo eliminar")
     } finally {
-      setBusy(false)
+      setBusy(null)
     }
   }
 
@@ -144,7 +144,7 @@ export function MaterialLineDxfControls({
         onClick={() => inputRef.current?.click()}
         className={btn}
       >
-        {busy ? (
+        {busy === "upload" ? (
           <Spinner size={15} />
         ) : hasDxf ? (
           <FilePenLine size={15} strokeWidth={2} />
@@ -192,7 +192,11 @@ export function MaterialLineDxfControls({
             onClick={() => void remove()}
             className={cn(btn, "hover:bg-red-500/15 hover:text-red-500")}
           >
-            <Trash2 size={15} strokeWidth={2} />
+            {busy === "remove" ? (
+              <Spinner size={15} />
+            ) : (
+              <Trash2 size={15} strokeWidth={2} />
+            )}
           </button>
         </>
       )}

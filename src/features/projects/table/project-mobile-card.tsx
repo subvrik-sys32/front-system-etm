@@ -300,17 +300,17 @@ function ProjectMobileCardReady({
         {/* Auditoría + ojo: solo colapsado; al expandir van al panel / row móvil */}
         {!expanded && (
           <div
-            className="hidden shrink-0 items-center gap-1 pr-0.5 @[40rem]/prow:flex"
+            className="flex shrink-0 items-center gap-1 pr-0.5"
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
+            <DetailAssetsEye projectId={project.id} count={project.detailAssetCount ?? 0} />
             <EntityAuditInfo
               createdAt={project.createdAt}
               updatedAt={project.updatedAt}
               createdBy={project.createdBy}
               updatedBy={project.updatedBy}
             />
-            <DetailAssetsEye projectId={project.id} count={project.detailAssetCount ?? 0} />
           </div>
         )}
 

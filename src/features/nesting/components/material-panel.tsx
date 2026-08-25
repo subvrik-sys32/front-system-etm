@@ -36,6 +36,7 @@ export type ProjectToolbarActions = {
   onOpen: () => void
   onSave: () => void
   onExport: () => void
+  onCreateTask?: () => void
 }
 
 export interface MaterialPanelProps {

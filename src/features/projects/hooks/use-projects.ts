@@ -38,6 +38,10 @@ import {
 } from "../services/project.service"
 
 import {
+  sidebarCountsQueryKey,
+} from "@/shared/responsive/layout/hooks/use-sidebar-counts"
+
+import {
   propagateProjectUpdate,
 } from "../cache/propagate-project-update"
 
@@ -76,14 +80,20 @@ export function useProjects(){
 
     {
 
-      onCreate:
-        addEntity,
+      onCreate: (items, created) => {
+        void queryClient.invalidateQueries({ queryKey: sidebarCountsQueryKey })
+        return addEntity(items, created)
+      },
 
-      onUpdate:
-        replaceEntity,
+      onUpdate: (items, updated) => {
+        void queryClient.invalidateQueries({ queryKey: sidebarCountsQueryKey })
+        return replaceEntity(items, updated)
+      },
 
-      onRemove:
-        removeEntity,
+      onRemove: (items, id) => {
+        void queryClient.invalidateQueries({ queryKey: sidebarCountsQueryKey })
+        return removeEntity(items, id)
+      },
 
     },
 

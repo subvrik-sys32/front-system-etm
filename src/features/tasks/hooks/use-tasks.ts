@@ -33,6 +33,10 @@ import {
   taskService,
 } from "../services/task.service"
 
+import {
+  sidebarCountsQueryKey,
+} from "@/shared/responsive/layout/hooks/use-sidebar-counts"
+
 export function useTasks(){
 
   const queryClient=
@@ -68,14 +72,20 @@ export function useTasks(){
 
     {
 
-      onCreate:
-        addEntity,
+      onCreate: (items, created) => {
+        void queryClient.invalidateQueries({ queryKey: sidebarCountsQueryKey })
+        return addEntity(items, created)
+      },
 
-      onUpdate:
-        replaceEntity,
+      onUpdate: (items, updated) => {
+        void queryClient.invalidateQueries({ queryKey: sidebarCountsQueryKey })
+        return replaceEntity(items, updated)
+      },
 
-      onRemove:
-        removeEntity,
+      onRemove: (items, id) => {
+        void queryClient.invalidateQueries({ queryKey: sidebarCountsQueryKey })
+        return removeEntity(items, id)
+      },
 
     },
 

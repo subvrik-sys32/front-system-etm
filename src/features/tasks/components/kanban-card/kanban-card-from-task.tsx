@@ -12,6 +12,7 @@ import {
   getTaskMaterialLabel,
   getTaskPiecesTotal,
 } from "@/features/tasks/utils/task-material-summary"
+import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 
 type Props = {
   task: Task
@@ -42,7 +43,15 @@ export function KanbanCardFromTask({
       dragPreview={dragPreview}
       commentCount={commentCount}
       hideCommentBadge={hideCommentBadge}
-      footerActions={footerActions}
+      footerActions={
+        <>
+          <DetailAssetsEye
+            taskId={task.id}
+            count={task.detailAssetCount ?? 0}
+          />
+          {footerActions}
+        </>
+      }
       priorityName={task.priority.name}
       priorityColor={task.priority.color}
       deliveryDate={task.deliveryDate}

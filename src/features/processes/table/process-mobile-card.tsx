@@ -320,10 +320,11 @@ function ProcessMobileCardReady({
         {/* Info + materiales + ojo detalle: después de Iniciar */}
         {!expanded && (
           <div
-            className="hidden shrink-0 items-center gap-1 pr-0.5 @[40rem]/prow:flex"
+            className="flex shrink-0 items-center gap-1 pr-0.5"
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
+            <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
             <EntityAuditInfo
               createdAt={task.createdAt}
               updatedAt={task.updatedAt}
@@ -332,7 +333,6 @@ function ProcessMobileCardReady({
             workflowSteps={task.workflowSteps}
           />
             <TaskMaterialInfo task={task} alwaysShow />
-            <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
           </div>
         )}
 
@@ -411,6 +411,7 @@ function ProcessMobileCardReady({
           onClick={e => e.stopPropagation()}
           onPointerDown={e => e.stopPropagation()}
         >
+          <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
           <EntityAuditInfo
             createdAt={task.createdAt}
             updatedAt={task.updatedAt}
@@ -419,7 +420,6 @@ function ProcessMobileCardReady({
             workflowSteps={task.workflowSteps}
           />
           <TaskMaterialInfo task={task} alwaysShow />
-          <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
         </div>
 
         <ProcessExpandedRow processTask={processTask} />

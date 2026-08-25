@@ -83,11 +83,71 @@ function writePolylineR12(points: Point2D[], layer: string, color: number): stri
 /**
  * Entidades de una plancha (marco + piezas). origin = tile en mosaico.
  */
+
+/** Texto DXF R12 (TEXT). Capa LEYENDA / color 2 como los planos de referencia. */
+function writeTextR12(
+  x: number,
+  y: number,
+  height: number,
+  value: string,
+  layer = "LEYENDA",
+  color = 2,
+): string {
+  if (!value.trim()) return ""
+  return (
+    "  0\nTEXT\n" +
+    `  8\n${layer}\n` +
+    ` 62\n${color}\n` +
+    ` 10\n${x.toFixed(4)}\n` +
+    ` 20\n${y.toFixed(4)}\n` +
+    ` 40\n${height.toFixed(4)}\n` +
+    `  1\n${value}\n`
+  )
+}
+
+export type SheetLabelInfo = {
+  /** Índice 0-based de la primera plancha del rango. */
+  startIndex: number
+  /** Cuántas planchas idénticas representa este layout (default 1). */
+  count?: number
+  thicknessMm?: number
+  material?: string
+}
+
+/**
+ * Etiqueta unificada de exportación:
+ *   PLANCHA 1 - 1.50 mm - LAF
+ *   PLANCHAS 2-14 - 1.50 mm - LAF
+ */
+export function formatSheetExportLabel(info: SheetLabelInfo): string {
+  const count = info.count ?? 1
+  const first = info.startIndex + 1
+  const head =
+    count <= 1
+      ? `PLANCHA ${first}`
+      : `PLANCHAS ${first}-${info.startIndex + count}`
+
+  const parts = [head]
+  const t = info.thicknessMm
+  if (t != null && t > 0) {
+    const rounded = Math.round(t * 100) / 100
+    const thick =
+      Number.isInteger(rounded) ? `${rounded}` : `${rounded.toFixed(2)}`
+    parts.push(`${thick} mm`)
+  }
+  const mat = info.material?.trim()
+  if (mat && mat.toUpperCase() !== "N/D" && mat.toUpperCase() !== "MAT") {
+    parts.push(mat.toUpperCase())
+  }
+  return parts.join(" - ")
+}
+
 export function writeSheetDxfEntities(
   sheet: NestedSheet,
   sheetConfig: SheetConfig,
   bridges: BridgeSettings = NO_BRIDGES,
   origin: Point2D = { x: 0, y: 0 },
+  label?: SheetLabelInfo,
 ): string {
   const { width, height } = sheetConfig
   const ox = origin.x
@@ -106,6 +166,16 @@ export function writeSheetDxfEntities(
     { x: ox, y: oy },
   ]
   out += writePolylineR12(frame, "MARCO_CHAPA", 7)
+
+  // Etiqueta PLANCHA N - espesor - material (arriba del marco)
+  if (label) {
+    const textH = Math.max(40, Math.min(120, height * 0.04))
+    const text = formatSheetExportLabel({
+      ...label,
+      thicknessMm: label.thicknessMm ?? sheet.thicknessMm,
+    })
+    out += writeTextR12(ox, oy + height + textH * 0.35, textH, text)
+  }
 
   for (const piece of sheet.pieces) {
     if (piece.subEntities && piece.subEntities.length > 0) {
@@ -129,10 +199,11 @@ export function generateSheetDxf(
   sheet: NestedSheet,
   sheetConfig: SheetConfig,
   bridges: BridgeSettings = NO_BRIDGES,
+  label?: SheetLabelInfo,
 ): string {
   return (
     ["  0", "SECTION", "  2", "ENTITIES", ""].join("\n") +
-    writeSheetDxfEntities(sheet, sheetConfig, bridges) +
+    writeSheetDxfEntities(sheet, sheetConfig, bridges, { x: 0, y: 0 }, label) +
     ["  0", "ENDSEC", "  0", "EOF", ""].join("\n")
   )
 }

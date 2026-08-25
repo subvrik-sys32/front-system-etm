@@ -115,7 +115,7 @@ export function EntityToolbarSearch({
             }}
             onPointerDown={e => e.stopPropagation()}
             placeholder={placeholder}
-            className="w-full bg-transparent text-[15px] leading-snug text-foreground outline-none placeholder:text-foreground/35"
+            className="w-full bg-transparent text-base leading-none text-foreground outline-none placeholder:text-muted-foreground/80 sm:text-sm"
           />
         </div>
       </div>

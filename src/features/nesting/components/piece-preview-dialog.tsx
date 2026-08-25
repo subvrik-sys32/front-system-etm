@@ -27,7 +27,13 @@ export function cadRowToPreviewPieces(row: CadRow): NestingPieceInput[] {
   return [
     {
       subOutlines: row.subEntities.length
-        ? row.subEntities.map((s) => ({ points: s.outline.points, color: s.color }))
+        ? row.subEntities.map((s) => ({
+            points: s.outline.points,
+            color: s.color,
+            layer: s.layer,
+            text: s.text,
+            textHeight: s.textHeight,
+          }))
         : [],
       outline: row.outline.points,
     },

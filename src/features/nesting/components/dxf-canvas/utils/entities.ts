@@ -14,6 +14,21 @@ export function piecesToEntities(
         const color = sub.color ?? "#22c55e"
         const layerKey = (sub.layer ?? color).toUpperCase()
         if (hidden.has(layerKey) || hidden.has(color.toUpperCase())) continue
+
+        // Etiqueta TEXT del DXF (PLANCHA N, etc.)
+        if (sub.text && sub.points.length >= 1) {
+          out.push({
+            kind: "text",
+            position: sub.points[0],
+            text: sub.text,
+            height: sub.textHeight && sub.textHeight > 0 ? sub.textHeight : 12,
+            color,
+            pieceIndex,
+            layer: sub.layer,
+          })
+          continue
+        }
+
         if (sub.points.length >= 2) {
           const pts = sub.points
           const loopClosed =
@@ -22,14 +37,6 @@ export function piecesToEntities(
           out.push({
             kind: "polyline",
             points: pts,
-            // Antes: `closed: loopClosed || pts.length >= 3` — forzaba
-            // cerrado a CUALQUIER fragmento de 3+ puntos, incluso un
-            // arco abierto de 180° que no era un loop. Eso dibujaba una
-            // línea recta extra uniendo sus dos puntas (la cuerda del
-            // arco). Ahora que dxf-parser.ts encadena los fragmentos
-            // sueltos en contornos completos antes de llegar acá,
-            // confiar en loopClosed (la distancia real entre el primer
-            // y el último punto) es seguro y correcto.
             closed: loopClosed,
             color,
             pieceIndex,

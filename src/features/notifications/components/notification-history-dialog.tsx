@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Eraser, History, Search, Trash2 } from "lucide-react"
+import { Eraser, History, Trash2 } from "lucide-react"
+import { SearchField } from "@/shared/ui/search-field/search-field"
 import { Spinner } from "@/shared/ui/spinner/spinner"
 
 import {
@@ -136,15 +137,11 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
           </DialogHeader>
 
           <div className="shrink-0 px-5 py-3">
-            <div className="flex items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2">
-              <Search size={15} className="shrink-0 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar en notificaciones..."
-                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/80"
-              />
-            </div>
+            <SearchField
+              value={search}
+              onChange={setSearch}
+              placeholder="Buscar en notificaciones..."
+            />
           </div>
 
           <ScrollArea className="min-h-0 flex-1">

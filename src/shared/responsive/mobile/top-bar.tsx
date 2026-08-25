@@ -148,17 +148,17 @@ export function TopBar() {
         >
           {/* h-10 fijo: con o sin texto la altura no cambia.
               mb-2 = mismo aire que empty state (mt-2) hacia los rows. */}
-          <div className="mb-2 flex h-10 items-center gap-2 rounded-xl bg-card px-3 shadow-xs">
+          <div className="mb-2 flex h-9 items-center gap-2 rounded-xl bg-card px-2.5 shadow-xs">
             <Search
-              size={15}
-              strokeWidth={2.2}
+              size={14}
+              strokeWidth={2}
               className="shrink-0 text-muted-foreground"
             />
             <input
               value={searchValue}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={searchPlaceholder}
-              className="min-w-0 flex-1 bg-transparent text-sm leading-none text-foreground outline-none placeholder:text-muted-foreground/80"
+              className="min-w-0 flex-1 bg-transparent text-base leading-none text-foreground outline-none placeholder:text-muted-foreground/80 sm:text-sm"
             />
             <button
               type="button"

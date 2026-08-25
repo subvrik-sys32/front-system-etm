@@ -1,6 +1,6 @@
 import type { NestedSheet, Point2D, SheetConfig } from "../engine/types"
 import { groupIdenticalSheets } from "../utils/svg-render"
-import { writeSheetDxfEntities, type BridgeSettings } from "./dxf-export"
+import { writeSheetDxfEntities, type BridgeSettings, type SheetLabelInfo } from "./dxf-export"
 import { buildBaseName, type Nomenclatura } from "./nomenclatura"
 
 const MARGIN_MM = 200
@@ -34,6 +34,8 @@ export function generateMosaicDxf(
   sheets: NestedSheet[],
   sheetConfig: SheetConfig,
   bridges?: BridgeSettings,
+  /** Material del proyecto (nomenclatura) para la etiqueta TEXT. */
+  material?: string,
 ): string {
   const groups = groupIdenticalSheets(sheets.filter((s) => s.pieces.length > 0))
   if (groups.length === 0) {
@@ -46,11 +48,19 @@ export function generateMosaicDxf(
 
   let entities = ""
   for (let i = 0; i < groups.length; i++) {
+    const g = groups[i]
+    const label: SheetLabelInfo = {
+      startIndex: g.startIndex,
+      count: g.count,
+      thicknessMm: g.sheet.thicknessMm,
+      material,
+    }
     entities += writeSheetDxfEntities(
-      groups[i].sheet,
+      g.sheet,
       sheetConfig,
       bridges,
       tileOrigin(i, cols, rows, width, height),
+      label,
     )
   }
 

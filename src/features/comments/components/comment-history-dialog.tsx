@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { MessageSquare, Search, Trash2 } from "lucide-react"
+import { MessageSquare, Trash2 } from "lucide-react"
+import { SearchField } from "@/shared/ui/search-field/search-field"
 import { Spinner } from "@/shared/ui/spinner/spinner"
 
 import {
@@ -117,15 +118,12 @@ export function CommentHistoryDialog({
                 </DialogDescription>
               </div>
             </div>
-            <div className="mt-2 flex items-center gap-2 rounded-xl bg-foreground/5 px-3 py-2">
-              <Search size={15} className="shrink-0 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar en mensajes..."
-                className="w-full bg-transparent text-[15px] leading-snug text-foreground outline-none placeholder:text-muted-foreground/80"
-              />
-            </div>
+            <SearchField
+              value={search}
+              onChange={setSearch}
+              placeholder="Buscar en mensajes..."
+              className="mt-2"
+            />
           </DialogHeader>
 
           {/* Thread — área de burbujas (como iteration-panel CAD) */}

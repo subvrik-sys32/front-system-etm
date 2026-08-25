@@ -31,6 +31,9 @@ export interface SubEntity {
   color?: string
   /** Nombre de capa original del DXF/GEO (grupo 8 en DXF). */
   layer?: string
+  /** Etiqueta TEXT/MTEXT (ej. "PLANCHA 1"). outline.points[0] = inserción. */
+  text?: string
+  textHeight?: number
 }
 
 /** Pieza de entrada para el nesting. */

@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Trash2, Layers, LayoutGrid, List } from "lucide-react"
+import { Trash2, Layers, LayoutGrid, List } from "lucide-react"
+import { SearchField } from "@/shared/ui/search-field/search-field"
 
 import { Spinner } from "@/shared/ui/spinner/spinner"
 
@@ -78,15 +79,12 @@ export function SkillLibrary({ onOpenSkill, onClose }: SkillLibraryProps) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 px-5 py-3">
-          <div className="flex flex-1 items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2">
-            <Search size={15} className="shrink-0 text-muted-foreground" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar skills..."
-              className="w-full bg-transparent text-[15px] leading-snug text-foreground outline-none placeholder:text-muted-foreground/80"
-            />
-          </div>
+          <SearchField
+            value={search}
+            onChange={setSearch}
+            placeholder="Buscar skills..."
+            className="flex-1"
+          />
 
           {/* Toggle de vistas corregido a shadow-xs */}
           <div className="flex items-center rounded-lg bg-card p-0.5 shadow-xs">

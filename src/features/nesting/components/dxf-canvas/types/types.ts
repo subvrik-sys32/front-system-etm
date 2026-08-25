@@ -29,7 +29,7 @@ export type Entity =
 
 export interface NestingPieceInput {
   /** Puntos del contorno de cada sub-trazo, con color y capa originales. */
-  subOutlines: { points: Point[]; color?: string; layer?: string }[]
+  subOutlines: { points: Point[]; color?: string; layer?: string; text?: string; textHeight?: number }[]
   /** Contorno fusionado — respaldo de hit-test si no hay subOutlines. */
   outline?: Point[]
   angle?: number

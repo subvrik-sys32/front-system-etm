@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import {
   MessageSquare,
-  Search,
   Image as ImageIcon,
   Reply,
   CheckCircle2,
 } from "lucide-react"
+import { SearchField } from "@/shared/ui/search-field/search-field"
 
 import { cn } from "@/shared/utils/utils"
 import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
@@ -159,15 +159,11 @@ export function MessageBell({ collapsed, variant = "sidebar" }: Props) {
   const panelBody = (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="shrink-0 px-3 pb-2 pt-1">
-        <div className="flex items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2">
-          <Search size={15} className="shrink-0 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar en mis mensajes..."
-            className="w-full bg-transparent text-[15px] leading-snug text-foreground outline-none placeholder:text-muted-foreground/80"
-          />
-        </div>
+        <SearchField
+          value={search}
+          onChange={setSearch}
+          placeholder="Buscar en mis mensajes..."
+        />
       </div>
 
       <ScrollArea className="min-h-0 flex-1">

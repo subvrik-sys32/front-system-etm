@@ -85,14 +85,14 @@ export function CommandInput({
   ...props
 }: CommandInputProps) {
   return (
-    <div className="flex items-center gap-2 px-3 py-3">
+    <div className="flex h-9 items-center gap-2 px-2.5">
       <Search
-        size={15}
-        className="text-muted-foreground"
+        size={14}
+        className="shrink-0 text-muted-foreground"
       />
       <CommandPrimitive.Input
         className={cn(
-          "flex-1 bg-transparent text-sm text-muted-foreground outline-none placeholder:text-muted-foreground/80",
+          "flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground/80 sm:text-sm",
           className
         )}
         {...props}

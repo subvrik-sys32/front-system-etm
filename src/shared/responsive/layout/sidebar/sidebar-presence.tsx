@@ -1,7 +1,8 @@
 "use client"
 
 import { useMemo, useState, useRef } from "react"
-import { Users, Search, ChevronDown, ChevronUp } from "lucide-react"
+import { Users, ChevronDown, ChevronUp } from "lucide-react"
+import { SearchField } from "@/shared/ui/search-field/search-field"
 
 import { cn } from "@/shared/utils/utils"
 import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
@@ -27,7 +28,6 @@ import {
   CommandItem,
 } from "@/components/ui/command"
 
-import { Input } from "@/components/ui/input"
 
 type Props = {
   collapsed?: boolean
@@ -223,14 +223,12 @@ export function SidebarPresence({
       className="flex h-full min-h-0 flex-col bg-transparent"
       shouldFilter={false}
     >
-      <div className="mb-2 flex shrink-0 items-center gap-2 bg-popover px-2 pb-2">
-        <Search size={14} className="shrink-0 text-muted-foreground" />
-        <Input
+      <div className="mb-2 shrink-0 px-2 pb-2">
+        <SearchField
           ref={inputRef}
           value={query}
-          onChange={event => setQuery(event.target.value)}
+          onChange={setQuery}
           placeholder="Buscar miembro..."
-          className="h-9 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground"
         />
       </div>
 

@@ -215,6 +215,59 @@ export function useNestingProject() {
     [settings.proyecto, settings.material, settings.espesor]
   )
 
+  /**
+   * Código de material para etiqueta DXF: prioriza settings.material
+   * (LAF, GO, etc. del catálogo / panel) y si está vacío toma el
+   * dinNorm/alloy mayoritario de las piezas del proyecto.
+   */
+  const resolveExportMaterial = useCallback(
+    (sheet?: NestedSheet): string => {
+      const fromSettings = settings.material?.trim()
+      if (fromSettings) return fromSettings.toUpperCase()
+
+      const counts = new Map<string, number>()
+      const bump = (raw?: string) => {
+        const v = raw?.trim()
+        if (!v || v === "N/D") return
+        const key = v.toUpperCase()
+        counts.set(key, (counts.get(key) ?? 0) + 1)
+      }
+      for (const row of rows) {
+        if (row.source !== "cad") continue
+        // Si hay plancha, solo piezas de esa plancha
+        if (sheet && !sheet.pieces.some((p) => p.pieceId === row.id)) continue
+        bump(row.material?.dinNorm)
+        if (!row.material?.dinNorm || row.material.dinNorm === "N/D") {
+          bump(row.material?.alloy)
+        }
+      }
+      let best = ""
+      let bestN = 0
+      for (const [k, n] of counts) {
+        if (n > bestN) {
+          best = k
+          bestN = n
+        }
+      }
+      return best || "N/D"
+    },
+    [settings.material, rows],
+  )
+
+  const resolveExportThicknessMm = useCallback(
+    (sheet?: NestedSheet): number | undefined => {
+      if (sheet?.thicknessMm != null && sheet.thicknessMm > 0) {
+        return sheet.thicknessMm
+      }
+      const fromSettings = parseFloat(
+        String(settings.espesor ?? "").replace(",", "."),
+      )
+      if (Number.isFinite(fromSettings) && fromSettings > 0) return fromSettings
+      return undefined
+    },
+    [settings.espesor],
+  )
+
   const getSheetStats = useCallback((groupIndex: number): SheetStats | null => {
     const group = sheetGroups[groupIndex]
     if (!group) return null
@@ -381,11 +434,21 @@ export function useNestingProject() {
     const sheet = sheets[sheetIndex]
     const fileName = buildSheetFileName(nomenclatura, sheet.pieces.length, sheetIndex)
     if (format === "dxf") {
-      void saveTextFile(`${fileName}.dxf`, generateSheetDxf(sheet, sheetConfig, bridges ?? defaultBridgeSettings), "application/dxf", [".dxf"])
+      void saveTextFile(
+        `${fileName}.dxf`,
+        generateSheetDxf(sheet, sheetConfig, bridges ?? defaultBridgeSettings, {
+          startIndex: sheetIndex,
+          count: 1,
+          thicknessMm: resolveExportThicknessMm(sheet),
+          material: resolveExportMaterial(sheet),
+        }),
+        "application/dxf",
+        [".dxf"],
+      )
     } else {
       void saveTextFile(`${fileName}.nsp`, generateSheetNsp(sheet, sheetConfig), "application/xml", [".nsp"])
     }
-  }, [sheets, nomenclatura, sheetConfig, defaultBridgeSettings])
+  }, [sheets, nomenclatura, sheetConfig, defaultBridgeSettings, resolveExportMaterial, resolveExportThicknessMm])
 
   const handleExportMosaic = useCallback((format: "dxf" | "nsp", bridges?: BridgeSettings) => {
     if (format !== "dxf") return
@@ -395,20 +458,35 @@ export function useNestingProject() {
     const fileName = buildMosaicFileName(nomenclatura, totalPieces, source.length)
     void saveTextFile(
       `${fileName}.dxf`,
-      generateMosaicDxf(source, sheetConfig, bridges ?? defaultBridgeSettings),
+      generateMosaicDxf(
+        source,
+        sheetConfig,
+        bridges ?? defaultBridgeSettings,
+        resolveExportMaterial(),
+      ),
       "application/dxf",
       [".dxf"],
     )
-  }, [sheetGroups, nomenclatura, sheetConfig, defaultBridgeSettings])
+  }, [sheetGroups, nomenclatura, sheetConfig, defaultBridgeSettings, resolveExportMaterial])
 
   const exportMaterializedSheet = useCallback((format: "dxf" | "nsp", sheet: NestedSheet, sheetIndex: number, bridges?: BridgeSettings) => {
     const fileName = buildSheetFileName(nomenclatura, sheet.pieces.length, sheetIndex)
     if (format === "dxf") {
-      void saveTextFile(`${fileName}.dxf`, generateSheetDxf(sheet, sheetConfig, bridges ?? defaultBridgeSettings), "application/dxf", [".dxf"])
+      void saveTextFile(
+        `${fileName}.dxf`,
+        generateSheetDxf(sheet, sheetConfig, bridges ?? defaultBridgeSettings, {
+          startIndex: sheetIndex,
+          count: 1,
+          thicknessMm: resolveExportThicknessMm(sheet),
+          material: resolveExportMaterial(sheet),
+        }),
+        "application/dxf",
+        [".dxf"],
+      )
     } else {
       void saveTextFile(`${fileName}.nsp`, generateSheetNsp(sheet, sheetConfig), "application/xml", [".nsp"])
     }
-  }, [nomenclatura, sheetConfig, defaultBridgeSettings])
+  }, [nomenclatura, sheetConfig, defaultBridgeSettings, resolveExportMaterial, resolveExportThicknessMm])
 
   const buildPiecesPayload = useCallback((): ProjectPieceEntry[] => {
     return rows.map((row) => ({

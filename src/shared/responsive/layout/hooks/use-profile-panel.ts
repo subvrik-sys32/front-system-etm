@@ -240,21 +240,27 @@ export function useProfilePanel() {
 
   useEffect(() => {
 
-    window.addEventListener("resize", update)
-
-    return () => window.removeEventListener("resize", update)
-
-  }, [update])
-
-  useEffect(() => {
-
-    if (!window.visualViewport) {
-      return
+    let raf = 0
+    const scheduleUpdate = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(update)
     }
 
-    window.visualViewport.addEventListener("resize", update)
+    // window.resize y visualViewport.resize suelen dispararse casi
+    // juntos ante el mismo cambio (apertura/cierre de teclado). Sin
+    // coalescer, cada uno fuerza su propio reflow (3 getBoundingClientRect
+    // + un setState) por separado. En Android además la barra de texto
+    // predictivo puede mover el alto de visualViewport en cada tecla, así
+    // que sin este rAF el reflow se repetía en casi cada letra escrita —
+    // esto es lo que se sentía como lag al tipear en cualquier composer.
+    window.addEventListener("resize", scheduleUpdate)
+    window.visualViewport?.addEventListener("resize", scheduleUpdate)
 
-    return () => window.visualViewport?.removeEventListener("resize", update)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener("resize", scheduleUpdate)
+      window.visualViewport?.removeEventListener("resize", scheduleUpdate)
+    }
 
   }, [update])
 

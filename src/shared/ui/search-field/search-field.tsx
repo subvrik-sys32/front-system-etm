@@ -81,7 +81,7 @@ export const SearchField = React.forwardRef<HTMLInputElement, SearchFieldProps>(
           onChange={e => setDraft(e.target.value)}
           placeholder={placeholder}
           className={cn(
-            "min-w-0 flex-1 bg-transparent text-base leading-none text-foreground outline-none placeholder:text-muted-foreground/80 sm:text-sm",
+            "min-w-0 flex-1 bg-transparent text-xs leading-none text-foreground outline-none placeholder:text-muted-foreground/80",
             "disabled:cursor-not-allowed disabled:opacity-50",
             inputClassName,
           )}

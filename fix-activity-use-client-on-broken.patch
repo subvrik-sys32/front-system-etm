@@ -1,0 +1,18 @@
+--- a/src/features/activity-log/components/actions/activity-type-actions.tsx
++++ b/src/features/activity-log/components/actions/activity-type-actions.tsx
+@@ -1,5 +1,6 @@
+-import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
+ "use client"
+ 
++import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
+ import { useState } from "react"
+ import { Plus } from "lucide-react"
+--- a/src/features/activity-log/components/actions/activity-log-actions.tsx
++++ b/src/features/activity-log/components/actions/activity-log-actions.tsx
+@@ -1,5 +1,6 @@
+-import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
+ "use client"
+ 
++import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
+ import { useState } from "react"
+ import { Plus } from "lucide-react"

@@ -1,5 +1,6 @@
-import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
 "use client"
+
+import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
 
 import { useState } from "react"
 import { Plus } from "lucide-react"

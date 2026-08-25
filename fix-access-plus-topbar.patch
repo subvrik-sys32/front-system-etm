@@ -1,0 +1,85 @@
+diff --git a/src/features/admin/users/components/actions/user-actions.tsx b/src/features/admin/users/components/actions/user-actions.tsx
+index d1a7932..31d37de 100644
+--- a/src/features/admin/users/components/actions/user-actions.tsx
++++ b/src/features/admin/users/components/actions/user-actions.tsx
+@@ -7,6 +7,8 @@ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+ import { usePermissions } from "@/features/permissions/hooks/use-permissions"
+ import { PrimaryAction } from "@/shared/ui/actions/primary-action"
+ import { FabTrigger } from "@/shared/ui/speed-dial-fab/fab-trigger"
++import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
++import { cn } from "@/shared/utils/utils"
+ import { UserDialog } from "../dialog/user-dialog"
+ 
+ function useCreateUserDialog() {
+@@ -26,21 +28,29 @@ function useCreateUserDialog() {
+   return { canCreate, handleOpen, dialog }
+ }
+ 
+-/**
+- * Desktop: PrimaryAction en el header de ACCESO (mismo patrón que
+- * "Nuevo proyecto" / "Nueva tarea").
+- * Mobile: no renderiza FAB suelto aquí — usar UserCreateDialAction
+- * dentro del AdaptiveActionBar si la página lo cablea; el access
+- * page mantiene FAB vía este mismo componente en mobile por
+- * compatibilidad con el hub actual.
+- */
++/** Desktop: + en topbar (PrimaryAction). Mobile: FAB fijo. */
+ export function UserActions() {
++  const { isMobile } = useResponsive()
+   const { canCreate, handleOpen, dialog } = useCreateUserDialog()
+ 
+   return (
+     <>
+-      {/* Desktop header */}
+-      <div className="hidden desktop:block">
++      {isMobile ? (
++        <button
++          type="button"
++          disabled={!canCreate}
++          onClick={handleOpen}
++          aria-label="Nuevo usuario"
++          className={cn(
++            "fixed bottom-22 right-4 z-30 flex size-12 items-center justify-center rounded-full transition duration-200",
++            canCreate
++              ? "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 active:scale-95"
++              : "cursor-not-allowed bg-foreground/10 text-foreground/35 shadow-none",
++          )}
++        >
++          <Plus size={20} strokeWidth={2.5} />
++        </button>
++      ) : (
+         <PrimaryAction
+           label="Nuevo usuario"
+           icon={Plus}
+@@ -48,30 +58,12 @@ export function UserActions() {
+           onClick={handleOpen}
+           iconOnly
+         />
+-      </div>
+-
+-      {/* Mobile FAB — mismo look que otras páginas de creación */}
+-      <button
+-        type="button"
+-        disabled={!canCreate}
+-        onClick={handleOpen}
+-        aria-label="Nuevo usuario"
+-        className={[
+-          "desktop:hidden fixed bottom-22 right-4 z-30 flex size-12 items-center justify-center rounded-full transition duration-200",
+-          canCreate
+-            ? "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 active:scale-95"
+-            : "cursor-not-allowed bg-foreground/10 text-foreground/35 shadow-none",
+-        ].join(" ")}
+-      >
+-        <Plus size={20} strokeWidth={2.5} />
+-      </button>
+-
++      )}
+       {dialog}
+     </>
+   )
+ }
+ 
+-/** Dial action si se integra al FAB compartido (opcional). */
+ export function UserCreateDialAction() {
+   const { canCreate, handleOpen, dialog } = useCreateUserDialog()
+ 

@@ -50,6 +50,8 @@ export function UserRowActions({ userId }: UserRowActionsProps) {
       <div className="ml-3 flex items-center gap-6">
         <IconAction
           icon={Pencil}
+          title="Editar"
+          aria-label="Editar usuario"
           disabled={!canUpdate}
           onClick={() => {
             if (!canUpdate) return
@@ -60,6 +62,8 @@ export function UserRowActions({ userId }: UserRowActionsProps) {
         <IconAction
           icon={Trash2}
           variant="danger"
+          title="Eliminar"
+          aria-label="Eliminar usuario"
           disabled={!canDelete}
           onClick={() => {
             if (!canDelete) return

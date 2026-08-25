@@ -29,6 +29,8 @@ import {
 } from "./production/task-production-panel"
 
 import { TaskRowActions } from "../actions/task-row-actions"
+import { TaskRouteViewer } from "./production/task-route-viewer"
+import { getCurrentStep } from "@/features/workflow/selectors/get-current-step"
 import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
 import { useActiveCommentContextStore } from "@/features/comments/store/active-comment-context-store"
@@ -150,7 +152,7 @@ export function TaskExpandedRow({
       rowId={task.id}
     >
       <EntityExpandedContent>
-        <div className="mb-2 flex flex-wrap items-center justify-start gap-2 select-none">
+        <div className="mb-2 flex flex-wrap items-center gap-2 select-none">
           <div className="min-w-0 shrink-0">
             <EntityExpandedToggle
               value={activeView}
@@ -187,6 +189,17 @@ export function TaskExpandedRow({
             />
             <TaskRowActions task={task} className="gap-1" showAudit />
           </div>
+          {/* Ruta en el espacio libre, a la derecha de actions */}
+          {task.route?.length > 0 && (
+            <div className="min-w-0 flex-1 pt-3 sm:pt-3.5">
+              <TaskRouteViewer
+                variant="inline"
+                taskId={task.id}
+                route={task.route}
+                currentProcess={getCurrentStep(task.workflowSteps)?.processCode}
+              />
+            </div>
+          )}
         </div>
 
         <EntityExpandedSlider

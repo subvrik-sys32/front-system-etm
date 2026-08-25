@@ -57,9 +57,6 @@ import {
   cn,
 } from "@/shared/utils/utils"
 
-import {
-  TaskRouteViewer,
-} from "./task-route-viewer"
 
 type Props = {
   task: Task
@@ -388,30 +385,13 @@ export function TaskProductionPanel({
 
     <>
 
-      <div className="hidden h-full min-h-43.5 w-full flex-col justify-center rounded-xl bg-foreground/5 p-4 xl:flex">
-
+      {/* Ruta vive en el header del expanded (inline). Aquí solo progreso. */}
+      <div className="hidden h-full min-h-0 w-full flex-col justify-center rounded-xl bg-foreground/5 p-4 xl:flex">
         <div className="flex justify-center">
-
-          <TaskRouteViewer
-            taskId={task.id}
-            route={task.route}
-            currentProcess={
-              currentStep?.processCode
-            }
-          />
-
-        </div>
-
-        <div className="mt-3 flex justify-center">
-
           <div className="w-full max-w-3xl rounded-xl bg-foreground/5 px-5 py-3.5">
-
             {progressContent}
-
           </div>
-
         </div>
-
       </div>
 
       <div className="w-full xl:hidden flex flex-col">

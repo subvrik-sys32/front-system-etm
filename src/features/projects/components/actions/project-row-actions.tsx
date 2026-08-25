@@ -80,6 +80,8 @@ export function ProjectRowActions({
         )}
         <IconAction
           icon={Pencil}
+          title="Editar"
+          aria-label="Editar proyecto"
           disabled={!canUpdate}
           onClick={() => {
             if (!canUpdate) return
@@ -90,6 +92,8 @@ export function ProjectRowActions({
         <IconAction
           icon={Trash2}
           variant="danger"
+          title="Eliminar"
+          aria-label="Eliminar proyecto"
           disabled={!canDelete}
           onClick={() => {
             if (!canDelete) return

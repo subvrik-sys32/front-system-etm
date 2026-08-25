@@ -62,6 +62,8 @@ export function TaskRowActions({ task, className, showAudit = true }: TaskRowAct
         <TaskMaterialInfo task={task} />
         <IconAction
           icon={Pencil}
+          title="Editar"
+          aria-label="Editar tarea"
           disabled={!canUpdate}
           onClick={() => {
             if (!canUpdate) return
@@ -72,6 +74,8 @@ export function TaskRowActions({ task, className, showAudit = true }: TaskRowAct
         <IconAction
           icon={Trash2}
           variant="danger"
+          title="Eliminar"
+          aria-label="Eliminar tarea"
           disabled={!canDelete}
           onClick={() => {
             if (!canDelete) return

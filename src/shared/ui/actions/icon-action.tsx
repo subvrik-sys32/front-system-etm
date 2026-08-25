@@ -23,6 +23,7 @@ type Props = {
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
   className?: string
   "aria-label"?: string
+  title?: string
 }
 
 export function IconAction({
@@ -32,6 +33,7 @@ export function IconAction({
   onClick,
   className,
   "aria-label": ariaLabel,
+  title,
 }: Props) {
   const danger = variant === "danger"
 
@@ -40,6 +42,7 @@ export function IconAction({
       type="button"
       disabled={disabled}
       aria-label={ariaLabel}
+      title={title ?? ariaLabel}
       onPointerDown={event => {
         event.preventDefault()
         event.stopPropagation()

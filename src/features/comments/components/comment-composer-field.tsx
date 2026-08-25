@@ -19,16 +19,18 @@ type Props = {
   onEscape?: () => void
 }
 
+const MAX_FIELD_PX = 96
+
 function mentionAtCursor(value: string, cursor: number) {
   const match = value.slice(0, cursor).match(/@([a-zA-Z0-9_.]*)$/)
   return match ? match[1] : null
 }
 
-/**
- * Isla del input (mismo criterio que SearchField).
- * Cada tecla se queda en el DOM. El padre solo se entera si cambia
- * "hay texto", el token @, Enter o Escape.
- */
+function fitHeight(el: HTMLTextAreaElement) {
+  el.style.height = "auto"
+  el.style.height = `${Math.min(el.scrollHeight, MAX_FIELD_PX)}px`
+}
+
 const CommentComposerFieldInner = forwardRef<
   CommentComposerFieldHandle,
   Props
@@ -44,7 +46,7 @@ const CommentComposerFieldInner = forwardRef<
   },
   ref,
 ) {
-  const elRef = useRef<HTMLInputElement>(null)
+  const elRef = useRef<HTMLTextAreaElement>(null)
   const hasTextRef = useRef(Boolean(defaultValue.trim()))
   const mentionRef = useRef<string | null>(null)
   const onHasTextRef = useRef(onHasText)
@@ -62,6 +64,7 @@ const CommentComposerFieldInner = forwardRef<
       const el = elRef.current
       if (!el) return
       el.value = value
+      fitHeight(el)
       syncFlags(value, value.length)
     },
     focus: () => elRef.current?.focus(),
@@ -69,6 +72,7 @@ const CommentComposerFieldInner = forwardRef<
       const el = elRef.current
       if (!el) return
       el.value = ""
+      fitHeight(el)
       syncFlags("", 0)
     },
   }))
@@ -87,24 +91,26 @@ const CommentComposerFieldInner = forwardRef<
   }
 
   return (
-    <input
+    <textarea
       ref={elRef}
-      type="text"
-      inputMode="text"
-      enterKeyHint="send"
       defaultValue={defaultValue}
       disabled={disabled}
+      rows={1}
       placeholder={placeholder}
+      autoComplete="off"
       autoCorrect="off"
       autoCapitalize="off"
-      autoComplete="off"
       spellCheck={false}
+      data-form-type="other"
+      data-lpignore="true"
+      enterKeyHint="send"
       onInput={e => {
         const el = e.currentTarget
+        fitHeight(el)
         syncFlags(el.value, el.selectionStart ?? el.value.length)
       }}
       onKeyDown={e => {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault()
           onSubmitRef.current()
           return
@@ -119,7 +125,7 @@ const CommentComposerFieldInner = forwardRef<
           onEscapeRef.current?.()
         }
       }}
-      className="min-h-9 min-w-0 flex-1 bg-transparent py-2 text-base leading-none text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-sm"
+      className="themed-scrollbar-y max-h-24 min-h-9 min-w-0 flex-1 resize-none overflow-y-auto bg-transparent py-2 text-base leading-snug text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-sm"
     />
   )
 })

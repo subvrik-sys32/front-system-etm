@@ -223,6 +223,18 @@ export function CommentComposer({
               onEscape={showContext ? handleCancel : undefined}
             />
 
+            {hasText && (
+              <button
+                type="button"
+                aria-label="Borrar mensaje"
+                title="Borrar mensaje"
+                onClick={() => fieldRef.current?.clear()}
+                className="flex size-9 shrink-0 items-center justify-center rounded-[10px] text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
+              >
+                <X size={16} strokeWidth={2.2} />
+              </button>
+            )}
+
             <button
               type="button"
               aria-label={isEditing ? "Guardar" : "Enviar"}

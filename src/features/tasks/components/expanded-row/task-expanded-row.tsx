@@ -39,6 +39,7 @@ import { CommentHistoryDialog } from "@/features/comments/components/comment-his
 import { useActiveCommentContextStore } from "@/features/comments/store/active-comment-context-store"
 import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
 import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
+import { cn } from "@/shared/utils/utils"
 
 type Props = {
   task: Task
@@ -198,7 +199,12 @@ export function TaskExpandedRow({
       rowId={task.id}
     >
       <EntityExpandedContent>
-        <div className="mb-2 flex flex-nowrap items-center gap-2 select-none">
+        <div className={cn(
+          "mb-2 flex gap-2 select-none",
+          activeView === "kpis" && !isMobile
+            ? "flex-wrap items-start"
+            : "flex-nowrap items-center",
+        )}>
           <div className="min-w-0 shrink-0">
             <EntityExpandedToggle
               value={activeView}
@@ -235,8 +241,16 @@ export function TaskExpandedRow({
             />
             <TaskRowActions task={task} className="gap-1" showAudit />
           </div>
-          {!isMobile && task.route?.length > 0 && (
-            <TaskDesktopRouteStrip task={task} />
+          {/* Desktop: el hueco libre alterna Workflow (ruta) ↔ KPIs */}
+          {!isMobile && (
+            <div className="min-w-0 flex-1">
+              {activeView === "workflow" && task.route?.length > 0 && (
+                <TaskDesktopRouteStrip task={task} />
+              )}
+              {activeView === "kpis" && (
+                <TaskKpisSection task={task} />
+              )}
+            </div>
           )}
         </div>
 
@@ -256,11 +270,10 @@ export function TaskExpandedRow({
             },
             {
               value: "kpis",
-              content: (
-                <TaskKpisSection
-                  task={task}
-                />
-              ),
+              // Desktop: KPIs viven en el header. Móvil: panel debajo.
+              content: isMobile ? (
+                <TaskKpisSection task={task} />
+              ) : null,
             },
             // Mensajes: CommentHistoryDialog (no panel inline)
           ]}

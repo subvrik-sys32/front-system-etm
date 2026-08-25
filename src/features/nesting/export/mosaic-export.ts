@@ -1,7 +1,8 @@
 import type { NestedSheet, Point2D, SheetConfig } from "../engine/types"
 import { groupIdenticalSheets } from "../utils/svg-render"
 import { writeSheetDxfEntities, type BridgeSettings, type SheetLabelInfo } from "./dxf-export"
-import { buildBaseName, type Nomenclatura } from "./nomenclatura"
+import { buildMosaicFileName } from "./nomenclatura"
+export { buildMosaicFileName }
 
 const MARGIN_MM = 200
 
@@ -21,22 +22,32 @@ function tileOrigin(
   }
 }
 
-export function buildMosaicFileName(
-  nom: Nomenclatura,
-  totalPieces: number,
-  uniqueSheetCount: number,
-): string {
-  return `${buildBaseName(nom)}_Q${totalPieces}_R01_P${String(uniqueSheetCount).padStart(2, "0")}_MOSAICO`
+/** Mosaico = mismos sheetGroups que las tabs, una tile por layout. */
+export type MosaicLabelOptions = {
+  material?: string
+  baseLote?: string | number
+  proyecto?: string
+  /** Material por startIndex de plancha. */
+  materialsByIndex?: Record<number, string>
 }
 
-/** Mosaico = mismos sheetGroups que las tabs, una tile por layout. */
+function parseBaseLote(raw?: string | number): number | undefined {
+  if (raw == null || raw === "") return undefined
+  const n = typeof raw === "number" ? raw : parseInt(String(raw).replace(/^L/i, ""), 10)
+  return Number.isFinite(n) ? n : undefined
+}
+
 export function generateMosaicDxf(
   sheets: NestedSheet[],
   sheetConfig: SheetConfig,
   bridges?: BridgeSettings,
-  /** Material del proyecto (nomenclatura) para la etiqueta TEXT. */
-  material?: string,
+  labelOpts?: string | MosaicLabelOptions,
 ): string {
+  const opts: MosaicLabelOptions =
+    typeof labelOpts === "string" ? { material: labelOpts } : (labelOpts ?? {})
+  const material = opts.material
+  const baseLoteNum = parseBaseLote(opts.baseLote)
+
   const groups = groupIdenticalSheets(sheets.filter((s) => s.pieces.length > 0))
   if (groups.length === 0) {
     return ["  0", "SECTION", "  2", "ENTITIES", "  0", "ENDSEC", "  0", "EOF", ""].join("\n")
@@ -49,11 +60,16 @@ export function generateMosaicDxf(
   let entities = ""
   for (let i = 0; i < groups.length; i++) {
     const g = groups[i]
+    const mat =
+      opts.materialsByIndex?.[g.startIndex]?.trim() ||
+      material
     const label: SheetLabelInfo = {
       startIndex: g.startIndex,
       count: g.count,
       thicknessMm: g.sheet.thicknessMm,
-      material,
+      material: mat,
+      pieces: g.sheet.pieces.length,
+      lote: baseLoteNum != null ? baseLoteNum + i : undefined,
     }
     entities += writeSheetDxfEntities(
       g.sheet,

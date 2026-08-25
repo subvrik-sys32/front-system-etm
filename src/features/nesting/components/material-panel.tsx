@@ -157,7 +157,7 @@ export function MaterialPanel({
                 <Input
                   className="h-9 rounded-lg border-0 bg-background/50 text-center text-xs text-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
                   inputMode="decimal"
-                  value={settings.sheetWidth}
+                  value={settings.sheetWidth ?? ""}
                   onChange={(e) => onChange({ sheetWidth: e.target.value })}
                 />
               </Field>
@@ -166,7 +166,7 @@ export function MaterialPanel({
                 <Input
                   className="h-9 rounded-lg border-0 bg-background/50 text-center text-xs text-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
                   inputMode="decimal"
-                  value={settings.sheetHeight}
+                  value={settings.sheetHeight ?? ""}
                   onChange={(e) => onChange({ sheetHeight: e.target.value })}
                 />
               </Field>
@@ -175,7 +175,7 @@ export function MaterialPanel({
                 <Input
                   className="h-9 rounded-lg border-0 bg-background/50 text-center text-xs text-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
                   inputMode="decimal"
-                  value={settings.margin}
+                  value={settings.margin ?? ""}
                   onChange={(e) => onChange({ margin: e.target.value })}
                 />
               </Field>
@@ -184,7 +184,7 @@ export function MaterialPanel({
                 <Input
                   className="h-9 rounded-lg border-0 bg-background/50 text-center text-xs text-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
                   inputMode="decimal"
-                  value={settings.separacion}
+                  value={settings.separacion ?? ""}
                   onChange={(e) => onChange({ separacion: e.target.value })}
                   title="Gap mínimo entre piezas (mm)"
                 />
@@ -192,66 +192,7 @@ export function MaterialPanel({
             </div>
           </div>
 
-          {/* Información General */}
-          <div className="flex flex-col rounded-lg p-2.5">
-            <div className="flex items-center gap-2 mb-2">
-              <Sliders className="h-3.5 w-3.5 shrink-0 text-primary" />
-              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Información General</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              <Field label="Proyecto">
-                <Input
-                  className="h-9 rounded-lg border-0 bg-background/50 text-xs truncate uppercase text-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
-                  placeholder="001-M"
-                  value={settings.proyecto}
-                  onChange={(e) => onChange({ proyecto: e.target.value })}
-                />
-              </Field>
-              <Field label="Cliente">
-                <Input
-                  className="h-9 rounded-lg border-0 bg-background/50 text-xs truncate uppercase text-foreground focus-visible:ring-1 focus-visible:ring-primary/30"
-                  placeholder="ETM"
-                  value={settings.cliente}
-                  onChange={(e) => onChange({ cliente: e.target.value })}
-                />
-              </Field>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Field label="Material">
-                {multiMat ? (
-                  <div className="flex min-h-14 flex-col items-center justify-center text-center gap-0.5 rounded-lg bg-amber-500/15 dark:bg-amber-500/10 px-2.5 py-2 w-full">
-                    <span className="text-xs font-medium text-amber-900 dark:text-amber-200/90 leading-tight">{matLabel}</span>
-                    <span className="text-[10px] text-amber-700 dark:text-amber-500/80">Varios materiales</span>
-                  </div>
-                ) : (
-                  <Input
-                    className="h-9 rounded-lg border-0 bg-background/50 text-xs truncate uppercase text-foreground focus-visible:ring-1 focus-visible:ring-primary/30 w-full"
-                    placeholder="INOX"
-                    value={settings.material}
-                    onChange={(e) => onChange({ material: e.target.value })}
-                  />
-                )}
-              </Field>
-
-              <Field label="Espesor">
-                {multiThick ? (
-                  <div className="flex min-h-14 flex-col items-center justify-center truncate uppercase text-center gap-0.5 rounded-lg bg-amber-500/15 dark:bg-amber-500/10 px-2.5 py-2 w-full">
-                    <span className="text-xs font-medium text-amber-900 dark:text-amber-200/90 leading-tight">{thickLabel}</span>
-                    <span className="text-[10px] text-amber-700 dark:text-amber-500/80">Varios espesores</span>
-                  </div>
-                ) : (
-                  <Input
-                    className="h-9 rounded-lg border-0 bg-background/50 text-xs truncate uppercase text-foreground focus-visible:ring-1 focus-visible:ring-primary/30 w-full"
-                    inputMode="decimal"
-                    placeholder="Ej: 3.0 mm"
-                    value={settings.espesor}
-                    onChange={(e) => onChange({ espesor: e.target.value })}
-                  />
-                )}
-              </Field>
-            </div>
-          </div>
+          
 
           {/* Empaquetado: fast (AABB, rápido) vs precise (polígono real +
               nesting en calados, mejor aprovechamiento pero más lento —

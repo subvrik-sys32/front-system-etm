@@ -1,8 +1,12 @@
 export interface ProjectSettings {
   proyecto: string
+  /** Tag opcional (ej. EM). */
+  tag: string
   cliente: string
   material: string
   espesor: string
+  /** Lote inicial correlativo (L1, L4…). */
+  lote: string
   sheetWidth: string
   sheetHeight: string
   margin: string
@@ -34,9 +38,11 @@ export interface ProjectSettings {
 export function defaultProjectSettings(): ProjectSettings {
   return {
     proyecto: "",
+    tag: "",
     cliente: "",
     material: "",
     espesor: "",
+    lote: "",
     sheetWidth: "2405",
     sheetHeight: "1205",
     margin: "3",

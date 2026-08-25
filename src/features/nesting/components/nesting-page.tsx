@@ -515,13 +515,13 @@ export function NestingPage() {
     Object.keys(positionOverrides).length > 0 || Object.keys(angleOverrides).length > 0
 
   const handleExportSheet = useCallback(
-    (format: "dxf" | "nsp", sheetIndex: number, bridges?: BridgeSettings) => {
+    (format: "dxf" | "nsp", sheetIndex: number, materialCode?: string, bridges?: BridgeSettings) => {
       if (hasOverrides && activeGroup && sheetIndex === activeGroup.startIndex) {
         const materialized: NestedSheet = { pieces: canvasPieces }
-        project.onExportMaterializedSheet(format, materialized, sheetIndex, bridges)
+        project.onExportMaterializedSheet(format, materialized, sheetIndex, materialCode, bridges)
         return
       }
-      project.onExportSheet(format, sheetIndex, bridges)
+      project.onExportSheet(format, sheetIndex, materialCode, bridges)
     },
     [hasOverrides, activeGroup, canvasPieces, project],
   )
@@ -996,6 +996,9 @@ export function NestingPage() {
         sheets={project.sheets}
         sheetConfig={project.sheetConfig}
         nomenclatura={project.nomenclatura}
+        onNomenclaturaChange={project.patchNomenclatura}
+        sheetMaterials={project.sheetMaterials ?? {}}
+        onSheetMaterialChange={project.setSheetMaterial}
         onExportSheet={handleExportSheet}
         onExportMosaic={(format) => project.onExportMosaic(format)}
         onSaveProject={project.onSaveProject}

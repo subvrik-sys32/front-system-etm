@@ -12,13 +12,15 @@ import type { NestingPiece, NestedSheet, SheetConfig, PieceOutline, Point2D } fr
 import { auditMaterials, type AuditablePiece } from "../cad/material-audit"
 import { calculateSheetUsagePercent } from "../engine/sheet-usage"
 import { groupIdenticalSheets } from "../utils/svg-render"
-import { buildSheetFileName, type Nomenclatura } from "../export/nomenclatura"
+import {
+  buildSheetFileName,
+  buildMosaicFileName,
+  currentExportYear,
+  type Nomenclatura,
+} from "../export/nomenclatura"
 import { generateSheetDxf, type BridgeSettings } from "../export/dxf-export"
 import { generateSheetNsp } from "../export/nsp-export"
-import {
-  generateMosaicDxf,
-  buildMosaicFileName,
-} from "../export/mosaic-export"
+import { generateMosaicDxf } from "../export/mosaic-export"
 import {
   serializeProjectV2,
   parseProjectFile,
@@ -210,10 +212,55 @@ export function useNestingProject() {
 
   const canRun = validPieces.length > 0 && !isRunning
 
-  const nomenclatura: Nomenclatura = useMemo(
-    () => ({ anio: "00", proyecto: settings.proyecto || "S", lote: "1", material: settings.material || "MAT", espesor: settings.espesor || "0" }),
-    [settings.proyecto, settings.material, settings.espesor]
+  const nomenclatura: Nomenclatura = useMemo(() => {
+    // Espesor solo informativo (primera plancha); el export usa el de cada sheet.
+    let espesor = ""
+    if (nonEmptySheets && nonEmptySheets.length > 0) {
+      const t = nonEmptySheets[0]?.thicknessMm
+      if (t != null && t > 0) {
+        const r = Math.round(t * 100) / 100
+        espesor = Number.isInteger(r) ? String(r) : String(r)
+      }
+    }
+    return {
+      anio: currentExportYear(),
+      proyecto: (settings.proyecto || "").trim().replace(/\D/g, ""),
+      tag: (settings.tag || "").trim().toUpperCase(),
+      lote: (settings.lote || "").trim().replace(/\D/g, ""),
+      material: (settings.material || "").trim().toUpperCase(),
+      espesor,
+    }
+  }, [settings.proyecto, settings.tag, settings.lote, settings.material, nonEmptySheets])
+
+  const patchNomenclatura = useCallback(
+    (patch: {
+      proyecto?: string
+      tag?: string
+      lote?: string
+      material?: string
+    }) => {
+      setSettings(prev => ({
+        ...prev,
+        ...(patch.proyecto !== undefined ? { proyecto: patch.proyecto } : {}),
+        ...(patch.tag !== undefined ? { tag: patch.tag } : {}),
+        ...(patch.lote !== undefined ? { lote: patch.lote } : {}),
+        ...(patch.material !== undefined
+          ? { material: patch.material.trim().toUpperCase() }
+          : {}),
+      }))
+    },
+    [],
   )
+
+  /** Material por plancha (startIndex → código del catálogo). */
+  const [sheetMaterials, setSheetMaterials] = useState<Record<number, string>>({})
+
+  const setSheetMaterial = useCallback((sheetIndex: number, materialCode: string) => {
+    setSheetMaterials(prev => ({
+      ...prev,
+      [sheetIndex]: materialCode.trim().toUpperCase(),
+    }))
+  }, [])
 
   /**
    * Código de material para etiqueta DXF: prioriza settings.material
@@ -429,10 +476,36 @@ export function useNestingProject() {
       })
     }, [validPieces, isRunning, run, sheetConfig, settings.separacion, settings.rotacionPermitida, settings.empaquetadoPreciso])
 
-  const handleExportSheet = useCallback((format: "dxf" | "nsp", sheetIndex: number, bridges?: BridgeSettings) => {
+
+  const nomForSheet = useCallback(
+    (sheet: NestedSheet, sheetIndex: number): Nomenclatura => {
+      const base = parseInt(String(nomenclatura.lote || "1").replace(/^L/i, ""), 10)
+      const lote = Number.isFinite(base) ? String(base + sheetIndex) : nomenclatura.lote
+      const t = resolveExportThicknessMm(sheet)
+      const espesor =
+        t > 0
+          ? (Number.isInteger(Math.round(t * 100) / 100)
+              ? String(Math.round(t * 100) / 100)
+              : (Math.round(t * 100) / 100).toFixed(2))
+          : nomenclatura.espesor
+      return {
+        ...nomenclatura,
+        lote,
+        espesor,
+        material: resolveExportMaterial(sheet) || nomenclatura.material,
+      }
+    },
+    [nomenclatura, resolveExportThicknessMm, resolveExportMaterial],
+  )
+
+  const handleExportSheet = useCallback((format: "dxf" | "nsp", sheetIndex: number, materialCode?: string, bridges?: BridgeSettings) => {
     if (!sheets) return
     const sheet = sheets[sheetIndex]
-    const fileName = buildSheetFileName(nomenclatura, sheet.pieces.length, sheetIndex)
+    const nom = {
+      ...nomForSheet(sheet, sheetIndex),
+      material: (materialCode || sheetMaterials[sheetIndex] || nomenclatura.material || "").toUpperCase(),
+    }
+    const fileName = buildSheetFileName(nom, sheet.pieces.length, sheetIndex)
     if (format === "dxf") {
       void saveTextFile(
         `${fileName}.dxf`,
@@ -440,7 +513,9 @@ export function useNestingProject() {
           startIndex: sheetIndex,
           count: 1,
           thicknessMm: resolveExportThicknessMm(sheet),
-          material: resolveExportMaterial(sheet),
+          material: nom.material,
+          pieces: sheet.pieces.length,
+          lote: nom.lote,
         }),
         "application/dxf",
         [".dxf"],
@@ -448,29 +523,39 @@ export function useNestingProject() {
     } else {
       void saveTextFile(`${fileName}.nsp`, generateSheetNsp(sheet, sheetConfig), "application/xml", [".nsp"])
     }
-  }, [sheets, nomenclatura, sheetConfig, defaultBridgeSettings, resolveExportMaterial, resolveExportThicknessMm])
+  }, [sheets, nomForSheet, sheetMaterials, nomenclatura.material, sheetConfig, defaultBridgeSettings, resolveExportThicknessMm])
 
   const handleExportMosaic = useCallback((format: "dxf" | "nsp", bridges?: BridgeSettings) => {
     if (format !== "dxf") return
-    const source = sheetGroups.map((g) => g.sheet)
+    const source = nonEmptySheets ?? sheetGroups.map((g) => g.sheet)
     if (source.length === 0) return
+    const groups = sheetGroups
     const totalPieces = source.reduce((n, s) => n + s.pieces.length, 0)
-    const fileName = buildMosaicFileName(nomenclatura, totalPieces, source.length)
+    const fileName = buildMosaicFileName(nomenclatura, totalPieces, groups.length)
     void saveTextFile(
       `${fileName}.dxf`,
       generateMosaicDxf(
         source,
         sheetConfig,
         bridges ?? defaultBridgeSettings,
-        resolveExportMaterial(),
+        {
+          material: nomenclatura.material || resolveExportMaterial(),
+          baseLote: nomenclatura.lote,
+          proyecto: nomenclatura.proyecto,
+          materialsByIndex: sheetMaterials,
+        },
       ),
       "application/dxf",
       [".dxf"],
     )
-  }, [sheetGroups, nomenclatura, sheetConfig, defaultBridgeSettings, resolveExportMaterial])
+  }, [sheetGroups, nonEmptySheets, nomenclatura, sheetMaterials, sheetConfig, defaultBridgeSettings, resolveExportMaterial])
 
-  const exportMaterializedSheet = useCallback((format: "dxf" | "nsp", sheet: NestedSheet, sheetIndex: number, bridges?: BridgeSettings) => {
-    const fileName = buildSheetFileName(nomenclatura, sheet.pieces.length, sheetIndex)
+  const exportMaterializedSheet = useCallback((format: "dxf" | "nsp", sheet: NestedSheet, sheetIndex: number, materialCode?: string, bridges?: BridgeSettings) => {
+    const nom = {
+      ...nomForSheet(sheet, sheetIndex),
+      material: (materialCode || sheetMaterials[sheetIndex] || nomenclatura.material || "").toUpperCase(),
+    }
+    const fileName = buildSheetFileName(nom, sheet.pieces.length, sheetIndex)
     if (format === "dxf") {
       void saveTextFile(
         `${fileName}.dxf`,
@@ -478,7 +563,9 @@ export function useNestingProject() {
           startIndex: sheetIndex,
           count: 1,
           thicknessMm: resolveExportThicknessMm(sheet),
-          material: resolveExportMaterial(sheet),
+          material: nom.material,
+          pieces: sheet.pieces.length,
+          lote: nom.lote,
         }),
         "application/dxf",
         [".dxf"],
@@ -486,7 +573,7 @@ export function useNestingProject() {
     } else {
       void saveTextFile(`${fileName}.nsp`, generateSheetNsp(sheet, sheetConfig), "application/xml", [".nsp"])
     }
-  }, [nomenclatura, sheetConfig, defaultBridgeSettings, resolveExportMaterial, resolveExportThicknessMm])
+  }, [nomForSheet, sheetMaterials, nomenclatura.material, sheetConfig, defaultBridgeSettings, resolveExportThicknessMm])
 
   const buildPiecesPayload = useCallback((): ProjectPieceEntry[] => {
     return rows.map((row) => ({
@@ -526,7 +613,7 @@ export function useNestingProject() {
   const applyProjectFile = useCallback(
     (project: ProjectFile) => {
       if (isProjectFileV2(project)) {
-        setSettings(project.settings)
+        setSettings({ ...defaultProjectSettings(), ...project.settings })
         setMachine(project.machine)
         const pieceList = project.rows?.length ? project.rows : project.pieces
         const loadedRows: PieceRow[] = pieceList.map((p) => ({
@@ -784,6 +871,9 @@ export function useNestingProject() {
       settings,
       machine,
       nomenclatura,
+      patchNomenclatura,
+      sheetMaterials,
+      setSheetMaterial,
       sheetConfig,
       sheetGroups,
       sheets,
@@ -842,6 +932,9 @@ export function useNestingProject() {
       settings,
       machine,
       nomenclatura,
+      patchNomenclatura,
+      sheetMaterials,
+      setSheetMaterial,
       sheetConfig,
       sheetGroups,
       sheets,

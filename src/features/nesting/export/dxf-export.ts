@@ -112,12 +112,14 @@ export type SheetLabelInfo = {
   count?: number
   thicknessMm?: number
   material?: string
+  pieces?: number
+  lote?: string | number
 }
 
 /**
- * Etiqueta unificada de exportación:
- *   PLANCHA 1 - 1.50 mm - LAF
- *   PLANCHAS 2-14 - 1.50 mm - LAF
+ * Etiqueta en DXF:
+ *   PLANCHA 1 - 1.50 mm - GO - 18p - L1
+ *   PLANCHAS 2-14 - 1.50 mm - GO - 3p - L2
  */
 export function formatSheetExportLabel(info: SheetLabelInfo): string {
   const count = info.count ?? 1
@@ -138,6 +140,13 @@ export function formatSheetExportLabel(info: SheetLabelInfo): string {
   const mat = info.material?.trim()
   if (mat && mat.toUpperCase() !== "N/D" && mat.toUpperCase() !== "MAT") {
     parts.push(mat.toUpperCase())
+  }
+  if (info.pieces != null && info.pieces > 0) {
+    parts.push(`${info.pieces}p`)
+  }
+  if (info.lote != null && String(info.lote).trim() !== "") {
+    const raw = String(info.lote).trim().replace(/^L/i, "")
+    parts.push(`L${raw}`)
   }
   return parts.join(" - ")
 }

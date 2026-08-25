@@ -1,6 +1,6 @@
 "use client"
 
-import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
+import { FAB_PLUS } from "@/shared/ui/speed-dial-fab/fab-trigger"
 
 import { useState } from "react"
 import { Plus } from "lucide-react"
@@ -54,7 +54,7 @@ export function ActivityLogActions({
           className={cn(
             "fixed bottom-22 right-4 z-30 flex size-12 items-center justify-center rounded-full shadow-xs",
             canCreate
-              ? SIDEBAR_COUNT_BADGE
+              ? FAB_PLUS
               : "cursor-not-allowed bg-muted text-muted-foreground",
           )}
         >

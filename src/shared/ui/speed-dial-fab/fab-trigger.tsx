@@ -19,6 +19,13 @@ type Props = {
   accentClassName?: string
 } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children">
 
+export const FAB_PLUS =
+  "bg-fab-plus text-fab-plus-foreground shadow-xs"
+
+/** Historial activo: fill blanco, cifra en azul de negocio. */
+export const FAB_PLUS_ACTIVE =
+  "bg-white text-fab-plus shadow-xs"
+
 const FAB_ACTIVE = "bg-muted text-foreground"
 
 export const FabTrigger = forwardRef<HTMLButtonElement, Props>(

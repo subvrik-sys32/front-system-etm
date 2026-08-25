@@ -1,0 +1,193 @@
+diff --git a/src/app/globals.css b/src/app/globals.css
+index 3bc1af9..2d3cf08 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -54,6 +54,8 @@
+   --color-secondary: var(--secondary);
+   --color-primary-foreground: var(--primary-foreground);
+   --color-primary: var(--primary);
++  --color-fab-plus-foreground: var(--fab-plus-foreground);
++  --color-fab-plus: var(--fab-plus);
+   --color-popover-foreground: var(--popover-foreground);
+   --color-popover: var(--popover);
+   --color-card-foreground: var(--card-foreground);
+@@ -77,6 +79,9 @@
+   --popover-foreground: oklch(0.16 0.012 260);
+   --primary: oklch(0.40 0.14 230);
+   --primary-foreground: oklch(0.99 0 0);
++  /* FAB +: mismo matiz 230, bloqueado (no se aclara en dark). */
++  --fab-plus: oklch(0.40 0.14 230);
++  --fab-plus-foreground: oklch(0.99 0 0);
+   --secondary: oklch(0.935 0.006 260);
+   --secondary-foreground: oklch(0.22 0.012 260);
+   --muted: oklch(0.93 0.006 260);
+diff --git a/src/features/activity-log/components/actions/activity-log-actions.tsx b/src/features/activity-log/components/actions/activity-log-actions.tsx
+index a86dee7..93f2107 100644
+--- a/src/features/activity-log/components/actions/activity-log-actions.tsx
++++ b/src/features/activity-log/components/actions/activity-log-actions.tsx
+@@ -1,6 +1,6 @@
+ "use client"
+ 
+-import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
++import { FAB_PLUS } from "@/shared/ui/speed-dial-fab/fab-trigger"
+ 
+ import { useState } from "react"
+ import { Plus } from "lucide-react"
+@@ -54,7 +54,7 @@ export function ActivityLogActions({
+           className={cn(
+             "fixed bottom-22 right-4 z-30 flex size-12 items-center justify-center rounded-full shadow-xs",
+             canCreate
+-              ? SIDEBAR_COUNT_BADGE
++              ? FAB_PLUS
+               : "cursor-not-allowed bg-muted text-muted-foreground",
+           )}
+         >
+diff --git a/src/features/activity-log/components/actions/activity-type-actions.tsx b/src/features/activity-log/components/actions/activity-type-actions.tsx
+index 1d6baa2..a305760 100644
+--- a/src/features/activity-log/components/actions/activity-type-actions.tsx
++++ b/src/features/activity-log/components/actions/activity-type-actions.tsx
+@@ -1,6 +1,6 @@
+ "use client"
+ 
+-import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
++import { FAB_PLUS } from "@/shared/ui/speed-dial-fab/fab-trigger"
+ 
+ import { useState } from "react"
+ import { Plus } from "lucide-react"
+@@ -48,7 +48,7 @@ export function ActivityTypeActions() {
+           className={cn(
+             "fixed bottom-22 right-4 z-30 flex size-12 items-center justify-center rounded-full shadow-xs",
+             canManage
+-              ? SIDEBAR_COUNT_BADGE
++              ? FAB_PLUS
+               : "cursor-not-allowed bg-muted text-muted-foreground",
+           )}
+         >
+diff --git a/src/features/admin/users/components/actions/user-actions.tsx b/src/features/admin/users/components/actions/user-actions.tsx
+index 383e59a..0e443c2 100644
+--- a/src/features/admin/users/components/actions/user-actions.tsx
++++ b/src/features/admin/users/components/actions/user-actions.tsx
+@@ -6,10 +6,8 @@ import { Plus } from "lucide-react"
+ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+ import { usePermissions } from "@/features/permissions/hooks/use-permissions"
+ import { PrimaryAction } from "@/shared/ui/actions/primary-action"
+-import { FabTrigger } from "@/shared/ui/speed-dial-fab/fab-trigger"
+-import {
+-  SIDEBAR_COUNT_BADGE,
+-} from "@/shared/responsive/layout/sidebar/sidebar-row"
++import { FabTrigger, FAB_PLUS } from "@/shared/ui/speed-dial-fab/fab-trigger"
++
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ import { cn } from "@/shared/utils/utils"
+ import { UserDialog } from "../dialog/user-dialog"
+@@ -47,7 +45,7 @@ export function UserActions() {
+           className={cn(
+             "fixed bottom-22 right-4 z-30 flex size-12 items-center justify-center rounded-full transition duration-200",
+             canCreate
+-              ? SIDEBAR_COUNT_BADGE
++              ? FAB_PLUS
+               : "cursor-not-allowed bg-foreground/10 text-foreground/35 shadow-none",
+           )}
+         >
+@@ -77,7 +75,7 @@ export function UserCreateDialAction() {
+         label="NUEVO USUARIO"
+         disabled={!canCreate}
+         onClick={handleOpen}
+-        accentClassName={SIDEBAR_COUNT_BADGE}
++        accentClassName={FAB_PLUS}
+         className={!canCreate ? "cursor-not-allowed opacity-40" : undefined}
+       />
+       {dialog}
+diff --git a/src/features/engineering/components/engineering-actions.tsx b/src/features/engineering/components/engineering-actions.tsx
+index a43a11d..bb5eae2 100644
+--- a/src/features/engineering/components/engineering-actions.tsx
++++ b/src/features/engineering/components/engineering-actions.tsx
+@@ -6,10 +6,8 @@ import { Plus } from "lucide-react"
+ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+ import { usePermissions } from "@/features/permissions/hooks/use-permissions"
+ import { PrimaryAction } from "@/shared/ui/actions/primary-action"
+-import { FabTrigger } from "@/shared/ui/speed-dial-fab/fab-trigger"
+-import {
+-  SIDEBAR_COUNT_BADGE,
+-} from "@/shared/responsive/layout/sidebar/sidebar-row"
++import { FabTrigger, FAB_PLUS } from "@/shared/ui/speed-dial-fab/fab-trigger"
++
+ 
+ import { EngineeringTaskDialog } from "./engineering-task-dialog"
+ 
+@@ -57,7 +55,7 @@ export function EngineeringCreateDialAction() {
+         label="NUEVA TAREA"
+         disabled={!canCreate}
+         onClick={handleOpen}
+-        accentClassName={SIDEBAR_COUNT_BADGE}
++        accentClassName={FAB_PLUS}
+       />
+       {dialog}
+     </>
+diff --git a/src/features/projects/components/actions/project-actions.tsx b/src/features/projects/components/actions/project-actions.tsx
+index 1316916..0d6b77b 100644
+--- a/src/features/projects/components/actions/project-actions.tsx
++++ b/src/features/projects/components/actions/project-actions.tsx
+@@ -22,10 +22,9 @@ import {
+ 
+ import {
+   FabTrigger,
++  FAB_PLUS,
+ } from "@/shared/ui/speed-dial-fab/fab-trigger"
+-import {
+-  SIDEBAR_COUNT_BADGE,
+-} from "@/shared/responsive/layout/sidebar/sidebar-row"
++
+ 
+ import {
+   ProjectDialog,
+@@ -109,7 +108,7 @@ export function ProjectCreateDialAction(){
+         label="NUEVO PROYECTO"
+         disabled={!canCreate}
+         onClick={handleOpen}
+-        accentClassName={SIDEBAR_COUNT_BADGE}
++        accentClassName={FAB_PLUS}
+         className={!canCreate ? "cursor-not-allowed opacity-40" : undefined}
+       />
+ 
+diff --git a/src/features/tasks/components/actions/task-actions.tsx b/src/features/tasks/components/actions/task-actions.tsx
+index e4005bc..b15ae83 100644
+--- a/src/features/tasks/components/actions/task-actions.tsx
++++ b/src/features/tasks/components/actions/task-actions.tsx
+@@ -22,10 +22,9 @@ import {
+ 
+ import {
+   FabTrigger,
++  FAB_PLUS,
+ } from "@/shared/ui/speed-dial-fab/fab-trigger"
+-import {
+-  SIDEBAR_COUNT_BADGE,
+-} from "@/shared/responsive/layout/sidebar/sidebar-row"
++
+ 
+ import {
+   TaskDialog,
+@@ -113,7 +112,7 @@ export function TaskCreateDialAction(){
+         label="NUEVA TAREA"
+         disabled={!canCreate}
+         onClick={handleOpen}
+-        accentClassName={SIDEBAR_COUNT_BADGE}
++        accentClassName={FAB_PLUS}
+         className={!canCreate ? "cursor-not-allowed opacity-40" : undefined}
+       />
+ 
+diff --git a/src/shared/ui/speed-dial-fab/fab-trigger.tsx b/src/shared/ui/speed-dial-fab/fab-trigger.tsx
+index 897043a..440251c 100644
+--- a/src/shared/ui/speed-dial-fab/fab-trigger.tsx
++++ b/src/shared/ui/speed-dial-fab/fab-trigger.tsx
+@@ -19,6 +19,10 @@ type Props = {
+   accentClassName?: string
+ } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "children">
+ 
++/** Solo el círculo +. Fill opaco hue 230, icono blanco. No sigue --primary de dark. */
++export const FAB_PLUS =
++  "bg-fab-plus text-fab-plus-foreground shadow-xs"
++
+ const FAB_ACTIVE = "bg-muted text-foreground"
+ 
+ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(

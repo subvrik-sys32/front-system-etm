@@ -3,7 +3,7 @@
 import { History } from "lucide-react"
 
 import { FabTrigger } from "@/shared/ui/speed-dial-fab/fab-trigger"
-import { SIDEBAR_COUNT_BADGE } from "@/shared/responsive/layout/sidebar/sidebar-row"
+import { FAB_PLUS, FAB_PLUS_ACTIVE } from "@/shared/ui/speed-dial-fab/fab-trigger"
 import { cn } from "@/shared/utils/utils"
 
 type Props = {
@@ -22,9 +22,7 @@ export function HistoryToggleButton({ count, active, onClick }: Props) {
       <span
         className={cn(
           "flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none shadow-xs select-none",
-          active
-            ? "bg-primary text-primary-foreground"
-            : SIDEBAR_COUNT_BADGE,
+          active ? FAB_PLUS_ACTIVE : FAB_PLUS,
         )}
       >
         {count > 9 ? "9+" : count}

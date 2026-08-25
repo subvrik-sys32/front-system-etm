@@ -22,10 +22,8 @@ import {
 
 import {
   FabTrigger,
+  FAB_PLUS,
 } from "@/shared/ui/speed-dial-fab/fab-trigger"
-import {
-  SIDEBAR_COUNT_BADGE,
-} from "@/shared/responsive/layout/sidebar/sidebar-row"
 
 import {
   ProjectDialog,
@@ -109,7 +107,7 @@ export function ProjectCreateDialAction(){
         label="NUEVO PROYECTO"
         disabled={!canCreate}
         onClick={handleOpen}
-        accentClassName={SIDEBAR_COUNT_BADGE}
+        accentClassName={FAB_PLUS}
         className={!canCreate ? "cursor-not-allowed opacity-40" : undefined}
       />
 

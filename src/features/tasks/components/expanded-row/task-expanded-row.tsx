@@ -150,11 +150,12 @@ export function TaskExpandedRow({
       rowId={task.id}
     >
       <EntityExpandedContent>
-        <div className="mb-2 flex flex-wrap items-center gap-2 select-none">
-          <div className="min-w-0 flex-1">
+        <div className="mb-2 flex flex-wrap items-center justify-start gap-2 select-none">
+          <div className="min-w-0 shrink-0">
             <EntityExpandedToggle
               value={activeView}
               onChange={handleViewChange}
+              className="w-auto"
               options={[
                 {
                   value: "workflow",

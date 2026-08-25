@@ -26,6 +26,7 @@ type Props<T extends string> = {
   forceLabels?: boolean
   /** Solo iconos, sin expandir a full width (agrupar, chips fijos). */
   compact?: boolean
+  className?: string
 }
 
 const COMPACT_BREAKPOINT = 420
@@ -38,6 +39,7 @@ export function EntityExpandedToggle<T extends string>({
   trailing,
   forceLabels = false,
   compact = false,
+  className,
 }: Props<T>) {
   const wrapperRef = useRef<HTMLDivElement>(null)
 
@@ -66,8 +68,9 @@ export function EntityExpandedToggle<T extends string>({
     <div
       ref={wrapperRef}
       className={cn(
-        "flex w-full min-w-0 items-center gap-1.5",
-        leading || trailing ? "justify-between" : "justify-center",
+        "flex min-w-0 items-center gap-1.5",
+        className ?? "w-full",
+        leading || trailing ? "justify-between" : "justify-start",
       )}
     >
       {leading}

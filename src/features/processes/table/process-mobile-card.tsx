@@ -325,14 +325,16 @@ function ProcessMobileCardReady({
             onPointerDown={e => e.stopPropagation()}
           >
             <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
-            <EntityAuditInfo
-              createdAt={task.createdAt}
-              updatedAt={task.updatedAt}
-              createdBy={task.createdBy}
-              updatedBy={task.updatedBy}
-            workflowSteps={task.workflowSteps}
-          />
-            <TaskMaterialInfo task={task} alwaysShow />
+            <span className="hidden items-center gap-1 md:inline-flex">
+              <TaskMaterialInfo task={task} alwaysShow />
+              <EntityAuditInfo
+                createdAt={task.createdAt}
+                updatedAt={task.updatedAt}
+                createdBy={task.createdBy}
+                updatedBy={task.updatedBy}
+                workflowSteps={task.workflowSteps}
+              />
+            </span>
           </div>
         )}
 
@@ -412,6 +414,7 @@ function ProcessMobileCardReady({
           onPointerDown={e => e.stopPropagation()}
         >
           <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
+          <TaskMaterialInfo task={task} alwaysShow />
           <EntityAuditInfo
             createdAt={task.createdAt}
             updatedAt={task.updatedAt}
@@ -419,7 +422,6 @@ function ProcessMobileCardReady({
             updatedBy={task.updatedBy}
             workflowSteps={task.workflowSteps}
           />
-          <TaskMaterialInfo task={task} alwaysShow />
         </div>
 
         <ProcessExpandedRow processTask={processTask} />

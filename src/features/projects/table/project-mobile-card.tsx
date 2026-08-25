@@ -305,12 +305,14 @@ function ProjectMobileCardReady({
             onPointerDown={e => e.stopPropagation()}
           >
             <DetailAssetsEye projectId={project.id} count={project.detailAssetCount ?? 0} />
-            <EntityAuditInfo
-              createdAt={project.createdAt}
-              updatedAt={project.updatedAt}
-              createdBy={project.createdBy}
-              updatedBy={project.updatedBy}
-            />
+            <span className="hidden items-center gap-1 md:inline-flex">
+              <EntityAuditInfo
+                createdAt={project.createdAt}
+                updatedAt={project.updatedAt}
+                createdBy={project.createdBy}
+                updatedBy={project.updatedBy}
+              />
+            </span>
           </div>
         )}
 

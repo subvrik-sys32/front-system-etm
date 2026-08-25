@@ -25,7 +25,7 @@ type Props = {
  * Nunca opacity / bg translúcido al press.
  */
 const FAB_ACTIVE =
-  "ring-2 ring-primary ring-offset-2 ring-offset-background bg-foreground/15 text-foreground"
+  "ring-2 ring-primary ring-offset-2 ring-offset-background bg-muted text-foreground"
 
 export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
   (

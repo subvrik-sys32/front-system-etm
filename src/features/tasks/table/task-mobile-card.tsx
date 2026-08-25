@@ -389,13 +389,15 @@ function TaskMobileCardReady({
               count={taskDetailAssetCount(task)}
               onEditTask={openEditMaterials}
             />
-            <EntityAuditInfo
-              createdAt={task.createdAt}
-              updatedAt={task.updatedAt}
-              createdBy={task.createdBy}
-              updatedBy={task.updatedBy}
-              workflowSteps={task.workflowSteps}
-            />
+            <span className="hidden items-center gap-1 md:inline-flex">
+              <EntityAuditInfo
+                createdAt={task.createdAt}
+                updatedAt={task.updatedAt}
+                createdBy={task.createdBy}
+                updatedBy={task.updatedBy}
+                workflowSteps={task.workflowSteps}
+              />
+            </span>
           </div>
         )}
 

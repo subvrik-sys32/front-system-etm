@@ -237,7 +237,7 @@ export function ExportDialog({
                   </label>
                   <Input
                     className={fieldCls(baseErrors.proyecto)}
-                    placeholder="130"
+                    placeholder="001"
                     inputMode="numeric"
                     value={nomenclatura.proyecto}
                     onChange={e =>

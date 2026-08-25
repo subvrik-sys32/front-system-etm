@@ -1,0 +1,179 @@
+diff --git a/src/features/activity-log/components/actions/activity-type-actions.tsx b/src/features/activity-log/components/actions/activity-type-actions.tsx
+index e9e0164..2609bca 100644
+--- a/src/features/activity-log/components/actions/activity-type-actions.tsx
++++ b/src/features/activity-log/components/actions/activity-type-actions.tsx
+@@ -46,7 +46,7 @@ export function ActivityTypeActions() {
+           className={cn(
+             "fixed bottom-22 right-4 z-30 flex size-12 items-center justify-center rounded-full transition duration-200",
+             canManage
+-              ? "bg-foreground text-background hover:scale-105 hover:bg-foreground/90 active:scale-95"
++              ? "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 active:scale-95"
+               : "cursor-not-allowed bg-foreground/20 text-foreground/40",
+             "shadow-[0_12px_32px_rgba(0,0,0,0.55),0_4px_10px_rgba(255,255,255,0.08)]",
+           )}
+diff --git a/src/features/admin/users/components/actions/user-actions.tsx b/src/features/admin/users/components/actions/user-actions.tsx
+index 971035a..d1a7932 100644
+--- a/src/features/admin/users/components/actions/user-actions.tsx
++++ b/src/features/admin/users/components/actions/user-actions.tsx
+@@ -59,7 +59,7 @@ export function UserActions() {
+         className={[
+           "desktop:hidden fixed bottom-22 right-4 z-30 flex size-12 items-center justify-center rounded-full transition duration-200",
+           canCreate
+-            ? "bg-foreground text-background shadow-[0_12px_32px_rgba(0,0,0,0.55),0_4px_10px_rgba(255,255,255,0.08)] hover:scale-105 hover:bg-foreground/90 active:scale-95"
++            ? "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 active:scale-95"
+             : "cursor-not-allowed bg-foreground/10 text-foreground/35 shadow-none",
+         ].join(" ")}
+       >
+diff --git a/src/features/processes/table/process-mobile-card.tsx b/src/features/processes/table/process-mobile-card.tsx
+index 5e359b8..2c07e3c 100644
+--- a/src/features/processes/table/process-mobile-card.tsx
++++ b/src/features/processes/table/process-mobile-card.tsx
+@@ -325,14 +325,16 @@ function ProcessMobileCardReady({
+             onPointerDown={e => e.stopPropagation()}
+           >
+             <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
+-            <EntityAuditInfo
+-              createdAt={task.createdAt}
+-              updatedAt={task.updatedAt}
+-              createdBy={task.createdBy}
+-              updatedBy={task.updatedBy}
+-            workflowSteps={task.workflowSteps}
+-          />
+-            <TaskMaterialInfo task={task} alwaysShow />
++            <span className="hidden items-center gap-1 md:inline-flex">
++              <TaskMaterialInfo task={task} alwaysShow />
++              <EntityAuditInfo
++                createdAt={task.createdAt}
++                updatedAt={task.updatedAt}
++                createdBy={task.createdBy}
++                updatedBy={task.updatedBy}
++                workflowSteps={task.workflowSteps}
++              />
++            </span>
+           </div>
+         )}
+ 
+@@ -412,6 +414,7 @@ function ProcessMobileCardReady({
+           onPointerDown={e => e.stopPropagation()}
+         >
+           <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
++          <TaskMaterialInfo task={task} alwaysShow />
+           <EntityAuditInfo
+             createdAt={task.createdAt}
+             updatedAt={task.updatedAt}
+@@ -419,7 +422,6 @@ function ProcessMobileCardReady({
+             updatedBy={task.updatedBy}
+             workflowSteps={task.workflowSteps}
+           />
+-          <TaskMaterialInfo task={task} alwaysShow />
+         </div>
+ 
+         <ProcessExpandedRow processTask={processTask} />
+diff --git a/src/features/projects/table/project-mobile-card.tsx b/src/features/projects/table/project-mobile-card.tsx
+index 1fb128b..6cd2636 100644
+--- a/src/features/projects/table/project-mobile-card.tsx
++++ b/src/features/projects/table/project-mobile-card.tsx
+@@ -305,12 +305,14 @@ function ProjectMobileCardReady({
+             onPointerDown={e => e.stopPropagation()}
+           >
+             <DetailAssetsEye projectId={project.id} count={project.detailAssetCount ?? 0} />
+-            <EntityAuditInfo
+-              createdAt={project.createdAt}
+-              updatedAt={project.updatedAt}
+-              createdBy={project.createdBy}
+-              updatedBy={project.updatedBy}
+-            />
++            <span className="hidden items-center gap-1 md:inline-flex">
++              <EntityAuditInfo
++                createdAt={project.createdAt}
++                updatedAt={project.updatedAt}
++                createdBy={project.createdBy}
++                updatedBy={project.updatedBy}
++              />
++            </span>
+           </div>
+         )}
+ 
+diff --git a/src/features/tasks/table/task-mobile-card.tsx b/src/features/tasks/table/task-mobile-card.tsx
+index ef00734..3ef5143 100644
+--- a/src/features/tasks/table/task-mobile-card.tsx
++++ b/src/features/tasks/table/task-mobile-card.tsx
+@@ -389,13 +389,15 @@ function TaskMobileCardReady({
+               count={taskDetailAssetCount(task)}
+               onEditTask={openEditMaterials}
+             />
+-            <EntityAuditInfo
+-              createdAt={task.createdAt}
+-              updatedAt={task.updatedAt}
+-              createdBy={task.createdBy}
+-              updatedBy={task.updatedBy}
+-              workflowSteps={task.workflowSteps}
+-            />
++            <span className="hidden items-center gap-1 md:inline-flex">
++              <EntityAuditInfo
++                createdAt={task.createdAt}
++                updatedAt={task.updatedAt}
++                createdBy={task.createdBy}
++                updatedBy={task.updatedBy}
++                workflowSteps={task.workflowSteps}
++              />
++            </span>
+           </div>
+         )}
+ 
+diff --git a/src/shared/ui/entity-audit-info/entity-audit-info.tsx b/src/shared/ui/entity-audit-info/entity-audit-info.tsx
+index 891c8fe..4583fcf 100644
+--- a/src/shared/ui/entity-audit-info/entity-audit-info.tsx
++++ b/src/shared/ui/entity-audit-info/entity-audit-info.tsx
+@@ -12,6 +12,7 @@ import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
+ import { cn } from "@/shared/utils/utils"
+ import type { WorkflowStep } from "@/features/workflow/types/workflow.types"
+ import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
++import { ScrollArea } from "@/components/ui/scroll-area"
+ 
+ type AuditUser = { id: string; name: string }
+ 
+@@ -100,7 +101,8 @@ export function EntityAuditInfo({
+                 Flujo de trabajo
+               </p>
+             </div>
+-            <ul className="flex max-h-52 flex-col gap-1 overflow-y-auto px-2 pb-3">
++            <ScrollArea className="max-h-52">
++            <ul className="flex flex-col gap-1 px-2 pb-3">
+               {steps.map(step => {
+                 const def = PROCESS_DEFINITIONS[step.processCode]
+                 const processName = def?.label ?? step.processCode
+@@ -132,6 +134,7 @@ export function EntityAuditInfo({
+                 )
+               })}
+             </ul>
++            </ScrollArea>
+           </>
+         )}
+       </PopoverContent>
+diff --git a/src/shared/ui/speed-dial-fab/fab-trigger.tsx b/src/shared/ui/speed-dial-fab/fab-trigger.tsx
+index 7cd285d..ea99966 100644
+--- a/src/shared/ui/speed-dial-fab/fab-trigger.tsx
++++ b/src/shared/ui/speed-dial-fab/fab-trigger.tsx
+@@ -25,7 +25,7 @@ type Props = {
+  * Nunca opacity / bg translúcido al press.
+  */
+ const FAB_ACTIVE =
+-  "ring-2 ring-primary ring-offset-2 ring-offset-background bg-foreground/15 text-foreground"
++  "ring-2 ring-primary ring-offset-2 ring-offset-background bg-muted text-foreground"
+ 
+ export const FabTrigger = forwardRef<HTMLButtonElement, Props>(
+   (
+diff --git a/src/shared/ui/speed-dial-fab/speed-dial-fab.tsx b/src/shared/ui/speed-dial-fab/speed-dial-fab.tsx
+index b314e01..fa5852a 100644
+--- a/src/shared/ui/speed-dial-fab/speed-dial-fab.tsx
++++ b/src/shared/ui/speed-dial-fab/speed-dial-fab.tsx
+@@ -145,7 +145,7 @@ export function SpeedDialFab({ actions, className }: Props) {
+           className={cn(
+             "flex size-12 items-center justify-center rounded-full shadow-xs",
+             "bg-muted text-foreground",
+-            dialOpen && "bg-foreground/15 ring-2 ring-primary ring-offset-2 ring-offset-background",
++            dialOpen && "bg-muted text-foreground ring-2 ring-primary ring-offset-2 ring-offset-background",
+           )}
+         >
+           {dialOpen ? (

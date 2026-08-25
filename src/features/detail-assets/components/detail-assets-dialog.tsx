@@ -27,8 +27,11 @@ import {
 } from "../hooks/use-detail-assets"
 import type { DetailAsset } from "../types"
 import { DxfPreviewDialog } from "./dxf-preview-dialog"
-import { useRouter } from "next/navigation"
-import { resolveEntityFocusHref } from "@/features/notifications/utils/resolve-entity-focus-href"
+import { usePathname, useRouter } from "next/navigation"
+import {
+  isAlreadyOnEntityOrigin,
+  resolveEntityFocusHref,
+} from "@/features/notifications/utils/resolve-entity-focus-href"
 
 type Props = {
   open: boolean
@@ -74,8 +77,8 @@ export function DetailAssetsDialog({
   onEditTask,
 }: Props) {
   const router = useRouter()
+  const pathname = usePathname()
   const isTask = Boolean(taskId)
-  const entityHref = resolveEntityFocusHref({ taskId, projectId })
   const taskQ = useTaskDetailAssets(taskId, open && isTask)
   const projectQ = useProjectDetailAssets(projectId, open && !isTask)
   const mutations = useDetailAssetMutations({ taskId, projectId })
@@ -85,7 +88,12 @@ export function DetailAssetsDialog({
     url: string
     name: string
   } | null>(null)
-  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null)
+  const [previewPhoto, setPreviewPhoto] = useState<{
+    url: string
+    scope: "task" | "project"
+    taskId?: string
+    projectId?: string
+  } | null>(null)
   const [note, setNote] = useState("")
 
   const ownPhotos: DetailAsset[] = isTask
@@ -217,6 +225,11 @@ export function DetailAssetsDialog({
                             isTask &&
                             Boolean(p.projectId) &&
                             !p.taskId
+                          const scope: "task" | "project" = inherited
+                            ? "project"
+                            : isTask
+                              ? "task"
+                              : "project"
                           return (
                           <div
                             key={p.id}
@@ -227,8 +240,15 @@ export function DetailAssetsDialog({
                               src={p.publicUrl ?? ""}
                               alt=""
                               className="size-full cursor-zoom-in object-cover"
-                              onClick={() => {
-                                if (p.publicUrl) setPreviewPhoto(p.publicUrl)
+                              onClick={e => {
+                                e.stopPropagation()
+                                if (!p.publicUrl) return
+                                setPreviewPhoto({
+                                  url: p.publicUrl,
+                                  scope,
+                                  taskId: p.taskId ?? taskId,
+                                  projectId: p.projectId ?? projectId,
+                                })
                               }}
                             />
                             {inherited && (
@@ -241,8 +261,9 @@ export function DetailAssetsDialog({
                                 type="button"
                                 title="Eliminar"
                                 disabled={removingId === p.id || photoUploading}
-                                className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-md bg-background/90 text-muted-foreground opacity-0 shadow-xs transition group-hover:opacity-100 hover:text-destructive disabled:opacity-100"
+                                className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-md bg-background/90 text-muted-foreground opacity-100 shadow-xs transition hover:text-destructive md:opacity-0 md:group-hover:opacity-100 disabled:opacity-100"
                                 onClick={e => {
+                                  e.preventDefault()
                                   e.stopPropagation()
                                   mutations.remove.mutate(p.id, {
                                     onSuccess: () =>
@@ -530,18 +551,32 @@ export function DetailAssetsDialog({
       <PhotoViewerDialog
         open={Boolean(previewPhoto)}
         onOpenChange={o => !o && setPreviewPhoto(null)}
-        src={previewPhoto}
-        title="Foto de detalle"
-        alt="Foto de detalle"
-        onOpenEntity={
-          entityHref
-            ? () => {
-                onOpenChange(false)
-                setPreviewPhoto(null)
-                router.push(entityHref)
-              }
-            : undefined
+        src={previewPhoto?.url ?? null}
+        title={
+          previewPhoto?.scope === "project"
+            ? "Foto de proyecto"
+            : "Foto de tarea"
         }
+        alt="Foto de detalle"
+        openEntityLabel={
+          previewPhoto?.scope === "project"
+            ? "Ir al proyecto"
+            : "Ir a la tarea"
+        }
+        onOpenEntity={(() => {
+          if (!previewPhoto) return undefined
+          const href = resolveEntityFocusHref({
+            taskId: previewPhoto.taskId,
+            projectId: previewPhoto.projectId,
+            scope: previewPhoto.scope,
+          })
+          if (!href || isAlreadyOnEntityOrigin(pathname, href)) return undefined
+          return () => {
+            onOpenChange(false)
+            setPreviewPhoto(null)
+            router.push(href)
+          }
+        })()}
       />
     </>
   )

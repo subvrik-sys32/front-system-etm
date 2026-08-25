@@ -1,0 +1,271 @@
+diff --git a/src/features/detail-assets/components/detail-assets-dialog.tsx b/src/features/detail-assets/components/detail-assets-dialog.tsx
+index 01e9fbb..8efe9be 100644
+--- a/src/features/detail-assets/components/detail-assets-dialog.tsx
++++ b/src/features/detail-assets/components/detail-assets-dialog.tsx
+@@ -27,8 +27,11 @@ import {
+ } from "../hooks/use-detail-assets"
+ import type { DetailAsset } from "../types"
+ import { DxfPreviewDialog } from "./dxf-preview-dialog"
+-import { useRouter } from "next/navigation"
+-import { resolveEntityFocusHref } from "@/features/notifications/utils/resolve-entity-focus-href"
++import { usePathname, useRouter } from "next/navigation"
++import {
++  isAlreadyOnEntityOrigin,
++  resolveEntityFocusHref,
++} from "@/features/notifications/utils/resolve-entity-focus-href"
+ 
+ type Props = {
+   open: boolean
+@@ -74,8 +77,8 @@ export function DetailAssetsDialog({
+   onEditTask,
+ }: Props) {
+   const router = useRouter()
++  const pathname = usePathname()
+   const isTask = Boolean(taskId)
+-  const entityHref = resolveEntityFocusHref({ taskId, projectId })
+   const taskQ = useTaskDetailAssets(taskId, open && isTask)
+   const projectQ = useProjectDetailAssets(projectId, open && !isTask)
+   const mutations = useDetailAssetMutations({ taskId, projectId })
+@@ -85,7 +88,12 @@ export function DetailAssetsDialog({
+     url: string
+     name: string
+   } | null>(null)
+-  const [previewPhoto, setPreviewPhoto] = useState<string | null>(null)
++  const [previewPhoto, setPreviewPhoto] = useState<{
++    url: string
++    scope: "task" | "project"
++    taskId?: string
++    projectId?: string
++  } | null>(null)
+   const [note, setNote] = useState("")
+ 
+   const ownPhotos: DetailAsset[] = isTask
+@@ -217,6 +225,11 @@ export function DetailAssetsDialog({
+                             isTask &&
+                             Boolean(p.projectId) &&
+                             !p.taskId
++                          const scope: "task" | "project" = inherited
++                            ? "project"
++                            : isTask
++                              ? "task"
++                              : "project"
+                           return (
+                           <div
+                             key={p.id}
+@@ -227,8 +240,15 @@ export function DetailAssetsDialog({
+                               src={p.publicUrl ?? ""}
+                               alt=""
+                               className="size-full cursor-zoom-in object-cover"
+-                              onClick={() => {
+-                                if (p.publicUrl) setPreviewPhoto(p.publicUrl)
++                              onClick={e => {
++                                e.stopPropagation()
++                                if (!p.publicUrl) return
++                                setPreviewPhoto({
++                                  url: p.publicUrl,
++                                  scope,
++                                  taskId: p.taskId ?? taskId,
++                                  projectId: p.projectId ?? projectId,
++                                })
+                               }}
+                             />
+                             {inherited && (
+@@ -241,8 +261,9 @@ export function DetailAssetsDialog({
+                                 type="button"
+                                 title="Eliminar"
+                                 disabled={removingId === p.id || photoUploading}
+-                                className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-md bg-background/90 text-muted-foreground opacity-0 shadow-xs transition group-hover:opacity-100 hover:text-destructive disabled:opacity-100"
++                                className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-md bg-background/90 text-muted-foreground opacity-100 shadow-xs transition hover:text-destructive md:opacity-0 md:group-hover:opacity-100 disabled:opacity-100"
+                                 onClick={e => {
++                                  e.preventDefault()
+                                   e.stopPropagation()
+                                   mutations.remove.mutate(p.id, {
+                                     onSuccess: () =>
+@@ -530,18 +551,32 @@ export function DetailAssetsDialog({
+       <PhotoViewerDialog
+         open={Boolean(previewPhoto)}
+         onOpenChange={o => !o && setPreviewPhoto(null)}
+-        src={previewPhoto}
+-        title="Foto de detalle"
++        src={previewPhoto?.url ?? null}
++        title={
++          previewPhoto?.scope === "project"
++            ? "Foto de proyecto"
++            : "Foto de tarea"
++        }
+         alt="Foto de detalle"
+-        onOpenEntity={
+-          entityHref
+-            ? () => {
+-                onOpenChange(false)
+-                setPreviewPhoto(null)
+-                router.push(entityHref)
+-              }
+-            : undefined
++        openEntityLabel={
++          previewPhoto?.scope === "project"
++            ? "Ir al proyecto"
++            : "Ir a la tarea"
+         }
++        onOpenEntity={(() => {
++          if (!previewPhoto) return undefined
++          const href = resolveEntityFocusHref({
++            taskId: previewPhoto.taskId,
++            projectId: previewPhoto.projectId,
++            scope: previewPhoto.scope,
++          })
++          if (!href || isAlreadyOnEntityOrigin(pathname, href)) return undefined
++          return () => {
++            onOpenChange(false)
++            setPreviewPhoto(null)
++            router.push(href)
++          }
++        })()}
+       />
+     </>
+   )
+diff --git a/src/features/notifications/utils/resolve-entity-focus-href.ts b/src/features/notifications/utils/resolve-entity-focus-href.ts
+index 4d4212b..9def1d5 100644
+--- a/src/features/notifications/utils/resolve-entity-focus-href.ts
++++ b/src/features/notifications/utils/resolve-entity-focus-href.ts
+@@ -1,11 +1,31 @@
+-/** Misma query que las notificaciones: focus + taskId | projectId. */
++/** Deeplink de entidad — mismo contrato que notificaciones (focus + id). */
++
++export type EntityFocusScope = "task" | "project"
++
+ export function resolveEntityFocusHref(opts: {
+-  taskId?: string
+-  projectId?: string
++  taskId?: string | null
++  projectId?: string | null
++  /** Fuente de verdad del asset: foto de proyecto vs de tarea. */
++  scope?: EntityFocusScope
+ }): string | null {
+   const params = new URLSearchParams()
+   params.set("focus", crypto.randomUUID())
+ 
++  const scope =
++    opts.scope ??
++    (opts.taskId ? "task" : opts.projectId ? "project" : undefined)
++
++  if (scope === "project" && opts.projectId) {
++    params.set("projectId", opts.projectId)
++    return `/projects?${params.toString()}`
++  }
++
++  if (scope === "task" && opts.taskId) {
++    params.set("taskId", opts.taskId)
++    return `/tasks?${params.toString()}`
++  }
++
++  // Fallback por id presente
+   if (opts.taskId) {
+     params.set("taskId", opts.taskId)
+     return `/tasks?${params.toString()}`
+@@ -18,3 +38,22 @@ export function resolveEntityFocusHref(opts: {
+ 
+   return null
+ }
++
++/** Ya estamos en el módulo origen del deeplink → no re-navegar. */
++export function isAlreadyOnEntityOrigin(
++  pathname: string,
++  href: string | null | undefined,
++): boolean {
++  if (!href) return true
++  const path = pathname.split("?")[0] ?? pathname
++  if (href.startsWith("/tasks") && (path === "/tasks" || path.startsWith("/tasks/"))) {
++    return true
++  }
++  if (
++    href.startsWith("/projects") &&
++    (path === "/projects" || path.startsWith("/projects/"))
++  ) {
++    return true
++  }
++  return false
++}
+diff --git a/src/shared/ui/media-lightbox/photo-viewer-dialog.tsx b/src/shared/ui/media-lightbox/photo-viewer-dialog.tsx
+index ab7dcbe..16f7027 100644
+--- a/src/shared/ui/media-lightbox/photo-viewer-dialog.tsx
++++ b/src/shared/ui/media-lightbox/photo-viewer-dialog.tsx
+@@ -15,8 +15,12 @@ type Props = {
+   src: string | null
+   title?: string
+   alt?: string
+-  /** Deeplink a tarea / proyecto (mismo contrato que notificaciones). */
++  /**
++   * Deeplink a la entidad dueña del asset.
++   * Solo se invoca si el caller decide que hay destino distinto al origen actual.
++   */
+   onOpenEntity?: () => void
++  openEntityLabel?: string
+ }
+ 
+ /**
+@@ -30,6 +34,7 @@ export function PhotoViewerDialog({
+   title = "Foto",
+   alt = "Foto",
+   onOpenEntity,
++  openEntityLabel,
+ }: Props) {
+   return (
+     <Dialog open={open && Boolean(src)} onOpenChange={onOpenChange}>
+@@ -46,26 +51,44 @@ export function PhotoViewerDialog({
+               <img
+                 src={src}
+                 alt={alt}
+-                onClick={() => onOpenEntity?.()}
++                onClick={e => {
++                  e.stopPropagation()
++                  onOpenEntity?.()
++                }}
+                 className={
+                   onOpenEntity
+                     ? "mx-auto max-h-[min(70dvh,36rem)] w-full cursor-pointer rounded-xl bg-muted object-contain"
+                     : "mx-auto max-h-[min(70dvh,36rem)] w-full rounded-xl bg-muted object-contain"
+                 }
+               />
+-              <a
+-                href={src}
+-                target="_blank"
+-                rel="noopener noreferrer"
+-                className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-foreground/5 px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+-              >
+-                <ExternalLink size={15} />
+-                Abrir original
+-              </a>
++              <div className="flex flex-col gap-2">
++                {onOpenEntity && (
++                  <button
++                    type="button"
++                    onClick={e => {
++                      e.stopPropagation()
++                      onOpenEntity()
++                    }}
++                    className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/15 dark:bg-primary/20 dark:text-primary-foreground"
++                  >
++                    {openEntityLabel ?? "Ir a la entidad"}
++                  </button>
++                )}
++                <a
++                  href={src}
++                  target="_blank"
++                  rel="noopener noreferrer"
++                  onClick={e => e.stopPropagation()}
++                  className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-foreground/5 px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
++                >
++                  <ExternalLink size={15} />
++                  Abrir original
++                </a>
++              </div>
+             </div>
+           </ScrollArea>
+         )}
+       </DialogContent>
+     </Dialog>
+   )
+-}
+\ No newline at end of file
++}

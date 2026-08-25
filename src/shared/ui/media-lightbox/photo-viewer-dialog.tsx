@@ -15,8 +15,12 @@ type Props = {
   src: string | null
   title?: string
   alt?: string
-  /** Deeplink a tarea / proyecto (mismo contrato que notificaciones). */
+  /**
+   * Deeplink a la entidad dueña del asset.
+   * Solo se invoca si el caller decide que hay destino distinto al origen actual.
+   */
   onOpenEntity?: () => void
+  openEntityLabel?: string
 }
 
 /**
@@ -30,6 +34,7 @@ export function PhotoViewerDialog({
   title = "Foto",
   alt = "Foto",
   onOpenEntity,
+  openEntityLabel,
 }: Props) {
   return (
     <Dialog open={open && Boolean(src)} onOpenChange={onOpenChange}>
@@ -46,22 +51,40 @@ export function PhotoViewerDialog({
               <img
                 src={src}
                 alt={alt}
-                onClick={() => onOpenEntity?.()}
+                onClick={e => {
+                  e.stopPropagation()
+                  onOpenEntity?.()
+                }}
                 className={
                   onOpenEntity
                     ? "mx-auto max-h-[min(70dvh,36rem)] w-full cursor-pointer rounded-xl bg-muted object-contain"
                     : "mx-auto max-h-[min(70dvh,36rem)] w-full rounded-xl bg-muted object-contain"
                 }
               />
-              <a
-                href={src}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-foreground/5 px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
-              >
-                <ExternalLink size={15} />
-                Abrir original
-              </a>
+              <div className="flex flex-col gap-2">
+                {onOpenEntity && (
+                  <button
+                    type="button"
+                    onClick={e => {
+                      e.stopPropagation()
+                      onOpenEntity()
+                    }}
+                    className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/15 dark:bg-primary/20 dark:text-primary-foreground"
+                  >
+                    {openEntityLabel ?? "Ir a la entidad"}
+                  </button>
+                )}
+                <a
+                  href={src}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-foreground/5 px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+                >
+                  <ExternalLink size={15} />
+                  Abrir original
+                </a>
+              </div>
             </div>
           </ScrollArea>
         )}

@@ -1,0 +1,143 @@
+diff --git a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+index 4ba9ff9..60bc736 100644
+--- a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
++++ b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+@@ -241,20 +241,22 @@ export function TaskProductionPanel({
+                   <div
+                     className="flex size-10 items-center justify-center rounded-full"
+                     style={
+-                      isActive || isDone
++                      isDone
+                         ? {
+-                            backgroundColor: isActive
+-                              ? colors.backgroundActive
+-                              : colors.background,
+-                          }
+-                        : {
+-                            // Sólido oscuro — no transparente sobre el gradiente
+-                            backgroundColor: "color-mix(in srgb, var(--foreground) 14%, var(--background))",
++                            // Completado: verde, sin color de proceso
++                            backgroundColor:
++                              "color-mix(in srgb, #22C55E 32%, var(--background))",
+                           }
++                        : isActive
++                          ? { backgroundColor: colors.backgroundActive }
++                          : {
++                              backgroundColor:
++                                "color-mix(in srgb, var(--foreground) 14%, var(--background))",
++                            }
+                     }
+                   >
+                     {isDone ? (
+-                      <Check size={16} style={{ color: colors.text }} />
++                      <Check size={16} className="text-emerald-600 dark:text-emerald-400" />
+                     ) : (
+                       <ProcessIcon
+                         size={16}
+@@ -276,19 +278,11 @@ export function TaskProductionPanel({
+                           : `${commentCount} mensajes`
+                       }
+                       className={cn(
+-                        "pointer-events-none absolute -right-1.5 -top-1.5 z-10",
+-                        "flex h-4 min-w-4 items-center justify-center",
+-                        "rounded-full bg-sky-500 px-1 text-[9px] font-bold leading-none text-white",
+-                        "shadow-xs ring-2",
++                        "pointer-events-none absolute -bottom-0.5 -right-0.5 z-10",
++                        "flex h-3.5 min-w-3.5 items-center justify-center",
++                        "rounded-full border border-background/80 bg-sky-600/90 px-1",
++                        "text-[8px] font-bold leading-none text-white shadow-xs",
+                       )}
+-                      style={{
+-                        // Anillo del color del proceso (contraste con el centro, no negro)
+-                        boxShadow: `0 0 0 2px ${
+-                          isActive || isDone
+-                            ? colors.backgroundActive || colors.background
+-                            : "color-mix(in srgb, var(--foreground) 22%, var(--background))"
+-                        }`,
+-                      }}
+                     >
+                       {commentCount > 99 ? "99+" : commentCount}
+                     </span>
+@@ -363,43 +357,42 @@ export function TaskProductionPanel({
+ 
+                 <span
+                   className={cn(
+-                    "font-bold",
+-                    isCompact ? "text-[10px]" : "text-[11px] tracking-wide",
++                    "font-medium normal-case",
++                    isCompact ? "text-[10px] font-bold uppercase" : "text-[11px]",
+                   )}
+                   style={{
+-                    color:
+-                      isActive || isDone
++                    color: isDone
++                      ? "color-mix(in srgb, #22C55E 85%, var(--foreground))"
++                      : isActive
+                         ? colors.text
+-                        : "color-mix(in srgb, var(--foreground) 40%, transparent)",
++                        : "color-mix(in srgb, var(--foreground) 55%, transparent)",
+                   }}
+                 >
+                   {isCompact ? definition.code : definition.label}
+                 </span>
+ 
+-                {!isCompact && operator && (
+-                  <span
+-                    title={operator.name}
+-                    className="mt-0.5 max-w-[5.5rem] truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium shadow-xs"
+-                    style={{
+-                      backgroundColor: getBadgeColors(
+-                        operator.color || "#64748B",
+-                        "subtle",
+-                        theme,
+-                      ).background,
+-                      color: getBadgeColors(
+-                        operator.color || "#64748B",
+-                        "subtle",
+-                        theme,
+-                      ).text,
+-                    }}
+-                  >
+-                    {operator.name.trim().split(/\s+/)[0]}
+-                  </span>
+-                )}
+-                {!isCompact && !operator && hasInvite && (
+-                  <span className="mt-0.5 rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-300/90">
+-                    Convocado
+-                  </span>
++                {/* Slot fijo de altura: alinea Despacho con el resto */}
++                {!isCompact && (
++                  <div className="mt-0.5 flex h-5 min-h-5 max-w-[5.5rem] items-center justify-center">
++                    {operator ? (
++                      <span
++                        title={operator.name}
++                        className="max-w-full truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium normal-case shadow-xs"
++                        style={{
++                          // Más opaco / oscuro, menos chillón
++                          backgroundColor: `color-mix(in srgb, ${operator.color || "#64748B"} 28%, var(--background))`,
++                          color: `color-mix(in srgb, ${operator.color || "#64748B"} 72%, var(--foreground))`,
++                          border: `1px solid color-mix(in srgb, ${operator.color || "#64748B"} 22%, transparent)`,
++                        }}
++                      >
++                        {operator.name.trim().split(/\s+/)[0]}
++                      </span>
++                    ) : hasInvite ? (
++                      <span className="rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium normal-case text-amber-800/90 dark:text-amber-200/80">
++                        Convocado
++                      </span>
++                    ) : null}
++                  </div>
+                 )}
+               </button>
+ 
+@@ -409,7 +402,9 @@ export function TaskProductionPanel({
+                     className="h-full rounded-full"
+                     style={{
+                       width: isDone ? "100%" : "0%",
+-                      backgroundColor: colors.text,
++                      backgroundColor: isDone
++                        ? "#22C55E"
++                        : colors.text,
+                     }}
+                   />
+                 </div>

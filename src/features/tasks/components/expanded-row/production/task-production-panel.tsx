@@ -294,18 +294,24 @@ export function TaskProductionPanel({
                     </span>
                   )}
 
-                  {/* Operador: esquina opuesta si ya hay contador de mensajes */}
+                  {/* Operador: compact = inicial; desktop = nombre (sin solo letra) */}
                   {operator && (
                     <span
                       title={operator.name}
                       className={cn(
                         "pointer-events-none absolute z-10",
-                        "flex h-4 min-w-4 items-center justify-center overflow-hidden",
-                        "rounded-full text-[9px] font-bold leading-none text-white",
-                        "shadow-xs",
+                        "flex items-center justify-center overflow-hidden",
+                        "font-bold leading-none text-white shadow-xs",
+                        isCompact
+                          ? "h-4 min-w-4 rounded-full text-[9px]"
+                          : "h-5 max-w-[4.75rem] rounded-md px-1.5 text-[9px]",
                         hasComments
-                          ? "-bottom-1 -left-1.5"
-                          : "-right-1.5 -top-1.5",
+                          ? isCompact
+                            ? "-bottom-1 -left-1.5"
+                            : "-bottom-1.5 left-1/2 -translate-x-1/2"
+                          : isCompact
+                            ? "-right-1.5 -top-1.5"
+                            : "-top-1.5 left-1/2 -translate-x-1/2",
                       )}
                       style={{
                         backgroundColor: operator.color || "#404040",
@@ -316,7 +322,7 @@ export function TaskProductionPanel({
                         }`,
                       }}
                     >
-                      {operator.avatarUrl ? (
+                      {operator.avatarUrl && isCompact ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={operator.avatarUrl}
@@ -324,7 +330,11 @@ export function TaskProductionPanel({
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        operator.name.charAt(0).toUpperCase()
+                        <span className="truncate">
+                          {isCompact
+                            ? operator.name.charAt(0).toUpperCase()
+                            : operator.name.trim().split(/\s+/)[0]}
+                        </span>
                       )}
                     </span>
                   )}

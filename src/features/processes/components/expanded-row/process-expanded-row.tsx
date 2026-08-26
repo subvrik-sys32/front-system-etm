@@ -289,20 +289,10 @@ export function ProcessExpandedRow({
               {headerActions}
             </div>
           ) : null}
-          {/* Desktop: strip en la misma fila (grid 4 cols en laptop+) */}
-          {!isCompact && activeView === "kpis" && (
-            <div className="min-w-0 flex-1">
-              <ProcessDesktopKpiStrip
-                processTask={processTask}
-                percent={percent}
-                statusLabel={statusLabel}
-                nextProcessLabel={nextProcessLabel}
-              />
-            </div>
-          )}
         </div>
-        {/* Compact: fila propia a ancho completo — grid 2×2 */}
-        {isCompact && (
+
+        {/* Badge compacto: siempre debajo del toggle */}
+        {activeView === "kpis" && (
           <div className="mb-2 w-full min-w-0">
             <ProcessDesktopKpiStrip
               processTask={processTask}

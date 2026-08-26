@@ -17,6 +17,8 @@ type EditableProps = {
   treatZeroAsEmpty?: boolean
   /** En chips KPI: sin w-full para no estirar el badge. */
   inline?: boolean
+  /** Pill Ingresar legible sobre fondo oscuro del badge compacto. */
+  onDark?: boolean
   onSave: (
     value: string | null
   ) => void | Promise<void>
@@ -30,6 +32,7 @@ export function ProcessEditableValue({
   disabled,
   treatZeroAsEmpty = true,
   inline = false,
+  onDark = false,
   onSave,
 }: EditableProps) {
   const [editing, setEditing] = useState(false)
@@ -166,9 +169,9 @@ export function ProcessEditableValue({
         : (
           <span
             className={
-              "inline-flex max-w-full items-center truncate rounded-md " +
-              "bg-foreground/10 px-1.5 py-0.5 font-inherit text-[length:inherit] " +
-              "font-semibold leading-inherit text-inherit "
+              onDark
+                ? "inline-flex max-w-full items-center truncate rounded-md bg-white/15 px-1.5 py-0.5 font-inherit text-[length:inherit] font-semibold leading-inherit text-white"
+                : "inline-flex max-w-full items-center truncate rounded-md bg-foreground/10 px-1.5 py-0.5 font-inherit text-[length:inherit] font-semibold leading-inherit text-inherit"
             }
           >
             {placeholder}

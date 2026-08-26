@@ -158,11 +158,11 @@ export function DetailAssetsDialog({
           <FormDialogHeader title="Archivos y detalle" icon={MessageSquare} />
 
           <ScrollArea className="min-h-0 flex-1">
-            <div className="flex flex-col gap-5 px-4 py-3 pb-5">
-              {loading ? (
-                <div className="flex h-32 items-center justify-center">
-                  <Spinner size={20} className="text-muted-foreground" />
-                </div>
+            <div className="flex flex-col min-h-full gap-5 px-4 py-3 pb-5">
+                {loading ? (
+                  <div className="flex flex-1 min-h-[300px] w-full items-center justify-center">
+                    <Spinner size={20} className="text-muted-foreground" />
+                  </div>
               ) : (
                 <>
                   <section className="flex flex-col gap-2">

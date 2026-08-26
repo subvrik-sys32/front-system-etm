@@ -3,7 +3,7 @@
 import React from "react"
 
 export function ProductionVisual() {
-  const origin = "absolute left-[57%] top-[53%] -translate-x-1/2 -translate-y-1/2"
+  const origin = "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
   const nodeBase = "rounded-full absolute transition-all duration-300 ease-out cursor-pointer"
 
   return (
@@ -97,7 +97,7 @@ export function ProductionVisual() {
       <div className="absolute left-[58%] top-[58%] size-2.5 rounded-full bg-accent/90 shadow-[0_0_14px_rgba(242,185,0,0.8)] hover:scale-125 transition-transform cursor-pointer" />
       <div className="absolute left-[28%] top-[50%] size-2 rounded-full bg-accent/80 shadow-[0_0_12px_rgba(242,185,0,0.7)] hover:scale-125 transition-transform cursor-pointer" />
 
-      <div className="absolute left-[42%] top-[35%] size-2 rounded-full bg-muted-foreground/60 shadow-sm" />
+      <div className="absolute left-[42%] top-[35%] size-2 rounded-full bg-muted-foreground/60 shadow-xs" />
     </div>
   )
 }

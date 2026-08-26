@@ -10,8 +10,10 @@ import { useWorkflow } from "@/features/workflow/hooks/use-workflow"
 import { useWorkflowRequirements } from "@/features/workflow/hooks/use-workflow-requirements"
 import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 import { canCompleteStep } from "@/features/workflow/selectors/can-complete"
+import { workflowGuard } from "@/features/workflow/domain/workflow-guard"
 import { getCurrentStep } from "@/features/workflow/selectors/get-current-step"
 import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
+import type { ProcessTask } from "@/features/processes/types/process.types"
 import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
 import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
 import { setProcessNavigationOrigin } from "@/features/processes/components/actions/back-to-process-button"
@@ -84,6 +86,27 @@ export function ProcessRowActions({
 
   const handleComplete = async () => {
     if (!canUpdate || !currentStep || currentStep.status !== "PROGRESS") {
+      return
+    }
+
+    const payload = {
+      piecesOutput: currentStep.piecesOutput ?? null,
+      plRtReal: currentStep.plRtReal ?? null,
+      paintKgReal: currentStep.paintKgReal ?? null,
+    }
+
+    // Sonner de alerta si faltan piezas / PL-RT / kg pintura (mismo contrato que CT).
+    if (
+      !workflowGuard.validateProcessData(
+        {
+          task,
+          workflowStep: currentStep,
+          paintStep: null,
+          inputQuantity: null,
+        } satisfies ProcessTask,
+        payload,
+      )
+    ) {
       return
     }
 
@@ -204,7 +227,7 @@ export function ProcessRowActions({
             label="Completar"
             variant="complete"
             iconOnly
-            disabled={!canUpdate || !canComplete}
+            disabled={!canUpdate}
             onClick={handleComplete}
           />
         </>

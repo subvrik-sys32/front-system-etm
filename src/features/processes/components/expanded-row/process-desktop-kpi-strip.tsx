@@ -213,7 +213,7 @@ export function ProcessDesktopKpiStrip({
             value={paintKgReal}
             suffix="KG"
             disabled={locked}
-            placeholder="Real"
+            placeholder="Ingresar"
             onSave={async value => {
               if (!stepId) return
               const next = toNumber(value)

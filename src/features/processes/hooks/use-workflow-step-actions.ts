@@ -7,8 +7,10 @@ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { useWorkflow } from "@/features/workflow/hooks/use-workflow"
 import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
+import { workflowGuard } from "@/features/workflow/domain/workflow-guard"
 
 import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
+import type { ProcessTask } from "@/features/processes/types/process.types"
 
 type Params = {
   task: Task
@@ -135,6 +137,26 @@ export function useWorkflowStepActions({
     )
 
     if (!currentStep || currentStep.status !== "PROGRESS") {
+      return false
+    }
+
+    const payload = {
+      piecesOutput: currentStep.piecesOutput ?? null,
+      plRtReal: currentStep.plRtReal ?? null,
+      paintKgReal: currentStep.paintKgReal ?? null,
+    }
+
+    if (
+      !workflowGuard.validateProcessData(
+        {
+          task,
+          workflowStep: currentStep,
+          paintStep: null,
+          inputQuantity: null,
+        } satisfies ProcessTask,
+        payload,
+      )
+    ) {
       return false
     }
 

@@ -29,6 +29,10 @@ import {
 } from "@/shared/ui/collapsible-summary-panel/collapsible-summary-panel"
 
 import {
+  TaskKpisSection,
+} from "@/features/tasks/components/expanded-row/task-kpis-section"
+
+import {
   createWorkflowView,
 } from "@/features/workflow/view/create-workflow-view"
 
@@ -151,13 +155,6 @@ export function TaskProductionPanel({
       ? ENTITY_ICONS[status.icon]
       : undefined
 
-  /** Colapsado: estación actual (no repetir "Pendiente" del status). */
-  const collapsedHeadline = useMemo(() => {
-    if (workflowView.completed) return "Completado"
-    if (!currentStep) return "Sin iniciar"
-    const def = PROCESS_DEFINITIONS[currentStep.processCode]
-    return def?.label ?? currentStep.processCode
-  }, [workflowView.completed, currentStep])
 
   // Glass: texto e iconos = tinta neutra on-glass (legible en cualquier tint).
   // El color de dominio queda en el fondo glass + barra, no en el glyph.
@@ -412,26 +409,19 @@ export function TaskProductionPanel({
             <button
               type="button"
               onClick={() => setExpanded(true)}
-              className="flex w-full items-center gap-3 rounded-2xl p-3 text-left transition hover:brightness-110 tablet:gap-4 tablet:p-4"
+              className="flex w-full items-center gap-2 rounded-2xl p-3 text-left transition hover:brightness-110 tablet:gap-3 tablet:p-4"
               style={workflowStepperStyles.surface}
             >
-
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground/5">
-
-                {StatusIcon ? (
-                  <StatusIcon size={20} className="text-on-glass-foreground" />
-                ) : (
-                  <Activity size={20} className="text-on-glass-foreground" />
-                )}
-
+              {/* KPIs en el colapsado (el row ya muestra proceso/estado). */}
+              <div
+                className="min-w-0 flex-1 overflow-hidden"
+                onClick={e => e.stopPropagation()}
+                onPointerDown={e => e.stopPropagation()}
+              >
+                <TaskKpisSection task={task} density="compact" />
               </div>
 
-              <span className="hidden min-w-0 shrink truncate text-xs font-bold uppercase tracking-[0.18em] text-on-glass-foreground sm:block">
-                {collapsedHeadline}
-              </span>
-
-              <div className="flex min-w-0 flex-1 items-center justify-end gap-4 tablet:gap-8">
-
+              <div className="flex shrink-0 items-center gap-3 tablet:gap-6">
                 <div className="min-w-0 text-right">
                   <p className="truncate text-[10px] font-bold uppercase tracking-[0.14em] text-on-glass-muted sm:text-xs">
                     Listas
@@ -450,12 +440,10 @@ export function TaskProductionPanel({
                   </p>
                 </div>
 
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-foreground/5 text-on-glass-muted">
+                  <MoreHorizontal size={18} />
+                </div>
               </div>
-
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-foreground/5 text-on-glass-muted">
-                <MoreHorizontal size={18} />
-              </div>
-
             </button>
           }
         >

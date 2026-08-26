@@ -1,21 +1,22 @@
-export function getFinishMaterialSurface(finishHex: string, shift: number = 0): string {
-  const c = finishHex.trim() || "#64748B"
+/** Oscuro del badge — stop final del surface. */
+export const FINISH_BADGE_DARK = "#17191d"
 
-  // Rango más estrecho/pequeño (la transición total pasa de abarcar ~26% a solo ~12%)
-  const b1 = 32 + shift
-  const b2 = 36 + shift // Inicio rápido de la mezcla
-  const b3 = 40 + shift // Sigue oscureciendo rápido
-  const b4 = 44 + shift // Negro total más cerca
+/**
+ * Degradado 105deg + color-mix.
+ * Centrado para que la transición caiga exactamente sobre el separador.
+ */
+export function getFinishMaterialSurface(finishHex: string): string {
+  const c = finishHex.trim() || "#64748B"
+  const d = FINISH_BADGE_DARK
 
   return [
     `linear-gradient(
       105deg,
       ${c} 0%,
-      ${c} ${b1}%,
-      color-mix(in srgb, ${c} 65%, #17191d) ${b2}%,
-      color-mix(in srgb, ${c} 28%, #17191d) ${b3}%,
-      #17191d ${b4}%,
-      #17191d 100%
+      ${c} 45%,
+      color-mix(in srgb, ${c} 65%, ${d}) 60%,
+      color-mix(in srgb, ${c} 25%, ${d}) 78%,
+      ${d} 100%
     )`,
     `linear-gradient(
       180deg,

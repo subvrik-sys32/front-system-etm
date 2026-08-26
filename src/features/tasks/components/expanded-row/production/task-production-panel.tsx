@@ -63,8 +63,6 @@ import {
   workflowStepperStyles,
 } from "@/features/workflow/styles/workflow-stepper"
 
-import { getFinishMaterialSurface } from "@/shared/utils/material-surface"
-
 type Props = {
   task: Task
   indicatorsExpanded?: boolean
@@ -382,15 +380,12 @@ export function TaskProductionPanel({
             <button
               type="button"
               onClick={() => setExpanded(true)}
-              className="flex h-[70.5px] w-full items-center justify-between rounded-2xl px-4 text-left transition hover:brightness-110 shadow-sm overflow-hidden"
+              className="flex h-[70.5px] w-full items-center justify-between rounded-2xl pr-4 text-left transition hover:brightness-110 shadow-sm overflow-hidden"
               style={{
-                background: getFinishMaterialSurface(
-                  hasPaintProcess ? (task.color?.color ?? "#64748B") : "#BBBBBB",
-                  -24 // Perilla: negativo mueve a la izquierda, positivo a la derecha
-                ),
+                background: "#17191d",
               }}
             >
-              <div className="min-w-0 flex-1 overflow-hidden h-full flex items-center">
+              <div className="min-w-0 flex-1 h-full flex items-center">
                 <TaskKpisSection task={task} density="compact" />
               </div>
 

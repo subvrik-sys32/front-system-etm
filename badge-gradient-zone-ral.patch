@@ -1,0 +1,124 @@
+diff --git a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+index 209c447..d4e209f 100644
+--- a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
++++ b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+@@ -63,7 +63,6 @@ import {
+   workflowStepperStyles,
+ } from "@/features/workflow/styles/workflow-stepper"
+ 
+-import { getFinishMaterialSurface } from "@/shared/utils/material-surface"
+ 
+ type Props = {
+   task: Task
+@@ -384,10 +383,7 @@ export function TaskProductionPanel({
+               onClick={() => setExpanded(true)}
+               className="flex h-[70.5px] w-full items-center justify-between rounded-2xl px-4 text-left transition hover:brightness-110 shadow-sm overflow-hidden"
+               style={{
+-                background: getFinishMaterialSurface(
+-                  hasPaintProcess ? (task.color?.color ?? "#64748B") : "#BBBBBB",
+-                  -24 // Perilla: negativo mueve a la izquierda, positivo a la derecha
+-                ),
++                background: "#17191d",
+               }}
+             >
+               <div className="min-w-0 flex-1 overflow-hidden h-full flex items-center">
+diff --git a/src/features/tasks/components/expanded-row/task-kpis-section.tsx b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+index 69654d8..6e9a19f 100644
+--- a/src/features/tasks/components/expanded-row/task-kpis-section.tsx
++++ b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+@@ -31,6 +31,7 @@ import {
+ } from "@/shared/responsive/hooks/use-responsive"
+ 
+ import { getBadgeColors } from "@/shared/utils/badge-colors"
++import { getFinishMaterialSurface } from "@/shared/utils/material-surface"
+ 
+ type Props = {
+   task: Task
+@@ -236,21 +237,33 @@ export function TaskKpisSection({
+     const finishInk = getBadgeColors(dominantColor, "solid").text
+ 
+     return (
+-      <div className="flex h-full w-full items-center">
+-        {/* Bloque de pintura (mantiene su color dinámico sobre el badge) */}
++      <div className="flex h-full min-w-0 items-center">
++        {/*
++          Zona RAL + separador: el degradado mide 0–100% de ESTE bloque.
++          El separador es el final del área con surface → sin shift.
++        */}
+         <div
+-          className="flex shrink-0 items-center gap-2.5 pl-2 text-[13px] font-bold tracking-wide"
+-          style={{ color: finishInk }}
++          className="relative flex h-full shrink-0 items-center overflow-hidden"
++          style={{
++            background: getFinishMaterialSurface(dominantColor),
++          }}
+         >
+-          <PaintIcon className="h-4 w-4 shrink-0" />
+-          <span className="truncate">{paintLabel}</span>
+-        </div>
++          <div
++            className="relative z-10 flex shrink-0 items-center gap-2.5 pl-2 pr-8 text-[13px] font-bold tracking-wide"
++            style={{ color: finishInk }}
++          >
++            <PaintIcon className="h-4 w-4 shrink-0" />
++            <span className="truncate">{paintLabel}</span>
++          </div>
+ 
+-        {/* Separador vertical en blanco con opacidad usando tokens */}
+-        <div className="mx-8 h-4 w-px shrink-0 bg-white/20" />
++          <div
++            aria-hidden
++            className="relative z-10 h-4 w-px shrink-0 bg-white/20"
++          />
++        </div>
+ 
+-        {/* Bloque de producción/material en blanco */}
+-        <div className="flex min-w-0 items-center gap-2.5 truncate text-[13px] font-bold tracking-wide text-white">
++        {/* Material fuera del área del degradado */}
++        <div className="flex min-w-0 items-center gap-2.5 truncate pl-8 pr-2 text-[13px] font-bold tracking-wide text-white">
+           <Layers3 className="h-4 w-4 shrink-0 text-white" />
+           <span className="truncate">{materialLabel}</span>
+         </div>
+diff --git a/src/shared/utils/material-surface.ts b/src/shared/utils/material-surface.ts
+index f3d1910..26d1b20 100644
+--- a/src/shared/utils/material-surface.ts
++++ b/src/shared/utils/material-surface.ts
+@@ -1,20 +1,20 @@
+-export function getFinishMaterialSurface(finishHex: string, shift: number = 0): string {
++/**
++ * Degradado del bloque RAL + separador.
++ * 0–100% = solo ese bloque (no el badge completo), así el fundido
++ * termina siempre en el separador sin shift ni % del padre.
++ */
++export function getFinishMaterialSurface(finishHex: string): string {
+   const c = finishHex.trim() || "#64748B"
+ 
+-  // Rango más estrecho/pequeño (la transición total pasa de abarcar ~26% a solo ~12%)
+-  const b1 = 32 + shift
+-  const b2 = 36 + shift // Inicio rápido de la mezcla
+-  const b3 = 40 + shift // Sigue oscureciendo rápido
+-  const b4 = 44 + shift // Negro total más cerca
+-
++  // RAL visible largo; transición antes del separador; separador en el
++  // final oscuro del fundido.
+   return [
+     `linear-gradient(
+       105deg,
+       ${c} 0%,
+-      ${c} ${b1}%,
+-      color-mix(in srgb, ${c} 65%, #17191d) ${b2}%,
+-      color-mix(in srgb, ${c} 28%, #17191d) ${b3}%,
+-      #17191d ${b4}%,
++      ${c} 38%,
++      color-mix(in srgb, ${c} 72%, #17191d) 58%,
++      color-mix(in srgb, ${c} 35%, #17191d) 76%,
+       #17191d 100%
+     )`,
+     `linear-gradient(
+@@ -27,4 +27,4 @@ export function getFinishMaterialSurface(finishHex: string, shift: number = 0):
+     .join(", ")
+     .replace(/\s+/g, " ")
+     .trim()
+-}
+\ No newline at end of file
++}

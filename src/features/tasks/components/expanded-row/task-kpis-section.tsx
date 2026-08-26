@@ -39,6 +39,37 @@ type Props = {
 }
 
 const PIEZAS_COLOR = "#c44a4a"
+export const FINISH_BADGE_DARK = "#17191d"
+
+/**
+ * Degradado continuo que abarca todo el componente sin cortes.
+ * El brillo/transición pasa por el medio y se funde hacia el negro oscuro en la derecha.
+ */
+export function getFinishMaterialSurface(finishHex: string): string {
+  const c = finishHex.trim() || "#64748B"
+  const d = FINISH_BADGE_DARK
+
+  return [
+    `linear-gradient(
+      105deg,
+      ${c} 0%,
+      ${c} 25%,
+      color-mix(in srgb, ${c} 80%, ${d}) 40%,
+      color-mix(in srgb, ${c} 35%, ${d}) 65%,
+      ${d} 90%,
+      ${d} 100%
+    )`,
+    `linear-gradient(
+      180deg,
+      rgba(255,255,255,0.07) 0%,
+      rgba(255,255,255,0.015) 50%,
+      rgba(0,0,0,0.08) 100%
+    )`,
+  ]
+    .join(", ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
 
 export function TaskKpisSection({
   task,
@@ -236,22 +267,22 @@ export function TaskKpisSection({
     const finishInk = getBadgeColors(dominantColor, "solid").text
 
     return (
-      <div className="flex h-full w-full items-center">
-        {/* Bloque de pintura (mantiene su color dinámico sobre el badge) */}
+      <div 
+        className="relative flex h-full w-full min-w-0 items-center justify-between overflow-hidden rounded-2xl px-4"
+        style={{ background: getFinishMaterialSurface(dominantColor) }}
+      >
+        {/* Lado izquierdo (Pintura / Acabado) */}
         <div
-          className="flex shrink-0 items-center gap-2.5 pl-2 text-[13px] font-bold tracking-wide"
+          className="relative z-10 flex shrink-0 items-center gap-2.5 text-[13px] font-bold tracking-wide"
           style={{ color: finishInk }}
         >
           <PaintIcon className="h-4 w-4 shrink-0" />
           <span className="truncate">{paintLabel}</span>
         </div>
 
-        {/* Separador vertical en blanco con opacidad usando tokens */}
-        <div className="mx-8 h-4 w-px shrink-0 bg-white/20" />
-
-        {/* Bloque de producción/material en blanco */}
-        <div className="flex min-w-0 items-center gap-2.5 truncate text-[13px] font-bold tracking-wide text-white">
-          <Layers3 className="h-4 w-4 shrink-0 text-white" />
+        {/* Lado derecho (Materiales / Lote / Espesor) integrado de forma fluida */}
+        <div className="relative z-10 flex min-w-0 items-center gap-2.5 truncate pl-6 text-[13px] font-bold tracking-wide text-white">
+          <Layers3 className="h-4 w-4 shrink-0 text-white/80" />
           <span className="truncate">{materialLabel}</span>
         </div>
       </div>

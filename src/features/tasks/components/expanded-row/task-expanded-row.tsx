@@ -56,11 +56,11 @@ export function TaskExpandedRow({
     setCommentsDialogOpen,
   ] = useState(false)
 
-  // Ruta / indicadores: abiertos al expandir la tarea; el usuario decide cerrar.
+  // Reposo = badge compacto; el usuario abre indicadores con el badge entero.
   const [
     indicatorsExpanded,
     setIndicatorsExpanded,
-  ] = useState(true)
+  ] = useState(false)
 
   // Solo fetch al ver mensajes — no por cada fila de la lista.
   const commentsEnabled =

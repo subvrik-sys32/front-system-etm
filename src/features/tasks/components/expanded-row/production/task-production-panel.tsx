@@ -95,7 +95,7 @@ export function TaskProductionPanel({
   const [
     expandedInternal,
     setExpandedInternal,
-  ] = useState(true)
+  ] = useState(false)
 
   const expanded = isControlled ? indicatorsExpandedProp! : expandedInternal
 
@@ -395,12 +395,8 @@ export function TaskProductionPanel({
                 ),
               }}
             >
-              {/* KPIs en el colapsado */}
-              <div
-                className="min-w-0 flex-1 overflow-hidden h-full flex items-center"
-                onClick={e => e.stopPropagation()}
-                onPointerDown={e => e.stopPropagation()}
-              >
+              {/* KPIs en el colapsado — sin stopPropagation: todo el badge abre */}
+              <div className="min-w-0 flex-1 overflow-hidden h-full flex items-center">
                 <TaskKpisSection task={task} density="compact" />
               </div>
 

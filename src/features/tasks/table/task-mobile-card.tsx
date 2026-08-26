@@ -24,7 +24,6 @@ import type { Task } from "../types/task.types"
 import { taskAccess } from "../access/task-access"
 
 import { TaskPriorityCell } from "../components/cells/task-priority-cell"
-import { TaskRowActions } from "../components/actions/task-row-actions"
 import { TaskDialog } from "../components/dialog/task-dialog"
 import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { TaskExpandedRow } from "../components/expanded-row/task-expanded-row"
@@ -401,20 +400,6 @@ function TaskMobileCardReady({
           </div>
         )}
 
-        {isMobile && expanded && (
-          <div
-            className="flex shrink-0 items-center gap-1 pr-0.5"
-            onClick={e => e.stopPropagation()}
-            onPointerDown={e => e.stopPropagation()}
-          >
-            <DetailAssetsEye
-              taskId={task.id}
-              count={taskDetailAssetCount(task)}
-              onEditTask={openEditMaterials}
-            />
-            <TaskRowActions task={task} className="gap-1" showAudit />
-          </div>
-        )}
 
         <button
           type="button"

@@ -8,7 +8,7 @@ export const SIDEBAR_COUNT_BADGE =
   "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground"
 
 export const ALERT_COUNT_BADGE =
-  "bg-destructive text-white"
+  "bg-fab-plus text-fab-plus-foreground"
 
 export const SIDEBAR_COUNT_BADGE_CLASS = cn(
   "flex items-center justify-center rounded-full font-bold leading-none shadow-xs select-none",

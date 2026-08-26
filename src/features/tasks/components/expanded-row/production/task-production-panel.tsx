@@ -276,7 +276,7 @@ export function TaskProductionPanel({
                       className={cn(
                         "pointer-events-none absolute -bottom-0.5 -right-0.5 z-10",
                         "flex h-3.5 min-w-3.5 items-center justify-center",
-                        "rounded-full bg-foreground/25 px-1 text-[8px] font-bold leading-none text-background",
+                        "rounded-full bg-fab-plus px-1 text-[8px] font-bold leading-none text-fab-plus-foreground",
                       )}
                     >
                       {commentCount > 99 ? "99+" : commentCount}
@@ -290,14 +290,14 @@ export function TaskProductionPanel({
                       className={cn(
                         "pointer-events-none absolute z-10",
                         "flex h-4 min-w-4 items-center justify-center overflow-hidden",
-                        "rounded-full text-[9px] font-bold leading-none text-white",
+                        "rounded-full text-[9px] font-bold leading-none",
                         hasComments
                           ? "-bottom-1 -left-1.5"
                           : "-right-1.5 -top-1.5",
                       )}
                       style={{
-                        backgroundColor: "var(--workflow-operator-bg)",
-                        color: "var(--workflow-operator-text)",
+                        backgroundColor: `color-mix(in srgb, ${operator.color || "#64748B"} 55%, var(--background))`,
+                        color: `color-mix(in srgb, ${operator.color || "#64748B"} 70%, var(--foreground))`,
                       }}
                     >
                       {operator.avatarUrl ? (
@@ -346,7 +346,10 @@ export function TaskProductionPanel({
                       <span
                         title={operator.name}
                         className="max-w-full truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium normal-case"
-                        style={workflowStepperStyles.operator}
+                        style={{
+                          backgroundColor: `color-mix(in srgb, ${operator.color || "#64748B"} 42%, var(--background))`,
+                          color: `color-mix(in srgb, ${operator.color || "#64748B"} 58%, var(--foreground))`,
+                        }}
                       >
                         {operator.name.trim().split(/\s+/)[0]}
                       </span>

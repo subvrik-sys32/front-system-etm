@@ -1,0 +1,77 @@
+diff --git a/src/features/tasks/components/expanded-row/task-kpis-section.tsx b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+index 590be28..21c5bfc 100644
+--- a/src/features/tasks/components/expanded-row/task-kpis-section.tsx
++++ b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+@@ -224,19 +224,23 @@ export function TaskKpisSection({
+       : "NATURAL"
+     const PaintIcon = hasPaintProcess ? Palette : Sparkles
+ 
+-    const materialLabel = [
+-      `L${task.lotNumber}`,
+-      task.material.name.toUpperCase(),
++    const lotValue = `L${task.lotNumber}`
++    // Material + espesor juntos; piezas/unidades después
++    const materialValue = `${task.material.name.toUpperCase()} · ${task.thickness.name}`
++    const piecesValue =
+       hasAssemblyProcess && task.assemblyCount > 1
+         ? `${task.pieces}·${task.assemblyCount}u`
+-        : String(task.pieces),
+-      task.thickness.name,
+-    ].join(" · ")
++        : String(task.pieces)
+ 
+     const finishInk = getBadgeColors(dominantColor, "solid").text
+ 
++    const kpiLabelClass =
++      "truncate text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]"
++    const kpiValueClass =
++      "truncate text-xs font-bold leading-tight text-white sm:text-sm"
++
+     return (
+-      <div className="flex h-full min-w-0 items-center">
++      <div className="flex h-full min-w-0 flex-1 items-center">
+         <div
+           className="flex shrink-0 items-center gap-2.5 pl-4 pr-6 text-[13px] font-bold tracking-wide"
+           style={{ color: finishInk }}
+@@ -245,16 +249,37 @@ export function TaskKpisSection({
+           <span className="truncate">{paintLabel}</span>
+         </div>
+ 
+-        {/* Ancla de medición para el surface del badge padre */}
+         <div
+           data-finish-sep
+           aria-hidden
+           className="h-4 w-px shrink-0 bg-white/20"
+         />
+ 
+-        <div className="flex min-w-0 items-center gap-2.5 truncate pl-6 pr-2 text-[13px] font-bold tracking-wide text-white">
+-          <Layers3 className="h-4 w-4 shrink-0 text-white" />
+-          <span className="truncate">{materialLabel}</span>
++        {/* Materiales a la derecha, mismo formato que LISTAS / AVANCE */}
++        <div className="ml-auto flex min-w-0 items-center gap-3 tablet:gap-5 pl-4 pr-1">
++          <div className="flex min-w-0 items-center gap-1.5">
++            <Layers3 className="h-3.5 w-3.5 shrink-0 text-white/80" />
++            <div className="min-w-0">
++              <p className={kpiLabelClass}>Lote</p>
++              <p className={kpiValueClass}>{lotValue}</p>
++            </div>
++          </div>
++
++          <div className="flex min-w-0 items-center gap-1.5">
++            <InspectionPanel className="h-3.5 w-3.5 shrink-0 text-white/80" />
++            <div className="min-w-0">
++              <p className={kpiLabelClass}>Material</p>
++              <p className={kpiValueClass}>{materialValue}</p>
++            </div>
++          </div>
++
++          <div className="flex min-w-0 items-center gap-1.5">
++            <Puzzle className="h-3.5 w-3.5 shrink-0 text-white/80" />
++            <div className="min-w-0">
++              <p className={kpiLabelClass}>Piezas</p>
++              <p className={kpiValueClass}>{piecesValue}</p>
++            </div>
++          </div>
+         </div>
+       </div>
+     )

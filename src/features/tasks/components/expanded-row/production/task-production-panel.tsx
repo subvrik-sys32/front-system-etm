@@ -274,9 +274,9 @@ export function TaskProductionPanel({
                           : `${commentCount} mensajes`
                       }
                       className={cn(
-                        "pointer-events-none absolute -bottom-0.5 -right-0.5 z-10",
-                        "flex h-3.5 min-w-3.5 items-center justify-center",
-                        "rounded-full bg-fab-plus px-1 text-[8px] font-bold leading-none text-fab-plus-foreground",
+                        "pointer-events-none absolute -right-1 -top-1 z-10",
+                        "flex h-5 min-w-5 items-center justify-center",
+                        "rounded-full bg-fab-plus px-1.5 text-[10px] font-bold leading-none text-fab-plus-foreground",
                       )}
                     >
                       {commentCount > 99 ? "99+" : commentCount}
@@ -329,10 +329,10 @@ export function TaskProductionPanel({
 
                 <span
                   className={cn(
-                    "normal-case",
+                    "uppercase",
                     isCompact
-                      ? "text-[10px] font-bold uppercase"
-                      : "text-[11px] font-medium",
+                      ? "text-[10px] font-bold"
+                      : "text-[11px] font-semibold tracking-wide",
                   )}
                   style={workflowStepperStyles.label[visual]}
                 >

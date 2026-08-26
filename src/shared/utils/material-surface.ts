@@ -9,15 +9,13 @@ export function getFinishMaterialSurface(finishHex: string): string {
 
   return [
     `linear-gradient(
-      112deg,
+      105deg,
       ${c} 0%,
-      ${c} 18%,
-      color-mix(in srgb, ${c} 94%, #17191d) 27%,
-      color-mix(in srgb, ${c} 72%, #17191d) 38%,
-      color-mix(in srgb, ${c} 46%, #17191d) 49%,
-      color-mix(in srgb, ${c} 24%, #20242a) 58%,
-      #20242a 68%,
-      #17191d 82%
+      ${c} 20%,
+      color-mix(in srgb, ${c} 60%, #17191d) 32%,
+      color-mix(in srgb, ${c} 20%, #17191d) 40%,
+      #17191d 48%,
+      #17191d 100%
     )`,
     `linear-gradient(
       180deg,

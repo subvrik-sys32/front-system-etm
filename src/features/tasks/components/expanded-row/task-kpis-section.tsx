@@ -214,7 +214,6 @@ export function TaskKpisSection({
     return null
   }
 
-  // Header desktop compacto: contenedor único continuo sin bordes y con divisor central
   if (isCompact) {
     const dominantColor = hasPaintProcess ? (task.color?.color ?? "#64748B") : "#BBBBBB"
     const paintLabel = hasPaintProcess ? (task.color?.name.toUpperCase() ?? "—") : "NATURAL"
@@ -231,19 +230,19 @@ export function TaskKpisSection({
 
     return (
       <div
-        className="flex h-8 w-fit items-center overflow-hidden rounded-full px-3.5 text-[11px] font-bold tracking-wide text-white shadow-sm border-0"
+        className="flex h-8 w-fit items-center overflow-hidden rounded-full px-3.5 text-[11px] font-bold tracking-wide text-white shadow-sm"
         style={{ background: getFinishMaterialSurface(dominantColor) }}
       >
-        {/* Lado izquierdo: Color / Acabado */}
+        {/* Lado izquierdo: Color */}
         <div className="flex items-center gap-1.5 opacity-90 drop-shadow-sm">
           <PaintIcon className="h-3.5 w-3.5" />
           <span>{paintLabel}</span>
         </div>
 
-        {/* Divisor semitransparente */}
-        <div className="mx-3 h-3.5 w-px bg-white/20" />
+        {/* Divisor semitransparente ubicado exactamente donde termina el desvanecimiento */}
+        <div className="mx-3 h-3.5 w-px bg-white/20 shrink-0" />
 
-        {/* Lado derecho: Lote / Material / Piezas / Espesor */}
+        {/* Lado derecho: Material y Producción (sobre la superficie oscura resultante) */}
         <div className="flex items-center gap-1.5 opacity-90 drop-shadow-sm">
           <Package className="h-3.5 w-3.5" />
           <span>{materialLabel}</span>

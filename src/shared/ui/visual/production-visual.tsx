@@ -1,395 +1,818 @@
+// ProductionVisual — logo de ETM ensamblado con partículas
+// Motor adaptado de un componente de partículas basado en canvas.
+// @ts-nocheck
 "use client"
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import {
-  motion,
-  AnimatePresence,
-  useMotionValue,
-  useSpring,
-  useTransform,
-  useMotionTemplate,
-} from "framer-motion"
+import { useEffect, useRef } from "react"
+
+// -- Colores de marca ETM ----------------------------------------------------
+// Mismos valores que usa el resto de la UI (bg-primary / bg-accent).
+const ETM_BLUE = "#2563EB"
+const ETM_GOLD = "#F2B900"
+
+// -- Helpers ----------------------------------------------------------------
+function containRect(iW, iH, cW, cH) {
+    const a = iW / iH,
+        b = cW / cH
+    return a > b
+        ? {
+              x: 0,
+              y: Math.round((cH - cW / a) / 2),
+              w: cW,
+              h: Math.round(cW / a),
+          }
+        : {
+              x: Math.round((cW - cH * a) / 2),
+              y: 0,
+              w: Math.round(cH * a),
+              h: cH,
+          }
+}
+function parseColor(c) {
+    if (!c) return { r: 200, g: 200, b: 200, a: 255 }
+    const m = c.match(
+        /rgba?\(\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\s*\)/
+    )
+    if (m)
+        return {
+            r: +m[1] | 0,
+            g: +m[2] | 0,
+            b: +m[3] | 0,
+            a: m[4] != null ? Math.round(+m[4] * 255) : 255,
+        }
+    const h = c.replace("#", "")
+    if (h.length >= 6)
+        return {
+            r: parseInt(h.slice(0, 2), 16),
+            g: parseInt(h.slice(2, 4), 16),
+            b: parseInt(h.slice(4, 6), 16),
+            a: h.length === 8 ? parseInt(h.slice(6, 8), 16) : 255,
+        }
+    return { r: 200, g: 200, b: 200, a: 255 }
+}
+function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[a[i], a[j]] = [a[j], a[i]]
+    }
+}
+function randomInShape(shape, bx, by, bw, bh) {
+    const cx = bx + bw / 2,
+        cy = by + bh / 2
+    if (shape === "circle") {
+        const r = bw / 2
+        const a = Math.random() * Math.PI * 2
+        const d = Math.sqrt(Math.random()) * r
+        return [cx + Math.cos(a) * d, cy + Math.sin(a) * d]
+    }
+    if (shape === "oval") {
+        const rx = bw / 2,
+            ry = bh / 2
+        const a = Math.random() * Math.PI * 2
+        const d = Math.sqrt(Math.random())
+        return [cx + d * rx * Math.cos(a), cy + d * ry * Math.sin(a)]
+    }
+    return [bx + Math.random() * bw, by + Math.random() * bh]
+}
+const EASE = {
+    easeOut: (t) => 1 - (1 - t) * (1 - t),
+    easeInOut: (t) => (t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t)),
+    easeIn: (t) => t * t,
+    backOut: (t) => {
+        const c = 1.70158 + 1
+        return 1 + c * (t - 1) ** 3 + 1.70158 * (t - 1) ** 2
+    },
+    circOut: (t) => Math.sqrt(1 - (t - 1) * (t - 1)),
+    linear: (t) => t,
+}
+function getTransitionParams(tr) {
+    if (!tr) return { easeFn: EASE.easeOut, durMs: 800 }
+    if (tr.type === "spring") {
+        const k = tr.stiffness ?? 100,
+            d = tr.damping ?? 15,
+            m = tr.mass ?? 1
+        const durMs = Math.min(
+            3000,
+            Math.max(300, (d / (2 * Math.sqrt(k * m))) * 2000)
+        )
+        return { easeFn: EASE.backOut, durMs }
+    }
+    return {
+        easeFn: EASE[tr.ease] || EASE.easeOut,
+        durMs: (tr.duration ?? 0.8) * 1000,
+    }
+}
+function mkParticle(src, x, y, idleX, idleY, isExtra = false) {
+    return {
+        x,
+        y,
+        vx: 0,
+        vy: 0,
+        startX: x,
+        startY: y,
+        repX: 0,
+        repY: 0,
+        homeX: src.homeX,
+        homeY: src.homeY,
+        idleX,
+        idleY,
+        r: src.r,
+        g: src.g,
+        b: src.b,
+        a: src.a,
+        isPadding: false,
+        isExtra,
+        inZone: false,
+        roamTargetX: 0,
+        roamTargetY: 0,
+        colorIdx: Math.floor(Math.random() * 10),
+        repTargetX: 0,
+        repTargetY: 0,
+    }
+}
+
+// -- Motor de partículas ------------------------------------------------------
+function ParticleEngine(__props) {
+    const {
+        imageConfig,
+        particleCount,
+        particleSize,
+        particleShape = "circle",
+        particleColor = "multi",
+        singleColor = ETM_BLUE,
+        multiColors = [ETM_BLUE, ETM_BLUE, ETM_GOLD],
+        hoverEnabled = true,
+        hoverConfig = {},
+        repulsionEnabled = true,
+        repulsionConfig = {},
+        width = "100%",
+        height = "100%",
+        style,
+        ...props
+    } = __props
+    const hover = hoverEnabled
+    const {
+        hoverType = "roam",
+        transition = { duration: 0.9, ease: "easeInOut" },
+        roamWidth = 0,
+        roamHeight = 0,
+        roamOpacity = 0.4,
+        roamShape = "circle",
+        hideType = "scatter",
+    } = hoverConfig || {}
+    const repulsion = repulsionEnabled
+    const {
+        repulsionForce = 8,
+        repulsionRadius = 60,
+        repulsionMode = "outside",
+    } = repulsionConfig || {}
+    const {
+        image = "/icon.svg",
+        mode = "fit",
+        sizeUnit = "%",
+        widthPx = 400,
+        heightPx = 400,
+        widthPct = 100,
+        heightPct = 100,
+        scale = 7,
+    } = imageConfig || {}
+    const containerRef = useRef(null)
+    const canvasRef = useRef(null)
+    const mouseRef = useRef({ x: -99999, y: -99999, active: false })
+    const prevMouseRef = useRef({ x: -99999, y: -99999 })
+    const mouseSpeedRef = useRef(0)
+    const smoothMouseRef = useRef({ x: -99999, y: -99999 })
+    const physicsRef = useRef({})
+    physicsRef.current = {
+        hover,
+        hoverType,
+        transition,
+        roamWidth,
+        roamHeight,
+        roamOpacity,
+        roamShape,
+        hideType,
+        repulsion,
+        repulsionForce,
+        repulsionRadius,
+        repulsionMode,
+        particleSize,
+        particleShape,
+        particleColor,
+        singleColor,
+        multiColors,
+    }
+    const sceneRef = useRef({ particles: [] })
+    const dimsRef = useRef({ W: 0, H: 0 })
+    const samplingRef = useRef({})
+    samplingRef.current = {
+        image,
+        mode,
+        sizeUnit,
+        widthPx,
+        heightPx,
+        widthPct,
+        heightPct,
+        scale,
+        particleCount,
+        hover,
+        hoverType,
+        roamWidth,
+        roamHeight,
+        roamShape,
+        hideType,
+    }
+    const animStateRef = useRef("active")
+    const animRef = useRef(null)
+    const animStartTimeRef = useRef(0)
+    const animTimerRef = useRef(null)
+    const roamFadeStartRef = useRef(0)
+    const roamFadeFromRef = useRef(1)
+    const roamFadeToRef = useRef(1)
+    const startAnimRef = useRef(null)
+    startAnimRef.current = (newState) => {
+        const { particles } = sceneRef.current
+        const { W, H } = dimsRef.current
+        const {
+            hoverType: ht,
+            roamWidth: rw,
+            roamHeight: rh,
+            roamShape: rs,
+            roamOpacity: rOp,
+            transition: tr,
+        } = physicsRef.current
+        const { durMs: _dur } = getTransitionParams(tr)
+        const bw = Math.max(80, rw || W),
+            bh = Math.max(80, rh || H)
+        const bx = (W - bw) / 2,
+            by = (H - bh) / 2
+        particles.forEach((p) => {
+            if (p.isPadding) return
+            p.startX = p.x
+            p.startY = p.y
+            if (newState === "scattering" && ht === "roam") {
+                const [tx, ty] = randomInShape(rs, bx, by, bw, bh)
+                p.roamTargetX = tx
+                p.roamTargetY = ty
+                p.idleX = tx
+                p.idleY = ty
+            }
+        })
+        const _rOp = rOp ?? 0.4
+        if (ht === "roam") {
+            if (newState === "scattering") {
+                roamFadeStartRef.current = Date.now()
+                roamFadeFromRef.current = 1
+                roamFadeToRef.current = _rOp
+            } else if (newState === "assembling") {
+                roamFadeStartRef.current = Date.now()
+                roamFadeFromRef.current = _rOp
+                roamFadeToRef.current = 1
+            }
+        }
+        if (newState === "scattering" && ht === "roam") {
+            clearTimeout(animTimerRef.current)
+            animStateRef.current = "idle"
+            return
+        }
+        animStartTimeRef.current = Date.now()
+        animStateRef.current = newState
+        clearTimeout(animTimerRef.current)
+        const next = newState === "assembling" ? "active" : "idle"
+        animTimerRef.current = setTimeout(() => {
+            if (animStateRef.current === newState) animStateRef.current = next
+        }, _dur)
+    }
+    const initParticles = () => {
+        const {
+            image: url,
+            mode: md,
+            sizeUnit: sU,
+            widthPx: wPx,
+            heightPx: hPx,
+            widthPct: wPct,
+            heightPct: hPct,
+            scale: sc,
+            particleCount: count,
+            hover: hOn,
+            hoverType: ht,
+            roamWidth: rw,
+            roamHeight: rh,
+            roamShape: rs,
+            hideType: hT,
+        } = samplingRef.current
+        const { W, H } = dimsRef.current
+        if (!url || !W || !H) return
+        const canvas = canvasRef.current
+        if (!canvas) return
+        clearTimeout(animTimerRef.current)
+        const gap = Math.max(2, Math.round(150 / Math.max(1, count)))
+        const dpr = window.devicePixelRatio || 1
+        canvas.width = Math.round(W * dpr)
+        canvas.height = Math.round(H * dpr)
+        mouseRef.current = { x: -99999, y: -99999, active: false }
+        sceneRef.current = { particles: [] }
+        const tryLoad = (cors) => {
+            const img = new Image()
+            if (cors) img.crossOrigin = "anonymous"
+            img.onerror = () => cors && tryLoad(false)
+            img.onload = () => {
+                let rect
+                if (md === "fit") {
+                    const base = containRect(
+                        img.naturalWidth || img.width,
+                        img.naturalHeight || img.height,
+                        W,
+                        H
+                    )
+                    const f = Math.max(1, Math.min(20, sc)) / 10
+                    const w = base.w * f
+                    const h = base.h * f
+                    rect = { x: (W - w) / 2, y: (H - h) / 2, w, h }
+                } else if (sU === "px") {
+                    const w = Math.min(wPx, W)
+                    const h = Math.min(hPx, H)
+                    rect = { x: (W - w) / 2, y: (H - h) / 2, w, h }
+                } else {
+                    const w = (W * wPct) / 100
+                    const h = (H * hPct) / 100
+                    rect = { x: (W - w) / 2, y: (H - h) / 2, w, h }
+                }
+                const off = document.createElement("canvas")
+                off.width = W
+                off.height = H
+                const oc = off.getContext("2d")
+                oc.drawImage(img, rect.x, rect.y, rect.w, rect.h)
+                let px
+                try {
+                    px = oc.getImageData(0, 0, W, H).data
+                } catch (_) {
+                    return
+                }
+                const src = []
+                for (let y = 0; y < H; y += gap)
+                    for (let x = 0; x < W; x += gap) {
+                        const i = (y * W + x) * 4
+                        if (px[i + 3] >= 20)
+                            src.push({
+                                homeX: x,
+                                homeY: y,
+                                r: px[i],
+                                g: px[i + 1],
+                                b: px[i + 2],
+                                a: px[i + 3],
+                            })
+                    }
+                shuffle(src)
+                let particles = []
+                const hidePos = (homeX, homeY) => {
+                    const range = hT === "in-place" ? 1 : 10
+                    const maxD = Math.max(W, H)
+                    const d = (range / 10) * 0.5 * maxD
+                    const angle = Math.random() * Math.PI * 2
+                    return [
+                        homeX + Math.cos(angle) * d,
+                        homeY + Math.sin(angle) * d,
+                    ]
+                }
+                if (!hOn) {
+                    animStateRef.current = "active"
+                    particles = src.map((p) =>
+                        mkParticle(p, p.homeX, p.homeY, p.homeX, p.homeY)
+                    )
+                } else if (ht === "roam") {
+                    const bw = Math.max(80, rw || W),
+                        bh = Math.max(80, rh || H)
+                    const bx = (W - bw) / 2,
+                        by = (H - bh) / 2
+                    particles = src.map((p) => {
+                        const [rx, ry] = randomInShape(rs, bx, by, bw, bh)
+                        const pt = mkParticle(p, rx, ry, rx, ry)
+                        const [tx, ty] = randomInShape(rs, bx, by, bw, bh)
+                        pt.roamTargetX = tx
+                        pt.roamTargetY = ty
+                        pt.vx = (Math.random() - 0.5) * 1.2
+                        pt.vy = (Math.random() - 0.5) * 1.2
+                        return pt
+                    })
+                    animStateRef.current = "idle"
+                } else {
+                    particles = src.map((p) => {
+                        const [ox, oy] = hidePos(p.homeX, p.homeY)
+                        return mkParticle(p, ox, oy, ox, oy)
+                    })
+                    animStateRef.current = "idle"
+                }
+                sceneRef.current = { particles }
+            }
+            img.src = url
+        }
+        tryLoad(true)
+    }
+    useEffect(() => {
+        const el = containerRef.current
+        if (!el) return
+        const ro = new ResizeObserver((entries) => {
+            const r = entries[0]?.contentRect
+            if (!r) return
+            const W = Math.round(r.width),
+                H = Math.round(r.height)
+            if (!W || !H) return
+            dimsRef.current = { W, H }
+            initParticles()
+        })
+        ro.observe(el)
+        return () => ro.disconnect()
+    }, [])
+    useEffect(() => {
+        initParticles()
+    }, [
+        image,
+        mode,
+        sizeUnit,
+        widthPx,
+        heightPx,
+        widthPct,
+        heightPct,
+        scale,
+        particleCount,
+        hover,
+        hoverType,
+        roamWidth,
+        roamHeight,
+        roamShape,
+        hideType,
+    ])
+    useEffect(() => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+        const ctx = canvas.getContext("2d")
+        let idata = null,
+            bW = 0,
+            bH = 0
+        const draw = () => {
+            animRef.current = requestAnimationFrame(draw)
+            const PW = canvas.width,
+                PH = canvas.height
+            if (!PW || !PH) return
+            const dpr = window.devicePixelRatio || 1
+            const { particles } = sceneRef.current
+            if (!particles.length) return
+            if (!idata || PW !== bW || PH !== bH) {
+                idata = ctx.createImageData(PW, PH)
+                bW = PW
+                bH = PH
+            }
+            idata.data.fill(0)
+            const buf = idata.data
+            const {
+                hover: hOn,
+                hoverType: ht,
+                transition: tr,
+                roamWidth: rw,
+                roamHeight: rh,
+                roamOpacity: rOp,
+                roamShape: rs,
+                repulsion: repOn,
+                repulsionForce: rF,
+                repulsionRadius: rR,
+                repulsionMode: rMode,
+                particleSize: pSz,
+                particleShape: pShape,
+                particleColor: pColor,
+                singleColor: scColor,
+                multiColors: mcColors,
+            } = physicsRef.current
+            const state = animStateRef.current
+            const { x: rawMx, y: rawMy, active } = mouseRef.current
+            const hitSpeed = mouseSpeedRef.current
+            mouseSpeedRef.current *= 0.88
+            const sm = smoothMouseRef.current
+            if (active) {
+                const lerpFactor = Math.max(0.08, 0.3 - hitSpeed * 0.006)
+                if (sm.x < -9000) {
+                    sm.x = rawMx
+                    sm.y = rawMy
+                } else {
+                    sm.x += (rawMx - sm.x) * lerpFactor
+                    sm.y += (rawMy - sm.y) * lerpFactor
+                }
+            } else {
+                sm.x = -99999
+                sm.y = -99999
+            }
+            const mx = sm.x
+            const my = sm.y
+            const ps = Math.max(1, Math.ceil((pSz / 4) * dpr))
+            const { easeFn, durMs } = getTransitionParams(tr)
+            const elapsed = Date.now() - animStartTimeRef.current
+            const animT = easeFn(Math.min(1, elapsed / durMs))
+            const { W: DW, H: DH } = dimsRef.current
+            const bw = Math.max(80, rw || DW),
+                bh = Math.max(80, rh || DH)
+            const bx = (DW - bw) / 2,
+                by = (DH - bh) / 2
+            const half = ps / 2
+            const drawParticle = (cx, cy, r, g, b, a, isCircle) => {
+                const px0 = Math.round(cx) - (ps >> 1)
+                const py0 = Math.round(cy) - (ps >> 1)
+                for (let dy = 0; dy < ps; dy++) {
+                    const iy = py0 + dy
+                    if (iy < 0 || iy >= PH) continue
+                    const row = iy * PW
+                    for (let dx = 0; dx < ps; dx++) {
+                        if (isCircle) {
+                            const ddx = dx - half + 0.5,
+                                ddy = dy - half + 0.5
+                            if (ddx * ddx + ddy * ddy > half * half) continue
+                        }
+                        const ix = px0 + dx
+                        if (ix < 0 || ix >= PW) continue
+                        const i = (row + ix) * 4
+                        buf[i] = r
+                        buf[i + 1] = g
+                        buf[i + 2] = b
+                        buf[i + 3] = a
+                    }
+                }
+            }
+            const repCutoff = Math.max(1, rR)
+            const repCutoffSq = repCutoff * repCutoff
+            let pIdx = 0
+            for (const p of particles) {
+                const isCircle =
+                    pShape === "circle" || (pShape === "both" && pIdx % 2 === 1)
+                pIdx++
+                if (p.isPadding) continue
+                let baseX = p.x,
+                    baseY = p.y
+                if (state === "assembling") {
+                    baseX = p.startX + (p.homeX - p.startX) * animT
+                    baseY = p.startY + (p.homeY - p.startY) * animT
+                } else if (state === "scattering") {
+                    baseX = p.startX + (p.idleX - p.startX) * animT
+                    baseY = p.startY + (p.idleY - p.startY) * animT
+                } else if (state === "active") {
+                    baseX = p.homeX
+                    baseY = p.homeY
+                } else if (state === "idle") {
+                    if (ht === "roam") {
+                        const dtx = p.roamTargetX - p.x,
+                            dty = p.roamTargetY - p.y
+                        if (Math.sqrt(dtx * dtx + dty * dty) < 3) {
+                            const [tx, ty] = randomInShape(rs, bx, by, bw, bh)
+                            p.roamTargetX = tx
+                            p.roamTargetY = ty
+                        }
+                        p.vx =
+                            (p.vx || 0) * 0.98 + (p.roamTargetX - p.x) * 0.003
+                        p.vy =
+                            (p.vy || 0) * 0.98 + (p.roamTargetY - p.y) * 0.003
+                        const sp2 = Math.sqrt(p.vx ** 2 + p.vy ** 2)
+                        if (sp2 > 1.5) {
+                            p.vx = (p.vx / sp2) * 1.5
+                            p.vy = (p.vy / sp2) * 1.5
+                        }
+                        p.x += p.vx
+                        p.y += p.vy
+                        baseX = p.x
+                        baseY = p.y
+                    } else {
+                        baseX = p.idleX
+                        baseY = p.idleY
+                    }
+                }
+                if (repOn) {
+                    if (rMode === "random") {
+                        const dx = baseX - rawMx
+                        const dy = baseY - rawMy
+                        const dist = Math.sqrt(dx * dx + dy * dy)
+                        if (dist < repCutoff) {
+                            if (!p.inZone) {
+                                const angle = Math.random() * Math.PI * 2
+                                const d = Math.random() * rF * 5
+                                p.repTargetX = Math.cos(angle) * d
+                                p.repTargetY = Math.sin(angle) * d
+                                p.inZone = true
+                            }
+                            p.repX += (p.repTargetX - p.repX) * 0.15
+                            p.repY += (p.repTargetY - p.repY) * 0.15
+                        } else {
+                            p.inZone = false
+                        }
+                    } else {
+                        if (active) {
+                            const dx = baseX - mx
+                            const dy = baseY - my
+                            const distSq = dx * dx + dy * dy
+                            if (distSq > 0 && distSq < repCutoffSq) {
+                                const dist = Math.sqrt(distSq)
+                                const nx = dx / dist
+                                const ny = dy / dist
+                                const falloff = 1 - dist / repCutoff
+                                const push = falloff * hitSpeed * rF * 0.05
+                                p.repX += nx * push
+                                p.repY += ny * push
+                                const targetRepX = nx * (repCutoff - dist)
+                                const targetRepY = ny * (repCutoff - dist)
+                                p.repX += (targetRepX - p.repX) * 0.06
+                                p.repY += (targetRepY - p.repY) * 0.06
+                                p.inZone = true
+                            } else {
+                                p.inZone = false
+                            }
+                        } else {
+                            p.inZone = false
+                        }
+                    }
+                } else {
+                    p.inZone = false
+                }
+                if (!p.inZone) {
+                    p.repX *= 0.97
+                    p.repY *= 0.97
+                }
+                p.x = baseX + p.repX
+                p.y = baseY + p.repY
+                let dr, dg, db, da
+                if (state === "active") {
+                    dr = p.r
+                    dg = p.g
+                    db = p.b
+                    da = p.a
+                } else if (p.isExtra) {
+                    dr = p.r
+                    dg = p.g
+                    db = p.b
+                    if (state === "assembling") da = Math.round(p.a * animT)
+                    else if (state === "scattering")
+                        da = Math.round(p.a * (1 - animT))
+                    else da = 0
+                } else if (ht === "roam" && hOn) {
+                    let alphaMul
+                    if (roamFadeStartRef.current === 0) {
+                        alphaMul = rOp ?? 0.4
+                    } else {
+                        const fadeElapsed =
+                            Date.now() - roamFadeStartRef.current
+                        const fadeT = Math.min(
+                            1,
+                            Math.max(0, fadeElapsed / durMs)
+                        )
+                        const easedFadeT = easeFn(fadeT)
+                        alphaMul =
+                            roamFadeFromRef.current +
+                            (roamFadeToRef.current - roamFadeFromRef.current) *
+                                easedFadeT
+                    }
+                    dr = p.r
+                    dg = p.g
+                    db = p.b
+                    da = Math.round(p.a * alphaMul)
+                } else if (ht === "hide" && hOn) {
+                    let alphaMul
+                    if (state === "idle") alphaMul = 0
+                    else if (state === "assembling") alphaMul = animT
+                    else if (state === "scattering") alphaMul = 1 - animT
+                    else alphaMul = 1
+                    dr = p.r
+                    dg = p.g
+                    db = p.b
+                    da = Math.round(p.a * alphaMul)
+                } else {
+                    dr = p.r
+                    dg = p.g
+                    db = p.b
+                    da = p.a
+                }
+                if (da < 1) continue
+                if (pColor === "single") {
+                    const sc = parseColor(scColor)
+                    dr = sc.r
+                    dg = sc.g
+                    db = sc.b
+                } else if (pColor === "multi") {
+                    const cols = (mcColors || []).filter(Boolean)
+                    if (cols.length > 0) {
+                        const mc = parseColor(cols[p.colorIdx % cols.length])
+                        dr = mc.r
+                        dg = mc.g
+                        db = mc.b
+                    }
+                }
+                drawParticle(p.x * dpr, p.y * dpr, dr, dg, db, da, isCircle)
+            }
+            ctx.putImageData(idata, 0, 0)
+        }
+        draw()
+        return () => {
+            if (animRef.current) cancelAnimationFrame(animRef.current)
+        }
+    }, [])
+    const onMouseMove = (e) => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+        const rect = canvas.getBoundingClientRect()
+        const { W, H } = dimsRef.current
+        const scaleX = rect.width > 0 ? W / rect.width : 1
+        const scaleY = rect.height > 0 ? H / rect.height : 1
+        const mx = (e.clientX - rect.left) * scaleX
+        const my = (e.clientY - rect.top) * scaleY
+        const prev = prevMouseRef.current
+        if (prev.x > -9999) {
+            const ddx = mx - prev.x,
+                ddy = my - prev.y
+            mouseSpeedRef.current = Math.sqrt(ddx * ddx + ddy * ddy)
+        }
+        prevMouseRef.current = { x: mx, y: my }
+        mouseRef.current = { x: mx, y: my, active: true }
+        if (physicsRef.current.hover) {
+            const s = animStateRef.current
+            if (s === "idle" || s === "scattering")
+                startAnimRef.current("assembling")
+        }
+    }
+    const onMouseLeave = () => {
+        mouseRef.current = { x: -99999, y: -99999, active: false }
+        if (physicsRef.current.hover) {
+            const s = animStateRef.current
+            if (s === "assembling" || s === "active")
+                startAnimRef.current("scattering")
+        }
+    }
+    return (
+        <div
+            ref={containerRef}
+            {...props}
+            style={{
+                position: "relative",
+                width,
+                height,
+                overflow: "hidden",
+                ...style,
+            }}
+        >
+            <canvas
+                ref={canvasRef}
+                style={{ display: "block", width: "100%", height: "100%" }}
+                onMouseMove={onMouseMove}
+                onMouseLeave={onMouseLeave}
+            />
+        </div>
+    )
+}
 
 /**
- * ProductionVisual — versión interactiva
+ * ProductionVisual — versión de marca ETM.
  *
- * Metáfora: estás inspeccionando una placa con una lámpara. El cursor
- * ilumina las pistas cercanas (una capa "iluminada" recortada con una
- * máscara radial que sigue al mouse). La placa se inclina levemente hacia
- * donde miras. Al hacer clic en un pad, se envía un pulso de prueba real
- * que viaja por esa pista hasta el chip y lo hace "responder" (anillo de
- * confirmación). Al hacer clic en el chip, se dispara un barrido de
- * encendido: un pulso sale por las 9 pistas a la vez y cada pad parpadea
- * al recibirlo — como un power-on self-test.
+ * El logo (/icon.svg) se dibuja como una nube de partículas azul/dorado que
+ * flota suavemente (roam) a baja opacidad. Al pasar el mouse por encima del
+ * panel, las partículas se ensamblan en el logo exacto; al salir, vuelven a
+ * dispersarse. Cerca del cursor además se repelen, dando una textura viva.
  *
- * Requiere `framer-motion` instalado en el proyecto.
+ * Uso: <ProductionVisual /> — ya trae los colores y el ícono de ETM por
+ * defecto. Se le puede pasar cualquier prop del motor para ajustar densidad,
+ * tamaño de partícula, velocidad de ensamblaje, etc.
  */
+export function ProductionVisual(overrides = {}) {
+    const {
+        imageConfig: imageConfigOverride,
+        hoverConfig: hoverConfigOverride,
+        repulsionConfig: repulsionConfigOverride,
+        ...rest
+    } = overrides
 
-const CENTER: [number, number] = [200, 200]
-
-type Trace = {
-  id: number
-  color: "accent" | "primary" | "ground"
-  points: [number, number][]
-  component?: "resistor" | "capacitor"
-}
-
-const TRACES: Trace[] = [
-  { id: 0, color: "accent", points: [[182, 168], [182, 130], [162, 110], [90, 110]] },
-  { id: 1, color: "accent", points: [[200, 168], [200, 60]] }, // línea de datos principal
-  { id: 2, color: "accent", points: [[218, 168], [218, 130], [238, 110], [310, 110]] },
-  { id: 3, color: "primary", points: [[168, 182], [140, 182], [120, 162], [120, 96]], component: "resistor" },
-  { id: 4, color: "primary", points: [[168, 218], [140, 218], [120, 238], [120, 290]] },
-  { id: 5, color: "primary", points: [[232, 182], [270, 182], [290, 162], [290, 104]], component: "capacitor" },
-  { id: 6, color: "primary", points: [[232, 218], [270, 218], [290, 238], [290, 290]] },
-  { id: 7, color: "accent", points: [[182, 232], [182, 270], [162, 290], [100, 290]] },
-  { id: 8, color: "accent", points: [[218, 232], [218, 270], [238, 290], [300, 290]] },
-  { id: 9, color: "ground", points: [[200, 232], [200, 340]] },
-]
-
-const COLOR_CLASS: Record<Trace["color"], string> = {
-  accent: "stroke-accent/60",
-  primary: "stroke-primary/70",
-  ground: "stroke-muted-foreground/50",
-}
-const PAD_CLASS: Record<Trace["color"], string> = {
-  accent: "fill-accent/80",
-  primary: "fill-primary/80",
-  ground: "fill-muted-foreground/60",
-}
-
-function pathD(points: [number, number][]) {
-  return points.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ")
-}
-
-function segmentTimes(points: [number, number][]) {
-  const lens: number[] = [0]
-  let total = 0
-  for (let i = 1; i < points.length; i++) {
-    const [x0, y0] = points[i - 1]
-    const [x1, y1] = points[i]
-    total += Math.hypot(x1 - x0, y1 - y0)
-    lens.push(total)
-  }
-  return lens.map((l) => (total === 0 ? 0 : l / total))
-}
-
-type Pulse = {
-  key: number
-  points: [number, number][]
-  times: number[]
-  duration: number
-  colorClass: string
-  direction: "toChip" | "toPad"
-  traceId: number
-}
-
-export function ProductionVisual() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const idRef = useRef(0)
-
-  const [pulses, setPulses] = useState<Pulse[]>([])
-  const [chipFlashes, setChipFlashes] = useState<number[]>([])
-  const [padFlashes, setPadFlashes] = useState<number[]>([])
-
-  // --- Seguimiento del mouse a nivel de PÁGINA COMPLETA ---
-  // Dos efectos independientes, cada uno con su propia lógica:
-  // 1) "Lámpara": el mouse revela detalle solo cuando está cerca/sobre la placa
-  //    (posición local en coordenadas del SVG 0-400).
-  // 2) "Inclinación": la placa se inclina hacia el cursor SIEMPRE, en toda la
-  //    página, y cuanto más lejos está el cursor del componente, más fuerte
-  //    es la inclinación (como si "estirara el cuello" para seguirte).
-  const mx = useMotionValue(200)
-  const my = useMotionValue(200)
-  const tiltRawX = useMotionValue(0) // dirección * intensidad, -1..1
-  const tiltRawY = useMotionValue(0)
-  const liftRatio = useMotionValue(0) // 0 = cursor encima, 1 = cursor en la esquina más lejana
-
-  const springX = useSpring(mx, { stiffness: 120, damping: 18 })
-  const springY = useSpring(my, { stiffness: 120, damping: 18 })
-  // spring más suave para las oscilaciones grandes de la inclinación
-  const tiltX = useSpring(tiltRawX, { stiffness: 70, damping: 14, mass: 0.6 })
-  const tiltY = useSpring(tiltRawY, { stiffness: 70, damping: 14, mass: 0.6 })
-  const lift = useSpring(liftRatio, { stiffness: 70, damping: 16 })
-
-  const MAX_TILT_DEG = 22
-  const MAX_LIFT_PX = 20
-
-  const rotateX = useTransform(tiltY, [-1, 1], [MAX_TILT_DEG, -MAX_TILT_DEG])
-  const rotateY = useTransform(tiltX, [-1, 1], [-MAX_TILT_DEG, MAX_TILT_DEG])
-  const boardX = useTransform(tiltX, (v) => v * MAX_LIFT_PX)
-  const boardY = useTransform(tiltY, (v) => v * MAX_LIFT_PX)
-  const highlightOpacity = useTransform(lift, [0, 1], [1, 0.25])
-
-  const mxPx = useTransform(springX, (v) => `${v}px`)
-  const myPx = useTransform(springY, (v) => `${v}px`)
-  const spotlightMask = useMotionTemplate`radial-gradient(140px at ${mxPx} ${myPx}, black, transparent)`
-
-  useEffect(() => {
-    let frame = 0
-
-    const onMove = (e: MouseEvent) => {
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(() => {
-        const rect = containerRef.current?.getBoundingClientRect()
-        if (!rect) return
-
-        // Posición local (para la lámpara): solo importa cuando el cursor
-        // está cerca del componente.
-        const localX = ((e.clientX - rect.left) / rect.width) * 400
-        const localY = ((e.clientY - rect.top) / rect.height) * 400
-        mx.set(localX)
-        my.set(localY)
-
-        // Distancia desde el CENTRO del componente hasta el cursor, en
-        // cualquier parte de la página. A mayor distancia, mayor intensidad.
-        const centerX = rect.left + rect.width / 2
-        const centerY = rect.top + rect.height / 2
-        const dx = e.clientX - centerX
-        const dy = e.clientY - centerY
-        const dist = Math.hypot(dx, dy)
-
-        // Normalizado contra la mitad de la diagonal de la ventana, para que
-        // "lejos" signifique lejos de verdad sin importar el tamaño de pantalla.
-        const halfDiag = Math.hypot(window.innerWidth, window.innerHeight) / 2
-        const ratio = Math.min(dist / halfDiag, 1)
-
-        const dirX = dist === 0 ? 0 : dx / dist
-        const dirY = dist === 0 ? 0 : dy / dist
-
-        tiltRawX.set(dirX * ratio)
-        tiltRawY.set(dirY * ratio)
-        liftRatio.set(ratio)
-      })
+    const merged = {
+        imageConfig: {
+            image: "/icon.svg",
+            mode: "fit",
+            scale: 7,
+            ...imageConfigOverride,
+        },
+        hoverConfig: {
+            hoverType: "roam",
+            transition: { duration: 0.9, ease: "easeInOut" },
+            roamShape: "circle",
+            roamOpacity: 0.4,
+            ...hoverConfigOverride,
+        },
+        repulsionConfig: {
+            repulsionMode: "outside",
+            repulsionForce: 8,
+            repulsionRadius: 60,
+            ...repulsionConfigOverride,
+        },
+        particleColor: "multi",
+        multiColors: [ETM_BLUE, ETM_BLUE, ETM_GOLD],
+        particleCount: 64,
+        particleSize: 3.5,
+        particleShape: "circle",
+        hoverEnabled: true,
+        repulsionEnabled: true,
+        width: "100%",
+        height: "100%",
+        ...rest,
     }
 
-    const resetTilt = () => {
-      tiltRawX.set(0)
-      tiltRawY.set(0)
-      liftRatio.set(0)
-    }
-
-    window.addEventListener("mousemove", onMove, { passive: true })
-    document.addEventListener("mouseleave", resetTilt)
-    return () => {
-      window.removeEventListener("mousemove", onMove)
-      document.removeEventListener("mouseleave", resetTilt)
-      cancelAnimationFrame(frame)
-    }
-  }, [mx, my, tiltRawX, tiltRawY, liftRatio])
-
-  const tracesById = useMemo(() => Object.fromEntries(TRACES.map((t) => [t.id, t])), [])
-
-  const firePulse = useCallback(
-    (traceId: number, direction: "toChip" | "toPad") => {
-      const trace = tracesById[traceId]
-      if (!trace) return
-      const raw =
-        direction === "toChip"
-          ? [...trace.points].reverse().concat([CENTER])
-          : [CENTER, ...trace.points]
-      const times = segmentTimes(raw)
-      const key = idRef.current++
-      const pulse: Pulse = {
-        key,
-        points: raw,
-        times,
-        duration: 0.22 * (raw.length - 1) + 0.35,
-        colorClass:
-          trace.color === "accent" ? "fill-accent" : trace.color === "primary" ? "fill-primary" : "fill-muted-foreground",
-        direction,
-        traceId,
-      }
-      setPulses((p) => [...p, pulse])
-    },
-    [tracesById]
-  )
-
-  const handlePadClick = (traceId: number) => firePulse(traceId, "toChip")
-
-  const handleChipClick = () => {
-    TRACES.forEach((t) => firePulse(t.id, "toPad"))
-  }
-
-  const onPulseArrive = (pulse: Pulse) => {
-    setPulses((p) => p.filter((x) => x.key !== pulse.key))
-    if (pulse.direction === "toChip") {
-      const fk = idRef.current++
-      setChipFlashes((f) => [...f, fk])
-      setTimeout(() => setChipFlashes((f) => f.filter((x) => x !== fk)), 700)
-    } else {
-      setPadFlashes((f) => [...f, pulse.traceId])
-      setTimeout(() => setPadFlashes((f) => f.filter((x) => x !== pulse.traceId)), 700)
-    }
-  }
-
-  return (
-    <div
-      ref={containerRef}
-      className="relative size-full overflow-hidden select-none circuit-root"
-      style={{ perspective: 900 }}
-    >
-      <style>{`
-        @keyframes circuit-flow { to { stroke-dashoffset: -48; } }
-        @keyframes circuit-flow-rev { to { stroke-dashoffset: 48; } }
-        .circuit-signal { animation: circuit-flow linear infinite; }
-        .circuit-signal-rev { animation: circuit-flow-rev linear infinite; }
-        @media (prefers-reduced-motion: reduce) {
-          .circuit-signal, .circuit-signal-rev { animation: none !important; }
-        }
-      `}</style>
-
-      {/* Sustrato: trama de puntos, silkscreen de la placa */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 opacity-[0.14]"
-        style={{
-          backgroundImage: "radial-gradient(circle, rgba(148,163,184,0.9) 1px, transparent 1px)",
-          backgroundSize: "22px 22px",
-        }}
-      />
-
-      {/* Placa: se inclina levemente hacia el cursor */}
-      <motion.div
-        className="absolute inset-0"
-        style={{ rotateX, rotateY, x: boardX, y: boardY, transformStyle: "preserve-3d" }}
-      >
-        {/* Resplandor ambiental */}
-        <div
-          aria-hidden="true"
-          className="absolute left-1/2 top-1/2 size-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.16)_0%,rgba(242,185,0,0.08)_50%,transparent_75%)] blur-3xl"
-        />
-
-        {/* Capa base: circuito tenue */}
-        <svg aria-hidden="true" viewBox="0 0 400 400" className="absolute inset-0 size-full opacity-40">
-          {TRACES.map((t) => (
-            <path key={t.id} d={pathD(t.points)} className={`${COLOR_CLASS[t.color]} fill-none`} strokeWidth={t.color === "ground" ? 3.5 : 2} strokeLinecap="round" />
-          ))}
-        </svg>
-
-        {/* Capa iluminada: recortada por una máscara que sigue al mouse — el efecto "lámpara" */}
-        <motion.div
-          className="absolute inset-0"
-          style={{
-            WebkitMaskImage: spotlightMask as any,
-            maskImage: spotlightMask as any,
-            opacity: highlightOpacity,
-          }}
-        >
-          <svg viewBox="0 0 400 400" className="absolute inset-0 size-full">
-            {TRACES.map((t) => (
-              <path
-                key={t.id}
-                d={pathD(t.points)}
-                className={`${COLOR_CLASS[t.color]} fill-none ${
-                  t.color !== "ground" ? "circuit-signal" : ""
-                }`}
-                strokeWidth={t.color === "ground" ? 3.5 : 2.4}
-                strokeLinecap="round"
-                strokeDasharray={t.color === "ground" ? undefined : "5 11"}
-                style={t.color !== "ground" ? { animationDuration: `${1.7 + (t.id % 5) * 0.3}s` } : undefined}
-              />
-            ))}
-            {/* resistencia */}
-            <path d="M 120 138 L 120 130 L 114 126 L 126 120 L 114 114 L 126 108 L 120 104 L 120 96" className="stroke-primary fill-none" strokeWidth="2" strokeLinecap="round" />
-            {/* capacitor */}
-            <line x1="282" y1="128" x2="298" y2="128" className="stroke-primary" strokeWidth="2.5" />
-            <line x1="282" y1="120" x2="298" y2="120" className="stroke-primary" strokeWidth="2.5" />
-          </svg>
-        </motion.div>
-
-        {/* Pads interactivos + destello de recepción */}
-        <svg viewBox="0 0 400 400" className="absolute inset-0 size-full overflow-visible">
-          {TRACES.map((t) => {
-            const [px, py] = t.points[t.points.length - 1]
-            const flashed = padFlashes.includes(t.id)
-            return (
-              <g key={t.id}>
-                <circle
-                  cx={px}
-                  cy={py}
-                  r={10}
-                  fill="transparent"
-                  className="cursor-pointer"
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Enviar señal de prueba al chip"
-                  onClick={() => handlePadClick(t.id)}
-                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handlePadClick(t.id)}
-                />
-                <motion.circle
-                  cx={px}
-                  cy={py}
-                  r={3.4}
-                  className={PAD_CLASS[t.color]}
-                  animate={flashed ? { scale: [1, 1.9, 1], opacity: [1, 1, 1] } : { scale: 1 }}
-                  transition={{ duration: 0.7 }}
-                  style={{ transformOrigin: `${px}px ${py}px`, pointerEvents: "none" }}
-                />
-              </g>
-            )
-          })}
-        </svg>
-
-        {/* Pulsos viajando por las pistas */}
-        <svg viewBox="0 0 400 400" className="absolute inset-0 size-full pointer-events-none">
-          <AnimatePresence>
-            {pulses.map((p) => (
-              <motion.circle
-                key={p.key}
-                r={4}
-                className={p.colorClass}
-                style={{ filter: "drop-shadow(0 0 4px currentColor)" }}
-                initial={{ cx: p.points[0][0], cy: p.points[0][1], opacity: 0 }}
-                animate={{
-                  cx: p.points.map((pt) => pt[0]),
-                  cy: p.points.map((pt) => pt[1]),
-                  opacity: [0, 1, 1, 1],
-                }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: p.duration, times: p.times, ease: "linear" }}
-                onAnimationComplete={() => onPulseArrive(p)}
-              />
-            ))}
-          </AnimatePresence>
-        </svg>
-
-        {/* Chip central: clic dispara un barrido a las 9 pistas */}
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label="Ejecutar barrido de encendido"
-          onClick={handleChipClick}
-          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleChipClick()}
-          className="group absolute left-1/2 top-1/2 flex size-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-lg border-2 border-primary/50 bg-card/95 backdrop-blur-md transition-transform duration-300 hover:scale-105 hover:border-accent/60 cursor-pointer"
-          style={{ transform: "translateZ(20px)" }}
-        >
-          <span className="absolute -top-1 left-[30%] h-1.5 w-1 bg-primary/40" />
-          <span className="absolute -top-1 left-1/2 h-1.5 w-1 -translate-x-1/2 bg-accent/70" />
-          <span className="absolute -top-1 left-[70%] h-1.5 w-1 bg-primary/40" />
-          <span className="absolute -bottom-1 left-1/2 h-1.5 w-1 -translate-x-1/2 bg-muted-foreground/50" />
-          <span className="absolute -left-1 top-[35%] h-1 w-1.5 bg-primary/40" />
-          <span className="absolute -left-1 top-[65%] h-1 w-1.5 bg-primary/40" />
-          <span className="absolute -right-1 top-[35%] h-1 w-1.5 bg-primary/40" />
-          <span className="absolute -right-1 top-[65%] h-1 w-1.5 bg-primary/40" />
-
-          <div className="size-3 rounded-sm bg-accent shadow-[0_0_14px_rgba(242,185,0,0.85)] transition-transform group-hover:scale-110" />
-
-          {/* anillo de confirmación cuando un pulso llega al chip */}
-          <AnimatePresence>
-            {chipFlashes.map((fk) => (
-              <motion.span
-                key={fk}
-                className="absolute inset-0 rounded-lg border-2 border-accent"
-                initial={{ scale: 1, opacity: 0.9 }}
-                animate={{ scale: 2.1, opacity: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.65, ease: "easeOut" }}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
-      </motion.div>
-    </div>
-  )
+    return <ParticleEngine {...merged} />
 }

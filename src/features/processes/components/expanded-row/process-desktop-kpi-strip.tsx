@@ -73,17 +73,29 @@ export function ProcessDesktopKpiStrip({
         style={{ backgroundColor: badge.background, color: badge.text }}
       >
         <Icon size={14} className="shrink-0 opacity-90" style={{ color: badge.text }} />
-        <div className="flex min-w-0 flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-xs font-semibold leading-tight tracking-[0.06em]">
+        <div className="flex min-w-0 flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-xs font-semibold leading-none tracking-[0.04em]">
           {children}
         </div>
       </div>
     )
   }
 
-  function mutedLabel(label: string) {
+  /** Label y valor misma altura de línea → centrado óptico real. */
+  function Metric({
+    label,
+    children,
+  }: {
+    label: string
+    children: ReactNode
+  }) {
     return (
-      <span className="inline-flex items-center text-[9px] font-bold uppercase leading-none tracking-wider opacity-70">
-        {label}
+      <span className="inline-flex items-center gap-1 leading-none">
+        <span className="font-bold uppercase tracking-wide opacity-55">
+          {label}
+        </span>
+        <span className="inline-flex items-center tabular-nums leading-none">
+          {children}
+        </span>
       </span>
     )
   }
@@ -133,19 +145,17 @@ export function ProcessDesktopKpiStrip({
         }
       >
       <KpiBadgeShell color={prodColor} icon={Puzzle} title="Producción">
-        <span className="inline-flex items-center gap-1">
-          {mutedLabel("In")}
+        <Metric label="In">
           {inQty != null && String(inQty).trim() !== "" ? (
-            <span className="max-w-[4rem] truncate tabular-nums leading-none">{inQty}</span>
+            <span className="max-w-[4rem] truncate">{inQty}</span>
           ) : (
-            <span className="text-[10px] font-semibold leading-none opacity-55">Sin entrada</span>
+            <span className="text-[10px] font-semibold opacity-55">Sin entrada</span>
           )}
-        </span>
+        </Metric>
         {showOutput && (
           <>
             <span className="opacity-50">→</span>
-            <span className="inline-flex items-center gap-1">
-              {mutedLabel("Out")}
+            <Metric label="Out">
               <ProcessEditableValue
                 inline
                 numeric
@@ -158,14 +168,13 @@ export function ProcessDesktopKpiStrip({
                   await updateField(stepId, { piecesOutput }, { piecesOutput })
                 }}
               />
-            </span>
+            </Metric>
           </>
         )}
         {showPlRt && (
           <>
             <span className="opacity-40">·</span>
-            <span className="inline-flex items-center gap-1">
-              {mutedLabel("PL/RT")}
+            <Metric label="PL/RT">
               <ProcessEditableValue
                 inline
                 numeric
@@ -179,7 +188,7 @@ export function ProcessDesktopKpiStrip({
                   await updateField(stepId, { plRtReal }, { plRtReal })
                 }}
               />
-            </span>
+            </Metric>
           </>
         )}
       </KpiBadgeShell>
@@ -231,13 +240,11 @@ export function ProcessDesktopKpiStrip({
 
       {isAssemblyProcess && (
         <KpiBadgeShell color="#8B5CF6" icon={Puzzle} title="Ensamble">
-          <span className="inline-flex items-center gap-1">
-            {mutedLabel("Und")}
-            <span className="tabular-nums leading-none">{task.assemblyCount}</span>
-          </span>
+          <Metric label="Und">
+            <span>{task.assemblyCount}</span>
+          </Metric>
           <span className="opacity-40">·</span>
-          <span className="inline-flex items-center gap-1">
-            {mutedLabel("Out")}
+          <Metric label="Out">
             <ProcessEditableValue
               inline
               numeric
@@ -250,26 +257,27 @@ export function ProcessDesktopKpiStrip({
                 await updateField(stepId, { piecesOutput }, { piecesOutput })
               }}
             />
-          </span>
+          </Metric>
         </KpiBadgeShell>
       )}
 
       {isDispatchProcess && (
         <KpiBadgeShell color="#06B6D4" icon={Truck} title="Despacho">
-          {mutedLabel("Desp")}
-          <ProcessEditableValue
-            inline
-            numeric
-            value={step?.piecesOutput ?? null}
-            suffix="UND"
-            disabled={locked}
-            placeholder="Ingresar"
-            onSave={async value => {
-              if (!stepId) return
-              const piecesOutput = toNumber(value)
-              await updateField(stepId, { piecesOutput }, { piecesOutput })
-            }}
-          />
+          <Metric label="Desp">
+            <ProcessEditableValue
+              inline
+              numeric
+              value={step?.piecesOutput ?? null}
+              suffix="UND"
+              disabled={locked}
+              placeholder="Ingresar"
+              onSave={async value => {
+                if (!stepId) return
+                const piecesOutput = toNumber(value)
+                await updateField(stepId, { piecesOutput }, { piecesOutput })
+              }}
+            />
+          </Metric>
         </KpiBadgeShell>
       )}
 

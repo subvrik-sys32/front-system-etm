@@ -1,0 +1,197 @@
+diff --git a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+index ed74e0a..c2ba26e 100644
+--- a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
++++ b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+@@ -15,6 +15,8 @@ import {
+ import {
+   useState,
+   useMemo,
++  useRef,
++  useLayoutEffect,
+ } from "react"
+ 
+ import {
+@@ -63,6 +65,10 @@ import {
+   workflowStepperStyles,
+ } from "@/features/workflow/styles/workflow-stepper"
+ 
++import {
++  getFinishMaterialSurface,
++} from "@/shared/utils/material-surface"
++
+ type Props = {
+   task: Task
+   indicatorsExpanded?: boolean
+@@ -96,6 +102,31 @@ export function TaskProductionPanel({
+     onIndicatorsExpandedChange?.(next)
+   }
+ 
++  const badgeRef = useRef<HTMLButtonElement>(null)
++  const [sepPct, setSepPct] = useState(36)
++
++  useLayoutEffect(() => {
++    if (expanded) return
++    const root = badgeRef.current
++    if (!root) return
++
++    const measure = () => {
++      const sep = root.querySelector("[data-finish-sep]")
++      if (!(sep instanceof HTMLElement)) return
++      const rb = root.getBoundingClientRect()
++      const sb = sep.getBoundingClientRect()
++      if (rb.width <= 0) return
++      const pct = ((sb.left + sb.width * 0.5 - rb.left) / rb.width) * 100
++      setSepPct(Math.min(88, Math.max(12, pct)))
++    }
++
++    measure()
++    const ro = new ResizeObserver(measure)
++    ro.observe(root)
++    return () => ro.disconnect()
++  }, [expanded, task.id, task.color?.color, task.color?.name, task.material.name, task.thickness.name, task.lotNumber, task.pieces])
++
++
+   const workflowView =
+     createWorkflowView(
+       task.workflowSteps,
+@@ -378,11 +409,15 @@ export function TaskProductionPanel({
+           showCollapseButton={false}
+           collapsed={
+             <button
++              ref={badgeRef}
+               type="button"
+               onClick={() => setExpanded(true)}
+               className="flex h-[70.5px] w-full items-center justify-between rounded-2xl pr-4 text-left transition hover:brightness-110 shadow-sm overflow-hidden"
+               style={{
+-                background: "#17191d",
++                background: getFinishMaterialSurface(
++                  hasPaintProcess ? (task.color?.color ?? "#64748B") : "#BBBBBB",
++                  sepPct,
++                ),
+               }}
+             >
+               <div className="min-w-0 flex-1 h-full flex items-center">
+diff --git a/src/features/tasks/components/expanded-row/task-kpis-section.tsx b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+index ba0be0b..590be28 100644
+--- a/src/features/tasks/components/expanded-row/task-kpis-section.tsx
++++ b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+@@ -39,37 +39,6 @@ type Props = {
+ }
+ 
+ const PIEZAS_COLOR = "#c44a4a"
+-export const FINISH_BADGE_DARK = "#17191d"
+-
+-/**
+- * Degradado continuo que abarca todo el componente sin cortes.
+- * El brillo/transición pasa por el medio y se funde hacia el negro oscuro en la derecha.
+- */
+-export function getFinishMaterialSurface(finishHex: string): string {
+-  const c = finishHex.trim() || "#64748B"
+-  const d = FINISH_BADGE_DARK
+-
+-  return [
+-    `linear-gradient(
+-      105deg,
+-      ${c} 0%,
+-      ${c} 25%,
+-      color-mix(in srgb, ${c} 80%, ${d}) 40%,
+-      color-mix(in srgb, ${c} 35%, ${d}) 65%,
+-      ${d} 90%,
+-      ${d} 100%
+-    )`,
+-    `linear-gradient(
+-      180deg,
+-      rgba(255,255,255,0.07) 0%,
+-      rgba(255,255,255,0.015) 50%,
+-      rgba(0,0,0,0.08) 100%
+-    )`,
+-  ]
+-    .join(", ")
+-    .replace(/\s+/g, " ")
+-    .trim()
+-}
+ 
+ export function TaskKpisSection({
+   task,
+@@ -267,22 +236,24 @@ export function TaskKpisSection({
+     const finishInk = getBadgeColors(dominantColor, "solid").text
+ 
+     return (
+-      <div 
+-        className="relative flex h-full w-full min-w-0 items-center justify-between overflow-hidden rounded-2xl px-4"
+-        style={{ background: getFinishMaterialSurface(dominantColor) }}
+-      >
+-        {/* Lado izquierdo (Pintura / Acabado) */}
++      <div className="flex h-full min-w-0 items-center">
+         <div
+-          className="relative z-10 flex shrink-0 items-center gap-2.5 text-[13px] font-bold tracking-wide"
++          className="flex shrink-0 items-center gap-2.5 pl-4 pr-6 text-[13px] font-bold tracking-wide"
+           style={{ color: finishInk }}
+         >
+           <PaintIcon className="h-4 w-4 shrink-0" />
+           <span className="truncate">{paintLabel}</span>
+         </div>
+ 
+-        {/* Lado derecho (Materiales / Lote / Espesor) integrado de forma fluida */}
+-        <div className="relative z-10 flex min-w-0 items-center gap-2.5 truncate pl-6 text-[13px] font-bold tracking-wide text-white">
+-          <Layers3 className="h-4 w-4 shrink-0 text-white/80" />
++        {/* Ancla de medición para el surface del badge padre */}
++        <div
++          data-finish-sep
++          aria-hidden
++          className="h-4 w-px shrink-0 bg-white/20"
++        />
++
++        <div className="flex min-w-0 items-center gap-2.5 truncate pl-6 pr-2 text-[13px] font-bold tracking-wide text-white">
++          <Layers3 className="h-4 w-4 shrink-0 text-white" />
+           <span className="truncate">{materialLabel}</span>
+         </div>
+       </div>
+diff --git a/src/shared/utils/material-surface.ts b/src/shared/utils/material-surface.ts
+index b823471..4b5294d 100644
+--- a/src/shared/utils/material-surface.ts
++++ b/src/shared/utils/material-surface.ts
+@@ -3,19 +3,31 @@ export const FINISH_BADGE_DARK = "#17191d"
+ 
+ /**
+  * Degradado 105deg + color-mix.
+- * Centrado para que la transición caiga exactamente sobre el separador.
++ * `sepPct` = posición del separador en % del ancho del badge (medido).
++ * Sin mask, sin capa extra, sin borde de box anidado.
+  */
+-export function getFinishMaterialSurface(finishHex: string): string {
++export function getFinishMaterialSurface(
++  finishHex: string,
++  sepPct: number = 36,
++): string {
+   const c = finishHex.trim() || "#64748B"
+   const d = FINISH_BADGE_DARK
++  const s = Math.min(88, Math.max(12, sepPct))
++
++  // Sólido hasta antes del separador; fundido centrado en s; oscuro después.
++  const solidEnd = Math.max(0, s - 12)
++  const mix1 = Math.max(0, s - 3)
++  const mix2 = Math.min(100, s + 8)
++  const darkStart = Math.min(100, s + 16)
+ 
+   return [
+     `linear-gradient(
+       105deg,
+       ${c} 0%,
+-      ${c} 45%,
+-      color-mix(in srgb, ${c} 65%, ${d}) 60%,
+-      color-mix(in srgb, ${c} 25%, ${d}) 78%,
++      ${c} ${solidEnd}%,
++      color-mix(in srgb, ${c} 72%, ${d}) ${mix1}%,
++      color-mix(in srgb, ${c} 35%, ${d}) ${mix2}%,
++      ${d} ${darkStart}%,
+       ${d} 100%
+     )`,
+     `linear-gradient(
+@@ -28,4 +40,4 @@ export function getFinishMaterialSurface(finishHex: string): string {
+     .join(", ")
+     .replace(/\s+/g, " ")
+     .trim()
+-}
+\ No newline at end of file
++}

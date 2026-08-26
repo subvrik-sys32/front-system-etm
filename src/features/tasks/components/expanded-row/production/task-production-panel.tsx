@@ -15,6 +15,8 @@ import {
 import {
   useState,
   useMemo,
+  useRef,
+  useLayoutEffect,
 } from "react"
 
 import {
@@ -63,6 +65,10 @@ import {
   workflowStepperStyles,
 } from "@/features/workflow/styles/workflow-stepper"
 
+import {
+  getFinishMaterialSurface,
+} from "@/shared/utils/material-surface"
+
 type Props = {
   task: Task
   indicatorsExpanded?: boolean
@@ -95,6 +101,31 @@ export function TaskProductionPanel({
     if (!isControlled) setExpandedInternal(next)
     onIndicatorsExpandedChange?.(next)
   }
+
+  const badgeRef = useRef<HTMLButtonElement>(null)
+  const [sepPct, setSepPct] = useState(36)
+
+  useLayoutEffect(() => {
+    if (expanded) return
+    const root = badgeRef.current
+    if (!root) return
+
+    const measure = () => {
+      const sep = root.querySelector("[data-finish-sep]")
+      if (!(sep instanceof HTMLElement)) return
+      const rb = root.getBoundingClientRect()
+      const sb = sep.getBoundingClientRect()
+      if (rb.width <= 0) return
+      const pct = ((sb.left + sb.width * 0.5 - rb.left) / rb.width) * 100
+      setSepPct(Math.min(88, Math.max(12, pct)))
+    }
+
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(root)
+    return () => ro.disconnect()
+  }, [expanded, task.id, task.color?.color, task.color?.name, task.material.name, task.thickness.name, task.lotNumber, task.pieces])
+
 
   const workflowView =
     createWorkflowView(
@@ -378,11 +409,15 @@ export function TaskProductionPanel({
           showCollapseButton={false}
           collapsed={
             <button
+              ref={badgeRef}
               type="button"
               onClick={() => setExpanded(true)}
               className="flex h-[70.5px] w-full items-center justify-between rounded-2xl pr-4 text-left transition hover:brightness-110 shadow-sm overflow-hidden"
               style={{
-                background: "#17191d",
+                background: getFinishMaterialSurface(
+                  hasPaintProcess ? (task.color?.color ?? "#64748B") : "#BBBBBB",
+                  sepPct,
+                ),
               }}
             >
               <div className="min-w-0 flex-1 h-full flex items-center">

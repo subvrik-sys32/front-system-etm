@@ -457,7 +457,7 @@ export function TaskProductionPanel({
             style={workflowStepperStyles.surface}
           >
             {showCollapseButton && (
-              <div className="absolute right-2 top-2 z-10">
+              <div className="absolute left-2 top-2 z-10">
                 <CollapseIndicatorsButton onClick={() => setExpanded(false)} />
               </div>
             )}

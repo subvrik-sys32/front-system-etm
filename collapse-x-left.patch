@@ -1,0 +1,12 @@
+diff --git a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+--- a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
++++ b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+@@ -457,7 +457,7 @@
+             style={workflowStepperStyles.surface}
+           >
+             {showCollapseButton && (
+-              <div className="absolute right-2 top-2 z-10">
++              <div className="absolute left-2 top-2 z-10">
+                 <CollapseIndicatorsButton onClick={() => setExpanded(false)} />
+               </div>
+             )}

@@ -30,6 +30,7 @@ import {
 } from "@/shared/responsive/hooks/use-responsive"
 
 import { getFinishMaterialSurface } from "@/shared/utils/material-surface"
+import { getBadgeColors } from "@/shared/utils/badge-colors"
 
 type Props = {
   task: Task
@@ -228,13 +229,19 @@ export function TaskKpisSection({
       task.thickness.name,
     ].join(" · ")
 
+    // Mismo ink que DynamicBadge variant="solid" (chip de pintura del task dialog)
+    const finishInk = getBadgeColors(dominantColor, "solid").text
+
     return (
       <div
-        className="flex h-8 w-fit items-center overflow-hidden rounded-full px-3.5 text-[11px] font-bold tracking-wide text-white shadow-sm"
+        className="flex h-8 w-fit items-center overflow-hidden rounded-full px-3.5 text-[11px] font-bold tracking-wide shadow-sm"
         style={{ background: getFinishMaterialSurface(dominantColor) }}
       >
-        {/* Lado izquierdo: Color */}
-        <div className="flex items-center gap-1.5 opacity-90 drop-shadow-sm">
+        {/* Lado izquierdo: Color — contraste solid del dialog */}
+        <div
+          className="flex items-center gap-1.5 drop-shadow-sm"
+          style={{ color: finishInk }}
+        >
           <PaintIcon className="h-3.5 w-3.5" />
           <span>{paintLabel}</span>
         </div>
@@ -243,7 +250,7 @@ export function TaskKpisSection({
         <div className="mx-3 h-3.5 w-px bg-white/20 shrink-0" />
 
         {/* Lado derecho: Material y Producción (sobre la superficie oscura resultante) */}
-        <div className="flex items-center gap-1.5 opacity-90 drop-shadow-sm">
+        <div className="flex items-center gap-1.5 text-white/90 drop-shadow-sm">
           <Package className="h-3.5 w-3.5" />
           <span>{materialLabel}</span>
         </div>

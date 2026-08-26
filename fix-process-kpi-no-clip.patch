@@ -1,0 +1,61 @@
+diff --git a/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx b/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
+index c90a166..ce153b9 100644
+--- a/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
++++ b/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
+@@ -111,7 +111,7 @@ export function ProcessDesktopKpiStrip({
+   const completedLabel = completed ? fmtTime(completed) : null
+ 
+   return (
+-    <div className="flex h-8 min-w-0 flex-1 items-center justify-end gap-1.5 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden">
++    <div className="flex h-8 w-max min-w-full items-center justify-start gap-1.5 sm:justify-end">
+       {/* Producción */}
+       <KpiBadgeShell color={prodColor} icon={Puzzle} title="Producción">
+         {mutedLabel("In")}
+diff --git a/src/features/processes/components/expanded-row/process-expanded-row.tsx b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+index b997d21..6f72fa6 100644
+--- a/src/features/processes/components/expanded-row/process-expanded-row.tsx
++++ b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+@@ -142,7 +142,7 @@ function ProcessDesktopKpiStrip({
+   const completedLabel = completed ? fmtTime(completed) : null
+ 
+   return (
+-    <div className="flex h-8 min-w-0 flex-1 items-center justify-end gap-1.5 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden">
++    <div className="flex h-8 w-max min-w-full items-center justify-start gap-1.5 sm:justify-end">
+       {/* Producción */}
+       <KpiBadgeShell color={prodColor} icon={Puzzle} title="Producción">
+         {mutedLabel("In")}
+@@ -439,6 +439,7 @@ export function ProcessExpandedRow({
+   return (
+     <EntityExpandedRow rowId={processTask.task.id}>
+       <EntityExpandedContent>
++        {/* Fila 1: toggle + actions (+ KPIs en desktop en la misma fila) */}
+         <div className="mb-2 flex min-w-0 flex-nowrap items-center gap-2 select-none">
+           <div className="shrink-0">
+             <EntityExpandedToggle<ProcessView>
+@@ -484,7 +485,7 @@ export function ProcessExpandedRow({
+               {headerActions}
+             </div>
+           ) : null}
+-          {/* Solo desktop (no tablet/compact): KPIs chip strip */}
++          {/* Desktop: chips en la misma fila */}
+           {!isCompact && activeView === "kpis" && (
+             <div className="min-w-0 flex-1">
+               <ProcessDesktopKpiStrip
+@@ -496,6 +497,17 @@ export function ProcessExpandedRow({
+             </div>
+           )}
+         </div>
++        {/* Compact: segunda fila a ancho completo — evita chips cortados */}
++        {isCompact && (
++          <div className="mb-2 w-full min-w-0 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden">
++            <ProcessDesktopKpiStrip
++              processTask={processTask}
++              percent={percent}
++              statusLabel={statusLabel}
++              nextProcessLabel={nextProcessLabel}
++            />
++          </div>
++        )}
+ 
+         <EntityExpandedSlider
+           value={activeView}

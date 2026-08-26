@@ -1,0 +1,44 @@
+diff --git a/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx b/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
+index c90a166..7180289 100644
+--- a/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
++++ b/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
+@@ -67,7 +67,7 @@ export function ProcessDesktopKpiStrip({
+     return (
+       <div
+         title={title}
+-        className="inline-flex h-8 max-w-full shrink-0 select-none items-center gap-1.5 overflow-hidden rounded-lg px-2.5 shadow-xs"
++        className="inline-flex h-8 w-full min-w-0 select-none items-center justify-center gap-1 overflow-hidden rounded-lg px-2 shadow-xs"
+         style={{ backgroundColor: badge.background, color: badge.text }}
+       >
+         <Icon size={14} className="shrink-0 opacity-90" style={{ color: badge.text }} />
+@@ -111,7 +111,7 @@ export function ProcessDesktopKpiStrip({
+   const completedLabel = completed ? fmtTime(completed) : null
+ 
+   return (
+-    <div className="flex h-8 min-w-0 flex-1 items-center justify-end gap-1.5 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden">
++    <div className="grid w-full grid-cols-4 gap-1.5">
+       {/* Producción */}
+       <KpiBadgeShell color={prodColor} icon={Puzzle} title="Producción">
+         {mutedLabel("In")}
+diff --git a/src/features/processes/components/expanded-row/process-expanded-row.tsx b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+index b997d21..d3e728e 100644
+--- a/src/features/processes/components/expanded-row/process-expanded-row.tsx
++++ b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+@@ -98,7 +98,7 @@ function ProcessDesktopKpiStrip({
+     return (
+       <div
+         title={title}
+-        className="inline-flex h-8 max-w-full shrink-0 select-none items-center gap-1.5 overflow-hidden rounded-lg px-2.5 shadow-xs"
++        className="inline-flex h-8 w-full min-w-0 select-none items-center justify-center gap-1 overflow-hidden rounded-lg px-2 shadow-xs"
+         style={{ backgroundColor: badge.background, color: badge.text }}
+       >
+         <Icon size={14} className="shrink-0 opacity-90" style={{ color: badge.text }} />
+@@ -142,7 +142,7 @@ function ProcessDesktopKpiStrip({
+   const completedLabel = completed ? fmtTime(completed) : null
+ 
+   return (
+-    <div className="flex h-8 min-w-0 flex-1 items-center justify-end gap-1.5 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden">
++    <div className="grid w-full grid-cols-4 gap-1.5">
+       {/* Producción */}
+       <KpiBadgeShell color={prodColor} icon={Puzzle} title="Producción">
+         {mutedLabel("In")}

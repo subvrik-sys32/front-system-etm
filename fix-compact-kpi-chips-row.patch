@@ -1,0 +1,39 @@
+diff --git a/src/features/tasks/components/expanded-row/task-expanded-row.tsx b/src/features/tasks/components/expanded-row/task-expanded-row.tsx
+index 8183bae..157da16 100644
+--- a/src/features/tasks/components/expanded-row/task-expanded-row.tsx
++++ b/src/features/tasks/components/expanded-row/task-expanded-row.tsx
+@@ -247,8 +247,12 @@ export function TaskExpandedRow({
+             />
+             <TaskRowActions task={task} className="gap-1" showAudit />
+           </div>
+-          {/* Solo desktop (no tablet/compact): chips de ruta + barra pendiente + KPIs */}
+-          {!isCompact && (
++          {/* Compact: chips KPI (misma fila que toggle + actions). Desktop: ruta/KPIs según tab. */}
++          {isCompact ? (
++            <div className="min-w-0 flex-1">
++              <TaskKpisSection task={task} density="compact" />
++            </div>
++          ) : (
+             <div className="min-w-0 flex-1">
+               {activeView === "workflow" && task.route?.length > 0 && (
+                 <TaskDesktopRouteStrip task={task} />
+@@ -267,17 +271,8 @@ export function TaskExpandedRow({
+               value: "workflow",
+               // Compact: ruta + KPIs juntos (sin toggle entre ellos).
+               // Desktop: solo panel producción (KPIs en header al elegir tab KPIs).
+-              content: isCompact ? (
+-                <div className="flex w-full flex-col gap-3">
+-                  <TaskProductionPanel
+-                    task={task}
+-                    indicatorsExpanded={indicatorsExpanded}
+-                    onIndicatorsExpandedChange={setIndicatorsExpanded}
+-                    showCollapseButton
+-                  />
+-                  <TaskKpisSection task={task} />
+-                </div>
+-              ) : (
++              // Compact: KPIs ya van en la fila del toggle (chips). Aquí solo ruta.
++              content: (
+                 <TaskProductionPanel
+                   task={task}
+                   indicatorsExpanded={indicatorsExpanded}

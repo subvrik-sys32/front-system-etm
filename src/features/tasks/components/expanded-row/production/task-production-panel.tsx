@@ -294,8 +294,8 @@ export function TaskProductionPanel({
                     </span>
                   )}
 
-                  {/* Operador: compact = inicial; desktop = nombre (sin solo letra) */}
-                  {operator && (
+                  {/* Operador sobre el círculo solo en compact */}
+                  {isCompact && operator && (
                     <span
                       title={operator.name}
                       className={cn(
@@ -375,6 +375,32 @@ export function TaskProductionPanel({
                 >
                   {isCompact ? definition.code : definition.label}
                 </span>
+
+                {!isCompact && operator && (
+                  <span
+                    title={operator.name}
+                    className="mt-0.5 max-w-[5.5rem] truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium shadow-xs"
+                    style={{
+                      backgroundColor: getBadgeColors(
+                        operator.color || "#64748B",
+                        "subtle",
+                        theme,
+                      ).background,
+                      color: getBadgeColors(
+                        operator.color || "#64748B",
+                        "subtle",
+                        theme,
+                      ).text,
+                    }}
+                  >
+                    {operator.name.trim().split(/\s+/)[0]}
+                  </span>
+                )}
+                {!isCompact && !operator && hasInvite && (
+                  <span className="mt-0.5 rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-300/90">
+                    Convocado
+                  </span>
+                )}
               </button>
 
               {!isLast && (

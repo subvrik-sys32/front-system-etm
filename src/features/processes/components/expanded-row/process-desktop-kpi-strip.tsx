@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { Activity, Clock3, Package, Puzzle } from "lucide-react"
+import { Activity, Clock3, Package, PaintBucket, Puzzle, Truck } from "lucide-react"
 
 import type { ProcessTask } from "../../types/process.types"
 import { ProcessEditableValue } from "./cards/process-editable-value"
@@ -40,7 +40,7 @@ export function ProcessDesktopKpiStrip({
         })
       : null
 
-  const showOutput = code != null && ["CT", "PL", "SD", "PT"].includes(code)
+  const showOutput = code != null && ["CT", "PL", "SD", "PT", "EN", "DS"].includes(code)
   const showPlRt = code === "CT"
   const plRtSuffix =
     task.plRt?.replace(/\d+/g, "").trim() ?? ""
@@ -108,6 +108,16 @@ export function ProcessDesktopKpiStrip({
   const timeColor = "#0EA5E9"
   const progressColor = "#22C55E"
 
+  const isMaterialProcess =
+    code === "CT" || code === "PL" || code === "SD"
+  const isPaintProcess = code === "PT"
+  const isAssemblyProcess = code === "EN"
+  const isDispatchProcess = code === "DS"
+
+  const paintHex = task.color?.color?.trim() || null
+  const paintDomain = paintHex ?? "#F97316"
+  const paintKgReal = step?.paintKgReal ?? null
+
   const inQty = processTask.inputQuantity
   const startedLabel = fmtTime(started)
   const completedLabel = completed ? fmtTime(completed) : null
@@ -169,16 +179,89 @@ export function ProcessDesktopKpiStrip({
       </KpiBadgeShell>
       </div>
 
-      {/* Material */}
-      <KpiBadgeShell color={materialColor} icon={Package} title="Material">
-        <span className="tabular-nums">{`L${task.lotNumber}`}</span>
-        <span className="opacity-40">·</span>
-        <span className="max-w-[5rem] truncate">{task.material.name.toUpperCase()}</span>
-        <span className="opacity-40">·</span>
-        <span className="tabular-nums">{task.pieces}</span>
-        <span className="opacity-40">·</span>
-        <span className="max-w-[4rem] truncate">{task.thickness.name}</span>
-      </KpiBadgeShell>
+      {/* Dominio: material | pintura | ensamble | despacho */}
+      {isMaterialProcess && (
+        <KpiBadgeShell color={materialColor} icon={Package} title="Material">
+          <span className="tabular-nums">{`L${task.lotNumber}`}</span>
+          <span className="opacity-40">·</span>
+          <span className="max-w-[5rem] truncate">{task.material.name.toUpperCase()}</span>
+          <span className="opacity-40">·</span>
+          <span className="tabular-nums">{task.pieces}</span>
+          <span className="opacity-40">·</span>
+          <span className="max-w-[4rem] truncate">{task.thickness.name}</span>
+        </KpiBadgeShell>
+      )}
+
+      {isPaintProcess && (
+        <KpiBadgeShell color={paintDomain} icon={PaintBucket} title="Pintura">
+          {paintHex ? (
+            <span
+              aria-hidden
+              className="size-2.5 shrink-0 rounded-full border border-black/15 dark:border-white/20"
+              style={{ backgroundColor: paintHex }}
+            />
+          ) : null}
+          <span className="max-w-[4.5rem] truncate">
+            {task.color?.name?.toUpperCase() ?? "—"}
+          </span>
+          <span className="opacity-40">·</span>
+          <span className="tabular-nums opacity-80">{`${task.paintKg ?? "—"} KG`}</span>
+          <span className="opacity-40">·</span>
+          <ProcessEditableValue
+            inline
+            numeric
+            value={paintKgReal}
+            suffix="KG"
+            disabled={locked}
+            placeholder="Real"
+            onSave={async value => {
+              if (!stepId) return
+              const next = toNumber(value)
+              await updateField(stepId, { paintKgReal: next }, { paintKgReal: next })
+            }}
+          />
+        </KpiBadgeShell>
+      )}
+
+      {isAssemblyProcess && (
+        <KpiBadgeShell color="#8B5CF6" icon={Puzzle} title="Ensamble">
+          {mutedLabel("Und")}
+          <span className="tabular-nums">{task.assemblyCount}</span>
+          <span className="opacity-40">·</span>
+          {mutedLabel("Out")}
+          <ProcessEditableValue
+            inline
+            numeric
+            value={step?.piecesOutput ?? null}
+            disabled={locked}
+            placeholder="Ingresar"
+            onSave={async value => {
+              if (!stepId) return
+              const piecesOutput = toNumber(value)
+              await updateField(stepId, { piecesOutput }, { piecesOutput })
+            }}
+          />
+        </KpiBadgeShell>
+      )}
+
+      {isDispatchProcess && (
+        <KpiBadgeShell color="#06B6D4" icon={Truck} title="Despacho">
+          {mutedLabel("Desp")}
+          <ProcessEditableValue
+            inline
+            numeric
+            value={step?.piecesOutput ?? null}
+            suffix="UND"
+            disabled={locked}
+            placeholder="Ingresar"
+            onSave={async value => {
+              if (!stepId) return
+              const piecesOutput = toNumber(value)
+              await updateField(stepId, { piecesOutput }, { piecesOutput })
+            }}
+          />
+        </KpiBadgeShell>
+      )}
 
       {/* Progreso — en compact sube (antes del celeste) */}
       <KpiBadgeShell color={progressColor} icon={Activity} title="Progreso">

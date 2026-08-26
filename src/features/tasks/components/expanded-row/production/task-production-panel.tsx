@@ -385,9 +385,9 @@ export function TaskProductionPanel({
 
     <>
 
-      {/* Ruta vive en el header del expanded (inline). Aquí solo progreso. */}
+      {/* Carousel de ruta + progreso — desktop y compact (ya no hay chips de ruta en el toggle). */}
 
-      <div className="w-full xl:hidden flex flex-col">
+      <div className="flex w-full flex-col">
 
         <CollapsibleSummaryPanel
           expanded={expanded}

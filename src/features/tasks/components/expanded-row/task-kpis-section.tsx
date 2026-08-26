@@ -235,17 +235,25 @@ export function TaskKpisSection({
     const finishInk = getBadgeColors(dominantColor, "solid").text
 
     const kpiLabelClass =
-      "truncate text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]"
+      "text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]"
     const kpiValueClass =
-      "truncate text-xs font-bold leading-tight text-white sm:text-sm"
+      "whitespace-nowrap text-xs font-bold leading-tight text-white sm:text-sm"
+
+    // Divisor entre KPIs — nunca después del último
+    const Dot = () => (
+      <span
+        aria-hidden
+        className="mx-1 h-1 w-1 shrink-0 rounded-full bg-white/40 tablet:mx-1.5"
+      />
+    )
 
     return (
-      <div className="flex h-full min-w-0 flex-1 items-center">
+      <div className="flex h-full min-w-0 flex-1 items-center overflow-hidden">
         <div
-          className="flex shrink-0 items-center gap-2.5 pl-4 pr-6 text-[13px] font-bold tracking-wide"
+          className="flex max-w-[36%] shrink-0 items-center gap-2 pl-3 pr-2 text-[13px] font-bold tracking-wide tablet:max-w-none tablet:gap-2.5 tablet:pl-4 tablet:pr-5"
           style={{ color: finishInk }}
         >
-          <PaintIcon className="h-4 w-4 shrink-0" />
+          <PaintIcon className="hidden h-4 w-4 shrink-0 tablet:block" />
           <span className="truncate">{paintLabel}</span>
         </div>
 
@@ -255,34 +263,50 @@ export function TaskKpisSection({
           className="h-4 w-px shrink-0 bg-white/20"
         />
 
-        {/* Materiales a la derecha, mismo formato que LISTAS / AVANCE */}
-        <div className="ml-auto flex min-w-0 items-center gap-3 tablet:gap-5 pl-4 pr-1">
-          <div className="flex min-w-0 items-center gap-1.5">
-            <Layers3 className="h-3.5 w-3.5 shrink-0 text-white/80" />
-            <div className="min-w-0">
-              <p className={kpiLabelClass}>Lote</p>
+        {/*
+          Lote · Material · Piezas
+          Móvil: solo valores + puntos (sin icono ni subtítulo).
+          Punto solo ENTRE items, no tras el último.
+        */}
+        <div
+          className={
+            "ml-auto flex min-w-0 items-center pl-2 pr-1 " +
+            "overflow-x-auto overflow-y-hidden " +
+            "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden " +
+            "tablet:overflow-visible tablet:pl-4"
+          }
+        >
+          <div className="flex shrink-0 items-center gap-1.5">
+            <Layers3 className="hidden h-3.5 w-3.5 shrink-0 text-white/80 tablet:block" />
+            <div className="shrink-0">
+              <p className={`hidden tablet:block ${kpiLabelClass}`}>Lote</p>
               <p className={kpiValueClass}>{lotValue}</p>
             </div>
           </div>
 
-          <div className="flex min-w-0 items-center gap-1.5">
-            <InspectionPanel className="h-3.5 w-3.5 shrink-0 text-white/80" />
-            <div className="min-w-0">
-              <p className={kpiLabelClass}>Material</p>
+          <Dot />
+
+          <div className="flex shrink-0 items-center gap-1.5">
+            <InspectionPanel className="hidden h-3.5 w-3.5 shrink-0 text-white/80 tablet:block" />
+            <div className="shrink-0">
+              <p className={`hidden tablet:block ${kpiLabelClass}`}>Material</p>
               <p className={kpiValueClass}>{materialValue}</p>
             </div>
           </div>
 
-          <div className="flex min-w-0 items-center gap-1.5">
-            <Puzzle className="h-3.5 w-3.5 shrink-0 text-white/80" />
-            <div className="min-w-0">
-              <p className={kpiLabelClass}>Piezas</p>
+          <Dot />
+
+          <div className="flex shrink-0 items-center gap-1.5">
+            <Puzzle className="hidden h-3.5 w-3.5 shrink-0 text-white/80 tablet:block" />
+            <div className="shrink-0">
+              <p className={`hidden tablet:block ${kpiLabelClass}`}>Piezas</p>
               <p className={kpiValueClass}>{piecesValue}</p>
             </div>
           </div>
         </div>
       </div>
     )
+
   }
 
   return (

@@ -424,9 +424,16 @@ export function TaskProductionPanel({
                 <TaskKpisSection task={task} density="compact" />
               </div>
 
-              <div className="flex shrink-0 items-center gap-2 pl-2 h-full py-2 tablet:gap-3 tablet:pl-4">
-                {/* Listas + Avance solo tablet+; en móvil el espacio es para Lote/Material/Piezas */}
-                <div className="hidden shrink-0 items-center gap-2 tablet:flex tablet:gap-3">
+              <div className="flex shrink-0 items-center pl-1 h-full py-2 tablet:pl-2">
+                {/*
+                  · Listas · Avance  (tablet+)
+                  Punto inicial une con Piezas; sin punto tras Avance.
+                */}
+                <div className="hidden shrink-0 items-center tablet:flex">
+                  <span
+                    aria-hidden
+                    className="mx-1.5 h-1 w-1 shrink-0 rounded-full bg-white/40"
+                  />
                   <div className="shrink-0 text-right">
                     <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]">
                       Listas
@@ -438,7 +445,7 @@ export function TaskProductionPanel({
 
                   <span
                     aria-hidden
-                    className="h-1 w-1 shrink-0 rounded-full bg-white/35"
+                    className="mx-1.5 h-1 w-1 shrink-0 rounded-full bg-white/40"
                   />
 
                   <div className="shrink-0 text-right">
@@ -451,7 +458,7 @@ export function TaskProductionPanel({
                   </div>
                 </div>
 
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
+                <div className="ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-white tablet:ml-2">
                   <MoreHorizontal size={15} />
                 </div>
               </div>

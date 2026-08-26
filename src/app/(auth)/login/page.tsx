@@ -36,13 +36,6 @@ export default function LoginPage() {
               <div className="absolute inset-0">
                 <ProductionVisual />
               </div>
-
-              {/* Solo el Icono / Logo principal */}
-              <div className="relative z-10">
-                <div className="relative h-12 w-12 laptop:h-14 laptop:w-14">
-                  <Image src="/icon.svg" alt="ETM SAC" fill priority draggable={false} className="select-none object-contain" />
-                </div>
-              </div>
             </div>
 
           </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback, useMemo, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   motion,
   AnimatePresence,
@@ -92,42 +92,91 @@ export function ProductionVisual() {
   const [chipFlashes, setChipFlashes] = useState<number[]>([])
   const [padFlashes, setPadFlashes] = useState<number[]>([])
 
-  // --- Seguimiento del mouse: luz de inspección + inclinación sutil ---
+  // --- Seguimiento del mouse a nivel de PÁGINA COMPLETA ---
+  // Dos efectos independientes, cada uno con su propia lógica:
+  // 1) "Lámpara": el mouse revela detalle solo cuando está cerca/sobre la placa
+  //    (posición local en coordenadas del SVG 0-400).
+  // 2) "Inclinación": la placa se inclina hacia el cursor SIEMPRE, en toda la
+  //    página, y cuanto más lejos está el cursor del componente, más fuerte
+  //    es la inclinación (como si "estirara el cuello" para seguirte).
   const mx = useMotionValue(200)
   const my = useMotionValue(200)
-  const tiltRawX = useMotionValue(0) // -1..1
+  const tiltRawX = useMotionValue(0) // dirección * intensidad, -1..1
   const tiltRawY = useMotionValue(0)
+  const liftRatio = useMotionValue(0) // 0 = cursor encima, 1 = cursor en la esquina más lejana
 
   const springX = useSpring(mx, { stiffness: 120, damping: 18 })
   const springY = useSpring(my, { stiffness: 120, damping: 18 })
-  const tiltX = useSpring(tiltRawX, { stiffness: 100, damping: 16 })
-  const tiltY = useSpring(tiltRawY, { stiffness: 100, damping: 16 })
+  // spring más suave para las oscilaciones grandes de la inclinación
+  const tiltX = useSpring(tiltRawX, { stiffness: 70, damping: 14, mass: 0.6 })
+  const tiltY = useSpring(tiltRawY, { stiffness: 70, damping: 14, mass: 0.6 })
+  const lift = useSpring(liftRatio, { stiffness: 70, damping: 16 })
 
-  const rotateX = useTransform(tiltY, [-1, 1], [7, -7])
-  const rotateY = useTransform(tiltX, [-1, 1], [-7, 7])
+  const MAX_TILT_DEG = 22
+  const MAX_LIFT_PX = 20
+
+  const rotateX = useTransform(tiltY, [-1, 1], [MAX_TILT_DEG, -MAX_TILT_DEG])
+  const rotateY = useTransform(tiltX, [-1, 1], [-MAX_TILT_DEG, MAX_TILT_DEG])
+  const boardX = useTransform(tiltX, (v) => v * MAX_LIFT_PX)
+  const boardY = useTransform(tiltY, (v) => v * MAX_LIFT_PX)
+  const highlightOpacity = useTransform(lift, [0, 1], [1, 0.25])
 
   const mxPx = useTransform(springX, (v) => `${v}px`)
   const myPx = useTransform(springY, (v) => `${v}px`)
   const spotlightMask = useMotionTemplate`radial-gradient(140px at ${mxPx} ${myPx}, black, transparent)`
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const rect = containerRef.current?.getBoundingClientRect()
-      if (!rect) return
-      const relX = ((e.clientX - rect.left) / rect.width) * 400
-      const relY = ((e.clientY - rect.top) / rect.height) * 400
-      mx.set(relX)
-      my.set(relY)
-      tiltRawX.set(((e.clientX - rect.left) / rect.width) * 2 - 1)
-      tiltRawY.set(((e.clientY - rect.top) / rect.height) * 2 - 1)
-    },
-    [mx, my, tiltRawX, tiltRawY]
-  )
+  useEffect(() => {
+    let frame = 0
 
-  const handleMouseLeave = useCallback(() => {
-    tiltRawX.set(0)
-    tiltRawY.set(0)
-  }, [tiltRawX, tiltRawY])
+    const onMove = (e: MouseEvent) => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        const rect = containerRef.current?.getBoundingClientRect()
+        if (!rect) return
+
+        // Posición local (para la lámpara): solo importa cuando el cursor
+        // está cerca del componente.
+        const localX = ((e.clientX - rect.left) / rect.width) * 400
+        const localY = ((e.clientY - rect.top) / rect.height) * 400
+        mx.set(localX)
+        my.set(localY)
+
+        // Distancia desde el CENTRO del componente hasta el cursor, en
+        // cualquier parte de la página. A mayor distancia, mayor intensidad.
+        const centerX = rect.left + rect.width / 2
+        const centerY = rect.top + rect.height / 2
+        const dx = e.clientX - centerX
+        const dy = e.clientY - centerY
+        const dist = Math.hypot(dx, dy)
+
+        // Normalizado contra la mitad de la diagonal de la ventana, para que
+        // "lejos" signifique lejos de verdad sin importar el tamaño de pantalla.
+        const halfDiag = Math.hypot(window.innerWidth, window.innerHeight) / 2
+        const ratio = Math.min(dist / halfDiag, 1)
+
+        const dirX = dist === 0 ? 0 : dx / dist
+        const dirY = dist === 0 ? 0 : dy / dist
+
+        tiltRawX.set(dirX * ratio)
+        tiltRawY.set(dirY * ratio)
+        liftRatio.set(ratio)
+      })
+    }
+
+    const resetTilt = () => {
+      tiltRawX.set(0)
+      tiltRawY.set(0)
+      liftRatio.set(0)
+    }
+
+    window.addEventListener("mousemove", onMove, { passive: true })
+    document.addEventListener("mouseleave", resetTilt)
+    return () => {
+      window.removeEventListener("mousemove", onMove)
+      document.removeEventListener("mouseleave", resetTilt)
+      cancelAnimationFrame(frame)
+    }
+  }, [mx, my, tiltRawX, tiltRawY, liftRatio])
 
   const tracesById = useMemo(() => Object.fromEntries(TRACES.map((t) => [t.id, t])), [])
 
@@ -177,8 +226,6 @@ export function ProductionVisual() {
   return (
     <div
       ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       className="relative size-full overflow-hidden select-none circuit-root"
       style={{ perspective: 900 }}
     >
@@ -205,7 +252,7 @@ export function ProductionVisual() {
       {/* Placa: se inclina levemente hacia el cursor */}
       <motion.div
         className="absolute inset-0"
-        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+        style={{ rotateX, rotateY, x: boardX, y: boardY, transformStyle: "preserve-3d" }}
       >
         {/* Resplandor ambiental */}
         <div
@@ -221,7 +268,14 @@ export function ProductionVisual() {
         </svg>
 
         {/* Capa iluminada: recortada por una máscara que sigue al mouse — el efecto "lámpara" */}
-        <motion.div className="absolute inset-0" style={{ WebkitMaskImage: spotlightMask as any, maskImage: spotlightMask as any }}>
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            WebkitMaskImage: spotlightMask as any,
+            maskImage: spotlightMask as any,
+            opacity: highlightOpacity,
+          }}
+        >
           <svg viewBox="0 0 400 400" className="absolute inset-0 size-full">
             {TRACES.map((t) => (
               <path

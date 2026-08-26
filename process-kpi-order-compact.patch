@@ -1,0 +1,70 @@
+diff --git a/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx b/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
+index 176cc59..3aa4363 100644
+--- a/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
++++ b/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
+@@ -9,6 +9,7 @@ import { useWorkflowStepField } from "@/features/workflow/hooks/use-workflow-ste
+ import { getWorkflowStepContext } from "@/features/workflow/utils/get-workflow-step-context"
+ import { useBadgeColors } from "@/shared/utils/use-badge-colors"
+ import { workflowAccess } from "@/features/workflow/access/workflow-access"
++import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ 
+ /** 4 chips KPI — look DynamicBadge; vacíos tipo Ingresar; editable sin estirar. */
+ export function ProcessDesktopKpiStrip({
+@@ -22,6 +23,7 @@ export function ProcessDesktopKpiStrip({
+   statusLabel: string
+   nextProcessLabel: string
+ }) {
++  const { isCompact } = useResponsive()
+   const task = processTask.task
+   const step = processTask.workflowStep
+   const code = step?.processCode
+@@ -178,24 +180,7 @@ export function ProcessDesktopKpiStrip({
+         <span className="max-w-[4rem] truncate">{task.thickness.name}</span>
+       </KpiBadgeShell>
+ 
+-      {/* Jornada */}
+-      <KpiBadgeShell color={timeColor} icon={Clock3} title="Jornada">
+-        {startedLabel ? (
+-          <>
+-            <span className="tabular-nums">{startedLabel}</span>
+-            <span className="opacity-50">→</span>
+-            {completedLabel ? (
+-              <span className="tabular-nums">{completedLabel}</span>
+-            ) : (
+-              <EmptyPill label="No finalizado" />
+-            )}
+-          </>
+-        ) : (
+-          <EmptyPill label="Sin empezar" />
+-        )}
+-      </KpiBadgeShell>
+-
+-      {/* Progreso */}
++      {/* Progreso — en compact sube (antes del celeste) */}
+       <KpiBadgeShell color={progressColor} icon={Activity} title="Progreso">
+         <span className="tabular-nums">{`${percent}%`}</span>
+         <span className="opacity-40">·</span>
+@@ -207,6 +192,23 @@ export function ProcessDesktopKpiStrip({
+           </>
+         )}
+       </KpiBadgeShell>
++
++      {/* Jornada — en compact abajo a ancho completo; siempre inicio → fin */}
++      <div className={isCompact ? "col-span-2 min-w-0" : "min-w-0"}>
++        <KpiBadgeShell color={timeColor} icon={Clock3} title="Jornada">
++          {startedLabel ? (
++            <span className="tabular-nums">{startedLabel}</span>
++          ) : (
++            <EmptyPill label="Sin inicio" />
++          )}
++          <span className="opacity-50">→</span>
++          {completedLabel ? (
++            <span className="tabular-nums">{completedLabel}</span>
++          ) : (
++            <EmptyPill label={startedLabel ? "No finalizado" : "Sin fin"} />
++          )}
++        </KpiBadgeShell>
++      </div>
+     </div>
+   )
+ }

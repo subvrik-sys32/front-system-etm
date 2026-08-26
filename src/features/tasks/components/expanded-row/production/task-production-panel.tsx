@@ -25,6 +25,7 @@ import {
 
 import {
   CollapsibleSummaryPanel,
+  CollapseIndicatorsButton,
 } from "@/shared/ui/collapsible-summary-panel/collapsible-summary-panel"
 
 import {
@@ -410,7 +411,7 @@ export function TaskProductionPanel({
         <CollapsibleSummaryPanel
           expanded={expanded}
           onCollapse={() => setExpanded(false)}
-          showCollapseButton={showCollapseButton}
+          showCollapseButton={false}
           collapsed={
             <button
               type="button"
@@ -466,11 +467,16 @@ export function TaskProductionPanel({
         >
 
           <div
-            className="flex w-full flex-col gap-6 rounded-2xl p-4 tablet:p-5"
+            className="relative flex w-full flex-col gap-6 rounded-2xl p-4 tablet:p-5"
             style={{
               background: getGlassSurface(status?.color ?? "#64748B", theme).background,
             }}
           >
+            {showCollapseButton && (
+              <div className="absolute right-2 top-2 z-10">
+                <CollapseIndicatorsButton onClick={() => setExpanded(false)} />
+              </div>
+            )}
 
             {stepper}
 

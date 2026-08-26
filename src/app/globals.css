@@ -180,9 +180,10 @@ html, body {
   /* Mismo matiz que light (230); más luminoso solo para contraste en dark */
   --primary: oklch(0.62 0.14 230);
   --primary-foreground: oklch(0.99 0 0);
-  --fab-plus: oklch(0.26 0.05 230);
-  --fab-plus-foreground: oklch(0.99 0 0);
-  --fab-plus-muted: oklch(0.90 0.025 230);
+  /* Counter / FAB+: dark = pastilla clara; light sigue sólido en :root */
+  --fab-plus: oklch(0.90 0.025 230);
+  --fab-plus-foreground: oklch(0.26 0.05 230);
+  --fab-plus-muted: oklch(0.32 0.04 230);
   
   --secondary: oklch(0.22 0.005 260);
   --secondary-foreground: oklch(0.95 0.005 260);

@@ -7,6 +7,11 @@ import {
 } from "react"
 
 import { Spinner } from "@/shared/ui/spinner/spinner"
+import {
+  useWorkflowFieldErrorsStore,
+  type WorkflowFieldKey,
+} from "@/features/workflow/store/workflow-field-errors-store"
+import { cn } from "@/shared/utils/utils"
 
 type EditableProps = {
   value: string | number | null
@@ -19,6 +24,9 @@ type EditableProps = {
   inline?: boolean
   /** Pill Ingresar legible sobre fondo oscuro del badge compacto. */
   onDark?: boolean
+  /** stepId + fieldKey → resalta en rojo si falló validación al completar. */
+  stepId?: string
+  fieldKey?: WorkflowFieldKey
   onSave: (
     value: string | null
   ) => void | Promise<void>
@@ -33,6 +41,8 @@ export function ProcessEditableValue({
   treatZeroAsEmpty = true,
   inline = false,
   onDark = false,
+  stepId,
+  fieldKey,
   onSave,
 }: EditableProps) {
   const [editing, setEditing] = useState(false)
@@ -44,6 +54,12 @@ export function ProcessEditableValue({
   )
 
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const invalid = useWorkflowFieldErrorsStore(state =>
+    stepId && fieldKey
+      ? (state.byStep[stepId]?.fields.includes(fieldKey) ?? false)
+      : false,
+  )
 
   useEffect(() => {
     setDraft(
@@ -57,6 +73,12 @@ export function ProcessEditableValue({
     if (!editing) return
     inputRef.current?.focus()
   }, [editing])
+
+  const clearError = () => {
+    if (stepId && fieldKey) {
+      useWorkflowFieldErrorsStore.getState().clear(stepId, fieldKey)
+    }
+  }
 
   const save = async () => {
     if (saving) return
@@ -77,6 +99,7 @@ export function ProcessEditableValue({
 
     try {
       await onSave(toSave)
+      clearError()
       setEditing(false)
     } catch {
       inputRef.current?.focus()
@@ -90,7 +113,7 @@ export function ProcessEditableValue({
       <div
         className={
           inline
-            ? "relative inline-flex w-[3.25rem] max-w-[3.25rem] shrink-0 items-center"
+            ? "relative inline-flex min-w-[3.5rem] shrink-0 items-center"
             : "relative flex w-full min-w-0 items-center"
         }
       >
@@ -144,6 +167,7 @@ export function ProcessEditableValue({
       tabIndex={disabled ? undefined : 0}
       onClick={() => {
         if (disabled) return
+        clearError()
         setEditing(true)
       }}
       onKeyDown={event => {
@@ -151,28 +175,40 @@ export function ProcessEditableValue({
 
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault()
+          clearError()
           setEditing(true)
         }
       }}
       className={
         disabled
           ? inline
-            ? "inline-flex max-w-[4.5rem] shrink-0 cursor-default items-center truncate font-inherit tabular-nums leading-none text-inherit opacity-50"
-            : "block w-full min-w-0 truncate cursor-default text-left font-inherit leading-inherit text-inherit opacity-50"
+            ? "inline-flex max-w-[5rem] shrink-0 cursor-default items-center font-inherit tabular-nums leading-none text-inherit opacity-50"
+            : "block w-full min-w-0 cursor-default text-left font-inherit leading-inherit text-inherit opacity-50"
           : inline
-            ? "inline-flex max-w-[4.5rem] shrink-0 cursor-pointer items-center truncate font-inherit tabular-nums leading-none text-inherit"
-            : "block w-full min-w-0 truncate cursor-pointer text-left font-inherit leading-inherit text-inherit"
+            ? "inline-flex max-w-[5rem] shrink-0 cursor-pointer items-center font-inherit tabular-nums leading-none text-inherit"
+            : "block w-full min-w-0 cursor-pointer text-left font-inherit leading-inherit text-inherit"
       }
     >
       {hasValue
-        ? (suffix ? `${value} ${suffix}` : value)
+        ? (
+          <span className="truncate">
+            {suffix ? `${value} ${suffix}` : value}
+          </span>
+        )
         : (
+          // Sin truncate en el pill: el ring/borde no se recorta.
+          // Sombra inset en vez de ring externo → no choca con overflow-hidden del strip.
           <span
-            className={
-              onDark
-                ? "inline-flex max-w-full items-center truncate rounded-md bg-white/15 px-1.5 py-0.5 font-inherit text-[length:inherit] font-semibold leading-inherit text-white"
-                : "inline-flex max-w-full items-center truncate rounded-md bg-foreground/10 px-1.5 py-0.5 font-inherit text-[length:inherit] font-semibold leading-inherit text-inherit"
-            }
+            className={cn(
+              "inline-flex max-w-full items-center rounded-md px-1.5 py-0.5 font-inherit text-[length:inherit] font-semibold leading-none transition-colors duration-150",
+              invalid
+                ? onDark
+                  ? "bg-red-500/40 text-red-50 shadow-[inset_0_0_0_1.5px_rgba(248,113,113,0.95)]"
+                  : "bg-red-500/15 text-red-600 shadow-[inset_0_0_0_1.5px_rgba(239,68,68,0.7)] dark:text-red-400"
+                : onDark
+                  ? "bg-white/15 text-white"
+                  : "bg-foreground/10 text-inherit",
+            )}
           >
             {placeholder}
           </span>

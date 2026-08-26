@@ -196,7 +196,7 @@ export function ProcessDesktopKpiStrip({
             {label}
           </p>
           <div
-            className="truncate text-xs font-bold leading-tight sm:text-sm"
+            className="min-w-0 overflow-visible text-xs font-bold leading-tight sm:text-sm"
             style={{ color: accent ?? "#fff" }}
           >
             {children}
@@ -237,6 +237,8 @@ export function ProcessDesktopKpiStrip({
                       value={step?.piecesOutput ?? null}
                       disabled={locked}
                       placeholder="Ingresar"
+                      stepId={stepId}
+                      fieldKey="piecesOutput"
                       onSave={async value => {
                         if (!stepId) return
                         const piecesOutput = toNumber(value)
@@ -261,6 +263,8 @@ export function ProcessDesktopKpiStrip({
                       suffix={plRtSuffix}
                       disabled={locked}
                       placeholder="Ingresar"
+                      stepId={stepId}
+                      fieldKey="plRtReal"
                       onSave={async value => {
                         if (!stepId) return
                         const plRtReal = toNumber(value)
@@ -349,6 +353,8 @@ export function ProcessDesktopKpiStrip({
               suffix="KG"
               disabled={locked}
               placeholder="Ingresar"
+              stepId={stepId}
+              fieldKey="paintKgReal"
               onSave={async value => {
                 if (!stepId) return
                 const next = toNumber(value)
@@ -377,6 +383,8 @@ export function ProcessDesktopKpiStrip({
               value={step?.piecesOutput ?? null}
               disabled={locked}
               placeholder="Ingresar"
+              stepId={stepId}
+              fieldKey="piecesOutput"
               onSave={async value => {
                 if (!stepId) return
                 const piecesOutput = toNumber(value)
@@ -406,6 +414,8 @@ export function ProcessDesktopKpiStrip({
               suffix="UND"
               disabled={locked}
               placeholder="Ingresar"
+              stepId={stepId}
+              fieldKey="piecesOutput"
               onSave={async value => {
                 if (!stepId) return
                 const piecesOutput = toNumber(value)

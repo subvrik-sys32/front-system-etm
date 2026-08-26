@@ -83,6 +83,8 @@ export function ProcessProductionCard({
                   numeric
                   value={workflowStep?.piecesOutput ?? null}
                   disabled={locked}
+                  stepId={stepId}
+                  fieldKey="piecesOutput"
                   onSave={async value => {
 
                     if (!stepId) return
@@ -111,6 +113,8 @@ export function ProcessProductionCard({
                   value={workflowStep?.plRtReal ?? null}
                   suffix={plRtSuffix}
                   disabled={locked}
+                  stepId={stepId}
+                  fieldKey="plRtReal"
                   onSave={async value => {
 
                     if (!stepId) return

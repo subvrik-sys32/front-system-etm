@@ -22,9 +22,9 @@ type Props = {
 export const FAB_PLUS =
   "bg-fab-plus text-fab-plus-foreground shadow-xs"
 
-/** Historial activo: fill blanco, cifra en azul de negocio. */
+/** Historial activo: mismo color de negocio que el FAB (no más claro). */
 export const FAB_PLUS_ACTIVE =
-  "bg-fab-plus-muted text-fab-plus shadow-xs"
+  "bg-fab-plus text-fab-plus-foreground shadow-xs ring-2 ring-primary/50"
 
 const FAB_ACTIVE = "bg-muted text-foreground"
 

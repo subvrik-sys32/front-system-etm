@@ -11,6 +11,10 @@ import { useWorkflowRequirements } from "@/features/workflow/hooks/use-workflow-
 import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 import { canCompleteStep } from "@/features/workflow/selectors/can-complete"
 import { workflowGuard } from "@/features/workflow/domain/workflow-guard"
+import {
+  useWorkflowFieldErrorsStore,
+  type WorkflowFieldKey,
+} from "@/features/workflow/store/workflow-field-errors-store"
 import { getCurrentStep } from "@/features/workflow/selectors/get-current-step"
 import type { ProcessCode, Task } from "@/features/tasks/types/task.types"
 import type { ProcessTask } from "@/features/processes/types/process.types"
@@ -42,7 +46,18 @@ export function ProcessRowActions({
   status,
   processCode,
 }: ProcessRowActionsProps) {
-  const { startStep, pauseStep, resumeStep, completeStep, reviewStep } = useWorkflow()
+  const {
+    startStep,
+    pauseStep,
+    resumeStep,
+    completeStep,
+    reviewStep,
+    isStarting,
+    isPausing,
+    isResuming,
+    isCompleting,
+    isReviewing,
+  } = useWorkflow()
   const { has } = usePermissions()
   const router = useRouter()
   const { data: requirements } = useWorkflowRequirements()
@@ -95,18 +110,33 @@ export function ProcessRowActions({
       paintKgReal: currentStep.paintKgReal ?? null,
     }
 
+    const processTask = {
+      task,
+      workflowStep: currentStep,
+      paintStep: null,
+      inputQuantity: null,
+    } satisfies ProcessTask
+
     // Sonner de alerta si faltan piezas / PL-RT / kg pintura (mismo contrato que CT).
-    if (
-      !workflowGuard.validateProcessData(
-        {
-          task,
-          workflowStep: currentStep,
-          paintStep: null,
-          inputQuantity: null,
-        } satisfies ProcessTask,
-        payload,
-      )
-    ) {
+    if (!workflowGuard.validateProcessData(processTask, payload)) {
+      // Resalta en rojo los pills "Ingresar" vacíos para contrastar.
+      const missing: WorkflowFieldKey[] = []
+      const code = processCode
+      const empty = (v: number | null | undefined) => v == null || v <= 0
+
+      if (code === "CT") {
+        if (empty(payload.piecesOutput)) missing.push("piecesOutput")
+        if (empty(payload.plRtReal)) missing.push("plRtReal")
+      } else if (["PL", "SD", "EN", "DS"].includes(code)) {
+        if (empty(payload.piecesOutput)) missing.push("piecesOutput")
+      } else if (code === "PT") {
+        if (empty(payload.paintKgReal)) missing.push("paintKgReal")
+        if (empty(payload.piecesOutput)) missing.push("piecesOutput")
+      }
+
+      if (missing.length > 0) {
+        useWorkflowFieldErrorsStore.getState().flash(stepId, missing)
+      }
       return
     }
 
@@ -209,6 +239,7 @@ export function ProcessRowActions({
           variant="start"
           compact
           disabled={!canUpdate}
+          loading={isStarting}
           onClick={handleStart}
         />
       )}
@@ -220,6 +251,7 @@ export function ProcessRowActions({
             variant="pause"
             iconOnly
             disabled={!canUpdate}
+            loading={isPausing}
             onClick={handlePause}
           />
 
@@ -228,6 +260,7 @@ export function ProcessRowActions({
             variant="complete"
             iconOnly
             disabled={!canUpdate}
+            loading={isCompleting}
             onClick={handleComplete}
           />
         </>
@@ -239,6 +272,7 @@ export function ProcessRowActions({
           variant="start"
           compact
           disabled={!canUpdate}
+          loading={isResuming}
           onClick={handleResume}
         />
       )}
@@ -249,6 +283,7 @@ export function ProcessRowActions({
           variant="review"
           compact
           disabled={!canReview}
+          loading={isReviewing}
           onClick={handleReview}
         />
       )}

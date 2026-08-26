@@ -100,6 +100,8 @@ export function ProcessPaintCard({
                     value={paintKgReal}
                     suffix="KG"
                     disabled={locked}
+                    stepId={stepId}
+                    fieldKey="paintKgReal"
                     onSave={async value => {
                       if (!stepId) return
                       const nextValue = toNumber(value)

@@ -71,6 +71,8 @@ export function ProcessAssemblyCard({ processTask, size }: Props) {
               numeric
               value={workflowAccess.piecesOutput(processTask) ?? null}
               disabled={locked}
+              stepId={stepId}
+              fieldKey="piecesOutput"
               onSave={async value => {
 
                 if (!stepId) return

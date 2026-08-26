@@ -271,6 +271,13 @@ export function useWorkflow(){
     completeStep:complete.mutateAsync,
     reviewStep:review.mutateAsync,
     reopenStep:reopen.mutateAsync,
+    // Pending flags — solo Spinner React en WorkflowAction.
+    isStarting:start.isPending,
+    isPausing:pause.isPending,
+    isResuming:resume.isPending,
+    isCompleting:complete.isPending,
+    isReviewing:review.isPending,
+    isReopening:reopen.isPending,
   }
 
 }

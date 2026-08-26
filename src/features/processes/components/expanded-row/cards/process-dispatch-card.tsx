@@ -67,6 +67,8 @@ export function ProcessDispatchCard({ processTask, size }: Props) {
               value={workflowAccess.piecesOutput(processTask) ?? null}
               suffix="UND"
               disabled={locked}
+              stepId={stepId}
+              fieldKey="piecesOutput"
               onSave={async value => {
 
                 if (!stepId) return

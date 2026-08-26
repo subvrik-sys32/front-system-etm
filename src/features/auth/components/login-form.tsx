@@ -130,7 +130,7 @@ export function LoginForm() {
         disabled={loading}
         className={`flex h-11 ${SHORT}:h-10 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors ${
           success
-            ? "bg-emerald-500 text-foreground"
+            ? "bg-primary text-primary-foreground"
             : "bg-primary text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
         }`}
       >

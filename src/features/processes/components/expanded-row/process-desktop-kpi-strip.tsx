@@ -67,11 +67,11 @@ export function ProcessDesktopKpiStrip({
     return (
       <div
         title={title}
-        className="inline-flex h-8 w-full min-w-0 select-none items-center justify-center gap-1 overflow-hidden rounded-lg px-2 shadow-xs"
+        className="inline-flex min-h-8 w-full min-w-0 select-none items-center justify-center gap-1 rounded-lg px-2 py-1 shadow-xs"
         style={{ backgroundColor: badge.background, color: badge.text }}
       >
         <Icon size={14} className="shrink-0 opacity-90" style={{ color: badge.text }} />
-        <div className="flex min-w-0 items-center gap-1.5 text-xs font-semibold leading-none tracking-[0.06em]">
+        <div className="flex min-w-0 flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-xs font-semibold leading-tight tracking-[0.06em]">
           {children}
         </div>
       </div>
@@ -112,11 +112,18 @@ export function ProcessDesktopKpiStrip({
 
   return (
     <div className="grid w-full grid-cols-2 gap-1.5 laptop:grid-cols-4">
-      {/* Producción */}
+      {/* Producción: ancho completo en 2-col si hay OUT/PLRT (no aplastar Ingresar) */}
+      <div
+        className={
+          showOutput || showPlRt
+            ? "col-span-2 min-w-0 laptop:col-span-1"
+            : "min-w-0"
+        }
+      >
       <KpiBadgeShell color={prodColor} icon={Puzzle} title="Producción">
         {mutedLabel("In")}
         {inQty != null && String(inQty).trim() !== "" ? (
-          <span className="tabular-nums">{inQty}</span>
+          <span className="max-w-[4rem] truncate tabular-nums">{inQty}</span>
         ) : (
           <span className="text-[10px] font-semibold opacity-55">Sin entrada</span>
         )}
@@ -158,16 +165,17 @@ export function ProcessDesktopKpiStrip({
           </>
         )}
       </KpiBadgeShell>
+      </div>
 
       {/* Material */}
       <KpiBadgeShell color={materialColor} icon={Package} title="Material">
         <span className="tabular-nums">{`L${task.lotNumber}`}</span>
         <span className="opacity-40">·</span>
-        <span className="truncate">{task.material.name.toUpperCase()}</span>
+        <span className="max-w-[5rem] truncate">{task.material.name.toUpperCase()}</span>
         <span className="opacity-40">·</span>
         <span className="tabular-nums">{task.pieces}</span>
         <span className="opacity-40">·</span>
-        <span className="truncate">{task.thickness.name}</span>
+        <span className="max-w-[4rem] truncate">{task.thickness.name}</span>
       </KpiBadgeShell>
 
       {/* Jornada */}

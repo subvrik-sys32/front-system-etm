@@ -247,17 +247,16 @@ export function TaskExpandedRow({
             />
             <TaskRowActions task={task} className="gap-1" showAudit />
           </div>
-          {/* Solo desktop (no tablet/compact): chips de ruta + barra pendiente + KPIs */}
-          {!isCompact && (
-            <div className="min-w-0 flex-1">
-              {activeView === "workflow" && task.route?.length > 0 && (
-                <TaskDesktopRouteStrip task={task} />
-              )}
-              {activeView === "kpis" && (
-                <TaskKpisSection task={task} density="compact" />
-              )}
-            </div>
-          )}
+          {/*
+            Chips siempre en la fila del toggle (compact = h-8).
+            Ruta en desktop cuando hay route. Sin KPIs enormes debajo de rutas.
+          */}
+          <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2">
+            {!isCompact && task.route?.length > 0 && (
+              <TaskDesktopRouteStrip task={task} />
+            )}
+            <TaskKpisSection task={task} density="compact" />
+          </div>
         </div>
 
         <EntityExpandedSlider
@@ -265,19 +264,8 @@ export function TaskExpandedRow({
           panels={[
             {
               value: "workflow",
-              // Compact: ruta + KPIs juntos (sin toggle entre ellos).
-              // Desktop: solo panel producción (KPIs en header al elegir tab KPIs).
-              content: isCompact ? (
-                <div className="flex w-full flex-col gap-3">
-                  <TaskProductionPanel
-                    task={task}
-                    indicatorsExpanded={indicatorsExpanded}
-                    onIndicatorsExpandedChange={setIndicatorsExpanded}
-                    showCollapseButton
-                  />
-                  <TaskKpisSection task={task} />
-                </div>
-              ) : (
+              // Solo panel de producción/ruta; KPIs viven en el header (chips).
+              content: (
                 <TaskProductionPanel
                   task={task}
                   indicatorsExpanded={indicatorsExpanded}
@@ -288,7 +276,7 @@ export function TaskExpandedRow({
             },
             {
               value: "kpis",
-              // Solo desktop (header). Compact no usa este tab.
+              // KPIs ya están en el header como chips; no duplicar carousel debajo.
               content: null,
             },
             // Mensajes: CommentHistoryDialog (no panel inline)

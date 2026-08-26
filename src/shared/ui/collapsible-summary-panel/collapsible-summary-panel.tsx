@@ -12,7 +12,7 @@ type Props = {
   showCollapseButton?: boolean
 }
 
-/** Cerrar indicadores — ink on-glass, no muted de página. */
+/** Cerrar indicadores — badge fijo legible light/dark (tokens fab-plus). */
 export function CollapseIndicatorsButton({
   onClick,
   className,
@@ -27,9 +27,9 @@ export function CollapseIndicatorsButton({
       aria-label="Ocultar indicadores"
       className={cn(
         "flex size-8 shrink-0 items-center justify-center rounded-full",
-        "text-on-glass-muted transition-colors duration-150",
-        "hover:bg-on-glass-foreground/10 hover:text-on-glass-foreground",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-glass-foreground/30",
+        "bg-fab-plus text-fab-plus-foreground shadow-xs",
+        "transition-colors duration-150 hover:brightness-110",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fab-plus/40",
         className,
       )}
     >
@@ -55,7 +55,7 @@ export function CollapsibleSummaryPanel({
         <div className="flex w-full min-w-0 animate-comment-in flex-col gap-1.5">
           {/* Fila propia: no absolute sobre la última KPI card */}
           {showCollapseButton && (
-            <div className="flex w-full justify-end pr-0.5">
+            <div className="flex w-full justify-start pl-0.5">
               <CollapseIndicatorsButton onClick={onCollapse} />
             </div>
           )}

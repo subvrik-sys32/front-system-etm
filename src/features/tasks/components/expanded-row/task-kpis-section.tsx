@@ -275,28 +275,19 @@ export function TaskKpisSection({
       variant?: "subtle" | "solid"
     }[] = [
       {
-        key: "lote",
-        icon: Layers3,
-        color: "#b8a42a",
-        value: `L${task.lotNumber}`,
-        title: "Lote",
-      },
-      {
         key: "material",
         icon: Package,
         color: task.material.color,
-        value: `${task.material.name.toUpperCase()} · ${task.thickness.name}`,
-        title: "Material / espesor",
-      },
-      {
-        key: "piezas",
-        icon: Puzzle,
-        color: PIEZAS_COLOR,
-        value:
+        // Como ProcessDesktopKpiStrip: L{lote} · MATERIAL · piezas · espesor
+        value: [
+          `L${task.lotNumber}`,
+          task.material.name.toUpperCase(),
           hasAssemblyProcess && task.assemblyCount > 1
-            ? `${task.pieces} · ${task.assemblyCount} und`
-            : `${task.pieces}`,
-        title: "Piezas",
+            ? `${task.pieces}·${task.assemblyCount}u`
+            : String(task.pieces),
+          task.thickness.name,
+        ].join(" · "),
+        title: "Lote · Material · Piezas · Espesor",
       },
       hasPaintProcess
         ? {

@@ -151,6 +151,14 @@ export function TaskProductionPanel({
       ? ENTITY_ICONS[status.icon]
       : undefined
 
+  /** Colapsado: estación actual (no repetir "Pendiente" del status). */
+  const collapsedHeadline = useMemo(() => {
+    if (workflowView.completed) return "Completado"
+    if (!currentStep) return "Sin iniciar"
+    const def = PROCESS_DEFINITIONS[currentStep.processCode]
+    return def?.label ?? currentStep.processCode
+  }, [workflowView.completed, currentStep])
+
   // Glass: texto e iconos = tinta neutra on-glass (legible en cualquier tint).
   // El color de dominio queda en el fondo glass + barra, no en el glyph.
 
@@ -419,7 +427,7 @@ export function TaskProductionPanel({
               </div>
 
               <span className="hidden min-w-0 shrink truncate text-xs font-bold uppercase tracking-[0.18em] text-on-glass-foreground sm:block">
-                {status?.name ?? "Producción"}
+                {collapsedHeadline}
               </span>
 
               <div className="flex min-w-0 flex-1 items-center justify-end gap-4 tablet:gap-8">

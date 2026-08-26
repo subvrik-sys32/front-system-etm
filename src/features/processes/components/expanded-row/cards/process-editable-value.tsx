@@ -154,10 +154,10 @@ export function ProcessEditableValue({
       className={
         disabled
           ? inline
-            ? "inline-flex max-w-[4.5rem] shrink-0 cursor-default truncate font-inherit leading-inherit text-inherit opacity-50"
+            ? "inline-flex max-w-[4.5rem] shrink-0 cursor-default items-center truncate font-inherit tabular-nums leading-none text-inherit opacity-50"
             : "block w-full min-w-0 truncate cursor-default text-left font-inherit leading-inherit text-inherit opacity-50"
           : inline
-            ? "inline-flex max-w-[4.5rem] shrink-0 cursor-pointer truncate font-inherit leading-inherit text-inherit"
+            ? "inline-flex max-w-[4.5rem] shrink-0 cursor-pointer items-center truncate font-inherit tabular-nums leading-none text-inherit"
             : "block w-full min-w-0 truncate cursor-pointer text-left font-inherit leading-inherit text-inherit"
       }
     >

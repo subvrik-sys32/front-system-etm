@@ -82,7 +82,7 @@ export function ProcessDesktopKpiStrip({
 
   function mutedLabel(label: string) {
     return (
-      <span className="text-[8px] font-bold uppercase tracking-wider opacity-70">
+      <span className="inline-flex items-center text-[9px] font-bold uppercase leading-none tracking-wider opacity-70">
         {label}
       </span>
     )
@@ -133,47 +133,53 @@ export function ProcessDesktopKpiStrip({
         }
       >
       <KpiBadgeShell color={prodColor} icon={Puzzle} title="Producción">
-        {mutedLabel("In")}
-        {inQty != null && String(inQty).trim() !== "" ? (
-          <span className="max-w-[4rem] truncate tabular-nums">{inQty}</span>
-        ) : (
-          <span className="text-[10px] font-semibold opacity-55">Sin entrada</span>
-        )}
+        <span className="inline-flex items-center gap-1">
+          {mutedLabel("In")}
+          {inQty != null && String(inQty).trim() !== "" ? (
+            <span className="max-w-[4rem] truncate tabular-nums leading-none">{inQty}</span>
+          ) : (
+            <span className="text-[10px] font-semibold leading-none opacity-55">Sin entrada</span>
+          )}
+        </span>
         {showOutput && (
           <>
             <span className="opacity-50">→</span>
-            {mutedLabel("Out")}
-            <ProcessEditableValue
-              inline
-              numeric
-              value={step?.piecesOutput ?? null}
-              disabled={locked}
-              placeholder="Ingresar"
-              onSave={async value => {
-                if (!stepId) return
-                const piecesOutput = toNumber(value)
-                await updateField(stepId, { piecesOutput }, { piecesOutput })
-              }}
-            />
+            <span className="inline-flex items-center gap-1">
+              {mutedLabel("Out")}
+              <ProcessEditableValue
+                inline
+                numeric
+                value={step?.piecesOutput ?? null}
+                disabled={locked}
+                placeholder="Ingresar"
+                onSave={async value => {
+                  if (!stepId) return
+                  const piecesOutput = toNumber(value)
+                  await updateField(stepId, { piecesOutput }, { piecesOutput })
+                }}
+              />
+            </span>
           </>
         )}
         {showPlRt && (
           <>
             <span className="opacity-40">·</span>
-            {mutedLabel("PL/RT")}
-            <ProcessEditableValue
-              inline
-              numeric
-              value={step?.plRtReal ?? null}
-              suffix={plRtSuffix}
-              disabled={locked}
-              placeholder="Ingresar"
-              onSave={async value => {
-                if (!stepId) return
-                const plRtReal = toNumber(value)
-                await updateField(stepId, { plRtReal }, { plRtReal })
-              }}
-            />
+            <span className="inline-flex items-center gap-1">
+              {mutedLabel("PL/RT")}
+              <ProcessEditableValue
+                inline
+                numeric
+                value={step?.plRtReal ?? null}
+                suffix={plRtSuffix}
+                disabled={locked}
+                placeholder="Ingresar"
+                onSave={async value => {
+                  if (!stepId) return
+                  const plRtReal = toNumber(value)
+                  await updateField(stepId, { plRtReal }, { plRtReal })
+                }}
+              />
+            </span>
           </>
         )}
       </KpiBadgeShell>
@@ -225,22 +231,26 @@ export function ProcessDesktopKpiStrip({
 
       {isAssemblyProcess && (
         <KpiBadgeShell color="#8B5CF6" icon={Puzzle} title="Ensamble">
-          {mutedLabel("Und")}
-          <span className="tabular-nums">{task.assemblyCount}</span>
+          <span className="inline-flex items-center gap-1">
+            {mutedLabel("Und")}
+            <span className="tabular-nums leading-none">{task.assemblyCount}</span>
+          </span>
           <span className="opacity-40">·</span>
-          {mutedLabel("Out")}
-          <ProcessEditableValue
-            inline
-            numeric
-            value={step?.piecesOutput ?? null}
-            disabled={locked}
-            placeholder="Ingresar"
-            onSave={async value => {
-              if (!stepId) return
-              const piecesOutput = toNumber(value)
-              await updateField(stepId, { piecesOutput }, { piecesOutput })
-            }}
-          />
+          <span className="inline-flex items-center gap-1">
+            {mutedLabel("Out")}
+            <ProcessEditableValue
+              inline
+              numeric
+              value={step?.piecesOutput ?? null}
+              disabled={locked}
+              placeholder="Ingresar"
+              onSave={async value => {
+                if (!stepId) return
+                const piecesOutput = toNumber(value)
+                await updateField(stepId, { piecesOutput }, { piecesOutput })
+              }}
+            />
+          </span>
         </KpiBadgeShell>
       )}
 

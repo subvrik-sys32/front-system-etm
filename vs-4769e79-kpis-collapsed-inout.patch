@@ -1,0 +1,265 @@
+diff --git a/src/features/processes/components/expanded-row/cards/process-editable-value.tsx b/src/features/processes/components/expanded-row/cards/process-editable-value.tsx
+index 0f6811b..f44077d 100644
+--- a/src/features/processes/components/expanded-row/cards/process-editable-value.tsx
++++ b/src/features/processes/components/expanded-row/cards/process-editable-value.tsx
+@@ -154,10 +154,10 @@ export function ProcessEditableValue({
+       className={
+         disabled
+           ? inline
+-            ? "inline-flex max-w-[4.5rem] shrink-0 cursor-default truncate font-inherit leading-inherit text-inherit opacity-50"
++            ? "inline-flex max-w-[4.5rem] shrink-0 cursor-default items-center truncate font-inherit tabular-nums leading-none text-inherit opacity-50"
+             : "block w-full min-w-0 truncate cursor-default text-left font-inherit leading-inherit text-inherit opacity-50"
+           : inline
+-            ? "inline-flex max-w-[4.5rem] shrink-0 cursor-pointer truncate font-inherit leading-inherit text-inherit"
++            ? "inline-flex max-w-[4.5rem] shrink-0 cursor-pointer items-center truncate font-inherit tabular-nums leading-none text-inherit"
+             : "block w-full min-w-0 truncate cursor-pointer text-left font-inherit leading-inherit text-inherit"
+       }
+     >
+diff --git a/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx b/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
+index 6e83514..9e1e6a0 100644
+--- a/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
++++ b/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
+@@ -82,7 +82,7 @@ export function ProcessDesktopKpiStrip({
+ 
+   function mutedLabel(label: string) {
+     return (
+-      <span className="text-[8px] font-bold uppercase tracking-wider opacity-70">
++      <span className="inline-flex items-center text-[9px] font-bold uppercase leading-none tracking-wider opacity-70">
+         {label}
+       </span>
+     )
+@@ -133,47 +133,53 @@ export function ProcessDesktopKpiStrip({
+         }
+       >
+       <KpiBadgeShell color={prodColor} icon={Puzzle} title="Producción">
+-        {mutedLabel("In")}
+-        {inQty != null && String(inQty).trim() !== "" ? (
+-          <span className="max-w-[4rem] truncate tabular-nums">{inQty}</span>
+-        ) : (
+-          <span className="text-[10px] font-semibold opacity-55">Sin entrada</span>
+-        )}
++        <span className="inline-flex items-center gap-1">
++          {mutedLabel("In")}
++          {inQty != null && String(inQty).trim() !== "" ? (
++            <span className="max-w-[4rem] truncate tabular-nums leading-none">{inQty}</span>
++          ) : (
++            <span className="text-[10px] font-semibold leading-none opacity-55">Sin entrada</span>
++          )}
++        </span>
+         {showOutput && (
+           <>
+             <span className="opacity-50">→</span>
+-            {mutedLabel("Out")}
+-            <ProcessEditableValue
+-              inline
+-              numeric
+-              value={step?.piecesOutput ?? null}
+-              disabled={locked}
+-              placeholder="Ingresar"
+-              onSave={async value => {
+-                if (!stepId) return
+-                const piecesOutput = toNumber(value)
+-                await updateField(stepId, { piecesOutput }, { piecesOutput })
+-              }}
+-            />
++            <span className="inline-flex items-center gap-1">
++              {mutedLabel("Out")}
++              <ProcessEditableValue
++                inline
++                numeric
++                value={step?.piecesOutput ?? null}
++                disabled={locked}
++                placeholder="Ingresar"
++                onSave={async value => {
++                  if (!stepId) return
++                  const piecesOutput = toNumber(value)
++                  await updateField(stepId, { piecesOutput }, { piecesOutput })
++                }}
++              />
++            </span>
+           </>
+         )}
+         {showPlRt && (
+           <>
+             <span className="opacity-40">·</span>
+-            {mutedLabel("PL/RT")}
+-            <ProcessEditableValue
+-              inline
+-              numeric
+-              value={step?.plRtReal ?? null}
+-              suffix={plRtSuffix}
+-              disabled={locked}
+-              placeholder="Ingresar"
+-              onSave={async value => {
+-                if (!stepId) return
+-                const plRtReal = toNumber(value)
+-                await updateField(stepId, { plRtReal }, { plRtReal })
+-              }}
+-            />
++            <span className="inline-flex items-center gap-1">
++              {mutedLabel("PL/RT")}
++              <ProcessEditableValue
++                inline
++                numeric
++                value={step?.plRtReal ?? null}
++                suffix={plRtSuffix}
++                disabled={locked}
++                placeholder="Ingresar"
++                onSave={async value => {
++                  if (!stepId) return
++                  const plRtReal = toNumber(value)
++                  await updateField(stepId, { plRtReal }, { plRtReal })
++                }}
++              />
++            </span>
+           </>
+         )}
+       </KpiBadgeShell>
+@@ -225,22 +231,26 @@ export function ProcessDesktopKpiStrip({
+ 
+       {isAssemblyProcess && (
+         <KpiBadgeShell color="#8B5CF6" icon={Puzzle} title="Ensamble">
+-          {mutedLabel("Und")}
+-          <span className="tabular-nums">{task.assemblyCount}</span>
++          <span className="inline-flex items-center gap-1">
++            {mutedLabel("Und")}
++            <span className="tabular-nums leading-none">{task.assemblyCount}</span>
++          </span>
+           <span className="opacity-40">·</span>
+-          {mutedLabel("Out")}
+-          <ProcessEditableValue
+-            inline
+-            numeric
+-            value={step?.piecesOutput ?? null}
+-            disabled={locked}
+-            placeholder="Ingresar"
+-            onSave={async value => {
+-              if (!stepId) return
+-              const piecesOutput = toNumber(value)
+-              await updateField(stepId, { piecesOutput }, { piecesOutput })
+-            }}
+-          />
++          <span className="inline-flex items-center gap-1">
++            {mutedLabel("Out")}
++            <ProcessEditableValue
++              inline
++              numeric
++              value={step?.piecesOutput ?? null}
++              disabled={locked}
++              placeholder="Ingresar"
++              onSave={async value => {
++                if (!stepId) return
++                const piecesOutput = toNumber(value)
++                await updateField(stepId, { piecesOutput }, { piecesOutput })
++              }}
++            />
++          </span>
+         </KpiBadgeShell>
+       )}
+ 
+diff --git a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+index de3f76d..f5dcb75 100644
+--- a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
++++ b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+@@ -151,6 +151,14 @@ export function TaskProductionPanel({
+       ? ENTITY_ICONS[status.icon]
+       : undefined
+ 
++  /** Colapsado: estación actual (no repetir "Pendiente" del status). */
++  const collapsedHeadline = useMemo(() => {
++    if (workflowView.completed) return "Completado"
++    if (!currentStep) return "Sin iniciar"
++    const def = PROCESS_DEFINITIONS[currentStep.processCode]
++    return def?.label ?? currentStep.processCode
++  }, [workflowView.completed, currentStep])
++
+   // Glass: texto e iconos = tinta neutra on-glass (legible en cualquier tint).
+   // El color de dominio queda en el fondo glass + barra, no en el glyph.
+ 
+@@ -419,7 +427,7 @@ export function TaskProductionPanel({
+               </div>
+ 
+               <span className="hidden min-w-0 shrink truncate text-xs font-bold uppercase tracking-[0.18em] text-on-glass-foreground sm:block">
+-                {status?.name ?? "Producción"}
++                {collapsedHeadline}
+               </span>
+ 
+               <div className="flex min-w-0 flex-1 items-center justify-end gap-4 tablet:gap-8">
+diff --git a/src/features/tasks/components/expanded-row/task-kpis-section.tsx b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+index 7c60de9..4f27635 100644
+--- a/src/features/tasks/components/expanded-row/task-kpis-section.tsx
++++ b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+@@ -274,29 +274,20 @@ export function TaskKpisSection({
+       title: string
+       variant?: "subtle" | "solid"
+     }[] = [
+-      {
+-        key: "lote",
+-        icon: Layers3,
+-        color: "#b8a42a",
+-        value: `L${task.lotNumber}`,
+-        title: "Lote",
+-      },
+       {
+         key: "material",
+         icon: Package,
+         color: task.material.color,
+-        value: `${task.material.name.toUpperCase()} · ${task.thickness.name}`,
+-        title: "Material / espesor",
+-      },
+-      {
+-        key: "piezas",
+-        icon: Puzzle,
+-        color: PIEZAS_COLOR,
+-        value:
++        // Como ProcessDesktopKpiStrip: L{lote} · MATERIAL · piezas · espesor
++        value: [
++          `L${task.lotNumber}`,
++          task.material.name.toUpperCase(),
+           hasAssemblyProcess && task.assemblyCount > 1
+-            ? `${task.pieces} · ${task.assemblyCount} und`
+-            : `${task.pieces}`,
+-        title: "Piezas",
++            ? `${task.pieces}·${task.assemblyCount}u`
++            : String(task.pieces),
++          task.thickness.name,
++        ].join(" · "),
++        title: "Lote · Material · Piezas · Espesor",
+       },
+       hasPaintProcess
+         ? {
+diff --git a/src/shared/ui/collapsible-summary-panel/collapsible-summary-panel.tsx b/src/shared/ui/collapsible-summary-panel/collapsible-summary-panel.tsx
+index df3f994..7fc3467 100644
+--- a/src/shared/ui/collapsible-summary-panel/collapsible-summary-panel.tsx
++++ b/src/shared/ui/collapsible-summary-panel/collapsible-summary-panel.tsx
+@@ -12,7 +12,7 @@ type Props = {
+   showCollapseButton?: boolean
+ }
+ 
+-/** Cerrar indicadores — ink on-glass, no muted de página. */
++/** Cerrar indicadores — badge fijo legible light/dark (tokens fab-plus). */
+ export function CollapseIndicatorsButton({
+   onClick,
+   className,
+@@ -27,9 +27,9 @@ export function CollapseIndicatorsButton({
+       aria-label="Ocultar indicadores"
+       className={cn(
+         "flex size-8 shrink-0 items-center justify-center rounded-full",
+-        "text-on-glass-muted transition-colors duration-150",
+-        "hover:bg-on-glass-foreground/10 hover:text-on-glass-foreground",
+-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-on-glass-foreground/30",
++        "bg-fab-plus text-fab-plus-foreground shadow-xs",
++        "transition-colors duration-150 hover:brightness-110",
++        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fab-plus/40",
+         className,
+       )}
+     >
+@@ -55,7 +55,7 @@ export function CollapsibleSummaryPanel({
+         <div className="flex w-full min-w-0 animate-comment-in flex-col gap-1.5">
+           {/* Fila propia: no absolute sobre la última KPI card */}
+           {showCollapseButton && (
+-            <div className="flex w-full justify-end pr-0.5">
++            <div className="flex w-full justify-start pl-0.5">
+               <CollapseIndicatorsButton onClick={onCollapse} />
+             </div>
+           )}

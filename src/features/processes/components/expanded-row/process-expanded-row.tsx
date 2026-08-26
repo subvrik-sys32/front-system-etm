@@ -205,7 +205,7 @@ export function ProcessExpandedRow({
 
   }, [commentsDialogOpen, workflowStepId, setActiveTarget])
 
-  const { percent, statusLabel, nextProcessLabel } = getProcessProgress(processTask)
+  const { percent, statusLabel, nextProcessLabel, nextProcessCode } = getProcessProgress(processTask)
 
   const items: KpiItem[] = [
     {
@@ -299,6 +299,7 @@ export function ProcessExpandedRow({
               percent={percent}
               statusLabel={statusLabel}
               nextProcessLabel={nextProcessLabel}
+              nextProcessCode={nextProcessCode}
             />
           </div>
         )}

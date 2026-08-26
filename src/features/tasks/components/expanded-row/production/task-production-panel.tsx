@@ -434,7 +434,7 @@ export function TaskProductionPanel({
                     aria-hidden
                     className="mx-1.5 h-1 w-1 shrink-0 rounded-full bg-white/40"
                   />
-                  <div className="shrink-0 text-right">
+                  <div className="shrink-0 text-center">
                     <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]">
                       Listas
                     </p>
@@ -448,7 +448,7 @@ export function TaskProductionPanel({
                     className="mx-1.5 h-1 w-1 shrink-0 rounded-full bg-white/40"
                   />
 
-                  <div className="shrink-0 text-right">
+                  <div className="shrink-0 text-center">
                     <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]">
                       Avance
                     </p>

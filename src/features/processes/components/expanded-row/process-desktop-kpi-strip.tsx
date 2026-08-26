@@ -8,6 +8,7 @@ import {
 } from "react"
 import {
   Activity,
+  ArrowRight,
   Clock3,
   InspectionPanel,
   Layers3,
@@ -17,6 +18,9 @@ import {
 } from "lucide-react"
 
 import type { ProcessTask } from "../../types/process.types"
+import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
+import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
+import type { ProcessCode } from "@/features/tasks/types/task.types"
 import { ProcessEditableValue } from "./cards/process-editable-value"
 import { useWorkflowStepField } from "@/features/workflow/hooks/use-workflow-step-field"
 import { getWorkflowStepContext } from "@/features/workflow/utils/get-workflow-step-context"
@@ -45,11 +49,13 @@ export function ProcessDesktopKpiStrip({
   percent,
   statusLabel,
   nextProcessLabel,
+  nextProcessCode,
 }: {
   processTask: ProcessTask
   percent: number
   statusLabel: string
   nextProcessLabel: string
+  nextProcessCode?: ProcessCode
 }) {
   const { isCompact } = useResponsive()
   const task = processTask.task
@@ -153,14 +159,17 @@ export function ProcessDesktopKpiStrip({
           className="h-3.5 w-3.5 shrink-0 opacity-80"
           style={{ color: finishInk }}
         />
-        <div className="min-w-0">
+        <div className="min-w-0 text-center">
           <p
-            className={leftLabelClass}
+            className={cn(leftLabelClass, "text-center")}
             style={{ color: finishInk, opacity: 0.7 }}
           >
             {label}
           </p>
-          <div className={leftValueClass} style={{ color: finishInk }}>
+          <div
+            className={cn(leftValueClass, "flex justify-center")}
+            style={{ color: finishInk }}
+          >
             {children}
           </div>
         </div>
@@ -191,12 +200,12 @@ export function ProcessDesktopKpiStrip({
           className="h-3.5 w-3.5 shrink-0"
           style={{ color: accent ?? "rgba(255,255,255,0.75)" }}
         />
-        <div className="min-w-0">
-          <p className="truncate text-[9px] font-bold uppercase tracking-[0.14em] text-white/55 sm:text-[10px]">
+        <div className="min-w-0 text-center">
+          <p className="truncate text-center text-[9px] uppercase tracking-[0.14em] text-white/55 sm:text-[10px]">
             {label}
           </p>
           <div
-            className="min-w-0 overflow-visible text-xs font-bold leading-tight sm:text-sm"
+            className="flex min-w-0 items-center justify-center overflow-visible text-xs font-bold leading-tight sm:text-sm"
             style={{ color: accent ?? "#fff" }}
           >
             {children}
@@ -304,11 +313,29 @@ export function ProcessDesktopKpiStrip({
           </span>
           <span className="text-white/35">·</span>
           <span className="truncate text-white/90">{statusLabel}</span>
-          {nextProcessLabel && nextProcessLabel !== "-" && (
+          {nextProcessCode && PROCESS_DEFINITIONS[nextProcessCode] && (
             <>
               <span className="text-white/35">·</span>
-              <span className="truncate text-white/90">
-                {nextProcessLabel}
+              <span
+                className="inline-flex items-center gap-1"
+                title={PROCESS_DEFINITIONS[nextProcessCode].label}
+              >
+                <ArrowRight
+                  size={12}
+                  strokeWidth={2.75}
+                  className="shrink-0 text-white/70"
+                />
+                {(() => {
+                  const def = PROCESS_DEFINITIONS[nextProcessCode]
+                  const NextIcon = ENTITY_ICONS[def.icon]
+                  return NextIcon ? (
+                    <NextIcon
+                      size={14}
+                      className="shrink-0"
+                      style={{ color: def.color }}
+                    />
+                  ) : null
+                })()}
               </span>
             </>
           )}

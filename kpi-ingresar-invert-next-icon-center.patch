@@ -1,0 +1,209 @@
+diff --git a/src/features/processes/components/expanded-row/cards/process-editable-value.tsx b/src/features/processes/components/expanded-row/cards/process-editable-value.tsx
+index 9aa10d4..0ec54fd 100644
+--- a/src/features/processes/components/expanded-row/cards/process-editable-value.tsx
++++ b/src/features/processes/components/expanded-row/cards/process-editable-value.tsx
+@@ -210,9 +210,9 @@ export function ProcessEditableValue({
+                   ? "bg-red-500/40 text-red-50 shadow-[inset_0_0_0_1.5px_rgba(248,113,113,0.95)]"
+                   : "bg-red-500/15 text-red-600 shadow-[inset_0_0_0_1.5px_rgba(239,68,68,0.7)] dark:text-red-400"
+                 : onDark
+-                  // Brand sólido (= burbuja historial light) — no se invierte en dark.
+-                  ? "bg-brand text-brand-foreground"
+-                  : "bg-brand text-brand-foreground",
++                  // Invertido: fill = ink brand, letra = fill brand
++                  ? "bg-brand-foreground text-brand"
++                  : "bg-brand-foreground text-brand",
+             )}
+           >
+             {placeholder}
+diff --git a/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx b/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
+index 9134423..16db632 100644
+--- a/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
++++ b/src/features/processes/components/expanded-row/process-desktop-kpi-strip.tsx
+@@ -8,6 +8,7 @@ import {
+ } from "react"
+ import {
+   Activity,
++  ArrowRight,
+   Clock3,
+   InspectionPanel,
+   Layers3,
+@@ -17,6 +18,9 @@ import {
+ } from "lucide-react"
+ 
+ import type { ProcessTask } from "../../types/process.types"
++import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
++import { ENTITY_ICONS } from "@/shared/constants/entity-icons"
++import type { ProcessCode } from "@/features/tasks/types/task.types"
+ import { ProcessEditableValue } from "./cards/process-editable-value"
+ import { useWorkflowStepField } from "@/features/workflow/hooks/use-workflow-step-field"
+ import { getWorkflowStepContext } from "@/features/workflow/utils/get-workflow-step-context"
+@@ -45,11 +49,13 @@ export function ProcessDesktopKpiStrip({
+   percent,
+   statusLabel,
+   nextProcessLabel,
++  nextProcessCode,
+ }: {
+   processTask: ProcessTask
+   percent: number
+   statusLabel: string
+   nextProcessLabel: string
++  nextProcessCode?: ProcessCode
+ }) {
+   const { isCompact } = useResponsive()
+   const task = processTask.task
+@@ -153,14 +159,17 @@ export function ProcessDesktopKpiStrip({
+           className="h-3.5 w-3.5 shrink-0 opacity-80"
+           style={{ color: finishInk }}
+         />
+-        <div className="min-w-0">
++        <div className="min-w-0 text-center">
+           <p
+-            className={leftLabelClass}
++            className={cn(leftLabelClass, "text-center")}
+             style={{ color: finishInk, opacity: 0.7 }}
+           >
+             {label}
+           </p>
+-          <div className={leftValueClass} style={{ color: finishInk }}>
++          <div
++            className={cn(leftValueClass, "flex justify-center")}
++            style={{ color: finishInk }}
++          >
+             {children}
+           </div>
+         </div>
+@@ -191,12 +200,12 @@ export function ProcessDesktopKpiStrip({
+           className="h-3.5 w-3.5 shrink-0"
+           style={{ color: accent ?? "rgba(255,255,255,0.75)" }}
+         />
+-        <div className="min-w-0">
+-          <p className="truncate text-[9px] font-bold uppercase tracking-[0.14em] text-white/55 sm:text-[10px]">
++        <div className="min-w-0 text-center">
++          <p className="truncate text-center text-[9px] font-bold uppercase tracking-[0.14em] text-white/55 sm:text-[10px]">
+             {label}
+           </p>
+           <div
+-            className="min-w-0 overflow-visible text-xs font-bold leading-tight sm:text-sm"
++            className="flex min-w-0 items-center justify-center overflow-visible text-xs font-bold leading-tight sm:text-sm"
+             style={{ color: accent ?? "#fff" }}
+           >
+             {children}
+@@ -304,11 +313,29 @@ export function ProcessDesktopKpiStrip({
+           </span>
+           <span className="text-white/35">·</span>
+           <span className="truncate text-white/90">{statusLabel}</span>
+-          {nextProcessLabel && nextProcessLabel !== "-" && (
++          {nextProcessCode && PROCESS_DEFINITIONS[nextProcessCode] && (
+             <>
+               <span className="text-white/35">·</span>
+-              <span className="truncate text-white/90">
+-                {nextProcessLabel}
++              <span
++                className="inline-flex items-center gap-1"
++                title={PROCESS_DEFINITIONS[nextProcessCode].label}
++              >
++                <ArrowRight
++                  size={12}
++                  strokeWidth={2.75}
++                  className="shrink-0 text-white/70"
++                />
++                {(() => {
++                  const def = PROCESS_DEFINITIONS[nextProcessCode]
++                  const NextIcon = ENTITY_ICONS[def.icon]
++                  return NextIcon ? (
++                    <NextIcon
++                      size={14}
++                      className="shrink-0"
++                      style={{ color: def.color }}
++                    />
++                  ) : null
++                })()}
+               </span>
+             </>
+           )}
+diff --git a/src/features/processes/components/expanded-row/process-expanded-row.tsx b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+index 72c50c8..6406ab3 100644
+--- a/src/features/processes/components/expanded-row/process-expanded-row.tsx
++++ b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+@@ -205,7 +205,7 @@ export function ProcessExpandedRow({
+ 
+   }, [commentsDialogOpen, workflowStepId, setActiveTarget])
+ 
+-  const { percent, statusLabel, nextProcessLabel } = getProcessProgress(processTask)
++  const { percent, statusLabel, nextProcessLabel, nextProcessCode } = getProcessProgress(processTask)
+ 
+   const items: KpiItem[] = [
+     {
+@@ -299,6 +299,7 @@ export function ProcessExpandedRow({
+               percent={percent}
+               statusLabel={statusLabel}
+               nextProcessLabel={nextProcessLabel}
++              nextProcessCode={nextProcessCode}
+             />
+           </div>
+         )}
+diff --git a/src/features/processes/selectors/get-process-progress.ts b/src/features/processes/selectors/get-process-progress.ts
+index 333722a..932b168 100644
+--- a/src/features/processes/selectors/get-process-progress.ts
++++ b/src/features/processes/selectors/get-process-progress.ts
+@@ -18,6 +18,8 @@ export interface ProcessProgress {
+   percent: number
+   statusLabel: string
+   nextProcessLabel: string
++  /** Código del siguiente proceso en la ruta (undefined = fin / no hay). */
++  nextProcessCode?: import("@/features/tasks/types/task.types").ProcessCode
+ }
+ 
+ export function getProcessProgress(processTask: ProcessTask): ProcessProgress {
+@@ -48,6 +50,7 @@ export function getProcessProgress(processTask: ProcessTask): ProcessProgress {
+     percent,
+     statusLabel: workflowStatus.label,
+     nextProcessLabel,
++    nextProcessCode: nextStep?.processCode,
+   }
+ 
+ }
+\ No newline at end of file
+diff --git a/src/features/tasks/components/expanded-row/task-kpis-section.tsx b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+index 3dec5c1..100f74b 100644
+--- a/src/features/tasks/components/expanded-row/task-kpis-section.tsx
++++ b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+@@ -235,9 +235,9 @@ export function TaskKpisSection({
+     const finishInk = getBadgeColors(dominantColor, "solid").text
+ 
+     const kpiLabelClass =
+-      "text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]"
++      "text-center text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]"
+     const kpiValueClass =
+-      "whitespace-nowrap text-xs font-bold leading-tight text-white sm:text-sm"
++      "whitespace-nowrap text-center text-xs font-bold leading-tight text-white sm:text-sm"
+ 
+     // Divisor entre KPIs — nunca después del último
+     const Dot = () => (
+@@ -278,7 +278,7 @@ export function TaskKpisSection({
+         >
+           <div className="flex shrink-0 items-center gap-1.5">
+             <Layers3 className="hidden h-3.5 w-3.5 shrink-0 text-white/80 tablet:block" />
+-            <div className="shrink-0">
++            <div className="shrink-0 text-center">
+               <p className={`hidden tablet:block ${kpiLabelClass}`}>Lote</p>
+               <p className={kpiValueClass}>{lotValue}</p>
+             </div>
+@@ -288,7 +288,7 @@ export function TaskKpisSection({
+ 
+           <div className="flex shrink-0 items-center gap-1.5">
+             <InspectionPanel className="hidden h-3.5 w-3.5 shrink-0 text-white/80 tablet:block" />
+-            <div className="shrink-0">
++            <div className="shrink-0 text-center">
+               <p className={`hidden tablet:block ${kpiLabelClass}`}>Material</p>
+               <p className={kpiValueClass}>{materialValue}</p>
+             </div>
+@@ -298,7 +298,7 @@ export function TaskKpisSection({
+ 
+           <div className="flex shrink-0 items-center gap-1.5">
+             <Puzzle className="hidden h-3.5 w-3.5 shrink-0 text-white/80 tablet:block" />
+-            <div className="shrink-0">
++            <div className="shrink-0 text-center">
+               <p className={`hidden tablet:block ${kpiLabelClass}`}>Piezas</p>
+               <p className={kpiValueClass}>{piecesValue}</p>
+             </div>

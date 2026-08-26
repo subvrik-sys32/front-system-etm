@@ -235,9 +235,9 @@ export function TaskKpisSection({
     const finishInk = getBadgeColors(dominantColor, "solid").text
 
     const kpiLabelClass =
-      "text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]"
+      "text-center text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]"
     const kpiValueClass =
-      "whitespace-nowrap text-xs font-bold leading-tight text-white sm:text-sm"
+      "whitespace-nowrap text-center text-xs font-bold leading-tight text-white sm:text-sm"
 
     // Divisor entre KPIs — nunca después del último
     const Dot = () => (
@@ -278,7 +278,7 @@ export function TaskKpisSection({
         >
           <div className="flex shrink-0 items-center gap-1.5">
             <Layers3 className="hidden h-3.5 w-3.5 shrink-0 text-white/80 tablet:block" />
-            <div className="shrink-0">
+            <div className="shrink-0 text-center">
               <p className={`hidden tablet:block ${kpiLabelClass}`}>Lote</p>
               <p className={kpiValueClass}>{lotValue}</p>
             </div>
@@ -288,7 +288,7 @@ export function TaskKpisSection({
 
           <div className="flex shrink-0 items-center gap-1.5">
             <InspectionPanel className="hidden h-3.5 w-3.5 shrink-0 text-white/80 tablet:block" />
-            <div className="shrink-0">
+            <div className="shrink-0 text-center">
               <p className={`hidden tablet:block ${kpiLabelClass}`}>Material</p>
               <p className={kpiValueClass}>{materialValue}</p>
             </div>
@@ -298,7 +298,7 @@ export function TaskKpisSection({
 
           <div className="flex shrink-0 items-center gap-1.5">
             <Puzzle className="hidden h-3.5 w-3.5 shrink-0 text-white/80 tablet:block" />
-            <div className="shrink-0">
+            <div className="shrink-0 text-center">
               <p className={`hidden tablet:block ${kpiLabelClass}`}>Piezas</p>
               <p className={kpiValueClass}>{piecesValue}</p>
             </div>

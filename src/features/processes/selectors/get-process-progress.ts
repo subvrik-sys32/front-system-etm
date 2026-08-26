@@ -18,6 +18,8 @@ export interface ProcessProgress {
   percent: number
   statusLabel: string
   nextProcessLabel: string
+  /** Código del siguiente proceso en la ruta (undefined = fin / no hay). */
+  nextProcessCode?: import("@/features/tasks/types/task.types").ProcessCode
 }
 
 export function getProcessProgress(processTask: ProcessTask): ProcessProgress {
@@ -48,6 +50,7 @@ export function getProcessProgress(processTask: ProcessTask): ProcessProgress {
     percent,
     statusLabel: workflowStatus.label,
     nextProcessLabel,
+    nextProcessCode: nextStep?.processCode,
   }
 
 }

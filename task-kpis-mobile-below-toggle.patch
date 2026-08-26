@@ -1,0 +1,41 @@
+diff --git a/src/features/tasks/components/expanded-row/task-expanded-row.tsx b/src/features/tasks/components/expanded-row/task-expanded-row.tsx
+index 3d3c564..f276178 100644
+--- a/src/features/tasks/components/expanded-row/task-expanded-row.tsx
++++ b/src/features/tasks/components/expanded-row/task-expanded-row.tsx
+@@ -183,11 +183,20 @@ export function TaskExpandedRow({
+             />
+             <TaskRowActions task={task} className="gap-1" showAudit />
+           </div>
+-          {/* Solo chips KPI en la fila del toggle. Ruta = carousel del panel. */}
+-          <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
++          {/* Desktop: chips KPI en la misma fila del toggle */}
++          {!isCompact && (
++            <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
++              <TaskKpisSection task={task} density="compact" />
++            </div>
++          )}
++        </div>
++
++        {/* Mobile/compact: chips KPI debajo del toggle, fila propia */}
++        {isCompact && (
++          <div className="mb-2 flex w-full min-w-0 flex-wrap items-center gap-1.5">
+             <TaskKpisSection task={task} density="compact" />
+           </div>
+-        </div>
++        )}
+ 
+         <EntityExpandedSlider
+           value={activeView}
+diff --git a/src/features/tasks/components/expanded-row/task-kpis-section.tsx b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+index 4d97ac2..7c60de9 100644
+--- a/src/features/tasks/components/expanded-row/task-kpis-section.tsx
++++ b/src/features/tasks/components/expanded-row/task-kpis-section.tsx
+@@ -318,7 +318,7 @@ export function TaskKpisSection({
+     ]
+ 
+     return (
+-      <div className="flex min-h-8 min-w-0 max-w-full flex-wrap items-center justify-end gap-1.5">
++      <div className="flex min-h-8 min-w-0 max-w-full flex-wrap items-center gap-1.5">
+         {signal.map(({ key, ...chip }) => (
+           <KpiSignalChip key={key} {...chip} />
+         ))}

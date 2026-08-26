@@ -183,11 +183,20 @@ export function TaskExpandedRow({
             />
             <TaskRowActions task={task} className="gap-1" showAudit />
           </div>
-          {/* Solo chips KPI en la fila del toggle. Ruta = carousel del panel. */}
-          <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
+          {/* Desktop: chips KPI en la misma fila del toggle */}
+          {!isCompact && (
+            <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
+              <TaskKpisSection task={task} density="compact" />
+            </div>
+          )}
+        </div>
+
+        {/* Mobile/compact: chips KPI debajo del toggle, fila propia */}
+        {isCompact && (
+          <div className="mb-2 flex w-full min-w-0 flex-wrap items-center gap-1.5">
             <TaskKpisSection task={task} density="compact" />
           </div>
-        </div>
+        )}
 
         <EntityExpandedSlider
           value={activeView}

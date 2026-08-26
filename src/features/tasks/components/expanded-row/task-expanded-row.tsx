@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { Activity, ClipboardList, MessageSquare } from "lucide-react"
+import { ClipboardList, MessageSquare } from "lucide-react"
 
 import type {
   Task,
@@ -64,7 +64,7 @@ function TaskDesktopRouteStrip({ task }: { task: Task }) {
         route={task.route}
         currentProcess={currentStep?.processCode}
       />
-      <div className="flex h-8 min-h-8 min-w-[11rem] max-w-[18rem] flex-1 items-center gap-2 self-center rounded-lg bg-foreground/5 px-2.5">
+      <div className="flex h-8 min-h-8 min-w-[11rem] max-w-[18rem] flex-1 items-center gap-2 self-center rounded-lg bg-foreground/5 px-2.5 shadow-xs">
         <div className="flex min-w-0 shrink items-center gap-1">
           {StatusIcon && (
             <StatusIcon size={12} className="shrink-0 text-muted-foreground" />
@@ -101,7 +101,7 @@ export function TaskExpandedRow({
   const [
     activeView,
     setActiveView,
-  ] = useState<"workflow" | "comments" | "kpis">("workflow")
+  ] = useState<"workflow" | "comments">("workflow")
 
   const [
     commentsDialogOpen,
@@ -152,7 +152,7 @@ export function TaskExpandedRow({
     }
 
     if (tabParam === "kpis") {
-      setActiveView("kpis")
+      setActiveView("workflow")
       return
     }
 
@@ -182,15 +182,8 @@ export function TaskExpandedRow({
 
   }, [activeView, commentsDialogOpen, isMobile, task.id, setActiveTarget])
 
-  // Compact: no toggle Workflow↔KPIs (ambos van juntos en el panel).
-  useEffect(() => {
-    if (isCompact && activeView === "kpis") {
-      setActiveView("workflow")
-    }
-  }, [isCompact, activeView])
-
   const handleViewChange = (
-    next: "workflow" | "comments" | "kpis",
+    next: "workflow" | "comments",
   ) => {
     // Mensajes: siempre dialog (sin panel inline summary/composer).
     if (next === "comments") {
@@ -218,15 +211,6 @@ export function TaskExpandedRow({
                   label: isCompact ? "Detalle" : "Workflow",
                   icon: ClipboardList,
                 },
-                ...(!isCompact
-                  ? ([
-                      {
-                        value: "kpis" as const,
-                        label: "KPIs",
-                        icon: Activity,
-                      },
-                    ] as const)
-                  : []),
                 {
                   value: "comments",
                   label: "Mensajes",
@@ -273,10 +257,6 @@ export function TaskExpandedRow({
                   showCollapseButton
                 />
               ),
-            },
-            {
-              value: "kpis",
-              content: null,
             },
           ]}
         />

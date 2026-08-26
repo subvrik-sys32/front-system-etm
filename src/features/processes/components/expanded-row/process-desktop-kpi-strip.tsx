@@ -229,7 +229,7 @@ export function ProcessDesktopKpiStrip({
               accent={ACCENT.produccion}
             >
               <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-white">
-                <span className="text-white/60">Recibido</span>
+                <span className="text-white/60">IN</span>
                 <span className="tabular-nums text-white">
                   {inQty != null && String(inQty).trim() !== ""
                     ? inQty
@@ -238,7 +238,7 @@ export function ProcessDesktopKpiStrip({
                 {showOutput && (
                   <>
                     <span className="text-white/40">→</span>
-                    <span className="text-white/60">Salida</span>
+                    <span className="text-white/60">OUT</span>
                     <ProcessEditableValue
                       inline
                       onDark
@@ -312,7 +312,7 @@ export function ProcessDesktopKpiStrip({
             {percent}%
           </span>
           <span className="text-white/35">·</span>
-          <span className="truncate text-white/90">{statusLabel}</span>
+          <span className="uppercase truncate text-white/90">{statusLabel}</span>
           {nextProcessCode && PROCESS_DEFINITIONS[nextProcessCode] && (
             <>
               <span className="text-white/35">·</span>

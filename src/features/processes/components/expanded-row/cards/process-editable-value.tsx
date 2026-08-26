@@ -210,9 +210,9 @@ export function ProcessEditableValue({
                   ? "bg-red-500/40 text-red-50 shadow-[inset_0_0_0_1.5px_rgba(248,113,113,0.95)]"
                   : "bg-red-500/15 text-red-600 shadow-[inset_0_0_0_1.5px_rgba(239,68,68,0.7)] dark:text-red-400"
                 : onDark
-                  // Pill base: suave, legible sobre badge oscuro (mismo look que diseño).
-                  ? "bg-white/20 text-white"
-                  : "bg-foreground/10 text-inherit",
+                  // Mismo token que burbuja historial (FAB_PLUS / --fab-plus).
+                  ? "bg-fab-plus text-fab-plus-foreground"
+                  : "bg-fab-plus text-fab-plus-foreground",
             )}
           >
             {placeholder}

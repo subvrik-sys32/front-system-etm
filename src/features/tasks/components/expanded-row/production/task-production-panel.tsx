@@ -49,15 +49,18 @@ import {
 } from "@/shared/constants/entity-icons"
 
 import {
-  getBadgeColors,
-  getGlassSurface,
-} from "@/shared/utils/badge-colors"
+  getBadgeColors} from "@/shared/utils/badge-colors"
 import { useThemeStore } from "@/shared/theme"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
 import {
   cn,
 } from "@/shared/utils/utils"
+
+import {
+  resolveWorkflowStepVisual,
+  workflowStepperStyles,
+} from "@/features/workflow/styles/workflow-stepper"
 
 
 type Props = {
@@ -179,15 +182,17 @@ export function TaskProductionPanel({
 
       </div>
 
-      <div className="h-2 w-full min-w-0 overflow-hidden rounded-full bg-foreground/5">
-
+      <div
+        className="h-2 w-full min-w-0 overflow-hidden rounded-full"
+        style={workflowStepperStyles.progressTrack}
+      >
         <div
-          className="h-full rounded-full bg-cyan-500 transition-all"
+          className="h-full rounded-full transition-all"
           style={{
+            ...workflowStepperStyles.progressFill,
             width: `${workflowView.progress}%`,
           }}
         />
-
       </div>
 
     </div>
@@ -209,6 +214,10 @@ export function TaskProductionPanel({
           const isDone =
             step?.status === "COMPLETED" ||
             step?.status === "REVIEWED"
+          const visual = resolveWorkflowStepVisual({
+            isDone,
+            isCurrent: isActive,
+          })
           const isLast = index === task.route.length - 1
           const colors = getBadgeColors(definition.color, "subtle", theme)
 
@@ -241,34 +250,17 @@ export function TaskProductionPanel({
                 <div className="relative size-10 shrink-0 overflow-visible">
                   <div
                     className="flex size-10 items-center justify-center rounded-full"
-                    style={
-                      isDone
-                        ? {
-                            // Completado: verde, sin color de proceso
-                            backgroundColor:
-                              "color-mix(in srgb, #22C55E 32%, var(--background))",
-                          }
-                        : isActive
-                          ? { backgroundColor: colors.backgroundActive }
-                          : {
-                              backgroundColor:
-                                "color-mix(in srgb, var(--foreground) 14%, var(--background))",
-                            }
-                    }
+                    style={workflowStepperStyles.node[visual]}
                   >
                     {isDone ? (
                       <Check
                         size={16}
-                        className="text-emerald-600 dark:text-emerald-400"
+                        style={workflowStepperStyles.icon.completed}
                       />
                     ) : (
                       <ProcessIcon
                         size={16}
-                        style={{
-                          color: isActive
-                            ? colors.text
-                            : "color-mix(in srgb, var(--foreground) 45%, transparent)",
-                        }}
+                        style={workflowStepperStyles.icon[visual]}
                       />
                     )}
                   </div>
@@ -284,7 +276,7 @@ export function TaskProductionPanel({
                       className={cn(
                         "pointer-events-none absolute -bottom-0.5 -right-0.5 z-10",
                         "flex h-3.5 min-w-3.5 items-center justify-center",
-                        "rounded-full bg-sky-600/85 px-1 text-[8px] font-bold leading-none text-white",
+                        "rounded-full bg-foreground/25 px-1 text-[8px] font-bold leading-none text-background",
                       )}
                     >
                       {commentCount > 99 ? "99+" : commentCount}
@@ -304,7 +296,8 @@ export function TaskProductionPanel({
                           : "-right-1.5 -top-1.5",
                       )}
                       style={{
-                        backgroundColor: operator.color || "#404040",
+                        backgroundColor: "var(--workflow-operator-bg)",
+                        color: "var(--workflow-operator-text)",
                       }}
                     >
                       {operator.avatarUrl ? (
@@ -341,13 +334,7 @@ export function TaskProductionPanel({
                       ? "text-[10px] font-bold uppercase"
                       : "text-[11px] font-medium",
                   )}
-                  style={{
-                    color: isDone
-                      ? "color-mix(in srgb, #22C55E 85%, var(--foreground))"
-                      : isActive
-                        ? colors.text
-                        : "color-mix(in srgb, var(--foreground) 55%, transparent)",
-                  }}
+                  style={workflowStepperStyles.label[visual]}
                 >
                   {isCompact ? definition.code : definition.label}
                 </span>
@@ -359,11 +346,7 @@ export function TaskProductionPanel({
                       <span
                         title={operator.name}
                         className="max-w-full truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium normal-case"
-                        style={{
-                          // Claro pero no chillón; sin border ni ring
-                          backgroundColor: `color-mix(in srgb, ${operator.color || "#64748B"} 38%, var(--background))`,
-                          color: `color-mix(in srgb, ${operator.color || "#64748B"} 55%, var(--foreground))`,
-                        }}
+                        style={workflowStepperStyles.operator}
                       >
                         {operator.name.trim().split(/\s+/)[0]}
                       </span>
@@ -387,7 +370,9 @@ export function TaskProductionPanel({
                     className="h-full rounded-full"
                     style={{
                       width: isDone ? "100%" : "0%",
-                      backgroundColor: isDone ? "#22C55E" : colors.text,
+                      ...(isDone
+                        ? workflowStepperStyles.connector.completed
+                        : workflowStepperStyles.connector.pending),
                     }}
                   />
                 </div>
@@ -417,9 +402,7 @@ export function TaskProductionPanel({
               type="button"
               onClick={() => setExpanded(true)}
               className="flex w-full items-center gap-3 rounded-2xl p-3 text-left transition hover:brightness-110 tablet:gap-4 tablet:p-4"
-              style={{
-                background: getGlassSurface(status?.color ?? "#64748B", theme).background,
-              }}
+              style={workflowStepperStyles.surface}
             >
 
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground/5">
@@ -468,9 +451,7 @@ export function TaskProductionPanel({
 
           <div
             className="relative flex w-full flex-col gap-6 rounded-2xl p-4 tablet:p-5"
-            style={{
-              background: getGlassSurface(status?.color ?? "#64748B", theme).background,
-            }}
+            style={workflowStepperStyles.surface}
           >
             {showCollapseButton && (
               <div className="absolute right-2 top-2 z-10">

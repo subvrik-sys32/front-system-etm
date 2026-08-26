@@ -18,6 +18,23 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-workflow-surface: var(--workflow-surface);
+  --color-workflow-completed-node: var(--workflow-completed-node);
+  --color-workflow-completed-icon: var(--workflow-completed-icon);
+  --color-workflow-completed-label: var(--workflow-completed-label);
+  --color-workflow-completed-connector: var(--workflow-completed-connector);
+  --color-workflow-current-node: var(--workflow-current-node);
+  --color-workflow-current-icon: var(--workflow-current-icon);
+  --color-workflow-current-label: var(--workflow-current-label);
+  --color-workflow-pending-node: var(--workflow-pending-node);
+  --color-workflow-pending-icon: var(--workflow-pending-icon);
+  --color-workflow-pending-label: var(--workflow-pending-label);
+  --color-workflow-pending-connector: var(--workflow-pending-connector);
+  --color-workflow-progress-fill: var(--workflow-progress-fill);
+  --color-workflow-progress-track: var(--workflow-progress-track);
+  --color-workflow-operator-bg: var(--workflow-operator-bg);
+  --color-workflow-operator-text: var(--workflow-operator-text);
+  --color-workflow-operator-border: var(--workflow-operator-border);
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
   --color-chrome: var(--chrome);
@@ -124,6 +141,25 @@
   --on-glass-faint: oklch(0.22 0.012 260 / 0.45);
 
   --selection-bg: oklch(0.14 0.014 260 / 0.15);
+
+  /* Workflow stepper — semántica de estado (no color por proceso/operador) */
+  --workflow-surface: oklch(0.945 0.008 260);
+  --workflow-completed-node: oklch(0.93 0.06 155);
+  --workflow-completed-icon: oklch(0.42 0.12 155);
+  --workflow-completed-label: oklch(0.42 0.12 155);
+  --workflow-completed-connector: oklch(0.62 0.17 155);
+  --workflow-current-node: oklch(0.93 0.04 250);
+  --workflow-current-icon: oklch(0.48 0.16 255);
+  --workflow-current-label: oklch(0.42 0.16 255);
+  --workflow-pending-node: oklch(0.91 0.008 260);
+  --workflow-pending-icon: oklch(0.52 0.02 260);
+  --workflow-pending-label: oklch(0.48 0.02 260);
+  --workflow-pending-connector: oklch(0.84 0.012 260);
+  --workflow-progress-fill: oklch(0.55 0.16 155);
+  --workflow-progress-track: oklch(0.88 0.01 260);
+  --workflow-operator-bg: oklch(0.90 0.008 260);
+  --workflow-operator-text: oklch(0.40 0.02 260);
+  --workflow-operator-border: oklch(0.84 0.01 260);
 }
 
 html, body {
@@ -192,6 +228,25 @@ html, body {
   --on-glass-faint: oklch(0.96 0.005 260 / 0.38);
 
   --selection-bg: oklch(0.97 0.005 260 / 0.18);
+
+  /* Workflow stepper — dark */
+  --workflow-surface: oklch(0.16 0.012 260);
+  --workflow-completed-node: oklch(0.28 0.05 155);
+  --workflow-completed-icon: oklch(0.78 0.14 155);
+  --workflow-completed-label: oklch(0.78 0.14 155);
+  --workflow-completed-connector: oklch(0.62 0.17 155);
+  --workflow-current-node: oklch(0.32 0.06 250);
+  --workflow-current-icon: oklch(0.80 0.08 250);
+  --workflow-current-label: oklch(0.86 0.06 250);
+  --workflow-pending-node: oklch(0.22 0.012 260);
+  --workflow-pending-icon: oklch(0.62 0.02 260);
+  --workflow-pending-label: oklch(0.70 0.02 260);
+  --workflow-pending-connector: oklch(0.32 0.015 260);
+  --workflow-progress-fill: oklch(0.62 0.17 155);
+  --workflow-progress-track: oklch(0.26 0.015 260);
+  --workflow-operator-bg: oklch(1 0 0 / 0.06);
+  --workflow-operator-text: oklch(0.82 0.015 260);
+  --workflow-operator-border: oklch(1 0 0 / 0.08);
 }
 
 @layer base {

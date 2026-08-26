@@ -57,14 +57,16 @@ function TaskDesktopRouteStrip({ task }: { task: Task }) {
     : undefined
 
   return (
-    <div className="flex h-8 min-w-0 flex-1 flex-nowrap items-center justify-end gap-2">
-      <TaskRouteViewer
-        variant="inline"
-        taskId={task.id}
-        route={task.route}
-        currentProcess={currentStep?.processCode}
-      />
-      <div className="flex h-8 min-h-8 min-w-[11rem] max-w-[18rem] flex-1 items-center gap-2 self-center rounded-lg bg-foreground/5 px-2.5 shadow-xs">
+    <div className="flex min-h-8 min-w-0 flex-wrap items-center justify-end gap-2">
+      <div className="min-w-0 max-w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] scrollbar-none [&::-webkit-scrollbar]:hidden">
+        <TaskRouteViewer
+          variant="inline"
+          taskId={task.id}
+          route={task.route}
+          currentProcess={currentStep?.processCode}
+        />
+      </div>
+      <div className="flex h-8 min-h-8 w-full min-w-[9rem] max-w-[16rem] shrink-0 items-center gap-2 self-center rounded-lg bg-foreground/5 px-2.5 shadow-xs sm:w-auto">
         <div className="flex min-w-0 shrink items-center gap-1">
           {StatusIcon && (
             <StatusIcon size={12} className="shrink-0 text-muted-foreground" />
@@ -73,7 +75,7 @@ function TaskDesktopRouteStrip({ task }: { task: Task }) {
             {statusDef?.label ?? "—"}
           </span>
         </div>
-        <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-foreground/10">
+        <div className="h-1.5 min-w-[2rem] flex-1 overflow-hidden rounded-full bg-foreground/10">
           <div
             className="h-full rounded-full bg-cyan-500 transition-all"
             style={{ width: `${workflowView.progress}%` }}
@@ -199,7 +201,7 @@ export function TaskExpandedRow({
       rowId={task.id}
     >
       <EntityExpandedContent>
-        <div className="mb-2 flex flex-nowrap items-center gap-2 select-none">
+        <div className="mb-2 flex flex-wrap items-center gap-2 select-none">
           <div className="min-w-0 shrink-0">
             <EntityExpandedToggle
               value={activeView}
@@ -236,11 +238,15 @@ export function TaskExpandedRow({
             - Desktop: ruta + barra + chips KPI
             - Compact: solo chips KPI (sin ruta ni barra)
           */}
-          <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
             {!isCompact && task.route?.length > 0 && (
-              <TaskDesktopRouteStrip task={task} />
+              <div className="min-w-0 max-w-full">
+                <TaskDesktopRouteStrip task={task} />
+              </div>
             )}
-            <TaskKpisSection task={task} density="compact" />
+            <div className="min-w-0 max-w-full">
+              <TaskKpisSection task={task} density="compact" />
+            </div>
           </div>
         </div>
 

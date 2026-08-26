@@ -3,6 +3,7 @@
 import {
   Hash,
   InspectionPanel,
+  Layers2,
   Layers3,
   Package,
   PaintBucket,
@@ -215,8 +216,12 @@ export function TaskKpisSection({
   }
 
   if (isCompact) {
-    const dominantColor = hasPaintProcess ? (task.color?.color ?? "#64748B") : "#BBBBBB"
-    const paintLabel = hasPaintProcess ? (task.color?.name.toUpperCase() ?? "—") : "NATURAL"
+    const dominantColor = hasPaintProcess
+      ? (task.color?.color ?? "#64748B")
+      : "#BBBBBB"
+    const paintLabel = hasPaintProcess
+      ? (task.color?.name.toUpperCase() ?? "—")
+      : "NATURAL"
     const PaintIcon = hasPaintProcess ? Palette : Sparkles
 
     const materialLabel = [
@@ -231,22 +236,25 @@ export function TaskKpisSection({
     const finishInk = getBadgeColors(dominantColor, "solid").text
 
     return (
-      <div className="flex h-full w-full items-center text-[13px] font-bold tracking-wide">
-        {/* Lado izquierdo: Color y su icono */}
+      <div className="flex h-full w-full items-center">
         <div
-          className="flex items-center gap-2.5 shrink-0 pl-2"
+          className="flex shrink-0 items-center gap-2.5 pl-2 text-[13px] font-bold tracking-wide"
           style={{ color: finishInk }}
         >
-          <PaintIcon className="h-4 w-4" />
-          <span>{paintLabel}</span>
+          <PaintIcon className="h-4 w-4 shrink-0" />
+          <span className="truncate">{paintLabel}</span>
         </div>
 
-        {/* Divisor vertical fino y elegante exactamente como en el mockup */}
-        <div className="mx-6 h-4 w-px bg-black/15 shrink-0" />
+        <div
+          className="mx-6 h-4 w-px shrink-0"
+          style={{ backgroundColor: finishInk, opacity: 0.2 }}
+        />
 
-        {/* Lado derecho: Icono de caja y texto de Lote / Material / Espesor */}
-        <div className="flex items-center gap-2.5 text-white/90 truncate">
-          <Package className="h-4 w-4 shrink-0 text-white/70" />
+        <div
+          className="flex min-w-0 items-center gap-2.5 truncate text-[13px] font-bold tracking-wide"
+          style={{ color: finishInk }}
+        >
+          <Layers3 className="h-4 w-4 shrink-0" />
           <span className="truncate">{materialLabel}</span>
         </div>
       </div>

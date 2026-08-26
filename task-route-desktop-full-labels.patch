@@ -1,0 +1,47 @@
+diff --git a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+index 69dea02..e7c23a1 100644
+--- a/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
++++ b/src/features/tasks/components/expanded-row/production/task-production-panel.tsx
+@@ -52,6 +52,7 @@ import {
+   getGlassSurface,
+ } from "@/shared/utils/badge-colors"
+ import { useThemeStore } from "@/shared/theme"
++import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ 
+ import {
+   cn,
+@@ -74,6 +75,7 @@ export function TaskProductionPanel({
+ }: Props) {
+   // theme solo para getBadgeColors en el map del stepper (hooks no en loop)
+   const theme = useThemeStore(s => s.resolved)
++  const { isCompact } = useResponsive()
+ 
+   const router = useRouter()
+ 
+@@ -350,7 +352,10 @@ export function TaskProductionPanel({
+                 </div>
+ 
+                 <span
+-                  className="text-[10px] font-bold"
++                  className={cn(
++                    "font-bold",
++                    isCompact ? "text-[10px]" : "text-[11px] tracking-wide",
++                  )}
+                   style={{
+                     color:
+                       isActive || isDone
+@@ -358,12 +363,12 @@ export function TaskProductionPanel({
+                         : "color-mix(in srgb, var(--foreground) 40%, transparent)",
+                   }}
+                 >
+-                  {definition.code}
++                  {isCompact ? definition.code : definition.label}
+                 </span>
+               </button>
+ 
+               {!isLast && (
+-                <div className="mx-2 mt-5 h-0.5 w-6 shrink-0 self-start overflow-hidden rounded-full bg-foreground/10">
++                <div className={cn("mt-5 h-0.5 shrink-0 self-start overflow-hidden rounded-full bg-foreground/10", isCompact ? "mx-2 w-6" : "mx-3 w-10")}>
+                   <div
+                     className="h-full rounded-full"
+                     style={{

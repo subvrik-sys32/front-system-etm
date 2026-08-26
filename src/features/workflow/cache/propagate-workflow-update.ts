@@ -138,6 +138,7 @@ export function propagateWorkflowUpdate(
   // Burbujas del sidebar (conteos por proceso) — completar/revisar las mueve.
   queryClient.invalidateQueries({
     queryKey: sidebarCountsQueryKey,
+    refetchType: "active",
   })
 
 }

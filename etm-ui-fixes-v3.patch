@@ -1,0 +1,248 @@
+diff --git a/src/features/processes/components/expanded-row/cards/process-editable-value.tsx b/src/features/processes/components/expanded-row/cards/process-editable-value.tsx
+index 7fcab97..33047a0 100644
+--- a/src/features/processes/components/expanded-row/cards/process-editable-value.tsx
++++ b/src/features/processes/components/expanded-row/cards/process-editable-value.tsx
+@@ -210,7 +210,8 @@ export function ProcessEditableValue({
+                   ? "bg-red-500/40 text-red-50 shadow-[inset_0_0_0_1.5px_rgba(248,113,113,0.95)]"
+                   : "bg-red-500/15 text-red-600 shadow-[inset_0_0_0_1.5px_rgba(239,68,68,0.7)] dark:text-red-400"
+                 : onDark
+-                  ? "bg-white/15 text-white"
++                  // Pill base: suave, legible sobre badge oscuro (mismo look que diseño).
++                  ? "bg-white/20 text-white"
+                   : "bg-foreground/10 text-inherit",
+             )}
+           >
+diff --git a/src/features/workflow/cache/propagate-workflow-update.ts b/src/features/workflow/cache/propagate-workflow-update.ts
+index a4decbe..8e3b3fd 100644
+--- a/src/features/workflow/cache/propagate-workflow-update.ts
++++ b/src/features/workflow/cache/propagate-workflow-update.ts
+@@ -138,6 +138,7 @@ export function propagateWorkflowUpdate(
+   // Burbujas del sidebar (conteos por proceso) — completar/revisar las mueve.
+   queryClient.invalidateQueries({
+     queryKey: sidebarCountsQueryKey,
++    refetchType: "active",
+   })
+ 
+ }
+\ No newline at end of file
+diff --git a/src/features/workflow/hooks/use-workflow.ts b/src/features/workflow/hooks/use-workflow.ts
+index f080051..7eb2be7 100644
+--- a/src/features/workflow/hooks/use-workflow.ts
++++ b/src/features/workflow/hooks/use-workflow.ts
+@@ -42,6 +42,7 @@ export function useWorkflow(){
+     // No depender solo del SSE: el actor local también debe refrescar burbujas.
+     queryClient.invalidateQueries({
+       queryKey:sidebarCountsQueryKey,
++      refetchType:"active",
+     })
+ 
+   }
+@@ -131,102 +132,25 @@ export function useWorkflow(){
+ 
+   })
+ 
+-  // Mismo patrón que "update" de más arriba: parchea el status del
+-  // workflowStep en la cache YA, antes de que el servidor confirme.
+-  // Sin esto (como estaba antes en start/pause/resume/complete/
+-  // review), el botón no cambiaba de estado hasta que la respuesta
+-  // volvía — con la latencia actual del server (700ms-3s), cada
+-  // toque se sentía como si el botón estuviera trabado/sin
+-  // responder. Son justo los botones que más se tocan en el piso
+-  // de producción.
+-  function optimisticStepUpdate(
+-    stepId:string,
+-    status:WorkflowStep["status"],
+-  ){
+-
+-    queryClient.setQueryData<Task[]>(
+-
+-      ["tasks"],
+-
+-      current=>
+-
+-        replaceNestedEntity(
+-
+-          current??[],
+-
+-          task=>task.workflowSteps,
+-
+-          (task,workflowSteps)=>({
+-            ...task,
+-            workflowSteps,
+-          }),
+-
+-          {
+-            id:stepId,
+-            status,
+-          },
+-
+-        ),
+-
+-    )
+-
+-  }
+-
+-  async function onMutateStep(
+-    stepId:string,
+-    status:WorkflowStep["status"],
+-  ){
+-
+-    await queryClient.cancelQueries({
+-      queryKey:["tasks"],
+-    })
+-
+-    const previous=
+-      queryClient.getQueryData<Task[]>([
+-        "tasks",
+-      ])??[]
+-
+-    optimisticStepUpdate(stepId,status)
+-
+-    return{ previous }
+-
+-  }
+-
+-  function onErrorRollback(
+-    _err:unknown,
+-    _vars:unknown,
+-    context:{ previous:Task[] }|undefined,
+-  ){
+-
+-    if(!context){
+-      return
+-    }
+-
+-    queryClient.setQueryData(
+-      ["tasks"],
+-      context.previous,
+-    )
+-
+-  }
++  // Sin optimistic de status en start/pause/resume/complete/review.
++  // El optimistic cambiaba el status en cache al instante → el botón
++  // "Iniciar" se reemplazaba por Pausar/Completar, LUEGO salía el
++  // spinner en el botón nuevo, y al final el estado real. Flujo
++  // correcto: mismo botón + Spinner (isPending) hasta onSuccess,
++  // ahí sí propagate actualiza status y la UI cambia una sola vez.
+ 
+   const start=useMutation({
+     mutationFn:workflowService.start,
+-    onMutate:(stepId:string)=>onMutateStep(stepId,"PROGRESS"),
+-    onError:onErrorRollback,
+     onSuccess:propagate,
+   })
+ 
+   const pause=useMutation({
+     mutationFn:workflowService.pause,
+-    onMutate:(stepId:string)=>onMutateStep(stepId,"PAUSED"),
+-    onError:onErrorRollback,
+     onSuccess:propagate,
+   })
+ 
+   const resume=useMutation({
+     mutationFn:workflowService.resume,
+-    onMutate:(stepId:string)=>onMutateStep(stepId,"PROGRESS"),
+-    onError:onErrorRollback,
+     onSuccess:propagate,
+   })
+ 
+@@ -244,31 +168,17 @@ export function useWorkflow(){
+         dto,
+       ),
+ 
+-    onMutate:({
+-      stepId,
+-    }:{
+-      stepId:string
+-      dto:WorkflowActionPayload
+-    })=>
+-      onMutateStep(stepId,"COMPLETED"),
+-
+-    onError:onErrorRollback,
+-
+     onSuccess:propagate,
+ 
+   })
+ 
+   const review=useMutation({
+     mutationFn:workflowService.review,
+-    onMutate:(stepId:string)=>onMutateStep(stepId,"REVIEWED"),
+-    onError:onErrorRollback,
+     onSuccess:propagate,
+   })
+ 
+   const reopen=useMutation({
+     mutationFn:workflowService.reopen,
+-    onMutate:(stepId:string)=>onMutateStep(stepId,"PROGRESS"),
+-    onError:onErrorRollback,
+     onSuccess:propagate,
+   })
+ 
+diff --git a/src/shared/realtime/handlers/process-handler.ts b/src/shared/realtime/handlers/process-handler.ts
+index ccfcdae..ddf91ee 100644
+--- a/src/shared/realtime/handlers/process-handler.ts
++++ b/src/shared/realtime/handlers/process-handler.ts
+@@ -27,8 +27,9 @@ export function processHandler(
+       // estado), así que hay que invalidar los conteos también —
+       // sin esto, el sidebar queda desactualizado hasta un refresh.
+       queryClient.invalidateQueries({
+-        queryKey: sidebarCountsQueryKey,
+-      })
++    queryKey: sidebarCountsQueryKey,
++    refetchType: "active",
++  })
+ 
+       return
+ 
+diff --git a/src/shared/realtime/handlers/project-handler.ts b/src/shared/realtime/handlers/project-handler.ts
+index c030ab6..60a62dd 100644
+--- a/src/shared/realtime/handlers/project-handler.ts
++++ b/src/shared/realtime/handlers/project-handler.ts
+@@ -26,6 +26,7 @@ export function projectHandler(
+   // pedirla de más alguna vez por las dudas.
+   queryClient.invalidateQueries({
+     queryKey: sidebarCountsQueryKey,
++    refetchType: "active",
+   })
+ 
+   switch (event.action) {
+diff --git a/src/shared/realtime/handlers/task-handler.ts b/src/shared/realtime/handlers/task-handler.ts
+index f5970c3..171b182 100644
+--- a/src/shared/realtime/handlers/task-handler.ts
++++ b/src/shared/realtime/handlers/task-handler.ts
+@@ -31,7 +31,8 @@ export function taskHandler(
+   // por proceso del sidebar — invalidación liviana (COUNT), no
+   // cuesta nada de más.
+   queryClient.invalidateQueries({
+-    queryKey:sidebarCountsQueryKey,
++    queryKey: sidebarCountsQueryKey,
++    refetchType: "active",
+   })
+ 
+   switch(event.action){
+diff --git a/src/shared/realtime/handlers/workflow-handler.ts b/src/shared/realtime/handlers/workflow-handler.ts
+index fa23dae..e9649a4 100644
+--- a/src/shared/realtime/handlers/workflow-handler.ts
++++ b/src/shared/realtime/handlers/workflow-handler.ts
+@@ -18,6 +18,7 @@ export function workflowHandler(
+   // invalidación liviana (COUNT), no cuesta nada de más.
+   queryClient.invalidateQueries({
+     queryKey: sidebarCountsQueryKey,
++    refetchType: "active",
+   })
+ 
+   switch (event.action) {
+diff --git a/src/shared/responsive/layout/hooks/use-sidebar-counts.ts b/src/shared/responsive/layout/hooks/use-sidebar-counts.ts
+index b270382..672e595 100644
+--- a/src/shared/responsive/layout/hooks/use-sidebar-counts.ts
++++ b/src/shared/responsive/layout/hooks/use-sidebar-counts.ts
+@@ -37,7 +37,8 @@ export function useSidebarCounts(){
+     queryKey:sidebarCountsQueryKey,
+     queryFn:({ signal })=>sidebarService.getCounts(signal),
+     staleTime:1000*5,
+-    // Refetch al invalidar desde workflow/realtime (completar/revisar).
++    // Siempre refetch cuando invalidateQueries desde workflow/realtime.
++    refetchOnMount:"always",
+   })
+ 
+   return{

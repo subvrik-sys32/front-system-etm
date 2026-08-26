@@ -26,6 +26,7 @@ export function projectHandler(
   // pedirla de más alguna vez por las dudas.
   queryClient.invalidateQueries({
     queryKey: sidebarCountsQueryKey,
+    refetchType: "active",
   })
 
   switch (event.action) {

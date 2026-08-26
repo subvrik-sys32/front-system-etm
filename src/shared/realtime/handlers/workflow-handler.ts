@@ -18,6 +18,7 @@ export function workflowHandler(
   // invalidación liviana (COUNT), no cuesta nada de más.
   queryClient.invalidateQueries({
     queryKey: sidebarCountsQueryKey,
+    refetchType: "active",
   })
 
   switch (event.action) {

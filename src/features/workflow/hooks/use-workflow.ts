@@ -42,6 +42,7 @@ export function useWorkflow(){
     // No depender solo del SSE: el actor local también debe refrescar burbujas.
     queryClient.invalidateQueries({
       queryKey:sidebarCountsQueryKey,
+      refetchType:"active",
     })
 
   }
@@ -131,102 +132,25 @@ export function useWorkflow(){
 
   })
 
-  // Mismo patrón que "update" de más arriba: parchea el status del
-  // workflowStep en la cache YA, antes de que el servidor confirme.
-  // Sin esto (como estaba antes en start/pause/resume/complete/
-  // review), el botón no cambiaba de estado hasta que la respuesta
-  // volvía — con la latencia actual del server (700ms-3s), cada
-  // toque se sentía como si el botón estuviera trabado/sin
-  // responder. Son justo los botones que más se tocan en el piso
-  // de producción.
-  function optimisticStepUpdate(
-    stepId:string,
-    status:WorkflowStep["status"],
-  ){
-
-    queryClient.setQueryData<Task[]>(
-
-      ["tasks"],
-
-      current=>
-
-        replaceNestedEntity(
-
-          current??[],
-
-          task=>task.workflowSteps,
-
-          (task,workflowSteps)=>({
-            ...task,
-            workflowSteps,
-          }),
-
-          {
-            id:stepId,
-            status,
-          },
-
-        ),
-
-    )
-
-  }
-
-  async function onMutateStep(
-    stepId:string,
-    status:WorkflowStep["status"],
-  ){
-
-    await queryClient.cancelQueries({
-      queryKey:["tasks"],
-    })
-
-    const previous=
-      queryClient.getQueryData<Task[]>([
-        "tasks",
-      ])??[]
-
-    optimisticStepUpdate(stepId,status)
-
-    return{ previous }
-
-  }
-
-  function onErrorRollback(
-    _err:unknown,
-    _vars:unknown,
-    context:{ previous:Task[] }|undefined,
-  ){
-
-    if(!context){
-      return
-    }
-
-    queryClient.setQueryData(
-      ["tasks"],
-      context.previous,
-    )
-
-  }
+  // Sin optimistic de status en start/pause/resume/complete/review.
+  // El optimistic cambiaba el status en cache al instante → el botón
+  // "Iniciar" se reemplazaba por Pausar/Completar, LUEGO salía el
+  // spinner en el botón nuevo, y al final el estado real. Flujo
+  // correcto: mismo botón + Spinner (isPending) hasta onSuccess,
+  // ahí sí propagate actualiza status y la UI cambia una sola vez.
 
   const start=useMutation({
     mutationFn:workflowService.start,
-    onMutate:(stepId:string)=>onMutateStep(stepId,"PROGRESS"),
-    onError:onErrorRollback,
     onSuccess:propagate,
   })
 
   const pause=useMutation({
     mutationFn:workflowService.pause,
-    onMutate:(stepId:string)=>onMutateStep(stepId,"PAUSED"),
-    onError:onErrorRollback,
     onSuccess:propagate,
   })
 
   const resume=useMutation({
     mutationFn:workflowService.resume,
-    onMutate:(stepId:string)=>onMutateStep(stepId,"PROGRESS"),
-    onError:onErrorRollback,
     onSuccess:propagate,
   })
 
@@ -244,31 +168,17 @@ export function useWorkflow(){
         dto,
       ),
 
-    onMutate:({
-      stepId,
-    }:{
-      stepId:string
-      dto:WorkflowActionPayload
-    })=>
-      onMutateStep(stepId,"COMPLETED"),
-
-    onError:onErrorRollback,
-
     onSuccess:propagate,
 
   })
 
   const review=useMutation({
     mutationFn:workflowService.review,
-    onMutate:(stepId:string)=>onMutateStep(stepId,"REVIEWED"),
-    onError:onErrorRollback,
     onSuccess:propagate,
   })
 
   const reopen=useMutation({
     mutationFn:workflowService.reopen,
-    onMutate:(stepId:string)=>onMutateStep(stepId,"PROGRESS"),
-    onError:onErrorRollback,
     onSuccess:propagate,
   })
 

@@ -27,8 +27,9 @@ export function processHandler(
       // estado), así que hay que invalidar los conteos también —
       // sin esto, el sidebar queda desactualizado hasta un refresh.
       queryClient.invalidateQueries({
-        queryKey: sidebarCountsQueryKey,
-      })
+    queryKey: sidebarCountsQueryKey,
+    refetchType: "active",
+  })
 
       return
 

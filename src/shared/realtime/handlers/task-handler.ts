@@ -31,7 +31,8 @@ export function taskHandler(
   // por proceso del sidebar — invalidación liviana (COUNT), no
   // cuesta nada de más.
   queryClient.invalidateQueries({
-    queryKey:sidebarCountsQueryKey,
+    queryKey: sidebarCountsQueryKey,
+    refetchType: "active",
   })
 
   switch(event.action){

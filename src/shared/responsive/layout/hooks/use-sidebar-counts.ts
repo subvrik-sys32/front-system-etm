@@ -37,7 +37,8 @@ export function useSidebarCounts(){
     queryKey:sidebarCountsQueryKey,
     queryFn:({ signal })=>sidebarService.getCounts(signal),
     staleTime:1000*5,
-    // Refetch al invalidar desde workflow/realtime (completar/revisar).
+    // Siempre refetch cuando invalidateQueries desde workflow/realtime.
+    refetchOnMount:"always",
   })
 
   return{

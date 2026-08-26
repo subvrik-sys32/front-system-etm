@@ -1,0 +1,13 @@
+diff --git a/src/features/processes/components/expanded-row/cards/process-editable-value.tsx b/src/features/processes/components/expanded-row/cards/process-editable-value.tsx
+index 7fcab97..8e54833 100644
+--- a/src/features/processes/components/expanded-row/cards/process-editable-value.tsx
++++ b/src/features/processes/components/expanded-row/cards/process-editable-value.tsx
+@@ -25,7 +25,7 @@ type EditableProps = {
+   /** Pill Ingresar legible sobre fondo oscuro del badge compacto. */
+   onDark?: boolean
+   /** stepId + fieldKey → resalta en rojo si falló validación al completar. */
+-  stepId?: string
++  stepId?: string | null
+   fieldKey?: WorkflowFieldKey
+   onSave: (
+     value: string | null

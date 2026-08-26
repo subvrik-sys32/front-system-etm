@@ -247,24 +247,31 @@ export function TaskExpandedRow({
             />
             <TaskRowActions task={task} className="gap-1" showAudit />
           </div>
-          {/*
-            Chips siempre en la fila del toggle (compact = h-8).
-            Ruta en desktop cuando hay route. Sin KPIs enormes debajo de rutas.
-          */}
-          <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2">
-            {!isCompact && task.route?.length > 0 && (
-              <TaskDesktopRouteStrip task={task} />
-            )}
+          {/* Desktop: ruta + chips en la misma fila del toggle */}
+          {!isCompact && (
+            <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2">
+              {task.route?.length > 0 && <TaskDesktopRouteStrip task={task} />}
+              <TaskKpisSection task={task} density="compact" />
+            </div>
+          )}
+        </div>
+
+        {/*
+          Compact: chips fijos debajo del toggle (misma versión desktop h-8),
+          a ancho completo para que no los empujen los iconos de acción.
+          Nunca carousel / ProcessMiniCard debajo de la ruta.
+        */}
+        {isCompact && (
+          <div className="mb-2 w-full min-w-0">
             <TaskKpisSection task={task} density="compact" />
           </div>
-        </div>
+        )}
 
         <EntityExpandedSlider
           value={activeView}
           panels={[
             {
               value: "workflow",
-              // Solo panel de producción/ruta; KPIs viven en el header (chips).
               content: (
                 <TaskProductionPanel
                   task={task}
@@ -276,10 +283,8 @@ export function TaskExpandedRow({
             },
             {
               value: "kpis",
-              // KPIs ya están en el header como chips; no duplicar carousel debajo.
               content: null,
             },
-            // Mensajes: CommentHistoryDialog (no panel inline)
           ]}
         />
       </EntityExpandedContent>

@@ -1,9 +1,3 @@
-/**
- * Superficie continua para badges industriales.
- *
- * El color RAL domina el inicio del badge y se desvanece
- * progresivamente hacia la superficie oscura del ERP.
- */
 export function getFinishMaterialSurface(finishHex: string): string {
   const c = finishHex.trim() || "#64748B"
 
@@ -11,10 +5,10 @@ export function getFinishMaterialSurface(finishHex: string): string {
     `linear-gradient(
       105deg,
       ${c} 0%,
-      ${c} 20%,
-      color-mix(in srgb, ${c} 60%, #17191d) 32%,
-      color-mix(in srgb, ${c} 20%, #17191d) 40%,
-      #17191d 48%,
+      ${c} 15%,
+      color-mix(in srgb, ${c} 70%, #17191d) 25%,
+      color-mix(in srgb, ${c} 30%, #17191d) 35%,
+      #17191d 45%,
       #17191d 100%
     )`,
     `linear-gradient(

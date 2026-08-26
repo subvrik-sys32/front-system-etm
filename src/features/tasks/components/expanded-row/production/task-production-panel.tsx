@@ -18,7 +18,6 @@ import {
 } from "react"
 
 import {
-  Activity,
   Check,
   MoreHorizontal,
 } from "lucide-react"
@@ -53,7 +52,13 @@ import {
 } from "@/shared/constants/entity-icons"
 
 import {
-  getBadgeColors} from "@/shared/utils/badge-colors"
+  getBadgeColors,
+} from "@/shared/utils/badge-colors"
+
+import {
+  getFinishMaterialSurface,
+} from "@/shared/utils/material-surface"
+
 import { useThemeStore } from "@/shared/theme"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
@@ -65,7 +70,6 @@ import {
   resolveWorkflowStepVisual,
   workflowStepperStyles,
 } from "@/features/workflow/styles/workflow-stepper"
-
 
 type Props = {
   task: Task
@@ -81,7 +85,6 @@ export function TaskProductionPanel({
   onIndicatorsExpandedChange,
   showCollapseButton = true,
 }: Props) {
-  // theme solo para getBadgeColors en el map del stepper (hooks no en loop)
   const theme = useThemeStore(s => s.resolved)
   const { isCompact } = useResponsive()
 
@@ -111,20 +114,19 @@ export function TaskProductionPanel({
       task.workflowSteps,
     )
 
+  const hasPaintProcess = task.route.includes("PT")
+
   const status =
     useMemo<EntityBase | undefined>(() => {
-
       if (
         workflowView.completed
       ) {
-
         return {
           id: "finalized",
           name: "Finalizado",
           icon: "check",
           color: "#22C55E",
         }
-
       }
 
       if (
@@ -144,7 +146,6 @@ export function TaskProductionPanel({
         icon: definition.icon,
         color: definition.color,
       }
-
     }, [
       workflowView.completed,
       currentStep,
@@ -155,18 +156,10 @@ export function TaskProductionPanel({
       ? ENTITY_ICONS[status.icon]
       : undefined
 
-
-  // Glass: texto e iconos = tinta neutra on-glass (legible en cualquier tint).
-  // El color de dominio queda en el fondo glass + barra, no en el glyph.
-
   const progressContent = (
-
     <div className="flex w-full min-w-0 flex-col gap-1.5">
-
       <div className="flex min-w-0 items-center justify-between gap-2">
-
         <div className="flex min-w-0 items-center gap-1.5">
-
           {StatusIcon && status && (
             <StatusIcon
               size={13}
@@ -177,14 +170,12 @@ export function TaskProductionPanel({
           <span className="truncate text-xs font-bold uppercase tracking-wide text-on-glass-foreground">
             {status?.name ?? "Sin estado"}
           </span>
-
         </div>
 
         <span className="shrink-0 whitespace-nowrap text-xs font-semibold text-on-glass-muted">
           {workflowView.completedSteps}/{workflowView.totalSteps} ·{" "}
           <span className="text-on-glass-foreground">{workflowView.progress}%</span>
         </span>
-
       </div>
 
       <div
@@ -199,9 +190,7 @@ export function TaskProductionPanel({
           }}
         />
       </div>
-
     </div>
-
   )
 
   const stepper = (
@@ -224,7 +213,6 @@ export function TaskProductionPanel({
             isCurrent: isActive,
           })
           const isLast = index === task.route.length - 1
-          const colors = getBadgeColors(definition.color, "subtle", theme)
 
           const commentCount = step?.commentCount ?? 0
           const hasComments = commentCount > 0
@@ -270,7 +258,6 @@ export function TaskProductionPanel({
                     )}
                   </div>
 
-                  {/* Contador de mensajes: integrado, sin ring */}
                   {hasComments && (
                     <span
                       title={
@@ -288,7 +275,6 @@ export function TaskProductionPanel({
                     </span>
                   )}
 
-                  {/* Operador compact: inicial sobre el círculo */}
                   {isCompact && operator && (
                     <span
                       title={operator.name}
@@ -344,7 +330,6 @@ export function TaskProductionPanel({
                   {isCompact ? definition.code : definition.label}
                 </span>
 
-                {/* Slot fijo h-5: alinea Despacho aunque no tenga operador */}
                 {!isCompact && (
                   <div className="mt-0.5 flex h-5 min-h-5 max-w-[5.5rem] items-center justify-center">
                     {operator ? (
@@ -392,15 +377,9 @@ export function TaskProductionPanel({
     </div>
   )
 
-
   return (
-
     <>
-
-      {/* Carousel de ruta + progreso — desktop y compact (ya no hay chips de ruta en el toggle). */}
-
       <div className="flex w-full flex-col">
-
         <CollapsibleSummaryPanel
           expanded={expanded}
           onCollapse={() => setExpanded(false)}
@@ -409,45 +388,48 @@ export function TaskProductionPanel({
             <button
               type="button"
               onClick={() => setExpanded(true)}
-              className="flex w-full items-center gap-2 rounded-2xl p-3 text-left transition hover:brightness-110 tablet:gap-3 tablet:p-4"
-              style={workflowStepperStyles.surface}
+              className="flex h-[70.5px] w-full items-center justify-between rounded-2xl px-4 text-left transition hover:brightness-110 shadow-sm overflow-hidden"
+              style={{
+                background: getFinishMaterialSurface(
+                  hasPaintProcess ? (task.color?.color ?? "#64748B") : "#BBBBBB"
+                ),
+              }}
             >
-              {/* KPIs en el colapsado (el row ya muestra proceso/estado). */}
+              {/* KPIs en el colapsado */}
               <div
-                className="min-w-0 flex-1 overflow-hidden"
+                className="min-w-0 flex-1 overflow-hidden h-full flex items-center"
                 onClick={e => e.stopPropagation()}
                 onPointerDown={e => e.stopPropagation()}
               >
                 <TaskKpisSection task={task} density="compact" />
               </div>
 
-              <div className="flex shrink-0 items-center gap-3 tablet:gap-6">
+              <div className="flex shrink-0 items-center gap-3 tablet:gap-6 pl-4 h-full py-2">
                 <div className="min-w-0 text-right">
-                  <p className="truncate text-[10px] font-bold uppercase tracking-[0.14em] text-on-glass-muted sm:text-xs">
+                  <p className="truncate text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]">
                     Listas
                   </p>
-                  <p className="text-lg font-bold leading-tight text-on-glass-foreground">
+                  <p className="text-xs font-bold leading-tight text-white sm:text-sm">
                     {workflowView.completedSteps}/{workflowView.totalSteps}
                   </p>
                 </div>
 
                 <div className="min-w-0 text-right">
-                  <p className="truncate text-[10px] font-bold uppercase tracking-[0.14em] text-on-glass-muted sm:text-xs">
+                  <p className="truncate text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]">
                     Avance
                   </p>
-                  <p className="text-lg font-bold leading-tight text-on-glass-foreground">
+                  <p className="text-xs font-bold leading-tight text-white sm:text-sm">
                     {workflowView.progress}%
                   </p>
                 </div>
 
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-foreground/5 text-on-glass-muted">
-                  <MoreHorizontal size={18} />
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
+                  <MoreHorizontal size={15} />
                 </div>
               </div>
             </button>
           }
         >
-
           <div
             className="relative flex w-full flex-col gap-6 rounded-2xl p-4 tablet:p-5"
             style={workflowStepperStyles.surface}
@@ -461,15 +443,9 @@ export function TaskProductionPanel({
             {stepper}
 
             {progressContent}
-
           </div>
-
         </CollapsibleSummaryPanel>
-
       </div>
-
     </>
-
   )
-
 }

@@ -29,7 +29,6 @@ import {
   useResponsive,
 } from "@/shared/responsive/hooks/use-responsive"
 
-import { getFinishMaterialSurface } from "@/shared/utils/material-surface"
 import { getBadgeColors } from "@/shared/utils/badge-colors"
 
 type Props = {
@@ -229,30 +228,26 @@ export function TaskKpisSection({
       task.thickness.name,
     ].join(" · ")
 
-    // Mismo ink que DynamicBadge variant="solid" (chip de pintura del task dialog)
     const finishInk = getBadgeColors(dominantColor, "solid").text
 
     return (
-      <div
-        className="flex h-8 w-fit items-center overflow-hidden rounded-full px-3.5 text-[11px] font-bold tracking-wide shadow-sm"
-        style={{ background: getFinishMaterialSurface(dominantColor) }}
-      >
-        {/* Lado izquierdo: Color — contraste solid del dialog */}
+      <div className="flex h-full w-full items-center text-[13px] font-bold tracking-wide">
+        {/* Lado izquierdo: Color y su icono */}
         <div
-          className="flex items-center gap-1.5 drop-shadow-sm"
+          className="flex items-center gap-2.5 shrink-0 pl-2"
           style={{ color: finishInk }}
         >
-          <PaintIcon className="h-3.5 w-3.5" />
+          <PaintIcon className="h-4 w-4" />
           <span>{paintLabel}</span>
         </div>
 
-        {/* Divisor semitransparente ubicado exactamente donde termina el desvanecimiento */}
-        <div className="mx-3 h-3.5 w-px bg-white/20 shrink-0" />
+        {/* Divisor vertical fino y elegante exactamente como en el mockup */}
+        <div className="mx-6 h-4 w-px bg-black/15 shrink-0" />
 
-        {/* Lado derecho: Material y Producción (sobre la superficie oscura resultante) */}
-        <div className="flex items-center gap-1.5 text-white/90 drop-shadow-sm">
-          <Package className="h-3.5 w-3.5" />
-          <span>{materialLabel}</span>
+        {/* Lado derecho: Icono de caja y texto de Lote / Material / Espesor */}
+        <div className="flex items-center gap-2.5 text-white/90 truncate">
+          <Package className="h-4 w-4 shrink-0 text-white/70" />
+          <span className="truncate">{materialLabel}</span>
         </div>
       </div>
     )

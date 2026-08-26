@@ -113,13 +113,17 @@ export function ProcessEditableValue({
       <div
         className={
           inline
-            ? "relative inline-flex min-w-[3.5rem] shrink-0 items-center"
+            // Ancho fijo: type=number sin size se expande (~20ch) y rompe el KPI strip.
+            ? "relative inline-flex h-[1.25em] w-[3.25rem] max-w-[3.25rem] shrink-0 items-center justify-center"
             : "relative flex w-full min-w-0 items-center"
         }
       >
         <input
           ref={inputRef}
-          type={numeric ? "number" : "text"}
+          // text + inputMode evita el min-width nativo de type=number
+          type="text"
+          inputMode={numeric ? "decimal" : "text"}
+          size={inline ? 4 : undefined}
           value={draft}
           disabled={saving}
           onChange={event => {
@@ -138,7 +142,7 @@ export function ProcessEditableValue({
           }}
           className={
             inline
-              ? "block w-full min-w-0 border-0 bg-transparent p-0 text-center font-inherit tabular-nums leading-inherit text-inherit outline-none disabled:opacity-60"
+              ? "block w-full max-w-full border-0 bg-transparent p-0 text-center font-inherit tabular-nums leading-inherit text-inherit outline-none disabled:opacity-60"
               : "block w-full min-w-0 border-0 bg-transparent p-0 pr-5 text-left font-inherit leading-inherit text-inherit outline-none disabled:opacity-60"
           }
         />

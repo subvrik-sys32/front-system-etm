@@ -17,6 +17,7 @@ import type { Task } from "@/features/tasks/types/task.types"
 
 import { replaceNestedEntity } from "@/shared/core/entity/cache/replace-nested-entity"
 import { propagateWorkflowUpdate } from "../cache/propagate-workflow-update"
+import { sidebarCountsQueryKey } from "@/shared/responsive/layout/hooks/use-sidebar-counts"
 
 type UpdateWorkflowInput={
   id:string
@@ -30,12 +31,20 @@ export function useWorkflow(){
 
   const propagate=(
     response:WorkflowResponse,
-  )=>
+  )=>{
 
     propagateWorkflowUpdate(
       queryClient,
       response,
     )
+
+    // Completar / revisar / iniciar mueve items entre columnas del sidebar.
+    // No depender solo del SSE: el actor local también debe refrescar burbujas.
+    queryClient.invalidateQueries({
+      queryKey:sidebarCountsQueryKey,
+    })
+
+  }
 
   const update=useMutation<
     WorkflowResponse,

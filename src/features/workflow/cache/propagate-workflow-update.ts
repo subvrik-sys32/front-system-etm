@@ -7,6 +7,7 @@ import type { User } from "@/features/users/types/user.types"
 import type { WorkflowStep } from "../types/workflow.types"
 
 import type { WorkflowResponse } from "../services/workflow.services"
+import { sidebarCountsQueryKey } from "@/shared/responsive/layout/hooks/use-sidebar-counts"
 
 function mergeSteps(
   currentSteps: WorkflowStep[],
@@ -133,5 +134,10 @@ export function propagateWorkflowUpdate(
     )
 
   }
+
+  // Burbujas del sidebar (conteos por proceso) — completar/revisar las mueve.
+  queryClient.invalidateQueries({
+    queryKey: sidebarCountsQueryKey,
+  })
 
 }

@@ -424,23 +424,31 @@ export function TaskProductionPanel({
                 <TaskKpisSection task={task} density="compact" />
               </div>
 
-              <div className="flex shrink-0 items-center gap-3 tablet:gap-6 pl-4 h-full py-2">
-                <div className="min-w-0 text-right">
-                  <p className="truncate text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]">
-                    Listas
-                  </p>
-                  <p className="text-xs font-bold leading-tight text-white sm:text-sm">
-                    {workflowView.completedSteps}/{workflowView.totalSteps}
-                  </p>
-                </div>
+              <div className="flex shrink-0 items-center gap-2 pl-2 h-full py-2 tablet:gap-3 tablet:pl-4">
+                {/* Listas + Avance solo tablet+; en móvil el espacio es para Lote/Material/Piezas */}
+                <div className="hidden shrink-0 items-center gap-2 tablet:flex tablet:gap-3">
+                  <div className="shrink-0 text-right">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]">
+                      Listas
+                    </p>
+                    <p className="whitespace-nowrap text-xs font-bold leading-tight text-white sm:text-sm">
+                      {workflowView.completedSteps}/{workflowView.totalSteps}
+                    </p>
+                  </div>
 
-                <div className="min-w-0 text-right">
-                  <p className="truncate text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]">
-                    Avance
-                  </p>
-                  <p className="text-xs font-bold leading-tight text-white sm:text-sm">
-                    {workflowView.progress}%
-                  </p>
+                  <span
+                    aria-hidden
+                    className="h-1 w-1 shrink-0 rounded-full bg-white/35"
+                  />
+
+                  <div className="shrink-0 text-right">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/70 sm:text-[10px]">
+                      Avance
+                    </p>
+                    <p className="whitespace-nowrap text-xs font-bold leading-tight text-white sm:text-sm">
+                      {workflowView.progress}%
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-white">

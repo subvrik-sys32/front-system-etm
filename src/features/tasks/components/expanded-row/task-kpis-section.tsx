@@ -237,6 +237,7 @@ export function TaskKpisSection({
 
     return (
       <div className="flex h-full w-full items-center">
+        {/* Bloque de pintura (mantiene su color dinámico sobre el badge) */}
         <div
           className="flex shrink-0 items-center gap-2.5 pl-2 text-[13px] font-bold tracking-wide"
           style={{ color: finishInk }}
@@ -245,16 +246,12 @@ export function TaskKpisSection({
           <span className="truncate">{paintLabel}</span>
         </div>
 
-        <div
-          className="mx-6 h-4 w-px shrink-0"
-          style={{ backgroundColor: finishInk, opacity: 0.2 }}
-        />
+        {/* Separador vertical en blanco con opacidad usando tokens */}
+        <div className="mx-8 h-4 w-px shrink-0 bg-white/20" />
 
-        <div
-          className="flex min-w-0 items-center gap-2.5 truncate text-[13px] font-bold tracking-wide"
-          style={{ color: finishInk }}
-        >
-          <Layers3 className="h-4 w-4 shrink-0" />
+        {/* Bloque de producción/material en blanco */}
+        <div className="flex min-w-0 items-center gap-2.5 truncate text-[13px] font-bold tracking-wide text-white">
+          <Layers3 className="h-4 w-4 shrink-0 text-white" />
           <span className="truncate">{materialLabel}</span>
         </div>
       </div>

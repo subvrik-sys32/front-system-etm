@@ -1,10 +1,7 @@
 "use client"
 
-import { Pencil } from "lucide-react"
-
 import type { User } from "@/features/users/types/user.types"
 import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
-import { PrimaryAction } from "@/shared/ui/actions/primary-action"
 import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
 import type { ProcessCode } from "@/features/tasks/types/task.types"
 
@@ -32,20 +29,10 @@ function areaVisual(processCode: string | null | undefined) {
 
 type Props = {
   user: User
-  onEdit?: () => void
-  onOpenExceptions?: () => void
 }
 
-/**
- * Vista Perfil en Access (master–detail).
- * Edición completa sigue en UserDialog (mismo form que crear/editar).
- * Excepciones de permisos viven en la pestaña hermana.
- */
-export function UserAccessProfileSummary({
-  user,
-  onEdit,
-  onOpenExceptions,
-}: Props) {
+/** Solo lectura. Editar / Excepciones van en el header del panel Access. */
+export function UserAccessProfileSummary({ user }: Props) {
   const level = user.level ?? "GENERAL"
 
   return (
@@ -120,21 +107,6 @@ export function UserAccessProfileSummary({
           </div>
         </div>
       )}
-
-      <div className="flex flex-wrap gap-2 pt-1">
-        {onEdit && (
-          <PrimaryAction label="Editar perfil" icon={Pencil} onClick={onEdit} />
-        )}
-        {onOpenExceptions && (
-          <button
-            type="button"
-            onClick={onOpenExceptions}
-            className="rounded-xl bg-foreground/5 px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
-          >
-            Ver excepciones
-          </button>
-        )}
-      </div>
     </div>
   )
 }

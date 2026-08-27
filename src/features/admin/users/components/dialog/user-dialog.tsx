@@ -60,6 +60,7 @@ type Props = {
   open: boolean
   onClose: () => void
   user?: User
+  onSaved?: (user: User) => void
 }
 
 type UserFormValue = {
@@ -115,6 +116,7 @@ export function UserDialog({
   open,
   onClose,
   user,
+  onSaved,
 }: Props) {
   const { isMobile } = useResponsive()
 
@@ -156,18 +158,29 @@ export function UserDialog({
     new Set(),
   )
 
+  const userSyncKey = user
+    ? [
+        user.id,
+        user.level ?? "",
+        ...(user.areas ?? []).map(a => a.id).sort(),
+        ...(user.roles ?? []).map(r => r.id).sort(),
+        user.name,
+        user.username,
+        user.email,
+        user.color,
+        user.icon,
+      ].join("|")
+    : "new"
+
   useEffect(() => {
     setForm(createInitialForm(user))
     setAttempted(false)
-
     if (open) {
       setStep(0)
       setStepAttempted(new Set())
     }
-  }, [
-    user,
-    open,
-  ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userSyncKey, open])
 
   function update(
     value: Partial<UserFormValue>,
@@ -242,8 +255,9 @@ export function UserDialog({
     try {
       const payload = buildPayload()
 
+      let saved: User | undefined
       if (user) {
-        await updateUser.mutateAsync({
+        saved = await updateUser.mutateAsync({
           id: user.id,
           dto: payload,
         })
@@ -251,10 +265,10 @@ export function UserDialog({
         if (!payload.password) {
           return
         }
-
-        await createUser.mutateAsync(payload)
+        saved = await createUser.mutateAsync(payload)
       }
 
+      if (saved) onSaved?.(saved)
       close()
     } catch (error) {
       console.error(

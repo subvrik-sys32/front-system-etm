@@ -1,0 +1,431 @@
+diff --git a/src/features/admin/users/components/dialog/user-dialog.tsx b/src/features/admin/users/components/dialog/user-dialog.tsx
+index ca4cb1a..556dac3 100644
+--- a/src/features/admin/users/components/dialog/user-dialog.tsx
++++ b/src/features/admin/users/components/dialog/user-dialog.tsx
+@@ -60,6 +60,7 @@ type Props = {
+   open: boolean
+   onClose: () => void
+   user?: User
++  onSaved?: (user: User) => void
+ }
+ 
+ type UserFormValue = {
+@@ -115,6 +116,7 @@ export function UserDialog({
+   open,
+   onClose,
+   user,
++  onSaved,
+ }: Props) {
+   const { isMobile } = useResponsive()
+ 
+@@ -156,18 +158,29 @@ export function UserDialog({
+     new Set(),
+   )
+ 
++  const userSyncKey = user
++    ? [
++        user.id,
++        user.level ?? "",
++        ...(user.areas ?? []).map(a => a.id).sort(),
++        ...(user.roles ?? []).map(r => r.id).sort(),
++        user.name,
++        user.username,
++        user.email,
++        user.color,
++        user.icon,
++      ].join("|")
++    : "new"
++
+   useEffect(() => {
+     setForm(createInitialForm(user))
+     setAttempted(false)
+-
+     if (open) {
+       setStep(0)
+       setStepAttempted(new Set())
+     }
+-  }, [
+-    user,
+-    open,
+-  ])
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [userSyncKey, open])
+ 
+   function update(
+     value: Partial<UserFormValue>,
+@@ -242,8 +255,9 @@ export function UserDialog({
+     try {
+       const payload = buildPayload()
+ 
++      let saved: User | undefined
+       if (user) {
+-        await updateUser.mutateAsync({
++        saved = await updateUser.mutateAsync({
+           id: user.id,
+           dto: payload,
+         })
+@@ -251,10 +265,10 @@ export function UserDialog({
+         if (!payload.password) {
+           return
+         }
+-
+-        await createUser.mutateAsync(payload)
++        saved = await createUser.mutateAsync(payload)
+       }
+ 
++      if (saved) onSaved?.(saved)
+       close()
+     } catch (error) {
+       console.error(
+diff --git a/src/features/roles/components/role-permissions-page-content.tsx b/src/features/roles/components/role-permissions-page-content.tsx
+index c9b614b..372fd58 100644
+--- a/src/features/roles/components/role-permissions-page-content.tsx
++++ b/src/features/roles/components/role-permissions-page-content.tsx
+@@ -100,7 +100,8 @@ export function RolePermissionsPageContent() {
+   )
+ 
+   const [selectedRole, setSelectedRole] = useState<Role | null>(null)
+-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
++  /** Id estable; el User vivo sale de la query `users` (áreas al día sin F5). */
++  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+ 
+   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
+   const [dirty, setDirty] = useState(false)
+@@ -109,14 +110,14 @@ export function RolePermissionsPageContent() {
+     setMode(nextMode)
+     setSearch("")
+     setSelectedRole(null)
+-    setSelectedUser(null)
++    setSelectedUserId(null)
+     setCheckedIds(new Set())
+     setDirty(false)
+     setUserPanelView("profile")
+   }
+ 
+   function selectUser(user: User) {
+-    setSelectedUser(user)
++    setSelectedUserId(user.id)
+     setUserPanelView("profile")
+     setCheckedIds(new Set())
+     setDirty(false)
+@@ -124,6 +125,11 @@ export function RolePermissionsPageContent() {
+ 
+   const { roles, loading: loadingRoles } = useRoles(mode === "roles")
+   const { users, loading: loadingUsers } = useUsers()
++
++  const selectedUser =
++    selectedUserId != null
++      ? (users.find(u => u.id === selectedUserId) ?? null)
++      : null
+   const { permissions: catalog, loading: loadingCatalog } = usePermissionCatalog()
+ 
+   // ---- Modo ROLES ----
+@@ -431,7 +437,7 @@ export function RolePermissionsPageContent() {
+                     type="button"
+                     onClick={() => {
+                       setSelectedRole(null)
+-                      setSelectedUser(null)
++                      setSelectedUserId(null)
+                     }}
+                     className="flex size-8 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+                   >
+@@ -474,61 +480,66 @@ export function RolePermissionsPageContent() {
+                 )}
+               </div>
+ 
+-              {mode === "usuarios" && selectedUser && (
+-                <div className="flex shrink-0 items-center gap-1 rounded-xl bg-foreground/5 p-1">
+-                  <button
+-                    type="button"
+-                    onClick={() => setUserPanelView("profile")}
+-                    className={cn(
+-                      "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
+-                      userPanelView === "profile"
+-                        ? "bg-foreground/15 text-foreground shadow-xs"
+-                        : "text-muted-foreground hover:text-foreground",
+-                    )}
+-                  >
+-                    Perfil
+-                  </button>
+-                  <button
+-                    type="button"
+-                    onClick={() => setUserPanelView("exceptions")}
+-                    className={cn(
+-                      "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
+-                      userPanelView === "exceptions"
+-                        ? "bg-foreground/15 text-foreground shadow-xs"
+-                        : "text-muted-foreground hover:text-foreground",
+-                    )}
+-                  >
+-                    Excepciones
+-                  </button>
++              {mode === "usuarios" && selectedUser ? (
++                <div className="flex shrink-0 items-center gap-2">
++                  {canEditUser && userPanelView === "profile" && (
++                    <PrimaryAction
++                      label="Editar"
++                      icon={Pencil}
++                      onClick={() => setEditUserOpen(true)}
++                    />
++                  )}
++                  <div className="flex items-center gap-1 rounded-xl bg-foreground/5 p-1">
++                    <button
++                      type="button"
++                      onClick={() => setUserPanelView("profile")}
++                      className={cn(
++                        "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
++                        userPanelView === "profile"
++                          ? "bg-foreground/15 text-foreground shadow-xs"
++                          : "text-muted-foreground hover:text-foreground",
++                      )}
++                    >
++                      Perfil
++                    </button>
++                    <button
++                      type="button"
++                      onClick={() => setUserPanelView("exceptions")}
++                      className={cn(
++                        "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
++                        userPanelView === "exceptions"
++                          ? "bg-foreground/15 text-foreground shadow-xs"
++                          : "text-muted-foreground hover:text-foreground",
++                      )}
++                    >
++                      Excepciones
++                    </button>
++                  </div>
++                  {userPanelView === "exceptions" && (
++                    <PrimaryAction
++                      label={saveLabel}
++                      icon={Save}
++                      isLoading={saving}
++                      onClick={handleSave}
++                      disabled={!dirty || saving}
++                    />
++                  )}
+                 </div>
+-              )}
+-              {!(mode === "usuarios" && userPanelView === "profile") && (
+-                <PrimaryAction
+-                  label={saveLabel}
+-                  icon={Save}
+-                  isLoading={saving}
+-                  onClick={handleSave}
+-                  disabled={!hasSelection || !dirty || saving}
+-                />
+-              )}
+-              {mode === "usuarios" &&
+-                userPanelView === "profile" &&
+-                selectedUser &&
+-                canEditUser && (
++              ) : (
++                mode === "roles" && (
+                   <PrimaryAction
+-                    label="Editar"
+-                    icon={Pencil}
+-                    onClick={() => setEditUserOpen(true)}
++                    label={saveLabel}
++                    icon={Save}
++                    isLoading={saving}
++                    onClick={handleSave}
++                    disabled={!hasSelection || !dirty || saving}
+                   />
+-                )}
++                )
++              )}
+             </header>
+ 
+             {mode === "usuarios" && userPanelView === "profile" && selectedUser ? (
+-              <UserAccessProfileSummary
+-                user={selectedUser}
+-                onEdit={canEditUser ? () => setEditUserOpen(true) : undefined}
+-                onOpenExceptions={() => setUserPanelView("exceptions")}
+-              />
++              <UserAccessProfileSummary user={selectedUser} />
+             ) : (
+               <>
+                 {hasSelection && permissionsLoading && <PermissionsPanelPulse />}
+@@ -606,35 +617,42 @@ export function RolePermissionsPageContent() {
+                     )}
+                   </div>
+ 
+-              {mode === "usuarios" && selectedUser && (
+-                <div className="flex shrink-0 items-center gap-1 rounded-xl bg-foreground/5 p-1">
+-                  <button
+-                    type="button"
+-                    onClick={() => setUserPanelView("profile")}
+-                    className={cn(
+-                      "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
+-                      userPanelView === "profile"
+-                        ? "bg-foreground/15 text-foreground shadow-xs"
+-                        : "text-muted-foreground hover:text-foreground",
+-                    )}
+-                  >
+-                    Perfil
+-                  </button>
+-                  <button
+-                    type="button"
+-                    onClick={() => setUserPanelView("exceptions")}
+-                    className={cn(
+-                      "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
+-                      userPanelView === "exceptions"
+-                        ? "bg-foreground/15 text-foreground shadow-xs"
+-                        : "text-muted-foreground hover:text-foreground",
+-                    )}
+-                  >
+-                    Excepciones
+-                  </button>
+-                </div>
+-              )}
+-                  {!(mode === "usuarios" && userPanelView === "profile") && (
++              {mode === "usuarios" && selectedUser ? (
++                <div className="flex shrink-0 items-center gap-2">
++                  {canEditUser && userPanelView === "profile" && (
++                    <PrimaryAction
++                      label="Editar"
++                      icon={Pencil}
++                      onClick={() => setEditUserOpen(true)}
++                    />
++                  )}
++                  <div className="flex items-center gap-1 rounded-xl bg-foreground/5 p-1">
++                    <button
++                      type="button"
++                      onClick={() => setUserPanelView("profile")}
++                      className={cn(
++                        "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
++                        userPanelView === "profile"
++                          ? "bg-foreground/15 text-foreground shadow-xs"
++                          : "text-muted-foreground hover:text-foreground",
++                      )}
++                    >
++                      Perfil
++                    </button>
++                    <button
++                      type="button"
++                      onClick={() => setUserPanelView("exceptions")}
++                      className={cn(
++                        "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
++                        userPanelView === "exceptions"
++                          ? "bg-foreground/15 text-foreground shadow-xs"
++                          : "text-muted-foreground hover:text-foreground",
++                      )}
++                    >
++                      Excepciones
++                    </button>
++                  </div>
++                  {userPanelView === "exceptions" && (
+                     <PrimaryAction
+                       label={saveLabel}
+                       icon={Save}
+@@ -643,16 +661,18 @@ export function RolePermissionsPageContent() {
+                       disabled={!dirty || saving}
+                     />
+                   )}
+-                  {mode === "usuarios" &&
+-                    userPanelView === "profile" &&
+-                    selectedUser &&
+-                    canEditUser && (
+-                      <PrimaryAction
+-                        label="Editar"
+-                        icon={Pencil}
+-                        onClick={() => setEditUserOpen(true)}
+-                      />
+-                    )}
++                </div>
++              ) : (
++                mode === "roles" && (
++                  <PrimaryAction
++                    label={saveLabel}
++                    icon={Save}
++                    isLoading={saving}
++                    onClick={handleSave}
++                    disabled={!dirty || saving}
++                  />
++                )
++              )}
+                 </header>
+ 
+                 <ScrollArea
+@@ -660,13 +680,7 @@ export function RolePermissionsPageContent() {
+                   className="min-h-0 min-w-0 flex-1 p-1.5"
+                 >
+                   {mode === "usuarios" && userPanelView === "profile" && selectedUser ? (
+-                    <UserAccessProfileSummary
+-                      user={selectedUser}
+-                      onEdit={
+-                        canEditUser ? () => setEditUserOpen(true) : undefined
+-                      }
+-                      onOpenExceptions={() => setUserPanelView("exceptions")}
+-                    />
++                    <UserAccessProfileSummary user={selectedUser} />
+                   ) : (
+                     <>
+                       {permissionsLoading && <PermissionsPanelPulse />}
+@@ -702,6 +716,7 @@ export function RolePermissionsPageContent() {
+           open={editUserOpen}
+           user={selectedUser}
+           onClose={() => setEditUserOpen(false)}
++          onSaved={saved => setSelectedUserId(saved.id)}
+         />
+       )}
+     </div>
+diff --git a/src/features/roles/components/user-access-profile-summary.tsx b/src/features/roles/components/user-access-profile-summary.tsx
+index 97a69a6..a3607dc 100644
+--- a/src/features/roles/components/user-access-profile-summary.tsx
++++ b/src/features/roles/components/user-access-profile-summary.tsx
+@@ -1,10 +1,7 @@
+ "use client"
+ 
+-import { Pencil } from "lucide-react"
+-
+ import type { User } from "@/features/users/types/user.types"
+ import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
+-import { PrimaryAction } from "@/shared/ui/actions/primary-action"
+ import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
+ import type { ProcessCode } from "@/features/tasks/types/task.types"
+ 
+@@ -32,20 +29,10 @@ function areaVisual(processCode: string | null | undefined) {
+ 
+ type Props = {
+   user: User
+-  onEdit?: () => void
+-  onOpenExceptions?: () => void
+ }
+ 
+-/**
+- * Vista Perfil en Access (master–detail).
+- * Edición completa sigue en UserDialog (mismo form que crear/editar).
+- * Excepciones de permisos viven en la pestaña hermana.
+- */
+-export function UserAccessProfileSummary({
+-  user,
+-  onEdit,
+-  onOpenExceptions,
+-}: Props) {
++/** Solo lectura. Editar / Excepciones van en el header del panel Access. */
++export function UserAccessProfileSummary({ user }: Props) {
+   const level = user.level ?? "GENERAL"
+ 
+   return (
+@@ -120,21 +107,6 @@ export function UserAccessProfileSummary({
+           </div>
+         </div>
+       )}
+-
+-      <div className="flex flex-wrap gap-2 pt-1">
+-        {onEdit && (
+-          <PrimaryAction label="Editar perfil" icon={Pencil} onClick={onEdit} />
+-        )}
+-        {onOpenExceptions && (
+-          <button
+-            type="button"
+-            onClick={onOpenExceptions}
+-            className="rounded-xl bg-foreground/5 px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+-          >
+-            Ver excepciones
+-          </button>
+-        )}
+-      </div>
+     </div>
+   )
+ }

@@ -487,6 +487,38 @@ function ParticleEngine(__props) {
         io.observe(el)
         return () => io.disconnect()
     }, [])
+    // FIX zoom: el ResizeObserver solo dispara cuando cambia el tamaño en
+    // px CSS del contenedor. El zoom del navegador cambia
+    // window.devicePixelRatio SIN necesariamente cambiar ese tamaño CSS,
+    // así que el canvas se quedaba con un buffer dibujado para el dpr
+    // viejo (desalineado/borroso al reescalarlo). Usamos un matchMedia
+    // sobre la resolución actual: cuando deja de matchear (porque el dpr
+    // cambió), nos re-suscribimos y forzamos un re-render de partículas
+    // con las dimensiones y el dpr correctos.
+    useEffect(() => {
+        if (typeof window === "undefined" || !window.matchMedia) return
+        let mql
+        const onChange = () => {
+            initParticles()
+            subscribe()
+        }
+        const subscribe = () => {
+            const dpr = window.devicePixelRatio || 1
+            mql = window.matchMedia(
+                `(resolution: ${dpr}dppx), (resolution: ${dpr}x)`
+            )
+            mql.addEventListener
+                ? mql.addEventListener("change", onChange, { once: true })
+                : mql.addListener(onChange)
+        }
+        subscribe()
+        return () => {
+            if (!mql) return
+            mql.removeEventListener
+                ? mql.removeEventListener("change", onChange)
+                : mql.removeListener(onChange)
+        }
+    }, [])
     useEffect(() => {
         initParticles()
     }, [

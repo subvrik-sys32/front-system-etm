@@ -2,21 +2,27 @@
 // Motor adaptado de un componente de partículas basado en canvas.
 //
 // === OPTIMIZACIONES DE CPU (respecto a la versión original) ===
-// 1) BUG PRINCIPAL: el "gap" de muestreo se calculaba solo a partir de
-//    particleCount, ignorando el tamaño real del canvas/imagen. En un
-//    contenedor grande esto disparaba el nº real de partículas a miles,
-//    muy por encima del valor configurado. Ahora el gap se calcula en
-//    función del área real del rectángulo de la imagen, y además hay un
-//    tope duro (MAX_PARTICLES) como red de seguridad.
-// 2) parseColor() (regex) se ejecutaba por partícula y por frame. Ahora
-//    la paleta se parsea UNA vez por frame (no por partícula).
-// 3) La máscara de píxeles del círculo de cada partícula se recalculaba
+// La densidad de partículas (el "gap" de muestreo) se mantiene IGUAL que en
+// el original — no era la causa del consumo de CPU y reducirla arruinaba el
+// resultado visual (sobre todo en trazos finos como el círculo del logo).
+// Los fixes reales, que no cambian nada visualmente, son:
+// 1) parseColor() (regex) se ejecutaba por partícula y por frame. Ahora
+//    la paleta se parsea UNA vez por frame (no por partícula) — con miles
+//    de partículas esto era miles de regex/frame innecesarios.
+// 2) La máscara de píxeles del círculo de cada partícula se recalculaba
 //    con una raíz/distancia por píxel, por partícula, por frame. Ahora se
 //    cachea como lista de offsets y solo se recalcula si cambia el tamaño
 //    de partícula.
-// 4) Se añade un IntersectionObserver: si el widget no está visible en
-//    viewport (p.ej. scrolleado fuera de pantalla), se salta el trabajo
-//    pesado del frame en vez de seguir animando fuera de vista.
+// 3) IntersectionObserver: si el widget no está visible en viewport (p.ej.
+//    scrolleado fuera de pantalla), se salta el trabajo pesado del frame
+//    en vez de seguir animando fuera de vista.
+// 4) Guard de "generación": si initParticles() se dispara varias veces
+//    seguidas (p.ej. resize/zoom rápido), se ignoran resultados de cargas
+//    de imagen viejas que lleguen tarde, evitando que un cálculo obsoleto
+//    de centrado sobreescriba al más reciente (causa probable del
+//    descentrado al hacer zoom).
+// Hay un único tope de seguridad (MAX_PARTICLES) muy por encima de lo que
+// se genera en uso normal, solo para casos extremos (canvases enormes).
 // @ts-nocheck
 "use client"
 
@@ -31,9 +37,10 @@ const ETM_GOLD = "#F2B900"
 // valores menores lo ralentizan proporcionalmente (0.35 ≈ un tercio de veloz).
 const PARTICLE_SPEED = 0.1
 
-// Tope duro de partículas, independientemente de particleCount/tamaño de
-// imagen. Red de seguridad contra explosiones de partículas.
-const MAX_PARTICLES = 1400
+// Tope duro de partículas, muy por encima de lo que genera el uso normal.
+// Es solo una red de seguridad para casos extremos (canvases enormes +
+// particleCount muy alto), no debería activarse en un uso típico.
+const MAX_PARTICLES = 30000
 
 // -- Helpers ----------------------------------------------------------------
 function containRect(iW, iH, cW, cH) {
@@ -251,6 +258,7 @@ function ParticleEngine(__props) {
         roamShape,
         hideType,
     }
+    const initGenRef = useRef(0)
     const animStateRef = useRef("active")
     const animRef = useRef(null)
     const animStartTimeRef = useRef(0)
@@ -335,16 +343,27 @@ function ParticleEngine(__props) {
         const canvas = canvasRef.current
         if (!canvas) return
         clearTimeout(animTimerRef.current)
+        // Gap de muestreo: IGUAL fórmula que el original (basada en el
+        // canvas completo, no en el área del logo). Esto es lo que da la
+        // densidad de partículas correcta, incluyendo trazos finos.
+        const gap = Math.max(2, Math.round(150 / Math.max(1, count)))
         const dpr = window.devicePixelRatio || 1
         canvas.width = Math.round(W * dpr)
         canvas.height = Math.round(H * dpr)
         mouseRef.current = { x: -99999, y: -99999, active: false }
         sceneRef.current = { particles: [] }
+        // Guard contra condiciones de carrera: si initParticles() se llama
+        // de nuevo (resize/zoom) antes de que termine de cargar la imagen
+        // de la llamada anterior, ignoramos el resultado viejo cuando
+        // llegue — evita que sobreescriba con un cálculo de centrado
+        // obsoleto.
+        const myGen = ++initGenRef.current
         const tryLoad = (cors) => {
             const img = new Image()
             if (cors) img.crossOrigin = "anonymous"
             img.onerror = () => cors && tryLoad(false)
             img.onload = () => {
+                if (myGen !== initGenRef.current) return // resultado obsoleto, ignorar
                 let rect
                 if (md === "fit") {
                     const base = containRect(
@@ -366,18 +385,6 @@ function ParticleEngine(__props) {
                     const h = (H * hPct) / 100
                     rect = { x: (W - w) / 2, y: (H - h) / 2, w, h }
                 }
-                // FIX: el gap de muestreo ahora se deriva del área real del
-                // icono (no de una constante ajena al tamaño del canvas),
-                // para que particleCount refleje de verdad el nº final de
-                // partículas en vez de disparar miles por accidente.
-                const area = Math.max(1, rect.w * rect.h)
-                const gap = Math.max(
-                    1,
-                    Math.min(
-                        24,
-                        Math.round(Math.sqrt(area / Math.max(1, count)))
-                    )
-                )
                 const off = document.createElement("canvas")
                 off.width = W
                 off.height = H
@@ -907,7 +914,7 @@ export function ProductionVisual(overrides = {}) {
         },
         particleColor: "multi",
         multiColors: [ETM_BLUE, ETM_BLUE, ETM_GOLD],
-        particleCount: 220,
+        particleCount: 64,
         particleSize: 3.5,
         particleShape: "circle",
         hoverEnabled: true,

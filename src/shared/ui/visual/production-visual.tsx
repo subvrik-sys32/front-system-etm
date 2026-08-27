@@ -10,6 +10,10 @@ import { useEffect, useRef } from "react"
 const ETM_BLUE = "#2563EB"
 const ETM_GOLD = "#F2B900"
 
+// Velocidad del movimiento "roam" (flotación libre). 1 = velocidad original,
+// valores menores lo ralentizan proporcionalmente (0.35 ≈ un tercio de veloz).
+const PARTICLE_SPEED = 0.1
+
 // -- Helpers ----------------------------------------------------------------
 function containRect(iW, iH, cW, cH) {
     const a = iW / iH,
@@ -391,8 +395,8 @@ function ParticleEngine(__props) {
                         const [tx, ty] = randomInShape(rs, bx, by, bw, bh)
                         pt.roamTargetX = tx
                         pt.roamTargetY = ty
-                        pt.vx = (Math.random() - 0.5) * 1.2
-                        pt.vy = (Math.random() - 0.5) * 1.2
+                        pt.vx = (Math.random() - 0.5) * 1.2 * PARTICLE_SPEED
+                        pt.vy = (Math.random() - 0.5) * 1.2 * PARTICLE_SPEED
                         return pt
                     })
                     animStateRef.current = "idle"
@@ -565,13 +569,16 @@ function ParticleEngine(__props) {
                             p.roamTargetY = ty
                         }
                         p.vx =
-                            (p.vx || 0) * 0.98 + (p.roamTargetX - p.x) * 0.003
+                            (p.vx || 0) * 0.98 +
+                            (p.roamTargetX - p.x) * 0.003 * PARTICLE_SPEED
                         p.vy =
-                            (p.vy || 0) * 0.98 + (p.roamTargetY - p.y) * 0.003
+                            (p.vy || 0) * 0.98 +
+                            (p.roamTargetY - p.y) * 0.003 * PARTICLE_SPEED
                         const sp2 = Math.sqrt(p.vx ** 2 + p.vy ** 2)
-                        if (sp2 > 1.5) {
-                            p.vx = (p.vx / sp2) * 1.5
-                            p.vy = (p.vy / sp2) * 1.5
+                        const maxSpeed = 1.5 * PARTICLE_SPEED
+                        if (sp2 > maxSpeed) {
+                            p.vx = (p.vx / sp2) * maxSpeed
+                            p.vy = (p.vy / sp2) * maxSpeed
                         }
                         p.x += p.vx
                         p.y += p.vy

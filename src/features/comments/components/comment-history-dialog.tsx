@@ -149,10 +149,11 @@ export function CommentHistoryDialog({
           {/* Thread — área de burbujas */}
           <ScrollArea className="min-h-0 flex-1">
             <div className="flex min-h-full flex-col px-4 py-4">
-              {loading ? (
-                <div className="flex flex-1 flex-col items-center justify-center gap-2.5">
+              {/* Sin spinner de lista si vino prefetch (notificaciones):
+                  loading solo cuando no hay data en cache. */}
+              {loading && filteredComments.length === 0 ? (
+                <div className="flex flex-1 flex-col items-center justify-center gap-2.5 py-10">
                   <Spinner size={18} />
-                  <p className="text-sm text-muted-foreground">Cargando...</p>
                 </div>
               ) : filteredComments.length === 0 ? (
                 <div className="flex flex-1 flex-col items-center justify-center">

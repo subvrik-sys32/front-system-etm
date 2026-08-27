@@ -1,5 +1,7 @@
 "use client"
 
+import { useQueryClient } from "@tanstack/react-query"
+
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 
@@ -36,6 +38,8 @@ import { useMarkAllNotificationsRead } from "../hooks/use-mark-all-read"
 import { NotificationItem } from "./notification-item"
 import { NotificationHistoryDialog } from "./notification-history-dialog"
 import { resolveNotificationHref } from "../utils/resolve-notification-href"
+import { commentTargetFromNotification } from "../utils/comment-target-from-notification"
+import { prefetchComments } from "@/features/comments/utils/prefetch-comments"
 
 import type { Notification } from "../types/notification.types"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -58,6 +62,7 @@ export function NotificationBell({
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
 
   const router = useRouter()
+  const queryClient = useQueryClient()
   const sidebarMode = useSidebarStore(s => s.mode)
 
   const {
@@ -106,7 +111,12 @@ export function NotificationBell({
         await markAsRead(notification.id)
       }
       setOpen(false)
-      router.push(resolveNotificationHref(notification, { history: fromConfirm }))
+      const href = resolveNotificationHref(notification, { history: fromConfirm })
+      const commentTarget = commentTargetFromNotification(notification)
+      if (commentTarget) {
+        void prefetchComments(queryClient, commentTarget)
+      }
+      router.push(href)
     } finally {
       setSelectingId(null)
     }

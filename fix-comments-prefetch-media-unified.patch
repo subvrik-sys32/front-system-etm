@@ -1,0 +1,268 @@
+diff --git a/src/features/comments/components/comment-history-dialog.tsx b/src/features/comments/components/comment-history-dialog.tsx
+index f98f90a..b49f2cc 100644
+--- a/src/features/comments/components/comment-history-dialog.tsx
++++ b/src/features/comments/components/comment-history-dialog.tsx
+@@ -149,10 +149,11 @@ export function CommentHistoryDialog({
+           {/* Thread — área de burbujas */}
+           <ScrollArea className="min-h-0 flex-1">
+             <div className="flex min-h-full flex-col px-4 py-4">
+-              {loading ? (
+-                <div className="flex flex-1 flex-col items-center justify-center gap-2.5">
++              {/* Sin spinner de lista si vino prefetch (notificaciones):
++                  loading solo cuando no hay data en cache. */}
++              {loading && filteredComments.length === 0 ? (
++                <div className="flex flex-1 flex-col items-center justify-center gap-2.5 py-10">
+                   <Spinner size={18} />
+-                  <p className="text-sm text-muted-foreground">Cargando...</p>
+                 </div>
+               ) : filteredComments.length === 0 ? (
+                 <div className="flex flex-1 flex-col items-center justify-center">
+diff --git a/src/features/comments/components/comment-media-image.tsx b/src/features/comments/components/comment-media-image.tsx
+index ad3e271..7b79df6 100644
+--- a/src/features/comments/components/comment-media-image.tsx
++++ b/src/features/comments/components/comment-media-image.tsx
+@@ -12,8 +12,9 @@ type Props = {
+ }
+ 
+ /**
+- * Thumbnail en burbuja: siempre el tamaño máximo permitido.
+- * Mientras carga: blur interno + Spinner.
++ * Thumbnail: siempre reserva el tamaño máximo (max-h-64, ratio 4:5).
++ * Nunca colapsa al tamaño del avatar mientras carga.
++ * Loading: blur + Spinner encima del placeholder muted.
+  */
+ export function CommentMediaImage({ src, alt, className }: Props) {
+   const [ready, setReady] = useState(false)
+@@ -21,8 +22,8 @@ export function CommentMediaImage({ src, alt, className }: Props) {
+   return (
+     <span
+       className={cn(
+-        "relative block w-full max-w-[min(100%,16rem)] overflow-hidden rounded-xl bg-muted",
+-        "aspect-[4/5] max-h-64",
++        // Caja fija: 16rem alto × 12.8rem ancho (4:5), acotada al 100% del padre
++        "relative isolate block h-64 w-[min(100%,12.8rem)] shrink-0 overflow-hidden rounded-xl bg-muted",
+         className,
+       )}
+     >
+@@ -33,13 +34,13 @@ export function CommentMediaImage({ src, alt, className }: Props) {
+         onLoad={() => setReady(true)}
+         onError={() => setReady(true)}
+         className={cn(
+-          "h-full w-full object-cover transition-[opacity,filter] duration-200 ease-out",
+-          ready ? "opacity-100 blur-0" : "scale-105 opacity-50 blur-md",
++          "absolute inset-0 h-full w-full object-cover transition-[opacity,filter] duration-200 ease-out",
++          ready ? "opacity-100 blur-0" : "scale-105 opacity-40 blur-md",
+         )}
+       />
+       {!ready && (
+         <span
+-          className="absolute inset-0 z-10 flex items-center justify-center bg-background/20 backdrop-blur-[2px]"
++          className="absolute inset-0 z-10 flex items-center justify-center bg-background/25 backdrop-blur-[2px]"
+           aria-busy="true"
+           aria-label="Cargando imagen"
+         >
+diff --git a/src/features/comments/hooks/use-comments.ts b/src/features/comments/hooks/use-comments.ts
+index 0b2dc74..be402b9 100644
+--- a/src/features/comments/hooks/use-comments.ts
++++ b/src/features/comments/hooks/use-comments.ts
+@@ -5,26 +5,30 @@ import { commentsService } from "../services/comments.service"
+ import { commentsQueryKey } from "../utils/comment-target"
+ import type { CommentTarget } from "../types/comment.types"
+ 
+-export function useComments(target:CommentTarget,enabled=true){
+-
+-  const query=useQuery({
+-    queryKey:commentsQueryKey(target),
++export function useComments(target: CommentTarget, enabled = true) {
++  const query = useQuery({
++    queryKey: commentsQueryKey(target),
+     enabled,
+-    queryFn:({signal})=>{
+-      if(target.scope==="task"){
+-        return commentsService.getTaskComments(target.taskId,signal)
++    queryFn: ({ signal }) => {
++      if (target.scope === "task") {
++        return commentsService.getTaskComments(target.taskId, signal)
+       }
+-      if(target.scope==="workflowStep"){
+-        return commentsService.getWorkflowStepComments(target.workflowStepId,signal)
++      if (target.scope === "workflowStep") {
++        return commentsService.getWorkflowStepComments(
++          target.workflowStepId,
++          signal,
++        )
+       }
+-      return commentsService.getProjectComments(target.projectId,signal)
++      return commentsService.getProjectComments(target.projectId, signal)
+     },
+   })
+ 
+-  return{
+-    comments:query.data??[],
+-    loading:query.isLoading,
+-    refreshing:query.isFetching,
+-  }
++  // Con prefetch (notificaciones) data ya está → no “cargando” en el dialog.
++  const loading = query.isLoading && query.data === undefined
+ 
+-}
+\ No newline at end of file
++  return {
++    comments: query.data ?? [],
++    loading,
++    refreshing: query.isFetching,
++  }
++}
+diff --git a/src/features/comments/utils/prefetch-comments.ts b/src/features/comments/utils/prefetch-comments.ts
+new file mode 100644
+index 0000000..25ed24f
+--- /dev/null
++++ b/src/features/comments/utils/prefetch-comments.ts
+@@ -0,0 +1,27 @@
++import type { QueryClient } from "@tanstack/react-query"
++
++import { commentsService } from "../services/comments.service"
++import type { CommentTarget } from "../types/comment.types"
++import { commentsQueryKey } from "./comment-target"
++
++/** Rellena la cache de comentarios antes de abrir el dialog (p. ej. desde notificaciones). */
++export function prefetchComments(
++  queryClient: QueryClient,
++  target: CommentTarget,
++) {
++  return queryClient.prefetchQuery({
++    queryKey: commentsQueryKey(target),
++    queryFn: ({ signal }) => {
++      if (target.scope === "task") {
++        return commentsService.getTaskComments(target.taskId, signal)
++      }
++      if (target.scope === "workflowStep") {
++        return commentsService.getWorkflowStepComments(
++          target.workflowStepId,
++          signal,
++        )
++      }
++      return commentsService.getProjectComments(target.projectId, signal)
++    },
++  })
++}
+diff --git a/src/features/notifications/components/notification-bell.tsx b/src/features/notifications/components/notification-bell.tsx
+index e2311bc..2ff6b3d 100644
+--- a/src/features/notifications/components/notification-bell.tsx
++++ b/src/features/notifications/components/notification-bell.tsx
+@@ -1,5 +1,7 @@
+ "use client"
+ 
++import { useQueryClient } from "@tanstack/react-query"
++
+ import { useEffect, useState } from "react"
+ import { useRouter } from "next/navigation"
+ 
+@@ -36,6 +38,8 @@ import { useMarkAllNotificationsRead } from "../hooks/use-mark-all-read"
+ import { NotificationItem } from "./notification-item"
+ import { NotificationHistoryDialog } from "./notification-history-dialog"
+ import { resolveNotificationHref } from "../utils/resolve-notification-href"
++import { commentTargetFromNotification } from "../utils/comment-target-from-notification"
++import { prefetchComments } from "@/features/comments/utils/prefetch-comments"
+ 
+ import type { Notification } from "../types/notification.types"
+ import { ScrollArea } from "@/components/ui/scroll-area"
+@@ -58,6 +62,7 @@ export function NotificationBell({
+   const [confirmingId, setConfirmingId] = useState<string | null>(null)
+ 
+   const router = useRouter()
++  const queryClient = useQueryClient()
+   const sidebarMode = useSidebarStore(s => s.mode)
+ 
+   const {
+@@ -106,7 +111,12 @@ export function NotificationBell({
+         await markAsRead(notification.id)
+       }
+       setOpen(false)
+-      router.push(resolveNotificationHref(notification, { history: fromConfirm }))
++      const href = resolveNotificationHref(notification, { history: fromConfirm })
++      const commentTarget = commentTargetFromNotification(notification)
++      if (commentTarget) {
++        void prefetchComments(queryClient, commentTarget)
++      }
++      router.push(href)
+     } finally {
+       setSelectingId(null)
+     }
+diff --git a/src/features/notifications/components/notification-history-dialog.tsx b/src/features/notifications/components/notification-history-dialog.tsx
+index aa78ac8..60cb426 100644
+--- a/src/features/notifications/components/notification-history-dialog.tsx
++++ b/src/features/notifications/components/notification-history-dialog.tsx
+@@ -24,6 +24,9 @@ import { useDeleteNotification } from "../hooks/use-delete-notification"
+ import { useDeleteAllNotifications } from "../hooks/use-delete-all-notifications"
+ import { NotificationItem } from "./notification-item"
+ import { resolveNotificationHref } from "../utils/resolve-notification-href"
++import { commentTargetFromNotification } from "../utils/comment-target-from-notification"
++import { prefetchComments } from "@/features/comments/utils/prefetch-comments"
++import { useQueryClient } from "@tanstack/react-query"
+ 
+ import type { Notification } from "../types/notification.types"
+ import { ScrollArea } from "@/components/ui/scroll-area"
+@@ -40,6 +43,7 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
+   const [confirmingId, setConfirmingId] = useState<string | null>(null)
+ 
+   const router = useRouter()
++  const queryClient = useQueryClient()
+ 
+   const { notifications, loading, loadMore, hasMore, loadingMore } = useNotifications(open)
+   const { markAsRead } = useMarkNotificationRead()
+@@ -84,9 +88,14 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
+ 
+     onOpenChange(false)
+ 
+-    router.push(
+-      resolveNotificationHref(notification, { history: fromConfirm }),
+-    )
++    const href = resolveNotificationHref(notification, {
++      history: fromConfirm,
++    })
++    const commentTarget = commentTargetFromNotification(notification)
++    if (commentTarget) {
++      void prefetchComments(queryClient, commentTarget)
++    }
++    router.push(href)
+   }
+ 
+   const handleConfirmDeleteAll = async () => {
+diff --git a/src/features/notifications/utils/comment-target-from-notification.ts b/src/features/notifications/utils/comment-target-from-notification.ts
+new file mode 100644
+index 0000000..e1eb245
+--- /dev/null
++++ b/src/features/notifications/utils/comment-target-from-notification.ts
+@@ -0,0 +1,31 @@
++import type { CommentTarget } from "@/features/comments/types/comment.types"
++import type { Notification } from "../types/notification.types"
++
++/**
++ * Target de comentarios para prefetch al navegar desde una noti
++ * de COMMENT / MENTION / MESSAGE.
++ */
++export function commentTargetFromNotification(
++  notification: Notification,
++): CommentTarget | null {
++  const type = notification.type?.toUpperCase() ?? ""
++  const isComment =
++    type.includes("COMMENT") ||
++    type.includes("MENTION") ||
++    type.includes("MESSAGE")
++  if (!isComment) return null
++
++  if (notification.workflowStepId) {
++    return {
++      scope: "workflowStep",
++      workflowStepId: notification.workflowStepId,
++    }
++  }
++  if (notification.taskId) {
++    return { scope: "task", taskId: notification.taskId }
++  }
++  if (notification.projectId) {
++    return { scope: "project", projectId: notification.projectId }
++  }
++  return null
++}

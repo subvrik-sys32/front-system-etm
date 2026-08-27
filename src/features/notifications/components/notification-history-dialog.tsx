@@ -24,6 +24,9 @@ import { useDeleteNotification } from "../hooks/use-delete-notification"
 import { useDeleteAllNotifications } from "../hooks/use-delete-all-notifications"
 import { NotificationItem } from "./notification-item"
 import { resolveNotificationHref } from "../utils/resolve-notification-href"
+import { commentTargetFromNotification } from "../utils/comment-target-from-notification"
+import { prefetchComments } from "@/features/comments/utils/prefetch-comments"
+import { useQueryClient } from "@tanstack/react-query"
 
 import type { Notification } from "../types/notification.types"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -40,6 +43,7 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
 
   const router = useRouter()
+  const queryClient = useQueryClient()
 
   const { notifications, loading, loadMore, hasMore, loadingMore } = useNotifications(open)
   const { markAsRead } = useMarkNotificationRead()
@@ -84,9 +88,14 @@ export function NotificationHistoryDialog({ open, onOpenChange }: Props) {
 
     onOpenChange(false)
 
-    router.push(
-      resolveNotificationHref(notification, { history: fromConfirm }),
-    )
+    const href = resolveNotificationHref(notification, {
+      history: fromConfirm,
+    })
+    const commentTarget = commentTargetFromNotification(notification)
+    if (commentTarget) {
+      void prefetchComments(queryClient, commentTarget)
+    }
+    router.push(href)
   }
 
   const handleConfirmDeleteAll = async () => {

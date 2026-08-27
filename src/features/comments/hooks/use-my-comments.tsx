@@ -52,10 +52,6 @@ export function useMyComments(enabled = true) {
     enabled: enabled && Boolean(userId),
     queryFn: ({ signal }) =>
       commentsService.getMyComments(signal) as Promise<MyCommentItem[]>,
-    select: rows => {
-      if (!userId) return []
-      return rows.filter(c => c.userId === userId)
-    },
   })
 
   return {

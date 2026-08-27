@@ -110,19 +110,36 @@ export function CommentComposer({
     if ((!trimmed && !selectedImage) || busy || !canCreate) return
 
     if (isEditing && editingComment) {
+      const snapshot = trimmed
       updateComment({ id: editingComment.id, dto: { message: trimmed } })
-        .then(() => onCancelEdit?.())
-        .catch(() => {})
-    } else {
-      createComment({
-        message: trimmed || undefined,
-        imageBase64: selectedImage ?? undefined,
-        parentId: replyingTo?.id,
-      }).catch(() => {})
-      onCancelReply?.()
+        .then(() => {
+          clearComposer()
+          onCancelEdit?.()
+        })
+        .catch(() => {
+          toast.error("No se pudo guardar el mensaje")
+          fieldRef.current?.setValue(snapshot)
+        })
+      return
     }
 
+    const snapshotText = trimmed
+    const snapshotImage = selectedImage
+    const parentId = replyingTo?.id
+
+    // Limpiar UI ya (optimista); si falla, restaurar y avisar.
     clearComposer()
+    onCancelReply?.()
+
+    createComment({
+      message: snapshotText || undefined,
+      imageBase64: snapshotImage ?? undefined,
+      parentId,
+    }).catch(() => {
+      toast.error("No se pudo enviar el mensaje. Revisá permisos o la conexión.")
+      if (snapshotText) fieldRef.current?.setValue(snapshotText)
+      if (snapshotImage) setSelectedImage(snapshotImage)
+    })
   }
 
   const canSubmit = (hasText || !!selectedImage) && !busy && canCreate

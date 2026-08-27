@@ -1,6 +1,7 @@
 "use client"
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 import { useAuthStore } from "@/features/auth/store/auth-store"
 
@@ -101,17 +102,24 @@ export function useCreateComment(target:CommentTarget){
 
     },
 
-    onError: (_err, _dto, context) => {
-
-      // Falló de verdad (permiso, validación, red caída) — no por
-      // lentitud del servidor. Revertimos al estado real anterior.
+    onError: (err, _dto, context) => {
+      // Falló de verdad (permiso, validación, red caída).
       if (context?.previousComments) {
         queryClient.setQueryData(queryKey, context.previousComments)
       }
       if (context?.location) {
         bumpEntityCommentCounts(queryClient, context.location, -1)
       }
-
+      const msg =
+        err && typeof err === "object" && "response" in err
+          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (err as any).response?.data?.message
+          : null
+      toast.error(
+        typeof msg === "string" && msg.trim()
+          ? msg
+          : "No se pudo guardar el comentario",
+      )
     },
 
     onSuccess: (created, _dto, context) => {

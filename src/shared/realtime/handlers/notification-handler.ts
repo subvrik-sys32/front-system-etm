@@ -126,6 +126,29 @@ export function notificationHandler(
       return
     }
 
+    case "UPDATED": {
+      const notification = event.payload as Notification
+
+      queryClient.setQueryData<InfiniteData<NotificationsPage>>(
+        ["notifications"],
+        current => {
+          if (!current) return current
+          return {
+            ...current,
+            pages: current.pages.map(page => ({
+              ...page,
+              items: page.items.map(n =>
+                n.id === notification.id
+                  ? { ...n, ...notification }
+                  : n,
+              ),
+            })),
+          }
+        },
+      )
+      return
+    }
+
     case "DELETED": {
       const payload = event.payload as { id: string } | undefined
       if (!payload) return

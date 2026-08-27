@@ -201,7 +201,7 @@ export function CommentItem({
                 type="button"
                 onClick={() => setImageDialogOpen(true)}
                 disabled={isDeleting}
-                className="mt-2 block w-full max-w-[min(100%,16rem)] overflow-hidden rounded-xl text-left disabled:opacity-60"
+                className="mt-2 block w-[12.8rem] max-w-full shrink-0 overflow-hidden rounded-xl text-left disabled:opacity-60"
               >
                 <CommentMediaImage
                   src={comment.imageUrl}

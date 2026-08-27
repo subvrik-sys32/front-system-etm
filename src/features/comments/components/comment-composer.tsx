@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, ChangeEvent } from "react"
+import { useEffect, useRef, useState, useImperativeHandle, forwardRef, ChangeEvent } from "react"
 import { Camera, Check, FileText, ImageIcon, Paperclip, Pencil, Reply, Send, X } from "lucide-react"
 import { toast } from "sonner"
 import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
@@ -18,6 +18,11 @@ import {
 } from "./comment-composer-field"
 import type { Comment, CommentTarget } from "../types/comment.types"
 
+export type CommentComposerHandle = {
+  /** Adjuntar desde drop del dialog completo o atajos externos. */
+  attachFiles: (files: FileList | File[]) => void
+}
+
 type Props = {
   target: CommentTarget
   editingComment?: Comment | null
@@ -26,13 +31,16 @@ type Props = {
   onCancelReply?: () => void
 }
 
-export function CommentComposer({
-  target,
-  editingComment,
-  onCancelEdit,
-  replyingTo,
-  onCancelReply,
-}: Props) {
+export const CommentComposer = forwardRef<CommentComposerHandle, Props>(function CommentComposer(
+  {
+    target,
+    editingComment,
+    onCancelEdit,
+    replyingTo,
+    onCancelReply,
+  },
+  ref,
+) {
   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
   const [hasText, setHasText] = useState(false)
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -157,6 +165,14 @@ export function CommentComposer({
     }
     await acceptAttachmentFile(file)
   }
+
+  useImperativeHandle(ref, () => ({
+    attachFiles: (files: FileList | File[]) => {
+      const file = Array.from(files)[0]
+      if (!file) return
+      void acceptDroppedOrPicked(file)
+    },
+  }))
 
   const handleSelectImage = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -439,4 +455,4 @@ export function CommentComposer({
       </div>
     </div>
   )
-}
+})

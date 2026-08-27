@@ -19,7 +19,7 @@ import { preventNestedDialogClose } from "@/shared/ui/dialogs/prevent-nested-dia
 import { useComments } from "../hooks/use-comments"
 import { useDeleteComment } from "../hooks/use-delete-comment"
 import { commentsService } from "../services/comments.service"
-import { CommentComposer } from "./comment-composer"
+import { CommentComposer, type CommentComposerHandle } from "./comment-composer"
 import { CommentList } from "./comment-list"
 import { EmptyComments } from "./empty-comments"
 import type { Comment, CommentTarget } from "../types/comment.types"
@@ -53,6 +53,8 @@ export function CommentHistoryDialog({
   const [pendingDelete, setPendingDelete] = useState<Comment | null>(null)
   const [editingComment, setEditingComment] = useState<Comment | null>(null)
   const [replyingTo, setReplyingTo] = useState<Comment | null>(null)
+  const [chatDragOver, setChatDragOver] = useState(false)
+  const composerRef = useRef<CommentComposerHandle>(null)
 
   const { comments, loading } = useComments(target, open)
   const { deleteComment } = useDeleteComment(target)
@@ -114,7 +116,7 @@ export function CommentHistoryDialog({
         <DialogContent
           size="large"
           className={cn(
-            "flex flex-col gap-0 overflow-hidden p-0 text-foreground shadow-xs bg-popover",
+            "relative flex flex-col gap-0 overflow-hidden p-0 text-foreground shadow-xs bg-popover",
             // Mismo contrato FormDialog: mobile (portrait+landscape) full; desktop card.
             isMobile
               ? "h-full w-full max-w-none rounded-none"
@@ -122,7 +124,49 @@ export function CommentHistoryDialog({
           )}
           onPointerDownOutside={preventNestedDialogClose}
           onInteractOutside={preventNestedDialogClose}
+          onDragEnter={e => {
+            if (readOnly) return
+            e.preventDefault()
+            e.stopPropagation()
+            if (e.dataTransfer.types.includes("Files")) setChatDragOver(true)
+          }}
+          onDragOver={e => {
+            if (readOnly) return
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+          onDragLeave={e => {
+            e.preventDefault()
+            // Solo salir si el leave es fuera del dialog
+            const related = e.relatedTarget as Node | null
+            if (related && e.currentTarget.contains(related)) return
+            setChatDragOver(false)
+          }}
+          onDrop={e => {
+            e.preventDefault()
+            e.stopPropagation()
+            setChatDragOver(false)
+            if (readOnly) return
+            const files = e.dataTransfer.files
+            if (files?.length) composerRef.current?.attachFiles(files)
+          }}
         >
+          {/* Drop zone a pantalla completa del chat */}
+          {chatDragOver && !readOnly && (
+            <div
+              className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center rounded-[inherit] border-2 border-dashed border-foreground/35 bg-background/80 backdrop-blur-[2px]"
+              aria-hidden
+            >
+              <div className="flex flex-col items-center gap-2 px-6 text-center">
+                <p className="text-sm font-semibold text-foreground">
+                  Soltá aquí foto, PDF o DXF
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Se adjunta al mensaje que vas a enviar
+                </p>
+              </div>
+            </div>
+          )}
           {/* Barra fija del chat */}
           <DialogHeader className="z-10 shrink-0 border-b border-border/40 bg-popover px-4 py-3">
             <div className="flex items-center gap-3">
@@ -181,6 +225,7 @@ export function CommentHistoryDialog({
               </p>
             ) : (
               <CommentComposer
+                ref={composerRef}
                 target={target}
                 editingComment={editingComment}
                 onCancelEdit={() => setEditingComment(null)}

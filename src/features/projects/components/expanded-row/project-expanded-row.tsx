@@ -27,6 +27,7 @@ import { ProjectRowActions } from "../actions/project-row-actions"
 import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
 import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
 import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
 
 type Props = {
@@ -113,7 +114,10 @@ export function ProjectExpandedRow({
 
   const urlFocusToken = searchParams.get("focus")
   const settledToken = useFocusSettleStore(s => s.settledToken)
-  const focusSettled = !urlFocusToken || settledToken === urlFocusToken
+  const navActive = useFocusNavStore(s => s.active)
+  // Mensajes solo cuando la ruta terminó Y el overlay ya no está.
+  const focusSettled =
+    (!urlFocusToken || settledToken === urlFocusToken) && !navActive
 
   useEffect(() => {
     if (!isTarget) {
@@ -144,9 +148,7 @@ export function ProjectExpandedRow({
     tabParam,
     isMobile,
     focusSettled,
-    router,
-    pathname,
-    searchParams,
+    navActive,
   ])
 
   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)

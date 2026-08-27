@@ -14,7 +14,6 @@ type Props = {
 }
 
 const FIND_TIMEOUT_MS = 2500
-const POST_EXPAND_MS = 220
 
 function isScrollable(el: HTMLElement): boolean {
   const { overflowY } = window.getComputedStyle(el)
@@ -53,29 +52,20 @@ function centerInScrollParent(el: HTMLElement) {
   parent.scrollTo({ top, behavior: "auto" })
 }
 
-function scrollExpandAndSettle(
-  el: HTMLElement,
-  isActive: () => boolean,
-  expand: () => void,
-  onSettled: (() => void) | undefined,
-): () => void {
-  let disposed = false
-  let timer: number | null = null
-  const finish = () => {
-    useFocusNavStore.getState().end()
-    onSettled?.()
-  }
-  if (disposed || !isActive()) return () => {}
-  centerInScrollParent(el)
-  expand()
-  timer = window.setTimeout(() => {
-    if (disposed || !isActive()) return
-    centerInScrollParent(el)
-    if (!disposed && isActive()) finish()
-  }, POST_EXPAND_MS)
+/** Después del paint del expand (sin setTimeout de 220ms). */
+function afterPaint(cb: () => void): () => void {
+  let raf1 = 0
+  let raf2 = 0
+  let cancelled = false
+  raf1 = window.requestAnimationFrame(() => {
+    raf2 = window.requestAnimationFrame(() => {
+      if (!cancelled) cb()
+    })
+  })
   return () => {
-    disposed = true
-    if (timer !== null) window.clearTimeout(timer)
+    cancelled = true
+    window.cancelAnimationFrame(raf1)
+    window.cancelAnimationFrame(raf2)
   }
 }
 
@@ -92,7 +82,7 @@ function waitForRow(
   const start = performance.now()
   const tryFind = () => {
     if (cancelled || !isActive()) return
-    const el = root.querySelector<HTMLElement>(selector)
+    const el = root.querySelector(selector) as HTMLElement | null
     if (el) {
       onFound(el)
       return
@@ -110,7 +100,15 @@ function waitForRow(
   }
 }
 
-/** Deep-link / F5 / notificaciones / tab=comments. URL = fuente de verdad. */
+/**
+ * Secuencia deep-link:
+ * 1. Dirigiendo ON
+ * 2. Expand inmediato + scroll al row
+ * 3. Dirigiendo OFF
+ * 4. markSettled → recién ahí Mensajes puede abrir
+ *
+ * Nunca markSettled con overlay activo (dialog no queda detrás).
+ */
 export function useFocusedRow({
   focusedId,
   expandedRowId = null,
@@ -129,7 +127,9 @@ export function useFocusedRow({
   const setExpandedRowIdRef = useRef(setExpandedRowId)
   setExpandedRowIdRef.current = setExpandedRowId
 
-  const settleOnly = () => {
+  /** Orden fijo: cerrar overlay → marcar settled → callback. */
+  const completeNavigation = () => {
+    useFocusNavStore.getState().end()
     const token = focusTokenRef.current
     if (token) useFocusSettleStore.getState().markSettled(token)
     onSettledRef.current?.()
@@ -150,12 +150,7 @@ export function useFocusedRow({
     if (!focusedId) {
       stopTracking()
       useFocusNavStore.getState().end()
-      useFocusSettleStore.getState().reset()
-      const prev = prevFocusedIdRef.current
       prevFocusedIdRef.current = undefined
-      if (prev && expandedRowIdRef.current === prev) {
-        setExpandedRowIdRef.current(null)
-      }
       return
     }
 
@@ -168,8 +163,13 @@ export function useFocusedRow({
     }
 
     prevFocusedIdRef.current = focusedId
-    useFocusNavStore.getState().start("Dirigiendo…")
-    useFocusSettleStore.getState().reset()
+
+    const animate = Boolean(focusTokenRef.current)
+    if (animate) {
+      useFocusNavStore.getState().start("Dirigiendo…")
+      // Invalidar settled previo para que Mensajes no abra a mitad de ruta.
+      useFocusSettleStore.getState().reset()
+    }
 
     const selector = `[data-expanded-row-id="${CSS.escape(focusedId)}"]`
     const isActive = () => {
@@ -183,30 +183,40 @@ export function useFocusedRow({
     stopTracking()
     const expand = () => setExpandedRowIdRef.current(focusedId)
 
+    // Expand al inicio: el row ya está en DOM (data-expanded-row-id en el wrapper).
+    expand()
+
+    if (!animate) {
+      completeNavigation()
+      return () => {
+        stopTracking()
+      }
+    }
+
+    let cancelPaint: (() => void) | null = null
+
     const stopWait = waitForRow(
       selector,
       el => {
         if (!isActive()) return
-        stopTracking()
-        stopTrackingRef.current = scrollExpandAndSettle(
-          el,
-          isActive,
-          expand,
-          settleOnly,
-        )
+        centerInScrollParent(el)
+        cancelPaint = afterPaint(() => {
+          if (!isActive()) return
+          centerInScrollParent(el)
+          completeNavigation()
+        })
       },
       FIND_TIMEOUT_MS,
       isActive,
       () => {
         if (!isActive()) return
-        expand()
-        useFocusNavStore.getState().end()
-        settleOnly()
+        completeNavigation()
       },
     )
 
     stopTrackingRef.current = () => {
       stopWait()
+      cancelPaint?.()
     }
 
     return () => {

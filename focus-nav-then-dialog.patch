@@ -1,0 +1,279 @@
+diff --git a/src/features/processes/components/expanded-row/process-expanded-row.tsx b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+index 2226a07..b886d1b 100644
+--- a/src/features/processes/components/expanded-row/process-expanded-row.tsx
++++ b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+@@ -28,6 +28,7 @@ import { ProcessTimeCard } from "./cards/process-time-card"
+ import { ProcessProgressCard } from "./cards/process-progress-card"
+ import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
+ import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
++import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
+ import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
+ 
+ type Props = {
+@@ -170,7 +171,10 @@ export function ProcessExpandedRow({
+ 
+   const urlFocusToken = searchParams.get("focus")
+   const settledToken = useFocusSettleStore(s => s.settledToken)
+-  const focusSettled = !urlFocusToken || settledToken === urlFocusToken
++  const navActive = useFocusNavStore(s => s.active)
++  // Mensajes solo cuando la ruta terminó Y el overlay ya no está.
++  const focusSettled =
++    (!urlFocusToken || settledToken === urlFocusToken) && !navActive
+ 
+   useEffect(() => {
+     if (!isTarget) {
+@@ -194,9 +198,7 @@ export function ProcessExpandedRow({
+     isTarget,
+     tabParam,
+     focusSettled,
+-    router,
+-    pathname,
+-    searchParams,
++    navActive,
+   ])
+ 
+   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
+diff --git a/src/features/projects/components/expanded-row/project-expanded-row.tsx b/src/features/projects/components/expanded-row/project-expanded-row.tsx
+index 0d8539f..a926c4b 100644
+--- a/src/features/projects/components/expanded-row/project-expanded-row.tsx
++++ b/src/features/projects/components/expanded-row/project-expanded-row.tsx
+@@ -27,6 +27,7 @@ import { ProjectRowActions } from "../actions/project-row-actions"
+ import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
+ import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
+ import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
++import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
+ import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
+ 
+ type Props = {
+@@ -113,7 +114,10 @@ export function ProjectExpandedRow({
+ 
+   const urlFocusToken = searchParams.get("focus")
+   const settledToken = useFocusSettleStore(s => s.settledToken)
+-  const focusSettled = !urlFocusToken || settledToken === urlFocusToken
++  const navActive = useFocusNavStore(s => s.active)
++  // Mensajes solo cuando la ruta terminó Y el overlay ya no está.
++  const focusSettled =
++    (!urlFocusToken || settledToken === urlFocusToken) && !navActive
+ 
+   useEffect(() => {
+     if (!isTarget) {
+@@ -144,9 +148,7 @@ export function ProjectExpandedRow({
+     tabParam,
+     isMobile,
+     focusSettled,
+-    router,
+-    pathname,
+-    searchParams,
++    navActive,
+   ])
+ 
+   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
+diff --git a/src/features/tasks/components/expanded-row/task-expanded-row.tsx b/src/features/tasks/components/expanded-row/task-expanded-row.tsx
+index af63fe5..a84701f 100644
+--- a/src/features/tasks/components/expanded-row/task-expanded-row.tsx
++++ b/src/features/tasks/components/expanded-row/task-expanded-row.tsx
+@@ -29,6 +29,7 @@ import { DetailAssetsEye } from "@/features/detail-assets/components/detail-asse
+ import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
+ import { useActiveCommentContextStore } from "@/features/comments/store/active-comment-context-store"
+ import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
++import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
+ import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
+ import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
+ 
+@@ -81,9 +82,12 @@ export function TaskExpandedRow({
+ 
+   const urlFocusToken = searchParams.get("focus")
+   const settledToken = useFocusSettleStore(s => s.settledToken)
++  const navActive = useFocusNavStore(s => s.active)
+   // Si no hay token en la URL (no vino de un deep-link), no hay nada
+   // que esperar — se abre directo, como antes.
+-  const focusSettled = !urlFocusToken || settledToken === urlFocusToken
++  // Mensajes solo cuando la ruta terminó Y el overlay ya no está.
++  const focusSettled =
++    (!urlFocusToken || settledToken === urlFocusToken) && !navActive
+ 
+   useEffect(() => {
+     if (!isTarget) {
+@@ -115,9 +119,7 @@ export function TaskExpandedRow({
+     tabParam,
+     isMobile,
+     focusSettled,
+-    router,
+-    pathname,
+-    searchParams,
++    navActive,
+   ])
+ 
+   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
+diff --git a/src/shared/hooks/use-focused-row.ts b/src/shared/hooks/use-focused-row.ts
+index bbea0cc..ab8b9e2 100644
+--- a/src/shared/hooks/use-focused-row.ts
++++ b/src/shared/hooks/use-focused-row.ts
+@@ -14,7 +14,6 @@ type Props = {
+ }
+ 
+ const FIND_TIMEOUT_MS = 2500
+-const POST_EXPAND_MS = 220
+ 
+ function isScrollable(el: HTMLElement): boolean {
+   const { overflowY } = window.getComputedStyle(el)
+@@ -53,29 +52,20 @@ function centerInScrollParent(el: HTMLElement) {
+   parent.scrollTo({ top, behavior: "auto" })
+ }
+ 
+-function scrollExpandAndSettle(
+-  el: HTMLElement,
+-  isActive: () => boolean,
+-  expand: () => void,
+-  onSettled: (() => void) | undefined,
+-): () => void {
+-  let disposed = false
+-  let timer: number | null = null
+-  const finish = () => {
+-    useFocusNavStore.getState().end()
+-    onSettled?.()
+-  }
+-  if (disposed || !isActive()) return () => {}
+-  centerInScrollParent(el)
+-  expand()
+-  timer = window.setTimeout(() => {
+-    if (disposed || !isActive()) return
+-    centerInScrollParent(el)
+-    if (!disposed && isActive()) finish()
+-  }, POST_EXPAND_MS)
++/** Después del paint del expand (sin setTimeout de 220ms). */
++function afterPaint(cb: () => void): () => void {
++  let raf1 = 0
++  let raf2 = 0
++  let cancelled = false
++  raf1 = window.requestAnimationFrame(() => {
++    raf2 = window.requestAnimationFrame(() => {
++      if (!cancelled) cb()
++    })
++  })
+   return () => {
+-    disposed = true
+-    if (timer !== null) window.clearTimeout(timer)
++    cancelled = true
++    window.cancelAnimationFrame(raf1)
++    window.cancelAnimationFrame(raf2)
+   }
+ }
+ 
+@@ -92,7 +82,7 @@ function waitForRow(
+   const start = performance.now()
+   const tryFind = () => {
+     if (cancelled || !isActive()) return
+-    const el = root.querySelector<HTMLElement>(selector)
++    const el = root.querySelector(selector) as HTMLElement | null
+     if (el) {
+       onFound(el)
+       return
+@@ -110,7 +100,15 @@ function waitForRow(
+   }
+ }
+ 
+-/** Deep-link / F5 / notificaciones / tab=comments. URL = fuente de verdad. */
++/**
++ * Secuencia deep-link:
++ * 1. Dirigiendo ON
++ * 2. Expand inmediato + scroll al row
++ * 3. Dirigiendo OFF
++ * 4. markSettled → recién ahí Mensajes puede abrir
++ *
++ * Nunca markSettled con overlay activo (dialog no queda detrás).
++ */
+ export function useFocusedRow({
+   focusedId,
+   expandedRowId = null,
+@@ -129,7 +127,9 @@ export function useFocusedRow({
+   const setExpandedRowIdRef = useRef(setExpandedRowId)
+   setExpandedRowIdRef.current = setExpandedRowId
+ 
+-  const settleOnly = () => {
++  /** Orden fijo: cerrar overlay → marcar settled → callback. */
++  const completeNavigation = () => {
++    useFocusNavStore.getState().end()
+     const token = focusTokenRef.current
+     if (token) useFocusSettleStore.getState().markSettled(token)
+     onSettledRef.current?.()
+@@ -150,12 +150,7 @@ export function useFocusedRow({
+     if (!focusedId) {
+       stopTracking()
+       useFocusNavStore.getState().end()
+-      useFocusSettleStore.getState().reset()
+-      const prev = prevFocusedIdRef.current
+       prevFocusedIdRef.current = undefined
+-      if (prev && expandedRowIdRef.current === prev) {
+-        setExpandedRowIdRef.current(null)
+-      }
+       return
+     }
+ 
+@@ -168,8 +163,13 @@ export function useFocusedRow({
+     }
+ 
+     prevFocusedIdRef.current = focusedId
+-    useFocusNavStore.getState().start("Dirigiendo…")
+-    useFocusSettleStore.getState().reset()
++
++    const animate = Boolean(focusTokenRef.current)
++    if (animate) {
++      useFocusNavStore.getState().start("Dirigiendo…")
++      // Invalidar settled previo para que Mensajes no abra a mitad de ruta.
++      useFocusSettleStore.getState().reset()
++    }
+ 
+     const selector = `[data-expanded-row-id="${CSS.escape(focusedId)}"]`
+     const isActive = () => {
+@@ -183,30 +183,40 @@ export function useFocusedRow({
+     stopTracking()
+     const expand = () => setExpandedRowIdRef.current(focusedId)
+ 
++    // Expand al inicio: el row ya está en DOM (data-expanded-row-id en el wrapper).
++    expand()
++
++    if (!animate) {
++      completeNavigation()
++      return () => {
++        stopTracking()
++      }
++    }
++
++    let cancelPaint: (() => void) | null = null
++
+     const stopWait = waitForRow(
+       selector,
+       el => {
+         if (!isActive()) return
+-        stopTracking()
+-        stopTrackingRef.current = scrollExpandAndSettle(
+-          el,
+-          isActive,
+-          expand,
+-          settleOnly,
+-        )
++        centerInScrollParent(el)
++        cancelPaint = afterPaint(() => {
++          if (!isActive()) return
++          centerInScrollParent(el)
++          completeNavigation()
++        })
+       },
+       FIND_TIMEOUT_MS,
+       isActive,
+       () => {
+         if (!isActive()) return
+-        expand()
+-        useFocusNavStore.getState().end()
+-        settleOnly()
++        completeNavigation()
+       },
+     )
+ 
+     stopTrackingRef.current = () => {
+       stopWait()
++      cancelPaint?.()
+     }
+ 
+     return () => {

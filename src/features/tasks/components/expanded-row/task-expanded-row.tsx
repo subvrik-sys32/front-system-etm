@@ -29,6 +29,7 @@ import { DetailAssetsEye } from "@/features/detail-assets/components/detail-asse
 import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
 import { useActiveCommentContextStore } from "@/features/comments/store/active-comment-context-store"
 import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
 import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
 import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 
@@ -81,9 +82,12 @@ export function TaskExpandedRow({
 
   const urlFocusToken = searchParams.get("focus")
   const settledToken = useFocusSettleStore(s => s.settledToken)
+  const navActive = useFocusNavStore(s => s.active)
   // Si no hay token en la URL (no vino de un deep-link), no hay nada
   // que esperar — se abre directo, como antes.
-  const focusSettled = !urlFocusToken || settledToken === urlFocusToken
+  // Mensajes solo cuando la ruta terminó Y el overlay ya no está.
+  const focusSettled =
+    (!urlFocusToken || settledToken === urlFocusToken) && !navActive
 
   useEffect(() => {
     if (!isTarget) {
@@ -115,9 +119,7 @@ export function TaskExpandedRow({
     tabParam,
     isMobile,
     focusSettled,
-    router,
-    pathname,
-    searchParams,
+    navActive,
   ])
 
   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)

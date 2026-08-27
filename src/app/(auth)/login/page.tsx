@@ -24,7 +24,7 @@ export default function LoginPage() {
           {/* LEFT CONTAINER (Oculto en móvil, visible solo en laptop con el átomo) */}
           <div className="relative hidden min-w-0 overflow-hidden laptop:flex laptop:flex-col p-3">
             
-            <div className="relative size-full overflow-hidden rounded-xl bg-background/50 shadow-inner flex flex-col justify-between p-7 laptop:p-8">
+            <div className="relative size-full overflow-hidden rounded-xl bg-[#0a0a0a] flex flex-col justify-between p-7 laptop:p-8">
               
               {/* Esquinas técnicas decorativas */}
               <div className="absolute top-3 left-3 w-2.5 h-2.5 border-t-2 border-l-2 border-accent/40 pointer-events-none z-20" />

@@ -592,6 +592,8 @@ function ParticleEngine(__props) {
                     : null
             const parsedSingle =
                 pColor === "single" ? parseColor(scColor) : null
+            // pColor === "original": no hace falta parsear nada, se usa
+            // directo el color muestreado de cada partícula.
             const state = animStateRef.current
             const { x: rawMx, y: rawMy, active } = mouseRef.current
             const hitSpeed = mouseSpeedRef.current
@@ -822,7 +824,14 @@ function ParticleEngine(__props) {
                     da = p.a
                 }
                 if (da < 1) continue
-                if (pColor === "single" && parsedSingle) {
+                // "original": no se sobreescribe nada — se respeta el color
+                // real que trae cada partícula desde el muestreo de la
+                // imagen (p.r/p.g/p.b), en vez de asignarle un color random
+                // de la paleta. Así las zonas azules y doradas del logo
+                // quedan donde realmente están, no salpicadas al azar.
+                if (pColor === "original") {
+                    // no-op: dr/dg/db ya son el color muestreado
+                } else if (pColor === "single" && parsedSingle) {
                     dr = parsedSingle.r
                     dg = parsedSingle.g
                     db = parsedSingle.b
@@ -944,7 +953,11 @@ export function ProductionVisual(overrides = {}) {
             repulsionRadius: 60,
             ...repulsionConfigOverride,
         },
-        particleColor: "multi",
+        // "original" respeta el color real de cada píxel muestreado del
+        // logo (azul/dorado tal como están en /icon.svg), en vez de asignar
+        // colores al azar de una paleta. multiColors queda disponible por
+        // si en algún momento quieres volver al modo "multi".
+        particleColor: "original",
         multiColors: [ETM_BLUE, ETM_BLUE, ETM_GOLD],
         particleCount: 64,
         particleSize: 3.5,

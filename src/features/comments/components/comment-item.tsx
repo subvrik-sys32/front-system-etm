@@ -1,6 +1,6 @@
 "use client"
 
-import {
+import { FileText,
   Check,
   CheckCheck,
   Pencil,
@@ -208,6 +208,25 @@ export function CommentItem({
                   alt="Foto adjunta"
                 />
               </button>
+            ) : null}
+
+            {comment.attachmentUrl ? (
+              <a
+                href={comment.attachmentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  "mt-2 inline-flex max-w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium transition-colors",
+                  isOwner
+                    ? "bg-background/15 text-background hover:bg-background/25"
+                    : "bg-foreground/8 text-foreground hover:bg-foreground/12",
+                )}
+              >
+                <FileText size={14} className="shrink-0 opacity-80" />
+                <span className="min-w-0 truncate">
+                  {comment.attachmentName || "Archivo adjunto"}
+                </span>
+              </a>
             ) : null}
           </div>
 

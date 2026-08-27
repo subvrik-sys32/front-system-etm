@@ -1,0 +1,366 @@
+diff --git a/src/features/comments/components/comment-composer.tsx b/src/features/comments/components/comment-composer.tsx
+index e0c4449..b2f77a7 100644
+--- a/src/features/comments/components/comment-composer.tsx
++++ b/src/features/comments/components/comment-composer.tsx
+@@ -1,7 +1,8 @@
+ "use client"
+ 
+ import { useEffect, useRef, useState, ChangeEvent } from "react"
+-import { Camera, Check, ImageIcon, Pencil, Reply, Send, X } from "lucide-react"
++import { Camera, Check, FileText, ImageIcon, Paperclip, Pencil, Reply, Send, X } from "lucide-react"
++import { toast } from "sonner"
+ import { CHROME_ICON_BTN } from "@/shared/ui/actions/icon-action"
+ import { cn } from "@/shared/utils/utils"
+ import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
+@@ -35,8 +36,15 @@ export function CommentComposer({
+   const [mentionQuery, setMentionQuery] = useState<string | null>(null)
+   const [hasText, setHasText] = useState(false)
+   const [selectedImage, setSelectedImage] = useState<string | null>(null)
++  const [selectedFile, setSelectedFile] = useState<{
++    base64: string
++    name: string
++    mime: string
++  } | null>(null)
++  const [dragOver, setDragOver] = useState(false)
+   const fieldRef = useRef<CommentComposerFieldHandle>(null)
+   const fileInputRef = useRef<HTMLInputElement>(null)
++  const attachInputRef = useRef<HTMLInputElement>(null)
+ 
+   const { createComment } = useCreateComment(target)
+   const { updateComment, updating } = useUpdateComment(target)
+@@ -44,7 +52,7 @@ export function CommentComposer({
+ 
+   const isEditing = !!editingComment
+   const isReplying = !isEditing && !!replyingTo
+-  const showContext = isEditing || isReplying || !!selectedImage
++  const showContext = isEditing || isReplying || !!selectedImage || !!selectedFile
+ 
+   const { has } = usePermissions()
+   const canCreate = isEditing || has(PermissionCode.COMMENT_CREATE)
+@@ -87,6 +95,7 @@ export function CommentComposer({
+   const clearComposer = () => {
+     fieldRef.current?.clear()
+     setSelectedImage(null)
++    setSelectedFile(null)
+     setMentionQuery(null)
+   }
+ 
+@@ -96,18 +105,101 @@ export function CommentComposer({
+     onCancelReply?.()
+   }
+ 
++  const MAX_FILE_BYTES = 20 * 1024 * 1024
++
++  const readAsDataUrl = (file: File) =>
++    new Promise<string>((resolve, reject) => {
++      const reader = new FileReader()
++      reader.onload = () => resolve(reader.result as string)
++      reader.onerror = () => reject(new Error("No se pudo leer el archivo"))
++      reader.readAsDataURL(file)
++    })
++
++  const acceptImageFile = async (file: File) => {
++    if (!file.type.startsWith("image/")) {
++      toast.error("Ese archivo no es una imagen")
++      return
++    }
++    if (file.size > MAX_FILE_BYTES) {
++      toast.error("La imagen supera 20 MB")
++      return
++    }
++    setSelectedFile(null)
++    setSelectedImage(await readAsDataUrl(file))
++  }
++
++  const acceptAttachmentFile = async (file: File) => {
++    const name = file.name || "archivo"
++    const lower = name.toLowerCase()
++    const isPdf = lower.endsWith(".pdf") || file.type === "application/pdf"
++    const isDxf = lower.endsWith(".dxf") || file.type.includes("dxf")
++    if (!isPdf && !isDxf) {
++      toast.error("Solo PDF o DXF")
++      return
++    }
++    if (file.size > MAX_FILE_BYTES) {
++      toast.error("El archivo supera 20 MB")
++      return
++    }
++    setSelectedImage(null)
++    const base64 = await readAsDataUrl(file)
++    setSelectedFile({
++      base64,
++      name,
++      mime: isPdf ? "application/pdf" : "application/dxf",
++    })
++  }
++
++  const acceptDroppedOrPicked = async (file: File) => {
++    if (file.type.startsWith("image/")) {
++      await acceptImageFile(file)
++      return
++    }
++    await acceptAttachmentFile(file)
++  }
++
+   const handleSelectImage = (e: ChangeEvent<HTMLInputElement>) => {
+     const file = e.target.files?.[0]
+     e.target.value = ""
+     if (!file) return
+-    const reader = new FileReader()
+-    reader.onload = () => setSelectedImage(reader.result as string)
+-    reader.readAsDataURL(file)
++    void acceptImageFile(file).catch(() => toast.error("No se pudo cargar la imagen"))
+   }
+ 
++  const handleSelectAttachment = (e: ChangeEvent<HTMLInputElement>) => {
++    const file = e.target.files?.[0]
++    e.target.value = ""
++    if (!file) return
++    void acceptAttachmentFile(file).catch(() =>
++      toast.error("No se pudo cargar el archivo"),
++    )
++  }
++
++  // Ctrl/Cmd+V imagen desde portapapeles (capturas, WhatsApp, etc.)
++  useEffect(() => {
++    if (!canCreate || isEditing) return
++    const onPaste = (ev: ClipboardEvent) => {
++      const items = ev.clipboardData?.items
++      if (!items) return
++      for (const item of Array.from(items)) {
++        if (item.type.startsWith("image/")) {
++          const file = item.getAsFile()
++          if (!file) continue
++          ev.preventDefault()
++          void acceptImageFile(file).catch(() =>
++            toast.error("No se pudo pegar la imagen"),
++          )
++          return
++        }
++      }
++    }
++    window.addEventListener("paste", onPaste)
++    return () => window.removeEventListener("paste", onPaste)
++  }, [canCreate, isEditing])
++
++
+   const handleSubmit = () => {
+     const trimmed = (fieldRef.current?.getValue() ?? "").trim()
+-    if ((!trimmed && !selectedImage) || busy || !canCreate) return
++    if ((!trimmed && !selectedImage && !selectedFile) || busy || !canCreate) return
+ 
+     if (isEditing && editingComment) {
+       const snapshot = trimmed
+@@ -125,24 +217,29 @@ export function CommentComposer({
+ 
+     const snapshotText = trimmed
+     const snapshotImage = selectedImage
++    const snapshotFile = selectedFile
+     const parentId = replyingTo?.id
+ 
+-    // Limpiar UI ya (optimista); si falla, restaurar y avisar.
+     clearComposer()
+     onCancelReply?.()
+ 
+     createComment({
+       message: snapshotText || undefined,
+       imageBase64: snapshotImage ?? undefined,
++      fileBase64: snapshotFile?.base64,
++      fileName: snapshotFile?.name,
++      fileMime: snapshotFile?.mime,
+       parentId,
+     }).catch(() => {
+       toast.error("No se pudo enviar el mensaje. Revisá permisos o la conexión.")
+       if (snapshotText) fieldRef.current?.setValue(snapshotText)
+       if (snapshotImage) setSelectedImage(snapshotImage)
++      if (snapshotFile) setSelectedFile(snapshotFile)
+     })
+   }
+ 
+-  const canSubmit = (hasText || !!selectedImage) && !busy && canCreate
++  const canSubmit =
++    (hasText || !!selectedImage || !!selectedFile) && !busy && canCreate
+ 
+   return (
+     <div
+@@ -188,14 +285,23 @@ export function CommentComposer({
+                 />
+               </div>
+             )}
++            {selectedFile && (
++              <div className="mt-1.5 flex items-center gap-2 rounded-lg bg-foreground/5 px-2 py-1.5 text-xs text-foreground">
++                <FileText size={14} className="shrink-0 text-muted-foreground" />
++                <span className="min-w-0 truncate font-medium">{selectedFile.name}</span>
++              </div>
++            )}
+           </div>
+           <button
+             type="button"
+             aria-label="Cancelar"
+             title="Cancelar"
+             onClick={
+-              selectedImage && !isEditing && !isReplying
+-                ? () => setSelectedImage(null)
++              (selectedImage || selectedFile) && !isEditing && !isReplying
++                ? () => {
++                    setSelectedImage(null)
++                    setSelectedFile(null)
++                  }
+                 : handleCancel
+             }
+             className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-foreground/8 hover:text-foreground"
+@@ -213,8 +319,39 @@ export function CommentComposer({
+         className="hidden"
+         onChange={handleSelectImage}
+       />
++      <input
++        ref={attachInputRef}
++        type="file"
++        tabIndex={-1}
++        accept=".pdf,.dxf,application/pdf"
++        className="hidden"
++        onChange={handleSelectAttachment}
++      />
+ 
+-      <div className="relative">
++      <div
++        className={cn("relative", dragOver && "ring-2 ring-foreground/25 rounded-2xl")}
++        onDragEnter={e => {
++          e.preventDefault()
++          e.stopPropagation()
++          if (canCreate && !isEditing) setDragOver(true)
++        }}
++        onDragOver={e => {
++          e.preventDefault()
++          e.stopPropagation()
++        }}
++        onDragLeave={e => {
++          e.preventDefault()
++          if (e.currentTarget === e.target) setDragOver(false)
++        }}
++        onDrop={e => {
++          e.preventDefault()
++          e.stopPropagation()
++          setDragOver(false)
++          if (!canCreate || isEditing) return
++          const file = e.dataTransfer.files?.[0]
++          if (file) void acceptDroppedOrPicked(file)
++        }}
++      >
+         {mentionOpen ? (
+           <div className="absolute bottom-full left-0 z-50 mb-2">
+             <MentionSuggestions
+@@ -254,19 +391,34 @@ export function CommentComposer({
+             )}
+ 
+             {!isEditing && (
+-              <button
+-                type="button"
+-                aria-label="Adjuntar foto"
+-                title="Adjuntar foto"
+-                disabled={!canCreate}
+-                onClick={() => fileInputRef.current?.click()}
+-                className={cn(
+-                  CHROME_ICON_BTN,
+-                  "size-8 rounded-[10px] disabled:cursor-not-allowed disabled:opacity-40",
+-                )}
+-              >
+-                <Camera size={16} strokeWidth={2.25} />
+-              </button>
++              <>
++                <button
++                  type="button"
++                  aria-label="Adjuntar foto"
++                  title="Adjuntar foto (o Ctrl+V)"
++                  disabled={!canCreate}
++                  onClick={() => fileInputRef.current?.click()}
++                  className={cn(
++                    CHROME_ICON_BTN,
++                    "size-8 rounded-[10px] disabled:cursor-not-allowed disabled:opacity-40",
++                  )}
++                >
++                  <Camera size={16} strokeWidth={2.25} />
++                </button>
++                <button
++                  type="button"
++                  aria-label="Adjuntar PDF o DXF"
++                  title="Adjuntar PDF o DXF"
++                  disabled={!canCreate}
++                  onClick={() => attachInputRef.current?.click()}
++                  className={cn(
++                    CHROME_ICON_BTN,
++                    "size-8 rounded-[10px] disabled:cursor-not-allowed disabled:opacity-40",
++                  )}
++                >
++                  <Paperclip size={16} strokeWidth={2.25} />
++                </button>
++              </>
+             )}
+ 
+             <button
+diff --git a/src/features/comments/components/comment-item.tsx b/src/features/comments/components/comment-item.tsx
+index ed95932..e21d2d1 100644
+--- a/src/features/comments/components/comment-item.tsx
++++ b/src/features/comments/components/comment-item.tsx
+@@ -1,6 +1,6 @@
+ "use client"
+ 
+-import {
++import { FileText,
+   Check,
+   CheckCheck,
+   Pencil,
+@@ -209,6 +209,25 @@ export function CommentItem({
+                 />
+               </button>
+             ) : null}
++
++            {comment.attachmentUrl ? (
++              <a
++                href={comment.attachmentUrl}
++                target="_blank"
++                rel="noopener noreferrer"
++                className={cn(
++                  "mt-2 inline-flex max-w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-medium transition-colors",
++                  isOwner
++                    ? "bg-background/15 text-background hover:bg-background/25"
++                    : "bg-foreground/8 text-foreground hover:bg-foreground/12",
++                )}
++              >
++                <FileText size={14} className="shrink-0 opacity-80" />
++                <span className="min-w-0 truncate">
++                  {comment.attachmentName || "Archivo adjunto"}
++                </span>
++              </a>
++            ) : null}
+           </div>
+ 
+           {/* Desktop / ancho suficiente: actions al lado de la burbuja en hover */}
+diff --git a/src/features/comments/types/comment.types.ts b/src/features/comments/types/comment.types.ts
+index a6727be..2ce29b9 100644
+--- a/src/features/comments/types/comment.types.ts
++++ b/src/features/comments/types/comment.types.ts
+@@ -24,6 +24,9 @@ export interface Comment{
+   userId:string
+   message:string
+   imageUrl:string|null
++  attachmentUrl?:string|null
++  attachmentName?:string|null
++  attachmentMime?:string|null
+   createdAt:string
+   updatedAt:string
+   user:CommentUser
+@@ -34,10 +37,11 @@ export interface Comment{
+ }
+ 
+ export interface CreateCommentDto{
+-  // Opcional: un comentario puede ser solo una foto, sin texto.
+   message?:string
+   imageBase64?:string
+-  // Presente = esto es una respuesta a otro comentario.
++  fileBase64?:string
++  fileName?:string
++  fileMime?:string
+   parentId?:string
+ }
+ 

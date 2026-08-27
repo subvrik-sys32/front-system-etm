@@ -24,6 +24,9 @@ export interface Comment{
   userId:string
   message:string
   imageUrl:string|null
+  attachmentUrl?:string|null
+  attachmentName?:string|null
+  attachmentMime?:string|null
   createdAt:string
   updatedAt:string
   user:CommentUser
@@ -34,10 +37,11 @@ export interface Comment{
 }
 
 export interface CreateCommentDto{
-  // Opcional: un comentario puede ser solo una foto, sin texto.
   message?:string
   imageBase64?:string
-  // Presente = esto es una respuesta a otro comentario.
+  fileBase64?:string
+  fileName?:string
+  fileMime?:string
   parentId?:string
 }
 

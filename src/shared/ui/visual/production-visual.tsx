@@ -1,5 +1,22 @@
 // ProductionVisual — logo de ETM ensamblado con partículas
 // Motor adaptado de un componente de partículas basado en canvas.
+//
+// === OPTIMIZACIONES DE CPU (respecto a la versión original) ===
+// 1) BUG PRINCIPAL: el "gap" de muestreo se calculaba solo a partir de
+//    particleCount, ignorando el tamaño real del canvas/imagen. En un
+//    contenedor grande esto disparaba el nº real de partículas a miles,
+//    muy por encima del valor configurado. Ahora el gap se calcula en
+//    función del área real del rectángulo de la imagen, y además hay un
+//    tope duro (MAX_PARTICLES) como red de seguridad.
+// 2) parseColor() (regex) se ejecutaba por partícula y por frame. Ahora
+//    la paleta se parsea UNA vez por frame (no por partícula).
+// 3) La máscara de píxeles del círculo de cada partícula se recalculaba
+//    con una raíz/distancia por píxel, por partícula, por frame. Ahora se
+//    cachea como lista de offsets y solo se recalcula si cambia el tamaño
+//    de partícula.
+// 4) Se añade un IntersectionObserver: si el widget no está visible en
+//    viewport (p.ej. scrolleado fuera de pantalla), se salta el trabajo
+//    pesado del frame en vez de seguir animando fuera de vista.
 // @ts-nocheck
 "use client"
 
@@ -13,6 +30,10 @@ const ETM_GOLD = "#F2B900"
 // Velocidad del movimiento "roam" (flotación libre). 1 = velocidad original,
 // valores menores lo ralentizan proporcionalmente (0.35 ≈ un tercio de veloz).
 const PARTICLE_SPEED = 0.1
+
+// Tope duro de partículas, independientemente de particleCount/tamaño de
+// imagen. Red de seguridad contra explosiones de partículas.
+const MAX_PARTICLES = 1400
 
 // -- Helpers ----------------------------------------------------------------
 function containRect(iW, iH, cW, cH) {
@@ -186,6 +207,10 @@ function ParticleEngine(__props) {
     const prevMouseRef = useRef({ x: -99999, y: -99999 })
     const mouseSpeedRef = useRef(0)
     const smoothMouseRef = useRef({ x: -99999, y: -99999 })
+    // Visibilidad real en viewport (scroll). Los navegadores ya limitan
+    // rAF cuando la pestaña está oculta, pero no cuando el elemento solo
+    // está fuera de pantalla dentro de una pestaña visible.
+    const visibleRef = useRef(true)
     const physicsRef = useRef({})
     physicsRef.current = {
         hover,
@@ -310,7 +335,6 @@ function ParticleEngine(__props) {
         const canvas = canvasRef.current
         if (!canvas) return
         clearTimeout(animTimerRef.current)
-        const gap = Math.max(2, Math.round(150 / Math.max(1, count)))
         const dpr = window.devicePixelRatio || 1
         canvas.width = Math.round(W * dpr)
         canvas.height = Math.round(H * dpr)
@@ -342,6 +366,18 @@ function ParticleEngine(__props) {
                     const h = (H * hPct) / 100
                     rect = { x: (W - w) / 2, y: (H - h) / 2, w, h }
                 }
+                // FIX: el gap de muestreo ahora se deriva del área real del
+                // icono (no de una constante ajena al tamaño del canvas),
+                // para que particleCount refleje de verdad el nº final de
+                // partículas en vez de disparar miles por accidente.
+                const area = Math.max(1, rect.w * rect.h)
+                const gap = Math.max(
+                    1,
+                    Math.min(
+                        24,
+                        Math.round(Math.sqrt(area / Math.max(1, count)))
+                    )
+                )
                 const off = document.createElement("canvas")
                 off.width = W
                 off.height = H
@@ -368,6 +404,9 @@ function ParticleEngine(__props) {
                             })
                     }
                 shuffle(src)
+                // Red de seguridad: nunca más de MAX_PARTICLES, sin importar
+                // cómo salga el cálculo del gap para casos límite.
+                if (src.length > MAX_PARTICLES) src.length = MAX_PARTICLES
                 let particles = []
                 const hidePos = (homeX, homeY) => {
                     const range = hT === "in-place" ? 1 : 10
@@ -428,6 +467,19 @@ function ParticleEngine(__props) {
         ro.observe(el)
         return () => ro.disconnect()
     }, [])
+    // Pausa el trabajo pesado por frame cuando el widget no está en viewport.
+    useEffect(() => {
+        const el = containerRef.current
+        if (!el || typeof IntersectionObserver === "undefined") return
+        const io = new IntersectionObserver(
+            ([entry]) => {
+                visibleRef.current = entry.isIntersecting
+            },
+            { threshold: 0.01 }
+        )
+        io.observe(el)
+        return () => io.disconnect()
+    }, [])
     useEffect(() => {
         initParticles()
     }, [
@@ -454,8 +506,12 @@ function ParticleEngine(__props) {
         let idata = null,
             bW = 0,
             bH = 0
+        // Cache de la máscara circular de píxeles por partícula: se
+        // recalcula solo si cambia el tamaño de partícula, no cada frame.
+        let maskCache = { ps: -1, offsets: null }
         const draw = () => {
             animRef.current = requestAnimationFrame(draw)
+            if (!visibleRef.current) return
             const PW = canvas.width,
                 PH = canvas.height
             if (!PW || !PH) return
@@ -487,6 +543,16 @@ function ParticleEngine(__props) {
                 singleColor: scColor,
                 multiColors: mcColors,
             } = physicsRef.current
+            // FIX: parsear la paleta de colores UNA vez por frame (no por
+            // partícula). Antes se llamaba parseColor() -> regex por cada
+            // partícula en cada frame, lo cual era carísimo con muchas
+            // partículas.
+            const parsedMulti =
+                pColor === "multi"
+                    ? (mcColors || []).filter(Boolean).map(parseColor)
+                    : null
+            const parsedSingle =
+                pColor === "single" ? parseColor(scColor) : null
             const state = animStateRef.current
             const { x: rawMx, y: rawMy, active } = mouseRef.current
             const hitSpeed = mouseSpeedRef.current
@@ -517,26 +583,50 @@ function ParticleEngine(__props) {
             const bx = (DW - bw) / 2,
                 by = (DH - bh) / 2
             const half = ps / 2
+            // Recalcula la máscara circular solo si cambió el tamaño de
+            // partícula (normalmente nunca, dentro de la vida del widget).
+            if (maskCache.ps !== ps) {
+                const offsets = []
+                for (let dy = 0; dy < ps; dy++) {
+                    for (let dx = 0; dx < ps; dx++) {
+                        const ddx = dx - half + 0.5,
+                            ddy = dy - half + 0.5
+                        if (ddx * ddx + ddy * ddy <= half * half) {
+                            offsets.push(dx, dy)
+                        }
+                    }
+                }
+                maskCache = { ps, offsets }
+            }
+            const circleOffsets = maskCache.offsets
             const drawParticle = (cx, cy, r, g, b, a, isCircle) => {
                 const px0 = Math.round(cx) - (ps >> 1)
                 const py0 = Math.round(cy) - (ps >> 1)
-                for (let dy = 0; dy < ps; dy++) {
-                    const iy = py0 + dy
-                    if (iy < 0 || iy >= PH) continue
-                    const row = iy * PW
-                    for (let dx = 0; dx < ps; dx++) {
-                        if (isCircle) {
-                            const ddx = dx - half + 0.5,
-                                ddy = dy - half + 0.5
-                            if (ddx * ddx + ddy * ddy > half * half) continue
-                        }
-                        const ix = px0 + dx
-                        if (ix < 0 || ix >= PW) continue
-                        const i = (row + ix) * 4
+                if (isCircle) {
+                    for (let k = 0; k < circleOffsets.length; k += 2) {
+                        const ix = px0 + circleOffsets[k]
+                        const iy = py0 + circleOffsets[k + 1]
+                        if (ix < 0 || ix >= PW || iy < 0 || iy >= PH) continue
+                        const i = (iy * PW + ix) * 4
                         buf[i] = r
                         buf[i + 1] = g
                         buf[i + 2] = b
                         buf[i + 3] = a
+                    }
+                } else {
+                    for (let dy = 0; dy < ps; dy++) {
+                        const iy = py0 + dy
+                        if (iy < 0 || iy >= PH) continue
+                        const row = iy * PW
+                        for (let dx = 0; dx < ps; dx++) {
+                            const ix = px0 + dx
+                            if (ix < 0 || ix >= PW) continue
+                            const i = (row + ix) * 4
+                            buf[i] = r
+                            buf[i + 1] = g
+                            buf[i + 2] = b
+                            buf[i + 3] = a
+                        }
                     }
                 }
             }
@@ -693,19 +783,19 @@ function ParticleEngine(__props) {
                     da = p.a
                 }
                 if (da < 1) continue
-                if (pColor === "single") {
-                    const sc = parseColor(scColor)
-                    dr = sc.r
-                    dg = sc.g
-                    db = sc.b
-                } else if (pColor === "multi") {
-                    const cols = (mcColors || []).filter(Boolean)
-                    if (cols.length > 0) {
-                        const mc = parseColor(cols[p.colorIdx % cols.length])
-                        dr = mc.r
-                        dg = mc.g
-                        db = mc.b
-                    }
+                if (pColor === "single" && parsedSingle) {
+                    dr = parsedSingle.r
+                    dg = parsedSingle.g
+                    db = parsedSingle.b
+                } else if (
+                    pColor === "multi" &&
+                    parsedMulti &&
+                    parsedMulti.length
+                ) {
+                    const mc = parsedMulti[p.colorIdx % parsedMulti.length]
+                    dr = mc.r
+                    dg = mc.g
+                    db = mc.b
                 }
                 drawParticle(p.x * dpr, p.y * dpr, dr, dg, db, da, isCircle)
             }
@@ -780,6 +870,12 @@ function ParticleEngine(__props) {
  * Uso: <ProductionVisual /> — ya trae los colores y el ícono de ETM por
  * defecto. Se le puede pasar cualquier prop del motor para ajustar densidad,
  * tamaño de partícula, velocidad de ensamblaje, etc.
+ *
+ * NOTA sobre particleCount: con el fix de muestreo, este valor ahora sí
+ * determina (aprox.) el nº final de partículas. Si antes se veía "denso"
+ * por el bug de sobre-muestreo, puede que quieras subir este número un poco
+ * (p.ej. 200-400) para recuperar esa densidad visual con un coste de CPU
+ * mucho menor y controlado (tope duro: MAX_PARTICLES = 1400).
  */
 export function ProductionVisual(overrides = {}) {
     const {
@@ -811,7 +907,7 @@ export function ProductionVisual(overrides = {}) {
         },
         particleColor: "multi",
         multiColors: [ETM_BLUE, ETM_BLUE, ETM_GOLD],
-        particleCount: 64,
+        particleCount: 220,
         particleSize: 3.5,
         particleShape: "circle",
         hoverEnabled: true,

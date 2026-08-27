@@ -47,13 +47,13 @@ type Props = {
   color: string
   roles: Role[]
   selectedRoles: Role[]
-  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null
+  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null
   areas: Area[]
   errors?: UserErrors
   step?: number
   onRolesChange: (roles: Role[]) => void
   onLevelChange: (
-    level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null,
+    level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null,
   ) => void
   onAreasChange: (areas: Area[]) => void
   onChangingPasswordChange: (value: boolean) => void

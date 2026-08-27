@@ -20,6 +20,7 @@ import {
 } from "../utils/permission-groups"
 
 import { PermissionGroup } from "./permissions/permission-group"
+import { UserAccessProfileSummary } from "./user-access-profile-summary"
 import { PermissionsModeTabs, type PermissionsMode } from "./permissions-mode-tabs"
 import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
 import { UserDialog } from "@/features/admin/users/components/dialog/user-dialog"
@@ -93,6 +94,10 @@ export function RolePermissionsPageContent() {
     searchParams.get("tab") === "usuarios" ? "usuarios" : "roles",
   )
   const [editUserOpen, setEditUserOpen] = useState(false)
+  /** Usuarios: perfil primero; excepciones solo a demanda. */
+  const [userPanelView, setUserPanelView] = useState<"profile" | "exceptions">(
+    "profile",
+  )
 
   const [selectedRole, setSelectedRole] = useState<Role | null>(null)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
@@ -105,6 +110,14 @@ export function RolePermissionsPageContent() {
     setSearch("")
     setSelectedRole(null)
     setSelectedUser(null)
+    setCheckedIds(new Set())
+    setDirty(false)
+    setUserPanelView("profile")
+  }
+
+  function selectUser(user: User) {
+    setSelectedUser(user)
+    setUserPanelView("profile")
     setCheckedIds(new Set())
     setDirty(false)
   }
@@ -331,7 +344,7 @@ export function RolePermissionsPageContent() {
                         key={user.id}
                         user={user}
                         index={index}
-                        onSelect={() => setSelectedUser(user)}
+                        onSelect={() => selectUser(user)}
                       />
                     ))}
                 </>
@@ -395,7 +408,7 @@ export function RolePermissionsPageContent() {
                           key={user.id}
                           user={user}
                           selected={selectedUser?.id === user.id}
-                          onSelect={() => setSelectedUser(user)}
+                          onSelect={() => selectUser(user)}
                         />
                       ))}
                   </>
@@ -429,7 +442,11 @@ export function RolePermissionsPageContent() {
                 {hasSelection && (
                   <div className="min-w-0">
                     <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      {mode === "roles" ? "Permisos" : "Excepciones"}
+                      {mode === "roles"
+                        ? "Permisos"
+                        : userPanelView === "profile"
+                          ? "Perfil"
+                          : "Excepciones"}
                     </p>
                     {/* Cambiado a flex-col o flex-wrap controlado para acomodar el estado */}
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -457,45 +474,83 @@ export function RolePermissionsPageContent() {
                 )}
               </div>
 
-              {mode === "usuarios" && selectedUser && canEditUser && (
-                <button
-                  type="button"
-                  onClick={() => setEditUserOpen(true)}
-                  className="flex size-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
-                  aria-label="Editar usuario"
-                  title="Editar usuario"
-                >
-                  <Pencil size={16} />
-                </button>
+              {mode === "usuarios" && selectedUser && (
+                <div className="flex shrink-0 items-center gap-1 rounded-xl bg-foreground/5 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setUserPanelView("profile")}
+                    className={cn(
+                      "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
+                      userPanelView === "profile"
+                        ? "bg-foreground/15 text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    Perfil
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUserPanelView("exceptions")}
+                    className={cn(
+                      "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
+                      userPanelView === "exceptions"
+                        ? "bg-foreground/15 text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    Excepciones
+                  </button>
+                </div>
               )}
-              <PrimaryAction
-                label={saveLabel}
-                icon={Save}
-                isLoading={saving}
-                onClick={handleSave}
-                disabled={!hasSelection || !dirty || saving}
-              />
+              {!(mode === "usuarios" && userPanelView === "profile") && (
+                <PrimaryAction
+                  label={saveLabel}
+                  icon={Save}
+                  isLoading={saving}
+                  onClick={handleSave}
+                  disabled={!hasSelection || !dirty || saving}
+                />
+              )}
+              {mode === "usuarios" &&
+                userPanelView === "profile" &&
+                selectedUser &&
+                canEditUser && (
+                  <PrimaryAction
+                    label="Editar"
+                    icon={Pencil}
+                    onClick={() => setEditUserOpen(true)}
+                  />
+                )}
             </header>
 
-            {hasSelection && permissionsLoading && <PermissionsPanelPulse />}
-
-            {hasSelection && !permissionsLoading && (
-              <div className="flex flex-col gap-4 pb-4">
-                {grouped.map(([groupKey, groupPermissions]) => (
-                  <PermissionGroup
-                    key={groupKey}
-                    title={getPermissionGroupLabel(groupKey)}
-                    permissions={groupPermissions}
-                    checkedIds={checkedIds}
-                    onToggle={handleToggle}
-                    onToggleAll={handleToggleAll}
-                    overriddenIds={overriddenIds}
-                    getLabel={(permission) =>
-                      getPermissionActionLabel(permission.code, groupKey)
-                    }
-                  />
-                ))}
-              </div>
+            {mode === "usuarios" && userPanelView === "profile" && selectedUser ? (
+              <UserAccessProfileSummary
+                user={selectedUser}
+                onEdit={canEditUser ? () => setEditUserOpen(true) : undefined}
+                onOpenExceptions={() => setUserPanelView("exceptions")}
+              />
+            ) : (
+              <>
+                {hasSelection && permissionsLoading && <PermissionsPanelPulse />}
+                {hasSelection && !permissionsLoading && (
+                  <div className="flex flex-col gap-4 pb-4">
+                    {grouped.map(([groupKey, groupPermissions]) => (
+                      <PermissionGroup
+                        key={groupKey}
+                        title={getPermissionGroupLabel(groupKey)}
+                        permissions={groupPermissions}
+                        checkedIds={checkedIds}
+                        onToggle={handleToggle}
+                        onToggleAll={handleToggleAll}
+                        overriddenIds={overriddenIds}
+                        getLabel={(permission) =>
+                          getPermissionActionLabel(permission.code, groupKey)
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </AppListScroll>
         )}
@@ -511,7 +566,7 @@ export function RolePermissionsPageContent() {
                   <p className="mt-2 text-sm text-muted-foreground">
                     {mode === "roles"
                       ? "Seleccione un rol"
-                      : "Gestione las excepciones"}
+                      : "Seleccione un usuario para ver su perfil"}
                   </p>
                 </div>
               </div>
@@ -520,7 +575,11 @@ export function RolePermissionsPageContent() {
                 <header className="flex shrink-0 items-start justify-between gap-4 px-5 py-4">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      {mode === "roles" ? "Permisos" : "Excepciones"}
+                      {mode === "roles"
+                        ? "Permisos"
+                        : userPanelView === "profile"
+                          ? "Perfil"
+                          : "Excepciones"}
                     </p>
                     {/* Cambiado a flex-wrap para que se mueva fluidamente o baje si falta espacio */}
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -539,7 +598,7 @@ export function RolePermissionsPageContent() {
                         </span>
                       )}
                     </div>
-                    {mode === "usuarios" && (
+                    {mode === "usuarios" && userPanelView === "exceptions" && (
                       <p className="mt-1 text-xs text-muted-foreground">
                         Por encima de lo que ya otorgan sus roles. Lo marcado como{" "}
                         <span className="text-amber-800 dark:text-amber-400">Excepción</span> es distinto a su base.
@@ -547,51 +606,90 @@ export function RolePermissionsPageContent() {
                     )}
                   </div>
 
-              {mode === "usuarios" && selectedUser && canEditUser && (
-                <button
-                  type="button"
-                  onClick={() => setEditUserOpen(true)}
-                  className="flex size-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
-                  aria-label="Editar usuario"
-                  title="Editar usuario"
-                >
-                  <Pencil size={16} />
-                </button>
+              {mode === "usuarios" && selectedUser && (
+                <div className="flex shrink-0 items-center gap-1 rounded-xl bg-foreground/5 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setUserPanelView("profile")}
+                    className={cn(
+                      "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
+                      userPanelView === "profile"
+                        ? "bg-foreground/15 text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    Perfil
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUserPanelView("exceptions")}
+                    className={cn(
+                      "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors",
+                      userPanelView === "exceptions"
+                        ? "bg-foreground/15 text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    Excepciones
+                  </button>
+                </div>
               )}
-                  <PrimaryAction
-                    label={saveLabel}
-                    icon={Save}
-                    isLoading={saving}
-                    onClick={handleSave}
-                    disabled={!dirty || saving}
-                  />
+                  {!(mode === "usuarios" && userPanelView === "profile") && (
+                    <PrimaryAction
+                      label={saveLabel}
+                      icon={Save}
+                      isLoading={saving}
+                      onClick={handleSave}
+                      disabled={!dirty || saving}
+                    />
+                  )}
+                  {mode === "usuarios" &&
+                    userPanelView === "profile" &&
+                    selectedUser &&
+                    canEditUser && (
+                      <PrimaryAction
+                        label="Editar"
+                        icon={Pencil}
+                        onClick={() => setEditUserOpen(true)}
+                      />
+                    )}
                 </header>
 
                 <ScrollArea
                   data-entity-table-scroll
                   className="min-h-0 min-w-0 flex-1 p-1.5"
                 >
-                  {permissionsLoading && <PermissionsPanelPulse />}
-
-                  {!permissionsLoading && (
-                    <div className="flex flex-col gap-4">
-                      {grouped.map(([groupKey, groupPermissions]) => (
-                        <PermissionGroup
-                          key={groupKey}
-                          title={getPermissionGroupLabel(groupKey)}
-                          permissions={groupPermissions}
-                          checkedIds={checkedIds}
-                          onToggle={handleToggle}
-                          onToggleAll={handleToggleAll}
-                          overriddenIds={overriddenIds}
-                          getLabel={(permission) =>
-                            getPermissionActionLabel(permission.code, groupKey)
-                          }
-                        />
-                      ))}
-                    </div>
+                  {mode === "usuarios" && userPanelView === "profile" && selectedUser ? (
+                    <UserAccessProfileSummary
+                      user={selectedUser}
+                      onEdit={
+                        canEditUser ? () => setEditUserOpen(true) : undefined
+                      }
+                      onOpenExceptions={() => setUserPanelView("exceptions")}
+                    />
+                  ) : (
+                    <>
+                      {permissionsLoading && <PermissionsPanelPulse />}
+                      {!permissionsLoading && (
+                        <div className="flex flex-col gap-4">
+                          {grouped.map(([groupKey, groupPermissions]) => (
+                            <PermissionGroup
+                              key={groupKey}
+                              title={getPermissionGroupLabel(groupKey)}
+                              permissions={groupPermissions}
+                              checkedIds={checkedIds}
+                              onToggle={handleToggle}
+                              onToggleAll={handleToggleAll}
+                              overriddenIds={overriddenIds}
+                              getLabel={(permission) =>
+                                getPermissionActionLabel(permission.code, groupKey)
+                              }
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
-
                 </ScrollArea>
               </>
             )}

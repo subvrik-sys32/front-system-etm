@@ -10,6 +10,11 @@ import { PageShell } from "@/shared/responsive/layout/page-shell"
 /**
  * Hub único de administración de personas y permisos.
  * Reemplaza /admin/users y /admin/roles (mismas capacidades, una sola UI).
+ *
+ * + crear usuario:
+ * - Mobile → FAB (UserActions)
+ * - Compact/Desktop → PrimaryAction en toolbar (RolePermissionsPageContent)
+ * Nunca ambos a la vez (antes desktop:hidden + isMobile divergían en compact).
  */
 export default function AccessPage() {
   usePageTitle("Acceso")
@@ -18,10 +23,7 @@ export default function AccessPage() {
 
   return (
     <PageShell mode={isMobile ? "list" : "fill"}>
-      {/* FAB crear usuario (mobile) — mismo UserActions */}
-      <div className="desktop:hidden">
-        <UserActions />
-      </div>
+      {isMobile ? <UserActions /> : null}
 
       <section className="flex min-h-0 w-full flex-1 flex-col">
         <RolePermissionsPageContent />

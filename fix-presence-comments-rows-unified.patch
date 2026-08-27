@@ -1,0 +1,335 @@
+diff --git a/src/features/comments/components/comment-item.tsx b/src/features/comments/components/comment-item.tsx
+index af9a678..ed95932 100644
+--- a/src/features/comments/components/comment-item.tsx
++++ b/src/features/comments/components/comment-item.tsx
+@@ -21,6 +21,7 @@ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ import { formatCommentDate } from "../utils/format-comment-date"
+ import { commentsService } from "../services/comments.service"
+ import { CommentImageDialog } from "./comment-image-dialog"
++import { CommentMediaImage } from "./comment-media-image"
+ import type { Comment } from "../types/comment.types"
+ 
+ type Props = {
+@@ -200,13 +201,11 @@ export function CommentItem({
+                 type="button"
+                 onClick={() => setImageDialogOpen(true)}
+                 disabled={isDeleting}
+-                className="mt-2 block max-w-[min(100%,16rem)] overflow-hidden rounded-xl text-left disabled:opacity-60"
++                className="mt-2 block w-full max-w-[min(100%,16rem)] overflow-hidden rounded-xl text-left disabled:opacity-60"
+               >
+-                {/* eslint-disable-next-line @next/next/no-img-element */}
+-                <img
++                <CommentMediaImage
+                   src={comment.imageUrl}
+                   alt="Foto adjunta"
+-                  className="aspect-[4/5] max-h-64 w-full object-cover"
+                 />
+               </button>
+             ) : null}
+diff --git a/src/features/comments/components/comment-media-image.tsx b/src/features/comments/components/comment-media-image.tsx
+index 0be5058..ad3e271 100644
+--- a/src/features/comments/components/comment-media-image.tsx
++++ b/src/features/comments/components/comment-media-image.tsx
+@@ -1,6 +1,7 @@
+ "use client"
+ 
+ import { useState } from "react"
++
+ import { Spinner } from "@/shared/ui/spinner/spinner"
+ import { cn } from "@/shared/utils/utils"
+ 
+@@ -10,26 +11,41 @@ type Props = {
+   className?: string
+ }
+ 
++/**
++ * Thumbnail en burbuja: siempre el tamaño máximo permitido.
++ * Mientras carga: blur interno + Spinner.
++ */
+ export function CommentMediaImage({ src, alt, className }: Props) {
+   const [ready, setReady] = useState(false)
+ 
+   return (
+-    <span className={cn("relative block overflow-hidden bg-muted", className)}>
+-      {!ready && (
+-        <span className="absolute inset-0 flex items-center justify-center">
+-          <Spinner size={18} />
+-        </span>
++    <span
++      className={cn(
++        "relative block w-full max-w-[min(100%,16rem)] overflow-hidden rounded-xl bg-muted",
++        "aspect-[4/5] max-h-64",
++        className,
+       )}
++    >
++      {/* eslint-disable-next-line @next/next/no-img-element */}
+       <img
+         src={src}
+         alt={alt}
+         onLoad={() => setReady(true)}
+         onError={() => setReady(true)}
+         className={cn(
+-          "h-full w-full object-cover",
+-          ready ? "opacity-100" : "opacity-0",
++          "h-full w-full object-cover transition-[opacity,filter] duration-200 ease-out",
++          ready ? "opacity-100 blur-0" : "scale-105 opacity-50 blur-md",
+         )}
+       />
++      {!ready && (
++        <span
++          className="absolute inset-0 z-10 flex items-center justify-center bg-background/20 backdrop-blur-[2px]"
++          aria-busy="true"
++          aria-label="Cargando imagen"
++        >
++          <Spinner size={22} />
++        </span>
++      )}
+     </span>
+   )
+ }
+diff --git a/src/features/processes/table/process-mobile-card.tsx b/src/features/processes/table/process-mobile-card.tsx
+index 806eda0..504943d 100644
+--- a/src/features/processes/table/process-mobile-card.tsx
++++ b/src/features/processes/table/process-mobile-card.tsx
+@@ -136,20 +136,11 @@ function ProcessMobileCardReady({
+       : operator.name
+     : null
+ 
+-  // Al colapsar el row, resetear showFields al terminar la animación (no en el mismo frame).
+   useEffect(() => {
+-    if (expanded) return
+-    const t = window.setTimeout(() => setShowFields(false), 200)
+-    return () => window.clearTimeout(t)
++    if (!expanded) setShowFields(false)
+   }, [expanded])
+ 
+-  /** Cierra campos primero (200ms) y recién después colapsa el row — evita salto de altura. */
+   function handleRowToggle() {
+-    if (expanded && showFields) {
+-      setShowFields(false)
+-      window.setTimeout(() => onToggle(), 200)
+-      return
+-    }
+     onToggle()
+   }
+   const statusLabel = workflowAccess.statusLabel(processTask)
+@@ -226,10 +217,8 @@ function ProcessMobileCardReady({
+             {/* Mobile: cliente · iconos prio/estado · operario | md+: cliente · operario */}
+             <div
+               className={cn(
+-                "mt-0.5 flex min-w-0 items-center gap-1.5 text-xs transition-all duration-200",
+-                expanded
+-                  ? "max-h-0 opacity-0"
+-                  : "max-h-5 opacity-100",
++                "mt-0.5 flex min-w-0 items-center gap-1.5 text-xs",
++                expanded && "hidden",
+               )}
+             >
+               <span
+@@ -346,7 +335,7 @@ function ProcessMobileCardReady({
+           <ChevronDown
+             size={16}
+             className={cn(
+-              "text-muted-foreground transition-transform duration-200",
++              "text-muted-foreground",
+               expanded && "rotate-180",
+             )}
+           />
+@@ -393,7 +382,7 @@ function ProcessMobileCardReady({
+           <ChevronDown
+             size={14}
+             className={cn(
+-              "shrink-0 text-muted-foreground transition-transform duration-200",
++              "shrink-0 text-muted-foreground",
+               showFields && "rotate-180",
+             )}
+           />
+diff --git a/src/features/projects/table/project-mobile-card.tsx b/src/features/projects/table/project-mobile-card.tsx
+index e044bfd..6c2ddd5 100644
+--- a/src/features/projects/table/project-mobile-card.tsx
++++ b/src/features/projects/table/project-mobile-card.tsx
+@@ -131,26 +131,16 @@ function ProjectMobileCardReady({
+   const searchParams = useSearchParams()
+   const isTarget = searchParams.get("projectId") === project.id
+ 
+-  // Al colapsar: no resetear campos/pipeline en el mismo frame (evita salto).
+   useEffect(() => {
+     if (expanded) {
+       setShowPipeline(true)
+       return
+     }
+-    const t = window.setTimeout(() => {
+-      setShowFields(false)
+-      setShowPipeline(false)
+-    }, 200)
+-    return () => window.clearTimeout(t)
++    setShowFields(false)
++    setShowPipeline(false)
+   }, [expanded])
+ 
+-  /** Si hay campos abiertos, ciérralos antes de colapsar el row. */
+   function handleRowToggle() {
+-    if (expanded && showFields) {
+-      setShowFields(false)
+-      window.setTimeout(() => onToggle(), 200)
+-      return
+-    }
+     onToggle()
+   }
+ 
+@@ -220,10 +210,8 @@ function ProjectMobileCardReady({
+             {/* Mobile: cliente · iconos etapa/estado · PM | md+: cliente · PM */}
+             <div
+               className={cn(
+-                "mt-0.5 flex min-w-0 items-center gap-1.5 text-xs transition-all duration-200",
+-                expanded
+-                  ? "max-h-0 opacity-0"
+-                  : "max-h-5 opacity-100",
++                "mt-0.5 flex min-w-0 items-center gap-1.5 text-xs",
++                expanded && "hidden",
+               )}
+             >
+               <span
+@@ -325,7 +313,7 @@ function ProjectMobileCardReady({
+           <ChevronDown
+             size={16}
+             className={cn(
+-              "text-muted-foreground transition-transform duration-200",
++              "text-muted-foreground",
+               expanded && "rotate-180",
+             )}
+           />
+@@ -354,7 +342,7 @@ function ProjectMobileCardReady({
+           <ChevronDown
+             size={14}
+             className={cn(
+-              "shrink-0 text-muted-foreground transition-transform duration-200",
++              "shrink-0 text-muted-foreground",
+               showFields && "rotate-180",
+             )}
+           />
+diff --git a/src/features/tasks/table/task-mobile-card.tsx b/src/features/tasks/table/task-mobile-card.tsx
+index 276514e..f0e245e 100644
+--- a/src/features/tasks/table/task-mobile-card.tsx
++++ b/src/features/tasks/table/task-mobile-card.tsx
+@@ -148,26 +148,16 @@ function TaskMobileCardReady({
+     "subtle",
+   )
+ 
+-  // Al colapsar: no resetear campos/pipeline en el mismo frame (evita salto).
+   useEffect(() => {
+     if (expanded) {
+       setShowPipeline(true)
+       return
+     }
+-    const t = window.setTimeout(() => {
+-      setShowFields(false)
+-      setShowPipeline(false)
+-    }, 200)
+-    return () => window.clearTimeout(t)
++    setShowFields(false)
++    setShowPipeline(false)
+   }, [expanded])
+ 
+-  /** Si hay campos abiertos, ciérralos antes de colapsar el row. */
+   function handleRowToggle() {
+-    if (expanded && showFields) {
+-      setShowFields(false)
+-      window.setTimeout(() => onToggle(), 200)
+-      return
+-    }
+     onToggle()
+   }
+ 
+@@ -296,8 +286,8 @@ function TaskMobileCardReady({
+             {/* Mobile: cliente · iconos · prioridad | md+: cliente · prioridad */}
+             <div
+               className={cn(
+-                "mt-0.5 flex min-w-0 max-w-full items-center gap-1.5 text-xs transition-all duration-200",
+-                expanded ? "max-h-0 opacity-0" : "max-h-5 opacity-100",
++                "mt-0.5 flex min-w-0 max-w-full items-center gap-1.5 text-xs",
++                expanded && "hidden",
+               )}
+             >
+               <span
+@@ -410,7 +400,7 @@ function TaskMobileCardReady({
+           <ChevronDown
+             size={16}
+             className={cn(
+-              "text-muted-foreground transition-transform duration-200",
++              "text-muted-foreground",
+               expanded && "rotate-180",
+             )}
+           />
+@@ -472,7 +462,7 @@ function TaskMobileCardReady({
+           <ChevronDown
+             size={14}
+             className={cn(
+-              "shrink-0 text-muted-foreground transition-transform duration-200",
++              "shrink-0 text-muted-foreground",
+               showFields && "rotate-180",
+             )}
+           />
+diff --git a/src/shared/responsive/layout/sidebar/sidebar-presence.tsx b/src/shared/responsive/layout/sidebar/sidebar-presence.tsx
+index 1a21061..69cf827 100644
+--- a/src/shared/responsive/layout/sidebar/sidebar-presence.tsx
++++ b/src/shared/responsive/layout/sidebar/sidebar-presence.tsx
+@@ -13,7 +13,6 @@ import { cn } from "@/shared/utils/utils"
+ import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
+ import { useAuthStore } from "@/features/auth/store/auth-store"
+ import { useUsersDirectory } from "@/features/users/hooks/use-users-directory"
+-import { formatNotificationDate } from "@/features/notifications/utils/format-notification-date"
+ import { SidebarRow } from "./sidebar-row"
+ 
+ import {
+@@ -43,6 +42,28 @@ type Props = {
+ 
+ const DEFAULT_VISIBLE_COUNT = 4
+ 
++
++/** lastSeen offline: nunca "Hace Ahora" ni "Hace hace X". */
++function formatPresenceLastSeen(dateInput: string): string {
++  const date = new Date(dateInput)
++  if (Number.isNaN(date.getTime())) return ""
++  const now = new Date()
++  const diffMs = Math.max(0, now.getTime() - date.getTime())
++  const diffMin = Math.floor(diffMs / 60_000)
++  const diffHours = Math.floor(diffMin / 60)
++  const diffDays = Math.floor(diffHours / 24)
++  if (diffMin < 1) return "Hace un momento"
++  if (diffMin < 60) return `Hace ${diffMin} min`
++  if (diffHours < 24) return `Hace ${diffHours} h`
++  if (diffDays === 1) return "Ayer"
++  if (diffDays < 30) return `Hace ${diffDays} días`
++  return date.toLocaleDateString("es-PE", {
++    day: "numeric",
++    month: "short",
++    year: "numeric",
++  })
++}
++
+ type PresenceUser = {
+   id: string
+   name: string
+@@ -88,7 +109,7 @@ function UserRow({ user }: { user: PresenceUser }) {
+           <span className={cn(POPOVER_META, "font-mono")}>Activo</span>
+         ) : user.lastSeenAt ? (
+           <span className={cn(POPOVER_META, "max-w-27.5 truncate")}>
+-            Hace {formatNotificationDate(user.lastSeenAt)}
++            {formatPresenceLastSeen(user.lastSeenAt)}
+           </span>
+         ) : null}
+       </div>
+diff --git a/src/shared/ui/collapsible-summary-panel/collapsible-summary-panel.tsx b/src/shared/ui/collapsible-summary-panel/collapsible-summary-panel.tsx
+index e9a8b8c..77f6733 100644
+--- a/src/shared/ui/collapsible-summary-panel/collapsible-summary-panel.tsx
++++ b/src/shared/ui/collapsible-summary-panel/collapsible-summary-panel.tsx
+@@ -52,7 +52,7 @@ export function CollapsibleSummaryPanel({
+           {collapsed}
+         </div>
+       ) : (
+-        <div className="flex w-full min-w-0 animate-comment-in flex-col gap-1.5">
++        <div className="flex w-full min-w-0 flex-col gap-1.5">
+           {/* Fila propia: no absolute sobre la última KPI card */}
+           {showCollapseButton && (
+             <div className="flex w-full justify-start pl-0.5">

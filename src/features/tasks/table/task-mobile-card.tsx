@@ -148,26 +148,16 @@ function TaskMobileCardReady({
     "subtle",
   )
 
-  // Al colapsar: no resetear campos/pipeline en el mismo frame (evita salto).
   useEffect(() => {
     if (expanded) {
       setShowPipeline(true)
       return
     }
-    const t = window.setTimeout(() => {
-      setShowFields(false)
-      setShowPipeline(false)
-    }, 200)
-    return () => window.clearTimeout(t)
+    setShowFields(false)
+    setShowPipeline(false)
   }, [expanded])
 
-  /** Si hay campos abiertos, ciérralos antes de colapsar el row. */
   function handleRowToggle() {
-    if (expanded && showFields) {
-      setShowFields(false)
-      window.setTimeout(() => onToggle(), 200)
-      return
-    }
     onToggle()
   }
 
@@ -296,8 +286,8 @@ function TaskMobileCardReady({
             {/* Mobile: cliente · iconos · prioridad | md+: cliente · prioridad */}
             <div
               className={cn(
-                "mt-0.5 flex min-w-0 max-w-full items-center gap-1.5 text-xs transition-all duration-200",
-                expanded ? "max-h-0 opacity-0" : "max-h-5 opacity-100",
+                "mt-0.5 flex min-w-0 max-w-full items-center gap-1.5 text-xs",
+                expanded && "hidden",
               )}
             >
               <span
@@ -410,7 +400,7 @@ function TaskMobileCardReady({
           <ChevronDown
             size={16}
             className={cn(
-              "text-muted-foreground transition-transform duration-200",
+              "text-muted-foreground",
               expanded && "rotate-180",
             )}
           />
@@ -472,7 +462,7 @@ function TaskMobileCardReady({
           <ChevronDown
             size={14}
             className={cn(
-              "shrink-0 text-muted-foreground transition-transform duration-200",
+              "shrink-0 text-muted-foreground",
               showFields && "rotate-180",
             )}
           />

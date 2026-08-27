@@ -52,7 +52,7 @@ export function CollapsibleSummaryPanel({
           {collapsed}
         </div>
       ) : (
-        <div className="flex w-full min-w-0 animate-comment-in flex-col gap-1.5">
+        <div className="flex w-full min-w-0 flex-col gap-1.5">
           {/* Fila propia: no absolute sobre la última KPI card */}
           {showCollapseButton && (
             <div className="flex w-full justify-start pl-0.5">

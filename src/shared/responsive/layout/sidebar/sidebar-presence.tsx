@@ -13,7 +13,6 @@ import { cn } from "@/shared/utils/utils"
 import { TOPBAR_ICON_BTN, TOPBAR_ICON_BTN_ACTIVE } from "@/shared/ui/entity-toolbar/toolbar-chrome"
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { useUsersDirectory } from "@/features/users/hooks/use-users-directory"
-import { formatNotificationDate } from "@/features/notifications/utils/format-notification-date"
 import { SidebarRow } from "./sidebar-row"
 
 import {
@@ -42,6 +41,28 @@ type Props = {
 }
 
 const DEFAULT_VISIBLE_COUNT = 4
+
+
+/** lastSeen offline: nunca "Hace Ahora" ni "Hace hace X". */
+function formatPresenceLastSeen(dateInput: string): string {
+  const date = new Date(dateInput)
+  if (Number.isNaN(date.getTime())) return ""
+  const now = new Date()
+  const diffMs = Math.max(0, now.getTime() - date.getTime())
+  const diffMin = Math.floor(diffMs / 60_000)
+  const diffHours = Math.floor(diffMin / 60)
+  const diffDays = Math.floor(diffHours / 24)
+  if (diffMin < 1) return "Hace un momento"
+  if (diffMin < 60) return `Hace ${diffMin} min`
+  if (diffHours < 24) return `Hace ${diffHours} h`
+  if (diffDays === 1) return "Ayer"
+  if (diffDays < 30) return `Hace ${diffDays} días`
+  return date.toLocaleDateString("es-PE", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })
+}
 
 type PresenceUser = {
   id: string
@@ -88,7 +109,7 @@ function UserRow({ user }: { user: PresenceUser }) {
           <span className={cn(POPOVER_META, "font-mono")}>Activo</span>
         ) : user.lastSeenAt ? (
           <span className={cn(POPOVER_META, "max-w-27.5 truncate")}>
-            Hace {formatNotificationDate(user.lastSeenAt)}
+            {formatPresenceLastSeen(user.lastSeenAt)}
           </span>
         ) : null}
       </div>

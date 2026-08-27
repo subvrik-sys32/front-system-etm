@@ -21,6 +21,7 @@ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 import { formatCommentDate } from "../utils/format-comment-date"
 import { commentsService } from "../services/comments.service"
 import { CommentImageDialog } from "./comment-image-dialog"
+import { CommentMediaImage } from "./comment-media-image"
 import type { Comment } from "../types/comment.types"
 
 type Props = {
@@ -200,13 +201,11 @@ export function CommentItem({
                 type="button"
                 onClick={() => setImageDialogOpen(true)}
                 disabled={isDeleting}
-                className="mt-2 block max-w-[min(100%,16rem)] overflow-hidden rounded-xl text-left disabled:opacity-60"
+                className="mt-2 block w-full max-w-[min(100%,16rem)] overflow-hidden rounded-xl text-left disabled:opacity-60"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <CommentMediaImage
                   src={comment.imageUrl}
                   alt="Foto adjunta"
-                  className="aspect-[4/5] max-h-64 w-full object-cover"
                 />
               </button>
             ) : null}

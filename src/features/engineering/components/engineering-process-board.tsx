@@ -20,6 +20,7 @@ import { EngineeringColumnOperators } from "./engineering-column-operators"
 type Props = {
   tasks: EngineeringTask[]
   loading?: boolean
+  focusedTaskId?: string
   onCreateInProcess?: (code: EngineeringProcessCode) => void
   onEditTask?: (task: EngineeringTask) => void
 }
@@ -91,6 +92,7 @@ function ProcessSectionHeader({
 export function EngineeringProcessBoard({
   tasks,
   loading,
+  focusedTaskId,
   onCreateInProcess,
   onEditTask,
 }: Props) {
@@ -155,11 +157,20 @@ export function EngineeringProcessBoard({
                     </div>
                   ) : (
                     colTasks.map(task => (
-                      <EngineeringTaskRow
+                      <div
                         key={task.id}
-                        task={task}
-                        onEdit={onEditTask}
-                      />
+                        data-expanded-row-id={task.id}
+                        className={
+                          focusedTaskId === task.id
+                            ? "rounded-xl ring-1 ring-primary/40"
+                            : undefined
+                        }
+                      >
+                        <EngineeringTaskRow
+                          task={task}
+                          onEdit={onEditTask}
+                        />
+                      </div>
                     ))
                   )}
                 </div>

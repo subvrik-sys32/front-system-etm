@@ -342,11 +342,11 @@ export function ProjectTaskRow({
         activeProcessCode ? (
           <div
             key="expanded"
-            className={cn(!isDimmed && "animate-comment-in motion-reduce:animate-none")}
+            
           >
             <div
               className={cn(
-                "overflow-hidden rounded-xl transition-all duration-200",
+                "overflow-hidden rounded-xl transition-all duration-100",
                 pressed &&
                   !overlayOpen &&
                   "scale-[0.98] shadow-xs",
@@ -410,7 +410,7 @@ export function ProjectTaskRow({
             key="compact"
             className={cn(
               // Completadas: opacas desde el primer frame (sin comment-in a opacity 1)
-              !isDimmed && "animate-comment-in motion-reduce:animate-none",
+              
               isDimmed && "opacity-50",
             )}
           >
@@ -507,7 +507,7 @@ export function ProjectTaskRow({
             "flex h-8 w-8 items-center justify-center rounded-xl",
             "bg-foreground/5",
             "text-foreground/40",
-            "transition duration-200",
+            "transition duration-100",
             "hover:bg-foreground/[0.07] hover:text-foreground hover:scale-105",
             "active:scale-95",
             "shadow-xs",

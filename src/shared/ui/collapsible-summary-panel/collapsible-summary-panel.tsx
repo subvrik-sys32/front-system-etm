@@ -48,7 +48,7 @@ export function CollapsibleSummaryPanel({
   return (
     <div className="w-full min-w-0">
       {!expanded ? (
-        <div className="w-full min-w-0 animate-comment-in">
+        <div className="w-full min-w-0">
           {collapsed}
         </div>
       ) : (

@@ -451,16 +451,20 @@ input:focus-visible {
 @keyframes comment-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 .animate-comment-in {
-  animation: comment-in 0.2s ease-out;
+  animation: comment-in 0.12s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-comment-in {
+    animation: none;
+  }
 }
 
 @keyframes comment-out {

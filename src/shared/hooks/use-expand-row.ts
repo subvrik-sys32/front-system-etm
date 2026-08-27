@@ -34,7 +34,8 @@ export function useExpandRow({
       const hasFocusParams =
         searchParams.has("taskId") ||
         searchParams.has("projectId") ||
-        searchParams.has("focus")
+        searchParams.has("focus") ||
+        searchParams.has("tab")
       if (hasFocusParams) {
         clearEntityFocusParams(router, pathname, searchParams)
       }

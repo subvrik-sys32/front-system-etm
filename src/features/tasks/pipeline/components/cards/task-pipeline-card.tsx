@@ -96,7 +96,7 @@ export function TaskPipelineCard({
       >
         <div
           className={cn(
-            "rounded-xl transition duration-200 ease-out",
+            "rounded-xl transition duration-100 ease-out",
             expanded && "shadow-xs",
             longPressEnabled &&
               pressed &&
@@ -107,7 +107,7 @@ export function TaskPipelineCard({
           )}
         >
           {expanded ? (
-            <div key="expanded" className="animate-comment-in">
+            <div key="expanded">
               <KanbanCardFromTask
                 task={task}
                 processCode={processCode}
@@ -156,7 +156,7 @@ export function TaskPipelineCard({
               />
             </div>
           ) : (
-            <div key="compact" className="animate-comment-in">
+            <div key="compact">
               <TaskPipelineCardCompact processTask={processTask} />
             </div>
           )}

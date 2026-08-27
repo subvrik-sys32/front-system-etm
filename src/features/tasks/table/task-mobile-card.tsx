@@ -430,32 +430,12 @@ function TaskMobileCardReady({
                 {task.project.client.name}
               </span>
               <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span
-                className="hidden truncate md:inline"
-                style={{ color: stageInk }}
-              >
+              <span className="min-w-0 truncate" style={{ color: stageInk }}>
                 {stage.label}
               </span>
-              <span className="inline-flex md:hidden">
-                <EntityIconBadge
-                  icon={stage.icon}
-                  color={stage.color}
-                  size={13}
-                />
-              </span>
               <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span
-                className="hidden truncate md:inline"
-                style={{ color: statusInk }}
-              >
+              <span className="min-w-0 truncate" style={{ color: statusInk }}>
                 {status.label}
-              </span>
-              <span className="inline-flex md:hidden">
-                <EntityIconBadge
-                  icon={status.icon}
-                  color={status.color}
-                  size={13}
-                />
               </span>
             </span>
           )}

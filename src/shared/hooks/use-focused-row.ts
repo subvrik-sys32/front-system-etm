@@ -7,21 +7,13 @@ import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
 
 type Props = {
   focusedId?: string
-  /** Row expandido actual — si diverge del deep-link, se corta el scroll. */
   expandedRowId?: string | null
   setExpandedRowId: (id: string | null) => void
   focusToken?: string
-  /**
-   * Se llama una sola vez, después de scrollear + expandir + la
-   * corrección post-expand — ahí es seguro disparar cosas
-   * secundarias (ej. abrir el panel de mensajes), en vez de que
-   * salten apenas el row monta, a mitad del scroll.
-   */
   onSettled?: () => void
 }
 
 const FIND_TIMEOUT_MS = 2500
-/** Una sola corrección tras el expand (altura ya estable). Sin smooth. */
 const POST_EXPAND_MS = 220
 
 function isScrollable(el: HTMLElement): boolean {
@@ -45,15 +37,12 @@ function getScrollParent(el: HTMLElement): HTMLElement | null {
   return null
 }
 
-/** Posiciona sin animación — evita rebote al abrir otro row. */
 function centerInScrollParent(el: HTMLElement) {
   const parent = getScrollParent(el)
-
   if (!parent) {
     el.scrollIntoView({ behavior: "auto", block: "center" })
     return
   }
-
   const parentRect = parent.getBoundingClientRect()
   const elRect = el.getBoundingClientRect()
   const elMid =
@@ -61,20 +50,9 @@ function centerInScrollParent(el: HTMLElement) {
   const target = elMid - parent.clientHeight / 2
   const max = Math.max(0, parent.scrollHeight - parent.clientHeight)
   const top = Math.max(0, Math.min(target, max))
-
   parent.scrollTo({ top, behavior: "auto" })
 }
 
-/**
- * Secuencia deep-link, en orden: el row YA existe en el DOM
- * (colapsado) porque `data-expanded-row-id` se pone sin importar el
- * estado de expansión — así que primero centramos el scroll ahí
- * (con el row todavía colapsado), DESPUÉS lo expandimos, y recién
- * cuando la corrección post-expand corrió (altura ya estable),
- * avisamos `onSettled` para que paneles secundarios (mensajes) se
- * abran. Sin esto, todo pasaba a la vez: expandía, el panel de
- * mensajes se abría de golpe, y el scroll llegaba después/durante.
- */
 function scrollExpandAndSettle(
   el: HTMLElement,
   isActive: () => boolean,
@@ -83,32 +61,18 @@ function scrollExpandAndSettle(
 ): () => void {
   let disposed = false
   let timer: number | null = null
-
   const finish = () => {
     useFocusNavStore.getState().end()
     onSettled?.()
   }
-
   if (disposed || !isActive()) return () => {}
-
-  // 1. Scroll (row colapsado todavía).
   centerInScrollParent(el)
-
-  // 2. Expandir.
   expand()
-
-  // 3. Corrección post-expand (la altura cambió al expandir) y
-  //    recién ahí, "settled" — señal para abrir mensajes/etc.
-  const run = () => {
+  timer = window.setTimeout(() => {
     if (disposed || !isActive()) return
     centerInScrollParent(el)
-  }
-
-  timer = window.setTimeout(() => {
-    run()
     if (!disposed && isActive()) finish()
   }, POST_EXPAND_MS)
-
   return () => {
     disposed = true
     if (timer !== null) window.clearTimeout(timer)
@@ -126,7 +90,6 @@ function waitForRow(
   let cancelled = false
   let raf = 0
   const start = performance.now()
-
   const tryFind = () => {
     if (cancelled || !isActive()) return
     const el = root.querySelector<HTMLElement>(selector)
@@ -140,15 +103,14 @@ function waitForRow(
     }
     raf = window.requestAnimationFrame(tryFind)
   }
-
   raf = window.requestAnimationFrame(tryFind)
-
   return () => {
     cancelled = true
     window.cancelAnimationFrame(raf)
   }
 }
 
+/** Deep-link / F5 / notificaciones / tab=comments. URL = fuente de verdad. */
 export function useFocusedRow({
   focusedId,
   expandedRowId = null,
@@ -160,29 +122,28 @@ export function useFocusedRow({
   const expandedRowIdRef = useRef<string | null>(expandedRowId)
   expandedRowIdRef.current = expandedRowId
 
+  const onSettledRef = useRef(onSettled)
+  onSettledRef.current = onSettled
+  const focusTokenRef = useRef(focusToken)
+  focusTokenRef.current = focusToken
+  const setExpandedRowIdRef = useRef(setExpandedRowId)
+  setExpandedRowIdRef.current = setExpandedRowId
 
-  /** Solo marca settle / callbacks. NO consume URL aquí —
-   *  consumir al salir de la ruta (otro row, sidebar, F5 limpio). */
   const settleOnly = () => {
-    if (focusToken) {
-      useFocusSettleStore.getState().markSettled(focusToken)
-    }
-    onSettled?.()
+    const token = focusTokenRef.current
+    if (token) useFocusSettleStore.getState().markSettled(token)
+    onSettledRef.current?.()
   }
 
   const stopTrackingRef = useRef<(() => void) | null>(null)
-
   const stopTracking = () => {
     stopTrackingRef.current?.()
     stopTrackingRef.current = null
   }
 
-  // Usuario expandió otro row: cortar ya.
   useEffect(() => {
     if (!focusedId) return
-    if (expandedRowId != null && expandedRowId !== focusedId) {
-      stopTracking()
-    }
+    if (expandedRowId != null && expandedRowId !== focusedId) stopTracking()
   }, [expandedRowId, focusedId])
 
   useEffect(() => {
@@ -190,12 +151,10 @@ export function useFocusedRow({
       stopTracking()
       useFocusNavStore.getState().end()
       useFocusSettleStore.getState().reset()
-
       const prev = prevFocusedIdRef.current
       prevFocusedIdRef.current = undefined
-
       if (prev && expandedRowIdRef.current === prev) {
-        setExpandedRowId(null)
+        setExpandedRowIdRef.current(null)
       }
       return
     }
@@ -209,14 +168,9 @@ export function useFocusedRow({
     }
 
     prevFocusedIdRef.current = focusedId
-
-    // Overlay automático: cualquier deep-link (?taskId / ?projectId)
-    // lo muestra hasta centrar el row — no depende de cada router.push.
     useFocusNavStore.getState().start("Dirigiendo…")
+    useFocusSettleStore.getState().reset()
 
-    // Todavía NO expandimos — el orden correcto es scroll primero,
-    // con el row visible pero colapsado (existe en el DOM igual,
-    // `data-expanded-row-id` no depende de estar expandido).
     const selector = `[data-expanded-row-id="${CSS.escape(focusedId)}"]`
     const isActive = () => {
       const expanded = expandedRowIdRef.current
@@ -227,8 +181,7 @@ export function useFocusedRow({
     }
 
     stopTracking()
-
-    const expand = () => setExpandedRowId(focusedId)
+    const expand = () => setExpandedRowIdRef.current(focusedId)
 
     const stopWait = waitForRow(
       selector,
@@ -245,8 +198,6 @@ export function useFocusedRow({
       FIND_TIMEOUT_MS,
       isActive,
       () => {
-        // No lo encontramos a tiempo: mejor expandir igual (aunque
-        // no lleguemos a scrollear) que dejar el deep-link sin efecto.
         if (!isActive()) return
         expand()
         useFocusNavStore.getState().end()
@@ -261,5 +212,5 @@ export function useFocusedRow({
     return () => {
       stopTracking()
     }
-  }, [focusedId, setExpandedRowId, focusToken, onSettled])
+  }, [focusedId, focusToken])
 }

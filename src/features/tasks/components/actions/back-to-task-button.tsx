@@ -41,7 +41,7 @@ export function BackToTaskButton() {
     sessionStorage.removeItem("process-origin-focus-task-id")
     setTaskId(null)
     useFocusNavStore.getState().start("Abriendo tarea…")
-    router.push(`/tasks?taskId=${taskId}`)
+    router.push(`/tasks?taskId=${taskId}&focus=${crypto.randomUUID()}`)
   }
 
   return (

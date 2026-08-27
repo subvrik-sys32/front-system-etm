@@ -1,6 +1,8 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useFocusedRow } from "@/shared/hooks/use-focused-row"
+import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
 import { useQueryClient } from "@tanstack/react-query"
 
 import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
@@ -47,7 +49,16 @@ function EntryCountBadge({
   )
 }
 
-export function EngineeringPageContent() {
+type PageProps = {
+  focusedTaskId?: string
+  focusToken?: string
+}
+
+export function EngineeringPageContent({
+  focusedTaskId,
+  focusToken,
+}: PageProps = {}) {
+
   const queryClient = useQueryClient()
   const viewMode = useEngineeringViewStore(s => s.viewMode)
 
@@ -71,6 +82,18 @@ export function EngineeringPageContent() {
     [projectId],
   )
   const { tasks, loading } = useEngineeringTasks(filters)
+
+  const [focusedExpandedId, setFocusedExpandedId] = useState<string | null>(null)
+  const markSettled = useFocusSettleStore(s => s.markSettled)
+  useFocusedRow({
+    focusedId: focusedTaskId,
+    expandedRowId: focusedExpandedId,
+    setExpandedRowId: setFocusedExpandedId,
+    focusToken,
+    onSettled: () => {
+      if (focusToken) markSettled(focusToken)
+    },
+  })
 
   const listUsers = useMemo(
     () => (users as User[]).filter(isEngineeringUser),
@@ -141,6 +164,7 @@ export function EngineeringPageContent() {
       {viewMode === "processes" ? (
         <div className="flex w-full flex-col max-md:mt-2">
           <EngineeringProcessBoard
+            focusedTaskId={focusedTaskId}
             tasks={tasks}
             loading={loading}
             onCreateInProcess={code => openCreate({ processCode: code })}

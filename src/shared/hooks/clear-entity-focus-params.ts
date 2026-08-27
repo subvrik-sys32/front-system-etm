@@ -7,7 +7,7 @@ import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
  * La URL es la fuente de verdad del foco programático.
  * Si el usuario toma el control (otro row, colapsar, nav limpia), se borran.
  */
-const FOCUS_PARAM_KEYS = ["taskId", "projectId", "focus"] as const
+const FOCUS_PARAM_KEYS = ["taskId", "projectId", "focus", "tab"] as const
 
 /** Orígenes de navegación cross-feature (sessionStorage). */
 const ORIGIN_STORAGE_KEYS = [

@@ -337,6 +337,14 @@ function ProjectMobileCardReady({
                 style={{ backgroundColor: project.client.color }}
               />
               <span className="shrink-0 truncate">{project.client.name}</span>
+              <span className="shrink-0 text-muted-foreground/80">·</span>
+              <span className="min-w-0 truncate" style={{ color: stageInk }}>
+                {project.stage.name}
+              </span>
+              <span className="shrink-0 text-muted-foreground/80">·</span>
+              <span className="min-w-0 truncate" style={{ color: statusInk }}>
+                {project.status.name}
+              </span>
             </span>
           )}
           <ChevronDown

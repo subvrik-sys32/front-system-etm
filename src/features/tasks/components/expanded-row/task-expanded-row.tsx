@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { ClipboardList, MessageSquare } from "lucide-react"
 
 import type {
@@ -29,6 +29,7 @@ import { DetailAssetsEye } from "@/features/detail-assets/components/detail-asse
 import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
 import { useActiveCommentContextStore } from "@/features/comments/store/active-comment-context-store"
 import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
 import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 
 type Props = {
@@ -41,6 +42,8 @@ export function TaskExpandedRow({
 }: Props) {
   const { isMobile, isCompact } = useResponsive()
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
 
   const urlTaskId = searchParams.get("taskId")
   const isTarget = urlTaskId === task.id
@@ -96,6 +99,8 @@ export function TaskExpandedRow({
 
       setActiveView("comments")
       setCommentsDialogOpen(true)
+      // Consumir tab: F5 no debe reabrir Mensajes.
+      consumeCommentsTabParam(router, pathname, searchParams)
       return
     }
 
@@ -110,6 +115,9 @@ export function TaskExpandedRow({
     tabParam,
     isMobile,
     focusSettled,
+    router,
+    pathname,
+    searchParams,
   ])
 
   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)

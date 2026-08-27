@@ -1,0 +1,199 @@
+diff --git a/src/features/comments/components/comment-history-dialog.tsx b/src/features/comments/components/comment-history-dialog.tsx
+index f0bdbdf..c204e6e 100644
+--- a/src/features/comments/components/comment-history-dialog.tsx
++++ b/src/features/comments/components/comment-history-dialog.tsx
+@@ -114,10 +114,13 @@ export function CommentHistoryDialog({
+     <>
+       <Dialog open={open} onOpenChange={onOpenChange}>
+         <DialogContent
+-          size="large"
++          // large solo en móvil (full shell). Desktop: default fixed center —
++          // no usar size=large en desktop (evita pelear el contrato form).
++          size={isMobile ? "large" : "default"}
+           className={cn(
+-            "relative flex flex-col gap-0 overflow-hidden p-0 text-foreground shadow-xs bg-popover",
+-            // Mismo contrato FormDialog: mobile (portrait+landscape) full; desktop card.
++            // NO "relative": pisa `fixed` del DialogContent (tailwind-merge)
++            // y el dialog deja de centrarse / empuja el layout de fondo.
++            "flex flex-col gap-0 overflow-hidden p-0 text-foreground shadow-xs bg-popover",
+             isMobile
+               ? "h-full w-full max-w-none rounded-none"
+               : "h-[min(40rem,85dvh)] max-h-[85dvh] w-full max-w-180 rounded-2xl",
+diff --git a/src/features/processes/components/expanded-row/process-expanded-row.tsx b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+index 6406ab3..2226a07 100644
+--- a/src/features/processes/components/expanded-row/process-expanded-row.tsx
++++ b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+@@ -1,7 +1,7 @@
+ "use client"
+ 
+ import { useEffect, useState, type ReactNode } from "react"
+-import { useSearchParams } from "next/navigation"
++import { useSearchParams, useRouter, usePathname } from "next/navigation"
+ import { Activity, ArrowRight, Clock, Clock3, MessageSquare, Package, Puzzle, Layers3 } from "lucide-react"
+ 
+ import type { ProcessTask } from "../../types/process.types"
+@@ -28,6 +28,7 @@ import { ProcessTimeCard } from "./cards/process-time-card"
+ import { ProcessProgressCard } from "./cards/process-progress-card"
+ import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
+ import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
++import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
+ 
+ type Props = {
+   processTask: ProcessTask
+@@ -44,6 +45,8 @@ export function ProcessExpandedRow({
+ }: Props) {
+   const { isMobile, isCompact, ready } = useResponsive()
+   const searchParams = useSearchParams()
++  const router = useRouter()
++  const pathname = usePathname()
+ 
+   const urlTaskId = searchParams.get("taskId")
+   const isTarget = urlTaskId === processTask.task.id
+@@ -181,6 +184,8 @@ export function ProcessExpandedRow({
+ 
+       setCommentsDialogOpen(true)
+       setActiveView("kpis")
++      // Consumir tab: F5 no debe reabrir Mensajes.
++      consumeCommentsTabParam(router, pathname, searchParams)
+       return
+     }
+ 
+@@ -189,6 +194,9 @@ export function ProcessExpandedRow({
+     isTarget,
+     tabParam,
+     focusSettled,
++    router,
++    pathname,
++    searchParams,
+   ])
+ 
+   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
+diff --git a/src/features/projects/components/expanded-row/project-expanded-row.tsx b/src/features/projects/components/expanded-row/project-expanded-row.tsx
+index df9869a..0d8539f 100644
+--- a/src/features/projects/components/expanded-row/project-expanded-row.tsx
++++ b/src/features/projects/components/expanded-row/project-expanded-row.tsx
+@@ -2,7 +2,7 @@
+ 
+ import { Activity, AlertTriangle, CheckCircle2, ClipboardList, MessageSquare, Puzzle } from "lucide-react"
+ import { useEffect, useMemo, useState } from "react"
+-import { useSearchParams } from "next/navigation"
++import { useSearchParams, useRouter, usePathname } from "next/navigation"
+ 
+ import type { Project } from "../../types/project.types"
+ import type { Task } from "@/features/tasks/types/task.types"
+@@ -27,6 +27,7 @@ import { ProjectRowActions } from "../actions/project-row-actions"
+ import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
+ import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
+ import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
++import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
+ 
+ type Props = {
+   project: Project
+@@ -41,6 +42,8 @@ export function ProjectExpandedRow({
+ }: Props) {
+   const { isMobile, ready } = useResponsive()
+   const searchParams = useSearchParams()
++  const router = useRouter()
++  const pathname = usePathname()
+ 
+   const urlProjectId = searchParams.get("projectId")
+   const isTarget = urlProjectId === project.id
+@@ -125,6 +128,8 @@ export function ProjectExpandedRow({
+       setActiveView("comments")
+       // Dialog en todos los breakpoints (paridad con processes).
+       setCommentsDialogOpen(true)
++      // Consumir tab: F5 no debe reabrir Mensajes.
++      consumeCommentsTabParam(router, pathname, searchParams)
+       return
+     }
+ 
+@@ -139,6 +144,9 @@ export function ProjectExpandedRow({
+     tabParam,
+     isMobile,
+     focusSettled,
++    router,
++    pathname,
++    searchParams,
+   ])
+ 
+   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
+diff --git a/src/features/tasks/components/expanded-row/task-expanded-row.tsx b/src/features/tasks/components/expanded-row/task-expanded-row.tsx
+index 2ad32f2..af63fe5 100644
+--- a/src/features/tasks/components/expanded-row/task-expanded-row.tsx
++++ b/src/features/tasks/components/expanded-row/task-expanded-row.tsx
+@@ -1,7 +1,7 @@
+ "use client"
+ 
+ import { useEffect, useState } from "react"
+-import { useSearchParams } from "next/navigation"
++import { useSearchParams, useRouter, usePathname } from "next/navigation"
+ import { ClipboardList, MessageSquare } from "lucide-react"
+ 
+ import type {
+@@ -29,6 +29,7 @@ import { DetailAssetsEye } from "@/features/detail-assets/components/detail-asse
+ import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
+ import { useActiveCommentContextStore } from "@/features/comments/store/active-comment-context-store"
+ import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
++import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
+ import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
+ 
+ type Props = {
+@@ -41,6 +42,8 @@ export function TaskExpandedRow({
+ }: Props) {
+   const { isMobile, isCompact } = useResponsive()
+   const searchParams = useSearchParams()
++  const router = useRouter()
++  const pathname = usePathname()
+ 
+   const urlTaskId = searchParams.get("taskId")
+   const isTarget = urlTaskId === task.id
+@@ -96,6 +99,8 @@ export function TaskExpandedRow({
+ 
+       setActiveView("comments")
+       setCommentsDialogOpen(true)
++      // Consumir tab: F5 no debe reabrir Mensajes.
++      consumeCommentsTabParam(router, pathname, searchParams)
+       return
+     }
+ 
+@@ -110,6 +115,9 @@ export function TaskExpandedRow({
+     tabParam,
+     isMobile,
+     focusSettled,
++    router,
++    pathname,
++    searchParams,
+   ])
+ 
+   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
+diff --git a/src/shared/hooks/consume-comments-tab.ts b/src/shared/hooks/consume-comments-tab.ts
+new file mode 100644
+index 0000000..efe460d
+--- /dev/null
++++ b/src/shared/hooks/consume-comments-tab.ts
+@@ -0,0 +1,25 @@
++"use client"
++
++/**
++ * Consume `tab=comments` del deep-link una vez abierto el dialog.
++ * Deja taskId/projectId/code/focus — solo quita tab para que F5 no reabra Mensajes.
++ */
++type RouterLike = {
++  replace: (href: string, options?: { scroll?: boolean }) => void
++}
++
++export function consumeCommentsTabParam(
++  router: RouterLike,
++  pathname: string,
++  searchParams: { toString(): string; get(name: string): string | null },
++): void {
++  if (searchParams.get("tab") !== "comments") return
++
++  const next = new URLSearchParams(searchParams.toString())
++  next.delete("tab")
++
++  const query = next.toString()
++  router.replace(query ? `${pathname}?${query}` : pathname, {
++    scroll: false,
++  })
++}

@@ -2,7 +2,7 @@
 
 import { Activity, AlertTriangle, CheckCircle2, ClipboardList, MessageSquare, Puzzle } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 
 import type { Project } from "../../types/project.types"
 import type { Task } from "@/features/tasks/types/task.types"
@@ -27,6 +27,7 @@ import { ProjectRowActions } from "../actions/project-row-actions"
 import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
 import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
 
 type Props = {
   project: Project
@@ -41,6 +42,8 @@ export function ProjectExpandedRow({
 }: Props) {
   const { isMobile, ready } = useResponsive()
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
 
   const urlProjectId = searchParams.get("projectId")
   const isTarget = urlProjectId === project.id
@@ -125,6 +128,8 @@ export function ProjectExpandedRow({
       setActiveView("comments")
       // Dialog en todos los breakpoints (paridad con processes).
       setCommentsDialogOpen(true)
+      // Consumir tab: F5 no debe reabrir Mensajes.
+      consumeCommentsTabParam(router, pathname, searchParams)
       return
     }
 
@@ -139,6 +144,9 @@ export function ProjectExpandedRow({
     tabParam,
     isMobile,
     focusSettled,
+    router,
+    pathname,
+    searchParams,
   ])
 
   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)

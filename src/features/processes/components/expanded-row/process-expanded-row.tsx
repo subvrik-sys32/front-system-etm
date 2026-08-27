@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, type ReactNode } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { Activity, ArrowRight, Clock, Clock3, MessageSquare, Package, Puzzle, Layers3 } from "lucide-react"
 
 import type { ProcessTask } from "../../types/process.types"
@@ -28,6 +28,7 @@ import { ProcessTimeCard } from "./cards/process-time-card"
 import { ProcessProgressCard } from "./cards/process-progress-card"
 import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
 import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
 
 type Props = {
   processTask: ProcessTask
@@ -44,6 +45,8 @@ export function ProcessExpandedRow({
 }: Props) {
   const { isMobile, isCompact, ready } = useResponsive()
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
 
   const urlTaskId = searchParams.get("taskId")
   const isTarget = urlTaskId === processTask.task.id
@@ -181,6 +184,8 @@ export function ProcessExpandedRow({
 
       setCommentsDialogOpen(true)
       setActiveView("kpis")
+      // Consumir tab: F5 no debe reabrir Mensajes.
+      consumeCommentsTabParam(router, pathname, searchParams)
       return
     }
 
@@ -189,6 +194,9 @@ export function ProcessExpandedRow({
     isTarget,
     tabParam,
     focusSettled,
+    router,
+    pathname,
+    searchParams,
   ])
 
   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)

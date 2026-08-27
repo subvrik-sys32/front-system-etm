@@ -114,10 +114,13 @@ export function CommentHistoryDialog({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          size="large"
+          // large solo en móvil (full shell). Desktop: default fixed center —
+          // no usar size=large en desktop (evita pelear el contrato form).
+          size={isMobile ? "large" : "default"}
           className={cn(
-            "relative flex flex-col gap-0 overflow-hidden p-0 text-foreground shadow-xs bg-popover",
-            // Mismo contrato FormDialog: mobile (portrait+landscape) full; desktop card.
+            // NO "relative": pisa `fixed` del DialogContent (tailwind-merge)
+            // y el dialog deja de centrarse / empuja el layout de fondo.
+            "flex flex-col gap-0 overflow-hidden p-0 text-foreground shadow-xs bg-popover",
             isMobile
               ? "h-full w-full max-w-none rounded-none"
               : "h-[min(40rem,85dvh)] max-h-[85dvh] w-full max-w-180 rounded-2xl",

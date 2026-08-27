@@ -482,11 +482,21 @@ export function RolePermissionsPageContent() {
 
               {mode === "usuarios" && selectedUser ? (
                 <div className="flex shrink-0 items-center gap-2">
+                  {/* Acción primaria ANTES del toggle (Editar | Guardar) */}
                   {canEditUser && userPanelView === "profile" && (
                     <PrimaryAction
                       label="Editar"
                       icon={Pencil}
                       onClick={() => setEditUserOpen(true)}
+                    />
+                  )}
+                  {userPanelView === "exceptions" && (
+                    <PrimaryAction
+                      label={saveLabel}
+                      icon={Save}
+                      isLoading={saving}
+                      onClick={handleSave}
+                      disabled={!dirty || saving}
                     />
                   )}
                   <div className="flex items-center gap-1 rounded-xl bg-foreground/5 p-1">
@@ -515,15 +525,6 @@ export function RolePermissionsPageContent() {
                       Excepciones
                     </button>
                   </div>
-                  {userPanelView === "exceptions" && (
-                    <PrimaryAction
-                      label={saveLabel}
-                      icon={Save}
-                      isLoading={saving}
-                      onClick={handleSave}
-                      disabled={!dirty || saving}
-                    />
-                  )}
                 </div>
               ) : (
                 mode === "roles" && (
@@ -619,11 +620,21 @@ export function RolePermissionsPageContent() {
 
               {mode === "usuarios" && selectedUser ? (
                 <div className="flex shrink-0 items-center gap-2">
+                  {/* Acción primaria ANTES del toggle (Editar | Guardar) */}
                   {canEditUser && userPanelView === "profile" && (
                     <PrimaryAction
                       label="Editar"
                       icon={Pencil}
                       onClick={() => setEditUserOpen(true)}
+                    />
+                  )}
+                  {userPanelView === "exceptions" && (
+                    <PrimaryAction
+                      label={saveLabel}
+                      icon={Save}
+                      isLoading={saving}
+                      onClick={handleSave}
+                      disabled={!dirty || saving}
                     />
                   )}
                   <div className="flex items-center gap-1 rounded-xl bg-foreground/5 p-1">
@@ -652,15 +663,6 @@ export function RolePermissionsPageContent() {
                       Excepciones
                     </button>
                   </div>
-                  {userPanelView === "exceptions" && (
-                    <PrimaryAction
-                      label={saveLabel}
-                      icon={Save}
-                      isLoading={saving}
-                      onClick={handleSave}
-                      disabled={!dirty || saving}
-                    />
-                  )}
                 </div>
               ) : (
                 mode === "roles" && (

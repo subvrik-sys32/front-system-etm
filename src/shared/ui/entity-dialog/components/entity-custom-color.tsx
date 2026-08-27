@@ -190,41 +190,23 @@ export function EntityCustomColor({
 
       </div>
 
-      <div className="grid h-9 w-full grid-cols-3 gap-4">
-
-        {channels.map(([key,label])=>(
-
+      <div className="grid w-full grid-cols-3 gap-2">
+        {channels.map(([key, label]) => (
           <div
             key={key}
-            className="space-y-1"
+            className="flex h-9 items-center gap-1.5 overflow-hidden rounded-xl bg-foreground/5 px-2"
           >
-
-            <Input
-              value={
-                rgb[key]
-              }
-              inputMode="numeric"
-              onChange={event=>
-
-                updateRgb(
-                  key,
-                  event.target.value,
-                )
-
-              }
-              className="h-9 rounded-xl text-center text-sm font-semibold text-muted-foreground"
-            />
-
-            <p className="text-center text-xs font-semibold text-muted-foreground">
-
+            <span className="shrink-0 text-[10px] font-bold tracking-wide text-muted-foreground">
               {label}
-
-            </p>
-
+            </span>
+            <Input
+              value={rgb[key]}
+              inputMode="numeric"
+              onChange={event => updateRgb(key, event.target.value)}
+              className="h-8 min-w-0 flex-1 rounded-lg border-0 bg-transparent px-1 text-center text-sm font-semibold tabular-nums text-foreground shadow-none focus-visible:ring-0"
+            />
           </div>
-
         ))}
-
       </div>
 
     </div>

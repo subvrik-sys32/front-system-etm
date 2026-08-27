@@ -12,7 +12,7 @@ export interface UserForm{
 
   roleIds:string[]
 
-  level?:"GENERAL" | "OPERARIO" | "SUPERVISOR" | null
+  level?:"GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null
 
   // Faltaba por completo — se me había pasado en la migración de
   // áreas (esta interfaz es la que usa el service/mutation, no la

@@ -1,0 +1,413 @@
+diff --git a/src/features/admin/users/components/dialog/level-select.tsx b/src/features/admin/users/components/dialog/level-select.tsx
+index 8037607..7e2e434 100644
+--- a/src/features/admin/users/components/dialog/level-select.tsx
++++ b/src/features/admin/users/components/dialog/level-select.tsx
+@@ -26,7 +26,7 @@ import type {
+   EntityIcon,
+ } from "@/shared/constants/entity-icons"
+ 
+-export type Level = "OPERARIO" | "SUPERVISOR"
++export type Level = "OPERARIO" | "SUPERVISOR" | "TERCERO"
+ 
+ // Mismo criterio que roles-select.tsx: acá también son solo 2
+ // opciones hoy, pero si mañana se agrega un tercer sub-nivel en
+@@ -50,6 +50,12 @@ const LEVEL_OPTIONS: {
+     color: "#0284C7",
+     icon: "shield",
+   },
++  {
++    value: "TERCERO",
++    label: "Tercero",
++    color: "#B45309",
++    icon: "briefcase",
++  },
+ ]
+ 
+ type Props = {
+diff --git a/src/features/admin/users/components/dialog/user-dialog-header.tsx b/src/features/admin/users/components/dialog/user-dialog-header.tsx
+index d9bc03e..b57580b 100644
+--- a/src/features/admin/users/components/dialog/user-dialog-header.tsx
++++ b/src/features/admin/users/components/dialog/user-dialog-header.tsx
+@@ -38,14 +38,14 @@ type Props = {
+   icon: EntityIcon
+   roles: Role[]
+   selectedRoles: Role[]
+-  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null
++  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null
+   areas: Area[]
+   error?: string
+   onRolesChange: (
+     roles: Role[],
+   ) => void
+   onLevelChange: (
+-    level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null,
++    level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null,
+   ) => void
+   onAreasChange: (
+     areas: Area[],
+@@ -121,7 +121,7 @@ export function UserDialogHeader({
+ 
+             <LevelSelect
+               value={
+-                level === "OPERARIO" || level === "SUPERVISOR"
++                level === "OPERARIO" || level === "SUPERVISOR" || level === "TERCERO"
+                   ? level
+                   : null
+               }
+@@ -135,7 +135,7 @@ export function UserDialogHeader({
+           </div>
+         )}
+ 
+-        {isProduccion && level === "OPERARIO" && (
++        {isProduccion && (level === "OPERARIO" || level === "TERCERO") && (
+           <div className="w-full tablet:w-[320px]">
+             <div className="mb-2 text-xs font-medium text-muted-foreground">
+               Áreas
+diff --git a/src/features/admin/users/components/dialog/user-dialog.tsx b/src/features/admin/users/components/dialog/user-dialog.tsx
+index 7210014..ca4cb1a 100644
+--- a/src/features/admin/users/components/dialog/user-dialog.tsx
++++ b/src/features/admin/users/components/dialog/user-dialog.tsx
+@@ -70,7 +70,7 @@ type UserFormValue = {
+   confirmPassword: string
+   isChangingPassword: boolean
+   roleIds: string[]
+-  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null
++  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null
+   areaIds: string[]
+   icon: EntityIcon
+   color: string
+diff --git a/src/features/admin/users/components/users-page-content.tsx b/src/features/admin/users/components/users-page-content.tsx
+index 67bea10..1a309bd 100644
+--- a/src/features/admin/users/components/users-page-content.tsx
++++ b/src/features/admin/users/components/users-page-content.tsx
+@@ -47,7 +47,7 @@ type UserFormData = {
+   confirmPassword: string
+   isChangingPassword: boolean
+   roleIds: string[]
+-  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null
++  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null
+   areaIds: string[]
+   icon: EntityIcon
+   color: string
+@@ -231,7 +231,14 @@ export function UsersPageContent() {
+       setIsCreating(false)
+       if (res?.id) setSelectedUserId(res.id)
+     } else if (selectedUserId) {
+-      await updateUser.mutateAsync({ id: selectedUserId, dto: payload })
++      const updated = await updateUser.mutateAsync({
++        id: selectedUserId,
++        dto: payload,
++      })
++      // Re-hidratar form con respuesta (areas/roles) — sin esperar F5.
++      if (updated) {
++        setFormData(createInitialFormData(updated, selectedRoleId))
++      }
+     }
+   }
+ 
+diff --git a/src/features/areas/components/area-multi-select.tsx b/src/features/areas/components/area-multi-select.tsx
+index 51436e1..282868c 100644
+--- a/src/features/areas/components/area-multi-select.tsx
++++ b/src/features/areas/components/area-multi-select.tsx
+@@ -1,6 +1,7 @@
+ "use client"
+ 
+ import { useState } from "react"
++import { ChevronDown } from "lucide-react"
+ 
+ import {
+   Popover,
+@@ -14,15 +15,10 @@ import {
+   CommandList,
+ } from "@/components/ui/command"
+ 
+-import {
+-  DynamicBadge,
+-} from "@/shared/ui/badge/dynamic-badge"
+-
+-import {
+-  SelectOption,
+-} from "@/shared/ui/select-option/select-option"
+-
++import { DynamicBadge } from "@/shared/ui/badge/dynamic-badge"
++import { SelectOption } from "@/shared/ui/select-option/select-option"
+ import { withSelectedFirst } from "@/shared/utils/with-selected-first"
++import { cn } from "@/shared/utils/utils"
+ import { PROCESS_DEFINITIONS } from "@/features/processes/constants/process-definitions"
+ import type { ProcessCode } from "@/features/tasks/types/task.types"
+ 
+@@ -33,26 +29,18 @@ function isProcessCode(value: string | null): value is ProcessCode {
+   return !!value && value in PROCESS_DEFINITIONS
+ }
+ 
+-// Mismo criterio que AreaSelect: íconos/colores del área se toman
+-// de PROCESS_DEFINITIONS cuando el área tiene processCode.
+ function getAreaVisuals(area: Area) {
+-
+   if (isProcessCode(area.processCode)) {
+-
+     const definition = PROCESS_DEFINITIONS[area.processCode]
+-
+     return {
+       icon: definition.icon,
+       color: definition.color,
+     }
+-
+   }
+-
+   return {
+     icon: "shield" as const,
+     color: "#64748B",
+   }
+-
+ }
+ 
+ type Props = {
+@@ -61,78 +49,78 @@ type Props = {
+   onChange: (areas: Area[]) => void
+ }
+ 
+-// Un operario ahora puede pertenecer a varias áreas a la vez (antes
+-// era 1 a 1, ver AreaSelect) — a propósito el popover NO se cierra
+-// al elegir una opción, así se pueden marcar varias seguidas sin
+-// tener que reabrirlo cada vez. Se cierra solo con click afuera o
+-// Escape (comportamiento normal del Popover).
++/**
++ * Multi-área: cada área es un chip visual (no "A, B, C" en un solo badge).
++ * El popover no cierra al marcar — se pueden elegir varias seguidas.
++ */
+ export function AreaMultiSelect({
+   value,
+   placeholder = "Seleccionar áreas",
+   onChange,
+ }: Props) {
+-
+   const [open, setOpen] = useState(false)
+-
+   const { areas } = useAreas()
+ 
+-  const triggerLabel =
+-    value.length === 0
+-      ? placeholder
+-      : value.length === 1
+-        ? value[0].label
+-        : value.map(area => area.label).join(", ")
+-
+-  const triggerVisuals =
+-    value.length === 1
+-      ? getAreaVisuals(value[0])
+-      : null
+-
+   function toggleArea(area: Area) {
+-
+     const isSelected = value.some(v => v.id === area.id)
+-
+     onChange(
+       isSelected
+         ? value.filter(v => v.id !== area.id)
+         : [...value, area],
+     )
+-
+   }
+ 
+   return (
+-
+     <Popover open={open} onOpenChange={setOpen}>
+-
+       <PopoverTrigger className="flex w-full min-w-0 items-center">
+-
+-        <DynamicBadge
+-          label={triggerLabel}
+-          color={triggerVisuals?.color ?? "#64748B"}
+-          icon={triggerVisuals?.icon}
+-          placeholder={value.length === 0}
+-          width="field"
+-          showChevron
+-          chevronOpen={open}
+-        />
+-
++        <div
++          className={cn(
++            "flex min-h-9 w-full min-w-0 items-center gap-1.5 rounded-xl bg-foreground/5 px-2 py-1.5 text-left transition-colors",
++            "hover:bg-foreground/8",
++            open && "bg-foreground/10",
++          )}
++        >
++          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
++            {value.length === 0 ? (
++              <span className="px-1 text-xs text-muted-foreground">
++                {placeholder}
++              </span>
++            ) : (
++              value.map(area => {
++                const v = getAreaVisuals(area)
++                return (
++                  <DynamicBadge
++                    key={area.id}
++                    label={area.label}
++                    color={v.color}
++                    icon={v.icon}
++                    width="auto"
++                  />
++                )
++              })
++            )}
++          </div>
++          <ChevronDown
++            size={14}
++            className={cn(
++              "shrink-0 text-muted-foreground transition-transform",
++              open && "rotate-180",
++            )}
++          />
++        </div>
+       </PopoverTrigger>
+ 
+       <PopoverContent sideOffset={8} floatingClassName="w-64" className="p-2">
+-
+         <Command className="bg-transparent">
+-
+           <CommandList className="max-h-none overflow-visible tablet:max-h-64 tablet:overflow-y-auto">
+-
+             <CommandGroup>
+-
+-              {withSelectedFirst(areas, new Set(value?.map(a => a.id) ?? [])).map(area => {
+-
++              {withSelectedFirst(
++                areas,
++                new Set(value?.map(a => a.id) ?? []),
++              ).map(area => {
+                 const optionVisuals = getAreaVisuals(area)
+                 const selected = value.some(v => v.id === area.id)
+-
+                 return (
+-
+                   <SelectOption
+                     key={area.id}
+                     label={area.label}
+@@ -141,21 +129,12 @@ export function AreaMultiSelect({
+                     selected={selected}
+                     onSelect={() => toggleArea(area)}
+                   />
+-
+                 )
+-
+               })}
+-
+             </CommandGroup>
+-
+           </CommandList>
+-
+         </Command>
+-
+       </PopoverContent>
+-
+     </Popover>
+-
+   )
+-
+-}
+\ No newline at end of file
++}
+diff --git a/src/features/users/hooks/use-user-mutations.ts b/src/features/users/hooks/use-user-mutations.ts
+index 81bcbdc..7e20deb 100644
+--- a/src/features/users/hooks/use-user-mutations.ts
++++ b/src/features/users/hooks/use-user-mutations.ts
+@@ -10,12 +10,24 @@ import type { User } from "../types/user.types"
+ import { usersService } from "../services/users.service"
+ import { propagateUserUpdate } from "../cache/propagate-user-update"
+ 
++function patchUsersList(list: User[] | undefined, user: User): User[] | undefined {
++  if (!list) return list
++  const idx = list.findIndex(u => u.id === user.id)
++  if (idx < 0) return [...list, user]
++  const next = list.slice()
++  next[idx] = { ...list[idx], ...user }
++  return next
++}
++
+ export function useUserMutations() {
+   const queryClient = useQueryClient()
+ 
+   const createUser = useMutation({
+     mutationFn: (dto: UserForm) => usersService.create(dto),
+-    onSuccess: () => {
++    onSuccess: (user: User) => {
++      queryClient.setQueriesData<User[]>({ queryKey: ["users"] }, list =>
++        list ? [...list, user] : [user],
++      )
+       queryClient.invalidateQueries({ queryKey: ["users"] })
+     },
+   })
+@@ -29,16 +41,21 @@ export function useUserMutations() {
+       dto: Partial<UserForm>
+     }) => usersService.update(id, dto),
+     onSuccess: (user: User) => {
+-      // Lista de users
++      // Pinta areas/roles al instante (sin esperar refetch / F5).
++      queryClient.setQueriesData<User[]>({ queryKey: ["users"] }, list =>
++        patchUsersList(list, user),
++      )
+       queryClient.invalidateQueries({ queryKey: ["users"] })
+-      // Snapshots anidados (pm, operator, assignee, …)
+       propagateUserUpdate(queryClient, user)
+     },
+   })
+ 
+   const deleteUser = useMutation({
+     mutationFn: (id: string) => usersService.remove(id),
+-    onSuccess: () => {
++    onSuccess: (_void, id) => {
++      queryClient.setQueriesData<User[]>({ queryKey: ["users"] }, list =>
++        list ? list.filter(u => u.id !== id) : list,
++      )
+       queryClient.invalidateQueries({ queryKey: ["users"] })
+     },
+   })
+diff --git a/src/features/users/types/user-form.types.ts b/src/features/users/types/user-form.types.ts
+index dd686ad..2e131d1 100644
+--- a/src/features/users/types/user-form.types.ts
++++ b/src/features/users/types/user-form.types.ts
+@@ -12,7 +12,7 @@ export interface UserForm{
+ 
+   roleIds:string[]
+ 
+-  level?:"GENERAL" | "OPERARIO" | "SUPERVISOR" | null
++  level?:"GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null
+ 
+   // Faltaba por completo — se me había pasado en la migración de
+   // áreas (esta interfaz es la que usa el service/mutation, no la
+diff --git a/src/features/users/types/user.types.ts b/src/features/users/types/user.types.ts
+index 76315a7..433c201 100644
+--- a/src/features/users/types/user.types.ts
++++ b/src/features/users/types/user.types.ts
+@@ -68,7 +68,7 @@ export interface User{
+   // todos (antes era 1 a 1, role:UserRole).
+   roles:UserRole[]
+ 
+-  level:"GENERAL" | "OPERARIO" | "SUPERVISOR" | null
++  level:"GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null
+ 
+   // Array ahora (m2m) — un operario puede pertenecer a más de un
+   // área a la vez (antes era 1 a 1, area:UserArea|null).
+diff --git a/src/shared/core/constants/department-roles.ts b/src/shared/core/constants/department-roles.ts
+index b4817b5..ed3e3c9 100644
+--- a/src/shared/core/constants/department-roles.ts
++++ b/src/shared/core/constants/department-roles.ts
+@@ -1,6 +1,6 @@
+ import { RoleCode } from "@/shared/core/enums/role-code.enum"
+ 
+-export type JobLevelCode = "OPERARIO" | "SUPERVISOR"
++export type JobLevelCode = "OPERARIO" | "SUPERVISOR" | "TERCERO"
+ 
+ /** Espejo backend BITACORA_DEPARTMENT_ROLES */
+ export const BITACORA_DEPARTMENT_ROLE_CODES = {
+@@ -21,7 +21,7 @@ export const PRODUCTION_OPERATOR_ROLE_CODE = RoleCode.PRODUCCION
+ 
+ /** Espejo backend UsersService.LEVELS_BY_ROLE */
+ export const LEVELS_BY_ROLE_CODE: Partial<Record<RoleCode, JobLevelCode[]>> = {
+-  [RoleCode.PRODUCCION]: ["OPERARIO", "SUPERVISOR"],
++  [RoleCode.PRODUCCION]: ["OPERARIO", "SUPERVISOR", "TERCERO"],
+   [RoleCode.INGENIERIA]: ["SUPERVISOR"],
+   [RoleCode.PROYECTOS]: ["SUPERVISOR"],
+ }

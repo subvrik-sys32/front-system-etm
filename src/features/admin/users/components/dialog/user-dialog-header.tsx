@@ -38,14 +38,14 @@ type Props = {
   icon: EntityIcon
   roles: Role[]
   selectedRoles: Role[]
-  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null
+  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null
   areas: Area[]
   error?: string
   onRolesChange: (
     roles: Role[],
   ) => void
   onLevelChange: (
-    level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null,
+    level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null,
   ) => void
   onAreasChange: (
     areas: Area[],
@@ -121,7 +121,7 @@ export function UserDialogHeader({
 
             <LevelSelect
               value={
-                level === "OPERARIO" || level === "SUPERVISOR"
+                level === "OPERARIO" || level === "SUPERVISOR" || level === "TERCERO"
                   ? level
                   : null
               }
@@ -135,7 +135,7 @@ export function UserDialogHeader({
           </div>
         )}
 
-        {isProduccion && level === "OPERARIO" && (
+        {isProduccion && (level === "OPERARIO" || level === "TERCERO") && (
           <div className="w-full tablet:w-[320px]">
             <div className="mb-2 text-xs font-medium text-muted-foreground">
               Áreas

@@ -26,7 +26,7 @@ import type {
   EntityIcon,
 } from "@/shared/constants/entity-icons"
 
-export type Level = "OPERARIO" | "SUPERVISOR"
+export type Level = "OPERARIO" | "SUPERVISOR" | "TERCERO"
 
 // Mismo criterio que roles-select.tsx: acá también son solo 2
 // opciones hoy, pero si mañana se agrega un tercer sub-nivel en
@@ -49,6 +49,12 @@ const LEVEL_OPTIONS: {
     label: "Supervisor",
     color: "#0284C7",
     icon: "shield",
+  },
+  {
+    value: "TERCERO",
+    label: "Tercero",
+    color: "#B45309",
+    icon: "briefcase",
   },
 ]
 

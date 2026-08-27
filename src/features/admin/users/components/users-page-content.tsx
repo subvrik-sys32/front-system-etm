@@ -47,7 +47,7 @@ type UserFormData = {
   confirmPassword: string
   isChangingPassword: boolean
   roleIds: string[]
-  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null
+  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null
   areaIds: string[]
   icon: EntityIcon
   color: string
@@ -231,7 +231,14 @@ export function UsersPageContent() {
       setIsCreating(false)
       if (res?.id) setSelectedUserId(res.id)
     } else if (selectedUserId) {
-      await updateUser.mutateAsync({ id: selectedUserId, dto: payload })
+      const updated = await updateUser.mutateAsync({
+        id: selectedUserId,
+        dto: payload,
+      })
+      // Re-hidratar form con respuesta (areas/roles) — sin esperar F5.
+      if (updated) {
+        setFormData(createInitialFormData(updated, selectedRoleId))
+      }
     }
   }
 

@@ -1,6 +1,6 @@
 import { RoleCode } from "@/shared/core/enums/role-code.enum"
 
-export type JobLevelCode = "OPERARIO" | "SUPERVISOR"
+export type JobLevelCode = "OPERARIO" | "SUPERVISOR" | "TERCERO"
 
 /** Espejo backend BITACORA_DEPARTMENT_ROLES */
 export const BITACORA_DEPARTMENT_ROLE_CODES = {
@@ -21,7 +21,7 @@ export const PRODUCTION_OPERATOR_ROLE_CODE = RoleCode.PRODUCCION
 
 /** Espejo backend UsersService.LEVELS_BY_ROLE */
 export const LEVELS_BY_ROLE_CODE: Partial<Record<RoleCode, JobLevelCode[]>> = {
-  [RoleCode.PRODUCCION]: ["OPERARIO", "SUPERVISOR"],
+  [RoleCode.PRODUCCION]: ["OPERARIO", "SUPERVISOR", "TERCERO"],
   [RoleCode.INGENIERIA]: ["SUPERVISOR"],
   [RoleCode.PROYECTOS]: ["SUPERVISOR"],
 }

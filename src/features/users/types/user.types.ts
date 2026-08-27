@@ -68,7 +68,7 @@ export interface User{
   // todos (antes era 1 a 1, role:UserRole).
   roles:UserRole[]
 
-  level:"GENERAL" | "OPERARIO" | "SUPERVISOR" | null
+  level:"GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null
 
   // Array ahora (m2m) — un operario puede pertenecer a más de un
   // área a la vez (antes era 1 a 1, area:UserArea|null).

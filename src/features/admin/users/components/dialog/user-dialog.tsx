@@ -70,7 +70,7 @@ type UserFormValue = {
   confirmPassword: string
   isChangingPassword: boolean
   roleIds: string[]
-  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | null
+  level: "GENERAL" | "OPERARIO" | "SUPERVISOR" | "TERCERO" | null
   areaIds: string[]
   icon: EntityIcon
   color: string

@@ -123,7 +123,6 @@ function TaskMobileCardReady({
   onToggle: () => void
 }) {
   const [showFields, setShowFields] = useState(false)
-  const [showPipeline, setShowPipeline] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
 
   const { isMobile } = useResponsive()
@@ -149,24 +148,12 @@ function TaskMobileCardReady({
   )
 
   useEffect(() => {
-    if (expanded) {
-      setShowPipeline(true)
-      return
-    }
-    setShowFields(false)
-    setShowPipeline(false)
+    if (!expanded) setShowFields(false)
   }, [expanded])
 
   function handleRowToggle() {
     onToggle()
   }
-
-  useEffect(() => {
-    if (expanded && isTarget) {
-      setShowPipeline(true)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expanded, isTarget])
 
   const stage = taskAccess.stageLabel(task)
   const status = taskAccess.statusLabel(task)
@@ -459,9 +446,7 @@ function TaskMobileCardReady({
           />
         </CollapsibleHeightSection>
 
-        <CollapsibleHeightSection open={showPipeline}>
-          <TaskExpandedRow task={task} />
-        </CollapsibleHeightSection>
+        <TaskExpandedRow task={task} />
       </CollapsibleHeightSection>
 
       <TaskDialog

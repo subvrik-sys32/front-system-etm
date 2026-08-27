@@ -12,10 +12,11 @@ type Props = {
 }
 
 /**
- * Toggle/expand de usuario.
- * Con deep-link activo, cualquier acción manual (abrir otro, cerrar el
- * enfocado, o volver a tocar el enfocado para colapsar) consume la ruta
- * para que useFocusedRow deje de mandar.
+ * Toggle de usuario — mismo contrato en tareas / proyectos / procesos.
+ *
+ * 1. Cambia expanded en el mismo tick (paint inmediato, como procesos).
+ * 2. Si hay deep-link en la URL, lo consume *después* del paint
+ *    (queueMicrotask) para no retrasar el expand con router.replace.
  */
 export function useExpandRow({
   focusedId,
@@ -29,16 +30,18 @@ export function useExpandRow({
     (nextId: string | null) => {
       setExpandedRowId(nextId)
 
-      // Usuario toma el control (otro row, colapsar, o re-tocar):
-      // siempre consumir deep-link si hay params de foco en la URL.
       const hasFocusParams =
         searchParams.has("taskId") ||
         searchParams.has("projectId") ||
         searchParams.has("focus") ||
         searchParams.has("tab")
-      if (hasFocusParams) {
+
+      if (!hasFocusParams) return
+
+      // Diferir: el row ya pintó expandido/colapsado.
+      queueMicrotask(() => {
         clearEntityFocusParams(router, pathname, searchParams)
-      }
+      })
     },
     [focusedId, setExpandedRowId, router, pathname, searchParams],
   )

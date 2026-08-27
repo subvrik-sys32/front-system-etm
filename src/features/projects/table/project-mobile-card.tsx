@@ -121,7 +121,6 @@ function ProjectMobileCardReady({
   onToggle: () => void
 }) {
   const [showFields, setShowFields] = useState(false)
-  const [showPipeline, setShowPipeline] = useState(false)
   const [newTaskOpen, setNewTaskOpen] = useState(false)
 
   const { isMobile } = useResponsive()
@@ -132,24 +131,12 @@ function ProjectMobileCardReady({
   const isTarget = searchParams.get("projectId") === project.id
 
   useEffect(() => {
-    if (expanded) {
-      setShowPipeline(true)
-      return
-    }
-    setShowFields(false)
-    setShowPipeline(false)
+    if (!expanded) setShowFields(false)
   }, [expanded])
 
   function handleRowToggle() {
     onToggle()
   }
-
-  useEffect(() => {
-    if (expanded && isTarget) {
-      setShowPipeline(true)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expanded, isTarget])
 
   const isCompleted = isProjectCompleted(project)
   // Historial: siempre opaco. Activos: se opacitan si otro activo está expandido.
@@ -363,9 +350,7 @@ function ProjectMobileCardReady({
             <ProjectPmCell project={project} triggerVariant="row" rowLabel="PM" />
         </CollapsibleHeightSection>
 
-        <CollapsibleHeightSection open={showPipeline}>
-          <ProjectExpandedRow project={project} tasks={tasks} />
-        </CollapsibleHeightSection>
+        <ProjectExpandedRow project={project} tasks={tasks} />
       </CollapsibleHeightSection>
 
       {newTaskOpen && (

@@ -14,11 +14,18 @@ type Props = {
 }
 
 /**
- * Collapse de rows (proyectos / tareas / procesos).
+ * SSOT de expand/collapse de list rows (tareas / proyectos / procesos /
+ * nesting sidebar / etc.).
  *
- * Instantáneo: un solo paso al abrir/cerrar.
- * Sin grid-template-rows ni opacity animados → sin doble micro-paso
- * ni reflow por frame en PCs lentas.
+ * Arquitectura:
+ * - Un solo frame: open → monta children; !open → null (o hidden).
+ * - Sin height animation, sin opacity, sin rAF, sin setTimeout.
+ * - El contenido pesado (ExpandedRow) debe vivir DENTRO de este
+ *   bloque cuando `open`, no detrás de un segundo estado
+ *   (showPipeline) que retrasa un effect.
+ *
+ * showFields / sub-paneles pueden usar otra instancia anidada;
+ * el row principal no debe tener "doble paso".
  */
 export function CollapsibleHeightSection({
   open,

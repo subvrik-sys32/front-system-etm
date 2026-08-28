@@ -293,34 +293,6 @@ export function ProcessExpandedRow({
             />
           </div>
         )}
-
-        <EntityExpandedSlider
-          value={activeView}
-          panels={[
-            {
-              value: "kpis" as const,
-              // Desktop: KPIs en el header (cards completas). Móvil: carousel.
-              content:
-                !ready || !isMobile
-                  ? null
-                  : (
-                      <KpiCarousel
-                        cards={cards}
-                        items={items}
-                        summary={{
-                          icon: Activity,
-                          color: "#22C55E",
-                          label: "Progreso",
-                          values: [
-                            { label: "Estado", value: statusLabel },
-                            { label: "Avance", value: `${percent}%` },
-                          ],
-                        }}
-                      />
-                    ),
-            },
-          ]}
-        />
       </EntityExpandedContent>
 
       {workflowStepId ? (

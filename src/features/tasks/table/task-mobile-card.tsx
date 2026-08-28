@@ -1,9 +1,8 @@
 "use client"
 
 import { useBadgeColors, useDomainInk } from "@/shared/utils/use-badge-colors"
-
 import { useCallback, useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
 import { ChevronDown, MessageSquare } from "lucide-react"
 
@@ -77,11 +76,7 @@ export function TaskMobileCard(props: Props) {
   if (props.loading) {
     const opacity = props.opacity ?? 1
     return (
-      <div
-        className="@container/trow rounded-xl bg-foreground/5"
-        style={{ opacity }}
-        aria-hidden
-      >
+      <div className="@container/trow rounded-xl bg-foreground/5" style={{ opacity }} aria-hidden>
         <div className="flex items-center gap-1 px-1">
           <div className="flex min-w-0 flex-1 animate-pulse items-center gap-2.5 py-3 pr-2">
             <span className="inline-flex h-7 min-w-[2.75rem] shrink-0 items-center justify-center rounded-md bg-foreground/10 px-2" />
@@ -92,7 +87,6 @@ export function TaskMobileCard(props: Props) {
                 <span className="h-3 w-20 rounded bg-foreground/5" />
               </span>
             </div>
-            <span className="hidden h-3 w-14 shrink-0 rounded bg-foreground/5 md:block" />
           </div>
         </div>
       </div>
@@ -152,6 +146,7 @@ function TaskMobileCardReady({
 
   const stage = taskAccess.stageLabel(task)
   const status = taskAccess.statusLabel(task)
+  
   const priorityInk = useDomainInk(task.priority.color)
   const stageInk = useDomainInk(stage.color)
   const statusInk = useDomainInk(status.color)
@@ -183,10 +178,10 @@ function TaskMobileCardReady({
           }}
           className={cn(
             "flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 text-left",
-            !isManualMode && "pl-2",
+            !isManualMode && "pl-3",
           )}
         >
-          {/* Chip código */}
+          {/* Chip de código interactivo */}
           <span
             role="link"
             tabIndex={0}
@@ -231,125 +226,92 @@ function TaskMobileCardReady({
           </span>
 
           <div className="flex min-w-0 flex-1 flex-col items-start">
-            {/* md+: referencia · iconos. Mobile: solo referencia */}
+            {/* Fila superior: Referencia separada por puntos con los iconos de Etapa y Estado */}
             <div className="flex min-w-0 max-w-full items-center gap-1.5">
-              <p className="max-w-full truncate text-sm font-semibold leading-none text-foreground">
+              <span className="max-w-full truncate text-sm font-semibold leading-none text-foreground">
                 {task.reference}
-              </p>
-              <span className="hidden shrink-0 self-center text-muted-foreground/80 md:inline">
-                ·
               </span>
-              <span
-                className="hidden size-5 shrink-0 items-center justify-center self-center md:inline-flex"
-                title={stage.label}
-              >
+
+              <span className="shrink-0 text-muted-foreground/85">·</span>
+
+              <span className="inline-flex shrink-0 items-center" title={stage.label}>
                 <EntityIconBadge
                   icon={stage.icon}
                   color={stageInk}
-                  size={16}
+                  size={14}
                 />
               </span>
-              <span className="hidden shrink-0 self-center text-muted-foreground/80 md:inline">
-                ·
-              </span>
-              <span
-                className="hidden size-5 shrink-0 items-center justify-center self-center md:inline-flex"
-                title={status.label}
-              >
+
+              <span className="shrink-0 text-muted-foreground/85">·</span>
+
+              <span className="inline-flex shrink-0 items-center" title={status.label}>
                 <EntityIconBadge
                   icon={status.icon}
                   color={statusInk}
-                  size={16}
+                  size={14}
                 />
               </span>
             </div>
 
-            {/* Mobile: cliente · iconos · prioridad | md+: cliente · prioridad */}
+            {/* Fila inferior colapsada: Cliente y Prioridad */}
             <div
               className={cn(
-                "mt-0.5 flex min-w-0 max-w-full items-center gap-1.5 text-xs",
+                "mt-1 flex min-w-0 items-center gap-1.5 text-xs",
                 expanded && "hidden",
               )}
             >
-              <span className="inline-flex shrink-0 items-center gap-1">
+              <span className="inline-flex min-w-0 shrink items-center gap-1.5 text-muted-foreground">
                 <EntityIconBadge
-                  icon={task.project?.client?.icon}
+                  icon={task.project.client.icon ?? "client"}
                   color={task.project.client.color}
                   size={12}
                 />
-              </span>
-              <span className="min-w-0 truncate text-muted-foreground">
-                {task.project.client.name}
+                <span className="truncate">{task.project.client.name}</span>
               </span>
 
-              <span className="shrink-0 text-muted-foreground/80 md:hidden">
-                ·
-              </span>
-              <span className="inline-flex shrink-0 items-center gap-1 md:hidden">
-                <EntityIconBadge
-                  icon={stage.icon}
-                  color={stageInk}
-                  size={12}
-                />
-              </span>
-              <span className="shrink-0 text-muted-foreground/80 md:hidden">
-                ·
-              </span>
-              <span className="inline-flex shrink-0 items-center gap-1 md:hidden">
-                <EntityIconBadge
-                  icon={status.icon}
-                  color={statusInk}
-                  size={12}
-                />
-              </span>
+              <span className="shrink-0 text-muted-foreground/85">·</span>
 
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span className="flex min-w-0 items-center gap-1">
-                <span className="inline-flex shrink-0 items-center gap-1">
-                  {task.priority.icon ? (
+              <span className="flex min-w-0 items-center gap-1.5">
+                {task.priority.icon && (
+                  <span className="inline-flex items-center">
                     <EntityIconBadge
                       icon={task.priority.icon}
                       color={priorityInk}
                       size={12}
                     />
-                  ) : null}
-                </span>
-                <span
-                  className="hidden min-w-0 truncate md:inline"
-                  style={{ color: priorityInk }}
-                >
-                  {task.priority.name}
-                </span>
-                <span
-                  className="min-w-0 truncate md:hidden"
-                  style={{ color: priorityInk }}
-                >
+                  </span>
+                )}
+                <span className="truncate font-medium" style={{ color: priorityInk }}>
                   {task.priority.name}
                 </span>
               </span>
             </div>
           </div>
 
-          {/* Mensajes */}
+          {/* Contadores */}
           {!expanded && (task.commentCount ?? 0) > 0 && (
-            <span
-              title={
-                task.commentCount === 1
-                  ? "1 mensaje"
-                  : `${task.commentCount} mensajes`
-              }
-              className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center gap-0.5 rounded-full bg-sky-500/15 px-1.5 text-[10px] font-semibold tabular-nums text-sky-700 dark:text-sky-300"
-            >
-              <MessageSquare size={10} strokeWidth={2.5} />
-              {task.commentCount}
+            <span className="flex shrink-0 items-center gap-1">
+              <span
+                title={
+                  task.commentCount === 1
+                    ? "1 mensaje"
+                    : `${task.commentCount} mensajes`
+                }
+                className="inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-full bg-sky-500/15 px-1.5 text-[10px] font-semibold tabular-nums text-sky-700 dark:text-sky-300"
+              >
+                <MessageSquare size={10} strokeWidth={2.5} />
+                {task.commentCount}
+              </span>
             </span>
           )}
 
+          {/* Fecha */}
           <span className="hidden shrink-0 text-xs tabular-nums text-muted-foreground @[40rem]/trow:inline">
             {formatDate(task.deliveryDate)}
           </span>
         </div>
 
+        {/* Ojo de activos y auditoría en modo compacto */}
         {!expanded && (
           <div
             className="flex shrink-0 items-center gap-1 pr-0.5"
@@ -382,7 +344,7 @@ function TaskMobileCardReady({
           <ChevronDown
             size={16}
             className={cn(
-              "text-muted-foreground",
+              "text-muted-foreground transition-transform duration-200",
               expanded && "rotate-180",
             )}
           />
@@ -393,155 +355,52 @@ function TaskMobileCardReady({
         open={expanded}
         className="space-y-3 px-3 pb-3 pt-3"
       >
+        {/* Barra desplegable de Etapa y Estado */}
         <button
           type="button"
           onClick={() => setShowFields(v => !v)}
-          className="flex w-full items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2.5 transition hover:bg-foreground/5"
+          className="flex w-full items-center justify-between rounded-lg bg-foreground/5 px-3 py-2.5 transition hover:bg-foreground/5"
         >
-          {showFields ? (
-            <span className="min-w-0 flex-1 text-left text-xs font-medium text-muted-foreground">
-              Ocultar campos
+          <div className="flex min-w-0 items-center gap-3 text-sm">
+            {/* Etapa */}
+            <span
+              className="inline-flex min-w-0 items-center gap-1.5 font-medium"
+              style={{ color: stageInk }}
+            >
+              <EntityIconBadge
+                icon={stage.icon}
+                color={stageInk}
+                size={14}
+              />
+              <span className="truncate">{stage.label}</span>
             </span>
-          ) : (
-            <>
-              {/* Mobile: mismo resumen de datos que el row móvil. */}
-              <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm md:hidden">
-                <span className="inline-flex min-w-0 shrink items-center gap-1.5 text-muted-foreground">
-                  <EntityIconBadge
-                    icon={task.project?.client?.icon}
-                    color={task.project.client.color}
-                    size={12}
-                  />
-                  <span className="truncate">
-                    {task.project.client.name}
-                  </span>
-                </span>
 
-                <span className="shrink-0 text-muted-foreground/80">·</span>
+            <span className="shrink-0 text-muted-foreground/50">·</span>
 
-                <span
-                  className="inline-flex shrink-0 items-center"
-                  title={stage.label}
-                >
-                  <EntityIconBadge
-                    icon={stage.icon}
-                    color={stageInk}
-                    size={12}
-                  />
-                </span>
+            {/* Estado */}
+            <span
+              className="inline-flex min-w-0 items-center gap-1.5 font-medium"
+              style={{ color: statusInk }}
+            >
+              <EntityIconBadge
+                icon={status.icon}
+                color={statusInk}
+                size={14}
+              />
+              <span className="truncate">{status.label}</span>
+            </span>
+          </div>
 
-                <span className="shrink-0 text-muted-foreground/80">·</span>
-
-                <span
-                  className="inline-flex shrink-0 items-center"
-                  title={status.label}
-                >
-                  <EntityIconBadge
-                    icon={status.icon}
-                    color={statusInk}
-                    size={12}
-                  />
-                </span>
-
-                <span className="shrink-0 text-muted-foreground/80">·</span>
-
-                <span
-                  className="inline-flex min-w-0 items-center gap-1"
-                  style={{ color: priorityInk }}
-                  title={task.priority.name}
-                >
-                  {task.priority.icon ? (
-                    <EntityIconBadge
-                      icon={task.priority.icon}
-                      color={priorityInk}
-                      size={12}
-                    />
-                  ) : null}
-                  <span className="truncate">
-                    {task.priority.name}
-                  </span>
-                </span>
-              </span>
-
-              {/* Tablet/Desktop: cada dato se representa con su icono y conserva su color de dominio */}
-              <span className="hidden min-w-0 flex-1 items-center gap-3 text-sm md:flex">
-                <span
-                  className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground"
-                  title={task.project.client.name}
-                >
-                  <EntityIconBadge
-                    icon={task.project?.client?.icon}
-                    color={task.project.client.color}
-                    size={14}
-                  />
-                  <span className="truncate">{task.project.client.name}</span>
-                </span>
-
-                <span className="shrink-0 text-muted-foreground/50">·</span>
-
-                <span
-                  className="inline-flex min-w-0 items-center gap-1.5"
-                  title={stage.label}
-                  style={{ color: stageInk }}
-                >
-                  <EntityIconBadge
-                    icon={stage.icon}
-                    color={stageInk}
-                    size={14}
-                  />
-                  <span className="truncate">{stage.label}</span>
-                </span>
-
-                <span className="shrink-0 text-muted-foreground/50">·</span>
-
-                <span
-                  className="inline-flex min-w-0 items-center gap-1.5"
-                  title={status.label}
-                  style={{ color: statusInk }}
-                >
-                  <EntityIconBadge
-                    icon={status.icon}
-                    color={statusInk}
-                    size={14}
-                  />
-                  <span className="truncate">{status.label}</span>
-                </span>
-
-                <span className="shrink-0 text-muted-foreground/50">·</span>
-
-                <span
-                  className="inline-flex min-w-0 items-center gap-1.5"
-                  title={task.priority.name}
-                  style={{ color: priorityInk }}
-                >
-                  {task.priority.icon ? (
-                    <EntityIconBadge
-                      icon={task.priority.icon}
-                      color={priorityInk}
-                      size={14}
-                    />
-                  ) : (
-                    <span
-                      className="text-[11px] font-semibold"
-                      style={{ color: priorityInk }}
-                    >
-                      {task.priority.name.charAt(0)}
-                    </span>
-                  )}
-                  <span className="truncate">{task.priority.name}</span>
-                </span>
-              </span>
-            </>
-          )}
           <ChevronDown
             size={14}
             className={cn(
-              "shrink-0 text-muted-foreground",
+              "shrink-0 text-muted-foreground transition-transform duration-200",
               showFields && "rotate-180",
             )}
           />
         </button>
 
+        {/* Contenido colapsable interno */}
         <CollapsibleHeightSection
           open={showFields}
           className="flex flex-col gap-2"

@@ -1,12 +1,11 @@
 "use client"
 
 import { useDomainInk } from "@/shared/utils/use-badge-colors"
-
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
-import { ChevronDown, MessageSquare, UserRound } from "lucide-react"
+import { ChevronDown, MessageSquare, UserRound, UserX } from "lucide-react"
 
 import { CollapsibleHeightSection } from "@/shared/ui/collapsible-height-section"
 import { cn } from "@/shared/utils/utils"
@@ -71,7 +70,6 @@ type Props =
       onToggle: () => void
     }
 
-/** Loading = mismo shell que la fila real (estilo bitácora). */
 export function ProjectMobileCard(props: Props) {
   if (props.loading) {
     const opacity = props.opacity ?? 1
@@ -81,13 +79,12 @@ export function ProjectMobileCard(props: Props) {
           <div className="flex min-w-0 flex-1 animate-pulse items-center gap-2.5 py-3 pr-2">
             <span className="inline-flex h-7 min-w-[2.75rem] shrink-0 items-center justify-center rounded-md bg-foreground/10 px-2" />
             <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
-              <span className="h-4 w-[45%] max-w-[12rem] rounded bg-foreground/10" />
+              <span className="h-4 w-[40%] max-w-[11rem] rounded bg-foreground/10" />
               <span className="flex items-center gap-1.5">
                 <span className="size-1.5 rounded-full bg-foreground/15" />
-                <span className="h-3 w-16 rounded bg-foreground/5" />
+                <span className="h-3 w-20 rounded bg-foreground/5" />
               </span>
             </div>
-            <span className="hidden h-3 w-10 shrink-0 rounded bg-foreground/5 md:block" />
           </div>
         </div>
       </div>
@@ -136,9 +133,8 @@ function ProjectMobileCardReady({
   }
 
   const isCompleted = isProjectCompleted(project)
-  // Historial: siempre opaco. Activos: se opacitan si otro activo está expandido.
   const isDimmed = isCompleted || (dimOthers && !expanded)
-  // Móvil expandido: acciones en el row; burbuja de conteo cede el sitio
+  
   const stageInk = useDomainInk(project.stage.color)
   const statusInk = useDomainInk(project.status.color)
   const pmInk = useDomainInk(project.pm.color)
@@ -148,13 +144,19 @@ function ProjectMobileCardReady({
       <div className="flex items-center gap-1 px-1">
         <DragCell hidden={!isManualMode} />
 
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           onClick={handleRowToggle}
+          onKeyDown={e => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault()
+              handleRowToggle()
+            }
+          }}
           className={cn(
-            "flex min-w-0 flex-1 items-center gap-2.5 py-3 pr-2 text-left",
-            // Sin drag: misma holgura izquierda que process (pl-2)
-            !isManualMode && "pl-2",
+            "flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 text-left",
+            !isManualMode && "pl-3",
           )}
         >
           <ProjectCodeChip
@@ -162,86 +164,64 @@ function ProjectMobileCardReady({
             color={project.client.color}
           />
 
-          <div className="min-w-0 flex-1">
-            {/* md+: Nombre · solo iconos etapa/estado (16px, centrados). Mobile: solo nombre */}
-            <div className="flex min-w-0 items-center gap-1.5">
-              <p className="truncate text-sm font-semibold leading-none text-foreground">
+          <div className="flex min-w-0 flex-1 flex-col items-start">
+            {/* Fila superior: Nombre separado por puntos con los iconos de Etapa y Estado */}
+            <div className="flex min-w-0 max-w-full items-center gap-1.5">
+              <span className="max-w-full truncate text-sm font-semibold leading-none text-foreground">
                 {project.name}
-              </p>
-              <span className="hidden shrink-0 self-center text-muted-foreground/80 md:inline">·</span>
-              <span
-                className="hidden size-5 shrink-0 items-center justify-center self-center md:inline-flex"
-                title={project.stage.name}
-              >
+              </span>
+
+              <span className="shrink-0 text-muted-foreground/85">·</span>
+
+              <span className="inline-flex shrink-0 items-center" title={project.stage.name}>
                 <EntityIconBadge
                   icon={project.stage.icon}
-                  color={project.stage.color}
-                  size={16}
+                  color={stageInk}
+                  size={14}
                 />
               </span>
-              <span className="hidden shrink-0 self-center text-muted-foreground/80 md:inline">·</span>
-              <span
-                className="hidden size-5 shrink-0 items-center justify-center self-center md:inline-flex"
-                title={project.status.name}
-              >
+
+              <span className="shrink-0 text-muted-foreground/85">·</span>
+
+              <span className="inline-flex shrink-0 items-center" title={project.status.name}>
                 <EntityIconBadge
                   icon={project.status.icon}
-                  color={project.status.color}
-                  size={16}
+                  color={statusInk}
+                  size={14}
                 />
               </span>
             </div>
 
-            {/* Mobile: cliente · iconos etapa/estado · PM | md+: cliente · PM */}
+            {/* Fila inferior colapsada: Cliente y PM */}
             <div
               className={cn(
-                "mt-0.5 flex min-w-0 items-center gap-1.5 text-xs",
+                "mt-1 flex min-w-0 items-center gap-1.5 text-xs",
                 expanded && "hidden",
               )}
             >
               <span className="inline-flex min-w-0 shrink items-center gap-1.5 text-muted-foreground">
                 <EntityIconBadge
-                  icon={project.client.icon}
+                  icon={project.client.icon ?? "client"}
                   color={project.client.color}
                   size={12}
                 />
                 <span className="truncate">{project.client.name}</span>
               </span>
 
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span className="inline-flex shrink-0 items-center gap-1 md:hidden">
-                <EntityIconBadge
-                  icon={project.stage.icon}
-                  color={project.stage.color}
-                  size={12}
-                />
-              </span>
-              <span className="shrink-0 text-muted-foreground/80 md:hidden">·</span>
-              <span className="inline-flex shrink-0 items-center gap-1 md:hidden">
-                <EntityIconBadge
-                  icon={project.status.icon}
-                  color={project.status.color}
-                  size={12}
-                />
-              </span>
+              <span className="shrink-0 text-muted-foreground/85">·</span>
 
-              <span
-                className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:inline-flex"
-                title={project.pm.name}
-              >
-                <UserRound size={12} strokeWidth={2.25} className="shrink-0" style={{ color: pmInk }} />
-                <span className="truncate">{project.pm.name}</span>
-              </span>
-
-              <span className="shrink-0 text-muted-foreground/85 md:hidden">·</span>
-              <span className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground md:hidden">
-                <UserRound size={12} strokeWidth={2.25} className="shrink-0" style={{ color: pmInk }} />
-                <span className="truncate">{project.pm.name}</span>
+              <span className="flex min-w-0 items-center gap-1.5">
+                <span className="inline-flex items-center">
+                  <UserRound size={12} strokeWidth={2.25} className="shrink-0" style={{ color: pmInk }} />
+                </span>
+                <span className="truncate font-medium" style={{ color: pmInk }}>
+                  {project.pm.name}
+                </span>
               </span>
             </div>
           </div>
 
-          {/* Solo si hay cantidad — cero no se muestra (menos ruido visual) */}
+          {/* Contadores si existen */}
           {!expanded &&
             ((project.taskCount ?? 0) > 0 ||
               (project.commentCount ?? 0) > 0) && (
@@ -274,12 +254,13 @@ function ProjectMobileCardReady({
             </span>
           )}
 
+          {/* Fecha */}
           <span className="hidden shrink-0 text-xs tabular-nums text-muted-foreground @[40rem]/prow:inline">
             {formatDate(project.deliveryDate)}
           </span>
-        </button>
+        </div>
 
-        {/* Auditoría + ojo: solo colapsado; al expandir van al panel / row móvil */}
+        {/* Ojo de activos y auditoría en modo compacto */}
         {!expanded && (
           <div
             className="flex shrink-0 items-center gap-1 pr-0.5"
@@ -307,7 +288,7 @@ function ProjectMobileCardReady({
           <ChevronDown
             size={16}
             className={cn(
-              "text-muted-foreground",
+              "text-muted-foreground transition-transform duration-200",
               expanded && "rotate-180",
             )}
           />
@@ -315,145 +296,57 @@ function ProjectMobileCardReady({
       </div>
 
       <CollapsibleHeightSection open={expanded} className="space-y-3 px-3 pb-3 pt-3">
+        {/* Barra desplegable de Etapa y Estado */}
         <button
           type="button"
           onClick={() => setShowFields(v => !v)}
-          className="flex w-full items-center gap-2 rounded-lg bg-foreground/5 px-3 py-2.5 transition hover:bg-foreground/5"
+          className="flex w-full items-center justify-between rounded-lg bg-foreground/5 px-3 py-2.5 transition hover:bg-foreground/5"
         >
-          {showFields ? (
-            <span className="min-w-0 flex-1 text-left text-xs font-medium text-muted-foreground">
-              Ocultar campos
+          <div className="flex min-w-0 items-center gap-3 text-sm">
+            {/* Etapa */}
+            <span
+              className="inline-flex min-w-0 items-center gap-1.5 font-medium"
+              style={{ color: stageInk }}
+            >
+              <EntityIconBadge
+                icon={project.stage.icon}
+                color={stageInk}
+                size={14}
+              />
+              <span className="truncate">{project.stage.name}</span>
             </span>
-          ) : (
-            <>
-              {/* Mobile: mismo resumen de datos que el row móvil. */}
-              <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm md:hidden">
-                <span
-                  className="inline-flex min-w-0 shrink items-center gap-1.5 text-muted-foreground"
-                  title={project.client.name}
-                >
-                  <EntityIconBadge
-                    icon={project.client.icon}
-                    color={project.client.color}
-                    size={12}
-                  />
-                  <span className="truncate">{project.client.name}</span>
-                </span>
 
-                <span className="shrink-0 text-muted-foreground/80">·</span>
+            <span className="shrink-0 text-muted-foreground/50">·</span>
 
-                <span
-                  className="inline-flex shrink-0 items-center"
-                  title={project.stage.name}
-                >
-                  <EntityIconBadge
-                    icon={project.stage.icon}
-                    color={project.stage.color}
-                    size={12}
-                  />
-                </span>
+            {/* Estado */}
+            <span
+              className="inline-flex min-w-0 items-center gap-1.5 font-medium"
+              style={{ color: statusInk }}
+            >
+              <EntityIconBadge
+                icon={project.status.icon}
+                color={statusInk}
+                size={14}
+              />
+              <span className="truncate">{project.status.name}</span>
+            </span>
+          </div>
 
-                <span className="shrink-0 text-muted-foreground/80">·</span>
-
-                <span
-                  className="inline-flex shrink-0 items-center"
-                  title={project.status.name}
-                >
-                  <EntityIconBadge
-                    icon={project.status.icon}
-                    color={project.status.color}
-                    size={12}
-                  />
-                </span>
-
-                <span className="shrink-0 text-muted-foreground/80">·</span>
-
-                <span
-                  className="inline-flex min-w-0 items-center gap-1.5"
-                  title={project.pm.name}
-                >
-                  <UserRound
-                    size={12}
-                    strokeWidth={2.25}
-                    className="shrink-0"
-                    style={{ color: pmInk }}
-                  />
-                  <span className="truncate" style={{ color: pmInk }}>
-                    {project.pm.name}
-                  </span>
-                </span>
-              </span>
-
-              {/* Tablet/Desktop: cada dato se representa con su icono y conserva su color de dominio. */}
-              <span className="hidden min-w-0 flex-1 items-center gap-3 text-sm md:flex">
-                <span
-                  className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground"
-                  title={project.client.name}
-                >
-                  <EntityIconBadge
-                    icon={project.client.icon}
-                    color={project.client.color}
-                    size={14}
-                  />
-                  <span className="truncate">{project.client.name}</span>
-                </span>
-
-                <span className="shrink-0 text-muted-foreground/50">·</span>
-
-                <span
-                  className="inline-flex min-w-0 items-center gap-1.5"
-                  title={project.stage.name}
-                  style={{ color: stageInk }}
-                >
-                  <EntityIconBadge
-                    icon={project.stage.icon}
-                    color={stageInk}
-                    size={14}
-                  />
-                  <span className="truncate">{project.stage.name}</span>
-                </span>
-
-                <span className="shrink-0 text-muted-foreground/50">·</span>
-
-                <span
-                  className="inline-flex min-w-0 items-center gap-1.5"
-                  title={project.status.name}
-                  style={{ color: statusInk }}
-                >
-                  <EntityIconBadge
-                    icon={project.status.icon}
-                    color={statusInk}
-                    size={14}
-                  />
-                  <span className="truncate">{project.status.name}</span>
-                </span>
-
-                <span className="shrink-0 text-muted-foreground/50">·</span>
-
-                <span
-                  className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground"
-                  title={project.pm.name}
-                >
-                  <UserRound size={14} strokeWidth={2.25} className="shrink-0" style={{ color: pmInk }} />
-                  <span className="truncate">{project.pm.name}</span>
-                </span>
-              </span>
-            </>
-          )}
           <ChevronDown
             size={14}
             className={cn(
-              "shrink-0 text-muted-foreground",
+              "shrink-0 text-muted-foreground transition-transform duration-200",
               showFields && "rotate-180",
             )}
           />
         </button>
 
+        {/* Contenido colapsable interno */}
         <CollapsibleHeightSection open={showFields} className="flex flex-col gap-2">
           <ProjectClientCell project={project} triggerVariant="row" rowLabel="Cliente" />
-            <ProjectStageCell project={project} triggerVariant="row" rowLabel="Etapa" />
-            <ProjectStatusCell project={project} triggerVariant="row" rowLabel="Estado" />
-            <ProjectPmCell project={project} triggerVariant="row" rowLabel="PM" />
+          <ProjectStageCell project={project} triggerVariant="row" rowLabel="Etapa" />
+          <ProjectStatusCell project={project} triggerVariant="row" rowLabel="Estado" />
+          <ProjectPmCell project={project} triggerVariant="row" rowLabel="PM" />
         </CollapsibleHeightSection>
 
         <ProjectExpandedRow project={project} tasks={tasks} />

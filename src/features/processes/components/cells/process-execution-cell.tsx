@@ -1,4 +1,4 @@
-"use client"
+
 
 import { Check, ChevronDown, Factory, Truck } from "lucide-react"
 import { useState } from "react"
@@ -74,8 +74,8 @@ export function ProcessExecutionCell({
         },
         {
           execution: value,
-          operatorId: null,
           operator: null,
+          operatorId: null,
           coOperatorIds: [],
         },
       )
@@ -127,7 +127,7 @@ export function ProcessExecutionCell({
             >
               <OptionIcon size={15} className="shrink-0 text-muted-foreground" />
               <span className="min-w-0 flex-1">
-                <span className="block text-xs font-semibold">{option.label}</span>
+                <span className="block text-sm font-semibold">{option.label}</span>
                 <span className="block text-[10px] text-muted-foreground">
                   {option.description}
                 </span>

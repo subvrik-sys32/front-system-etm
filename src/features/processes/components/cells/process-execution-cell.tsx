@@ -92,22 +92,23 @@ export function ProcessExecutionCell({
           variant="ghost"
           disabled={!editable}
           className={cn(
-            "h-auto justify-between gap-2 rounded-lg px-2.5 py-2 text-left",
-            triggerVariant === "row" ? "w-full" : "min-w-[150px]",
+            "flex h-[40px] w-full min-w-0 items-center justify-between gap-2 rounded-lg bg-foreground/5 px-3 py-2.5 text-left transition hover:bg-foreground/5 disabled:cursor-not-allowed disabled:opacity-50",
+            triggerVariant === "badge" && "min-w-[150px]",
           )}
         >
-          <span className="flex min-w-0 items-center gap-2">
-            <Icon size={15} className="shrink-0 text-muted-foreground" />
-            <span className="flex min-w-0 flex-col">
-              <span className="text-xs font-semibold">{selected.label}</span>
-              {triggerVariant === "badge" && (
-                <span className="text-[10px] text-muted-foreground">
-                  {selected.description}
-                </span>
+          <span className="flex min-w-0 items-center gap-1.5">
+            <ChevronDown
+              size={14}
+              className={cn(
+                "shrink-0 text-muted-foreground transition-transform duration-200",
+                open && "rotate-180",
               )}
+            />
+            <Icon size={14} className="shrink-0 text-muted-foreground" />
+            <span className="truncate text-sm font-semibold">
+              {selected.label}
             </span>
           </span>
-          <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-64 p-1.5">

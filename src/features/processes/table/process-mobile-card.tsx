@@ -199,7 +199,7 @@ function ProcessMobileCardReady({
               >
                 <EntityIconBadge
                   icon={priority.icon}
-                  color={priority.color}
+                  color={priorityInk}
                   size={16}
                 />
               </span>
@@ -210,7 +210,7 @@ function ProcessMobileCardReady({
               >
                 <EntityIconBadge
                   icon={statusLabel.icon}
-                  color={statusLabel.color}
+                  color={statusInk}
                   size={16}
                 />
               </span>

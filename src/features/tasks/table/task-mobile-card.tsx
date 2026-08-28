@@ -231,7 +231,7 @@ function TaskMobileCardReady({
           </span>
 
           <div className="flex min-w-0 flex-1 flex-col items-start">
-            {/* md+: referencia · solo iconos (16px). Mobile: solo referencia */}
+            {/* md+: referencia · iconos. Mobile: solo referencia */}
             <div className="flex min-w-0 max-w-full items-center gap-1.5">
               <p className="max-w-full truncate text-sm font-semibold leading-none text-foreground">
                 {task.reference}
@@ -245,7 +245,7 @@ function TaskMobileCardReady({
               >
                 <EntityIconBadge
                   icon={stage.icon}
-                  color={stage.color}
+                  color={stageInk}
                   size={16}
                 />
               </span>
@@ -258,13 +258,13 @@ function TaskMobileCardReady({
               >
                 <EntityIconBadge
                   icon={status.icon}
-                  color={status.color}
+                  color={statusInk}
                   size={16}
                 />
               </span>
             </div>
 
-            {/* Mobile: cliente (con EntityIconBadge) · iconos · prioridad (con icono de urgente/prioridad) | md+: cliente · prioridad */}
+            {/* Mobile: cliente · iconos · prioridad | md+: cliente · prioridad */}
             <div
               className={cn(
                 "mt-0.5 flex min-w-0 max-w-full items-center gap-1.5 text-xs",
@@ -288,7 +288,7 @@ function TaskMobileCardReady({
               <span className="inline-flex shrink-0 items-center gap-1 md:hidden">
                 <EntityIconBadge
                   icon={stage.icon}
-                  color={stage.color}
+                  color={stageInk}
                   size={12}
                 />
               </span>
@@ -298,7 +298,7 @@ function TaskMobileCardReady({
               <span className="inline-flex shrink-0 items-center gap-1 md:hidden">
                 <EntityIconBadge
                   icon={status.icon}
-                  color={status.color}
+                  color={statusInk}
                   size={12}
                 />
               </span>
@@ -309,17 +309,10 @@ function TaskMobileCardReady({
                   {task.priority.icon ? (
                     <EntityIconBadge
                       icon={task.priority.icon}
-                      color={task.priority.color ?? "#a3a3a3"}
+                      color={priorityInk}
                       size={12}
                     />
-                  ) : (
-                    <span
-                      className="text-[10px] font-semibold"
-                      style={{ color: priorityInk }}
-                    >
-                      {task.priority.name.charAt(0)}
-                    </span>
-                  )}
+                  ) : null}
                 </span>
                 <span
                   className="hidden min-w-0 truncate md:inline"
@@ -424,25 +417,42 @@ function TaskMobileCardReady({
                   {task.project.client.name}
                 </span>
                 <span className="shrink-0 text-muted-foreground/80">·</span>
-                <span className="min-w-0 truncate" style={{ color: stageInk }}>
-                  {stage.label}
+                <span
+                  className="inline-flex min-w-0 items-center gap-1"
+                  style={{ color: stageInk }}
+                >
+                  <EntityIconBadge
+                    icon={stage.icon}
+                    color={stageInk}
+                    size={12}
+                  />
+                  <span className="truncate">{stage.label}</span>
                 </span>
                 <span className="shrink-0 text-muted-foreground/80">·</span>
-                <span className="min-w-0 truncate" style={{ color: statusInk }}>
-                  {status.label}
+                <span
+                  className="inline-flex min-w-0 items-center gap-1"
+                  style={{ color: statusInk }}
+                >
+                  <EntityIconBadge
+                    icon={status.icon}
+                    color={statusInk}
+                    size={12}
+                  />
+                  <span className="truncate">{status.label}</span>
                 </span>
                 <span className="shrink-0 text-muted-foreground/80">·</span>
-                <span className="inline-flex shrink-0 items-center gap-1">
+                <span
+                  className="inline-flex min-w-0 items-center gap-1"
+                  style={{ color: priorityInk }}
+                >
                   {task.priority.icon ? (
                     <EntityIconBadge
                       icon={task.priority.icon}
-                      color={task.priority.color ?? "#a3a3a3"}
+                      color={priorityInk}
                       size={12}
                     />
                   ) : null}
-                  <span className="min-w-0 truncate" style={{ color: priorityInk }}>
-                    {task.priority.name}
-                  </span>
+                  <span className="truncate">{task.priority.name}</span>
                 </span>
               </span>
 

@@ -84,8 +84,9 @@ export function TaskExpandedRow({
   useEffect(() => {
     if (!isTarget || !arrived) return
     if (tabParam === "comments") {
-      setActiveView("comments")
+      // Mensajes = dialog únicamente; no dejar activeView en "comments"
       setCommentsDialogOpen(true)
+      setActiveView("workflow")
       useDeepLinkRoute.getState().finish()
       return
     }
@@ -96,9 +97,7 @@ export function TaskExpandedRow({
 
   useEffect(() => {
 
-    const isViewingComments =
-      (!isMobile && activeView === "comments") ||
-      (isMobile && commentsDialogOpen)
+    const isViewingComments = commentsDialogOpen
 
     if (isViewingComments) {
       setActiveTarget({ scope: "task", taskId: task.id })
@@ -183,7 +182,10 @@ export function TaskExpandedRow({
       <CommentHistoryDialog
         target={{ scope: "task", taskId: task.id }}
         open={commentsDialogOpen}
-        onOpenChange={setCommentsDialogOpen}
+        onOpenChange={open => {
+          setCommentsDialogOpen(open)
+          if (!open) setActiveView("workflow")
+        }}
         readOnly={isWorkflowCompleted(task.workflowSteps)}
       />
     </EntityExpandedRow>

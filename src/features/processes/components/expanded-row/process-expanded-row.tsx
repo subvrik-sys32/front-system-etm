@@ -327,7 +327,10 @@ export function ProcessExpandedRow({
         <CommentHistoryDialog
           target={{ scope: "workflowStep", workflowStepId }}
           open={commentsDialogOpen}
-          onOpenChange={setCommentsDialogOpen}
+          onOpenChange={open => {
+            setCommentsDialogOpen(open)
+            if (!open) setActiveView("kpis")
+          }}
           readOnly={processTask.workflowStep?.status === "REVIEWED"}
         />
       ) : null}

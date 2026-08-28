@@ -118,21 +118,19 @@ export function ProjectExpandedRow({
   useEffect(() => {
     if (!isTarget || !arrived) return
     if (tabParam === "comments") {
-      setActiveView("comments")
       setCommentsDialogOpen(true)
+      setActiveView("workflow")
       useDeepLinkRoute.getState().finish()
       return
     }
-    setActiveView("tasks")
+    setActiveView("workflow")
   }, [isTarget, arrived, tabParam])
 
   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
 
   useEffect(() => {
 
-    const isViewingComments =
-      (!isMobile && activeView === "comments") ||
-      (isMobile && commentsDialogOpen)
+    const isViewingComments = commentsDialogOpen
 
     if (isViewingComments) {
       setActiveTarget({ scope: "project", projectId: project.id })
@@ -380,7 +378,10 @@ export function ProjectExpandedRow({
       <CommentHistoryDialog
         target={{ scope: "project", projectId: project.id }}
         open={commentsDialogOpen}
-        onOpenChange={setCommentsDialogOpen}
+        onOpenChange={open => {
+          setCommentsDialogOpen(open)
+          if (!open) setActiveView("workflow")
+        }}
         readOnly={isProjectCompleted(project)}
       />
     </EntityExpandedRow>

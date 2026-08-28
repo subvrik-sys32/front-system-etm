@@ -21,6 +21,7 @@ import type { ProcessTask } from "../types/process.types"
 import { processAccess } from "../access/process-access"
 
 import { ProcessOperatorCell } from "../components/cells/process-operator-cell"
+import { ProcessExecutionCell } from "../components/cells/process-execution-cell"
 import { ProcessRowActions } from "../components/actions/process-row-actions"
 import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { EntityAuditInfo } from "@/shared/ui/entity-audit-info/entity-audit-info"
@@ -389,6 +390,7 @@ function ProcessMobileCardReady({
         </button>
 
         <CollapsibleHeightSection open={showFields} className="flex flex-col gap-2">
+          <ProcessExecutionCell processTask={processTask} />
           <ProcessOperatorCell
               processTask={processTask}
               triggerVariant="row"

@@ -11,12 +11,14 @@ import { useWorkflowStepField } from "@/features/workflow/hooks/use-workflow-ste
 import { workflowAccess } from "@/features/workflow/access/workflow-access"
 import type { ProcessTask } from "../../types/process.types"
 import type { User } from "@/features/users/types/user.types"
+import type { StepExecution } from "@/features/workflow/types/workflow.types"
 
 type Props = {
   processTask: ProcessTask
   onSavingChange?: (saving: boolean) => void
   triggerVariant?: "badge" | "row"
   rowLabel?: string
+  execution?: StepExecution
 }
 
 const NON_EDITABLE_STATUSES = ["COMPLETED", "REVIEWED"] as const
@@ -58,6 +60,7 @@ export function ProcessOperatorCell({
   onSavingChange,
   triggerVariant,
   rowLabel,
+  execution = processTask.workflowStep?.execution ?? "IN_HOUSE",
 }: Props) {
   const updateField = useWorkflowStepField()
 
@@ -67,22 +70,11 @@ export function ProcessOperatorCell({
     status as (typeof NON_EDITABLE_STATUSES)[number],
   )
   const currentProcessCode = workflowAccess.processCode(processTask)
-  const areaOperators = useAreaOperators(currentProcessCode ?? null)
-  const execution = processTask.workflowStep?.execution ?? "IN_HOUSE"
+  const areaOperators = useAreaOperators(currentProcessCode ?? null, execution)
 
-  // La ejecución define qué clase de recurso puede quedar asignado:
-  // planta → OPERARIO; tercero → TERCERO. Supervisor nunca entra como
-  // operador de piso aunque pertenezca al área.
   const operators = useMemo(
-    () =>
-      areaOperators
-        .filter(({ user }) =>
-          execution === "OUTSOURCED"
-            ? user.level === "TERCERO"
-            : user.level === "OPERARIO",
-        )
-        .map(({ user }) => user),
-    [areaOperators, execution],
+    () => areaOperators.map(({ user }) => user),
+    [areaOperators],
   )
 
   const byId = useMemo(() => {
@@ -118,7 +110,6 @@ export function ProcessOperatorCell({
       { description?: string; descriptionColor?: string }
     >()
     for (const { user, availability } of areaOperators) {
-      if (!operators.some(operator => operator.id === user.id)) continue
       if (selectedIds.has(user.id)) {
         const isPrimary = selectedValues[0]?.id === user.id
         // Seleccionado en este step: no mostrar "Libre"

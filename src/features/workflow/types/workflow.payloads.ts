@@ -1,5 +1,3 @@
-import type { StepExecution } from "./workflow.types"
-
 export type WorkflowActionPayload = {
   piecesOutput?: number | null
   plRtReal?: number | null
@@ -7,9 +5,9 @@ export type WorkflowActionPayload = {
 }
 
 export type WorkflowUpdatePayload = {
+  execution?: "IN_HOUSE" | "OUTSOURCED"
   operatorId?: string | null
   coOperatorIds?: string[]
-  execution?: StepExecution
   piecesOutput?: number | null
   plRtReal?: number | null
   paintKgReal?: number | null

@@ -140,34 +140,22 @@ export function TaskWorkflowOverlay({
           ))}
 
         {state.displayVariant === "start" && (
-          <div className="flex flex-col gap-2 rounded-lg bg-foreground/5 p-2">
-            <div className="flex items-center justify-center">
-              <ProcessExecutionCell
-                processTask={processTask}
-                onSavingChange={actions.setOperatorSaving}
-              />
-            </div>
-            <div className="flex items-center justify-center px-1">
-              <ProcessOperatorCell
-                processTask={processTask}
-                onSavingChange={actions.setOperatorSaving}
-              />
-            </div>
+          <div className="flex flex-col gap-2 rounded-lg bg-foreground/5 px-3 py-2">
+            <ProcessExecutionCell processTask={processTask} />
+            <ProcessOperatorCell
+              processTask={processTask}
+              onSavingChange={actions.setOperatorSaving}
+            />
           </div>
         )}
 
         {state.changeOperator && (
           <div className="flex flex-col gap-3">
             <p className="text-center text-xs font-medium text-muted-foreground">
-              Configuración del proceso
+              Cambiar operario
             </p>
-            <div className="flex items-center justify-center">
-              <ProcessExecutionCell
-                processTask={processTask}
-                onSavingChange={actions.setOperatorSaving}
-              />
-            </div>
-            <div className="flex items-center justify-center rounded-lg bg-foreground/5 px-3 py-2">
+            <div className="flex flex-col gap-2 rounded-lg bg-foreground/5 px-3 py-2">
+              <ProcessExecutionCell processTask={processTask} />
               <ProcessOperatorCell
                 processTask={processTask}
                 onSavingChange={actions.setOperatorSaving}

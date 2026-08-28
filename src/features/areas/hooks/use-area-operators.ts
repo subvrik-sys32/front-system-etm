@@ -6,6 +6,7 @@ import { useUsersDirectory } from "@/features/users/hooks/use-users-directory"
 import { useTasks } from "@/features/tasks/hooks/use-tasks"
 
 import type { ProcessCode } from "@/features/tasks/types/task.types"
+import type { StepExecution } from "@/features/workflow/types/workflow.types"
 import type { User } from "@/features/users/types/user.types"
 import {
   PRODUCTION_OPERATOR_ROLE_CODE,
@@ -34,7 +35,10 @@ function taskLabel(task: { taskNumber: number; reference: string }) {
 // decidir. 100% derivado de datos que ya están en caché
 // (useTasks/useUsersDirectory) — no pega un endpoint nuevo para
 // esto.
-export function useAreaOperators(processCode: ProcessCode | null) {
+export function useAreaOperators(
+  processCode: ProcessCode | null,
+  execution?: StepExecution,
+) {
 
   const { users } = useUsersDirectory()
   const { tasks } = useTasks()
@@ -48,7 +52,11 @@ export function useAreaOperators(processCode: ProcessCode | null) {
     const candidates = (users as User[]).filter(
       user =>
         user.roles?.some(role => role.code === PRODUCTION_OPERATOR_ROLE_CODE) &&
-        isProductionFloorLevel(user.level) &&
+        (execution === "OUTSOURCED"
+          ? user.level === "TERCERO"
+          : execution === "IN_HOUSE"
+            ? user.level === "OPERARIO"
+            : isProductionFloorLevel(user.level)) &&
         // Antes era user.area?.processCode === processCode (1 a 1)
         // — ahora un operario puede estar en varias áreas, así que
         // basta con que UNA de ellas matchee esta.
@@ -89,6 +97,6 @@ export function useAreaOperators(processCode: ProcessCode | null) {
 
     })
 
-  }, [users, tasks, processCode])
+  }, [users, tasks, processCode, execution])
 
 }

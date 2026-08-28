@@ -347,8 +347,6 @@ export function ProcessDesktopKpiStrip({
    * =========================================================
    *
    * NO SE MODIFICA.
-   *
-   * Los otros breakpoints conservan su diseño.
    */
   function KpiBadge({
     icon: Icon,
@@ -404,8 +402,10 @@ export function ProcessDesktopKpiStrip({
 
   /**
    * =========================================================
-   * PRODUCCIÓN — DESKTOP ORIGINAL
+   * PRODUCCIÓN — DESKTOP
    * =========================================================
+   *
+   * NO SE TOCA.
    */
   const productionCol: Col | null =
     showOutput ||
@@ -464,9 +464,7 @@ export function ProcessDesktopKpiStrip({
                       }
                       fieldKey="piecesOutput"
                       onSave={async value => {
-                        if (
-                          !stepId
-                        )
+                        if (!stepId)
                           return
 
                         const piecesOutput =
@@ -518,9 +516,7 @@ export function ProcessDesktopKpiStrip({
                       }
                       fieldKey="plRtReal"
                       onSave={async value => {
-                        if (
-                          !stepId
-                        )
+                        if (!stepId)
                           return
 
                         const plRtReal =
@@ -549,10 +545,17 @@ export function ProcessDesktopKpiStrip({
 
   /**
    * =========================================================
-   * MOBILE — PRODUCCIÓN NO EDITABLE
+   * MOBILE — PRODUCCIÓN
    * =========================================================
    *
-   * IN permanece aquí.
+   * CAMBIO:
+   * Se elimina solamente "IN".
+   *
+   * Antes:
+   *   IN 50
+   *
+   * Ahora:
+   *   50
    */
   const compactProductionInfoCol: Col | null =
     inQty != null
@@ -567,18 +570,12 @@ export function ProcessDesktopKpiStrip({
                 ACCENT.produccion
               }
             >
-              <span className="inline-flex items-center gap-x-1.5 text-white">
-                <span className="text-white/60">
-                  IN
-                </span>
-
-                <span className="tabular-nums text-white">
-                  {String(
-                    inQty,
-                  ).trim() !== ""
-                    ? inQty
-                    : "—"}
-                </span>
+              <span className="tabular-nums text-white">
+                {String(
+                  inQty,
+                ).trim() !== ""
+                  ? inQty
+                  : "—"}
               </span>
             </KpiBadge>
           ),
@@ -587,10 +584,17 @@ export function ProcessDesktopKpiStrip({
 
   /**
    * =========================================================
-   * MOBILE — CARD SALIDA
+   * MOBILE — SALIDA
    * =========================================================
    *
-   * OUT conserva su propia card.
+   * CAMBIO:
+   * Se elimina solamente "OUT".
+   *
+   * Antes:
+   *   OUT [Ingresar]
+   *
+   * Ahora:
+   *   [Ingresar]
    */
   const compactOutputCol: Col | null =
     showOutput
@@ -606,48 +610,42 @@ export function ProcessDesktopKpiStrip({
                 ACCENT.salida
               }
             >
-              <span className="inline-flex items-center gap-x-1.5">
-                <span className="text-white/60">
-                  OUT
-                </span>
+              <ProcessEditableValue
+                inline
+                onDark
+                numeric
+                value={
+                  step?.piecesOutput ??
+                  null
+                }
+                disabled={
+                  locked
+                }
+                placeholder="Ingresar"
+                stepId={
+                  stepId
+                }
+                fieldKey="piecesOutput"
+                onSave={async value => {
+                  if (!stepId)
+                    return
 
-                <ProcessEditableValue
-                  inline
-                  onDark
-                  numeric
-                  value={
-                    step?.piecesOutput ??
-                    null
-                  }
-                  disabled={
-                    locked
-                  }
-                  placeholder="Ingresar"
-                  stepId={
-                    stepId
-                  }
-                  fieldKey="piecesOutput"
-                  onSave={async value => {
-                    if (!stepId)
-                      return
-
-                    const piecesOutput =
-                      toNumber(
-                        value,
-                      )
-
-                    await updateField(
-                      stepId,
-                      {
-                        piecesOutput,
-                      },
-                      {
-                        piecesOutput,
-                      },
+                  const piecesOutput =
+                    toNumber(
+                      value,
                     )
-                  }}
-                />
-              </span>
+
+                  await updateField(
+                    stepId,
+                    {
+                      piecesOutput,
+                    },
+                    {
+                      piecesOutput,
+                    },
+                  )
+                }}
+              />
             </KpiBadge>
           ),
         }
@@ -655,7 +653,7 @@ export function ProcessDesktopKpiStrip({
 
   /**
    * =========================================================
-   * MOBILE — CARD PL/RT
+   * MOBILE — PL/RT
    * =========================================================
    */
   const compactPlRtCol: Col | null =
@@ -718,16 +716,8 @@ export function ProcessDesktopKpiStrip({
 
   /**
    * =========================================================
-   * MOBILE — CARD DESTINO
+   * MOBILE — DESTINO
    * =========================================================
-   *
-   * ESTE ES EL DATO QUE NO DEBEMOS PERDER.
-   *
-   * nextProcessCode:
-   *   código del siguiente proceso.
-   *
-   * nextProcessLabel:
-   *   nombre del siguiente proceso.
    */
   const compactDestinationCol: Col | null =
     nextProcessCode &&
@@ -779,6 +769,10 @@ export function ProcessDesktopKpiStrip({
                       color:
                         definition.color,
                     }}
+                    title={
+                      nextProcessLabel ||
+                      definition.label
+                    }
                   >
                     {nextProcessLabel ||
                       definition.label}
@@ -1145,7 +1139,7 @@ export function ProcessDesktopKpiStrip({
    * DESKTOP / OTROS BREAKPOINTS
    * =========================================================
    *
-   * NO SE MODIFICA.
+   * COMPLETAMENTE INTACTO.
    */
   const allRight: Col[] = (
     isMaterialProcess
@@ -1204,15 +1198,9 @@ export function ProcessDesktopKpiStrip({
    * MOBILE — SEGUNDO BADGE
    * =========================================================
    *
-   * IMPORTANTE:
-   *
-   * Aquí conviven:
-   *
-   * 1. SALIDA
-   * 2. PL/RT
-   * 3. DESTINO
-   *
-   * Cada uno conserva su propia card.
+   * SALIDA
+   * PL/RT
+   * DESTINO
    */
   const compactInputCols: Col[] = [
     ...(compactOutputCol
@@ -1253,11 +1241,6 @@ export function ProcessDesktopKpiStrip({
       className={cn(
         "w-full min-w-0",
 
-        /*
-         * SOLO COMPACT cambia a dos niveles.
-         *
-         * Los demás breakpoints siguen igual.
-         */
         isCompact
           ? "flex flex-col gap-2"
           : "flex items-center",
@@ -1280,7 +1263,7 @@ export function ProcessDesktopKpiStrip({
         {/* -------------------------------------------------
             INFORMACIÓN IZQUIERDA
             ------------------------------------------------- */}
-        <div className="flex shrink-0 items-center gap-3 pl-4 pr-4 tablet:gap-4">
+        <div className="flex min-w-0 shrink-0 items-center gap-3 pl-4 pr-4 tablet:gap-4">
           {isMaterialProcess ? (
             <>
               <LeftCol

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
@@ -8,12 +8,24 @@ import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
 
 const FOCUS_KEYS = ["taskId", "projectId", "focus", "tab"] as const
 
+/**
+ * Captura deep-link UNA vez por key.
+ * No re-dispara si finish() limpia el store antes de que la URL se strippee
+ * (eso causaba el loop infinito de router.replace / RSC).
+ */
 export function useDeepLinkCapture() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
   const begin = useDeepLinkRoute(s => s.begin)
-  const routeKey = useDeepLinkRoute(s => s.route?.key ?? null)
+
+  /** Keys ya capturadas en esta montura de página (no dependen del store). */
+  const capturedRef = useRef<string | null>(null)
+
+  // Nueva página → permitir un deep-link nuevo
+  useEffect(() => {
+    capturedRef.current = null
+  }, [pathname])
 
   useEffect(() => {
     const taskId = searchParams.get("taskId") ?? undefined
@@ -27,7 +39,9 @@ export function useDeepLinkCapture() {
       focusToken ??
       `entity:${taskId ?? ""}:${projectId ?? ""}:tab:${tab ?? ""}`
 
-    if (routeKey === key) return
+    // Ya capturamos esta llegada → no volver a begin/replace
+    if (capturedRef.current === key) return
+    capturedRef.current = key
 
     useFocusNavStore.getState().end()
     begin({ taskId, projectId, focusToken, tab, key })
@@ -41,7 +55,8 @@ export function useDeepLinkCapture() {
       }
     }
     if (!changed) return
-    const q = next.toString()
-    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false })
-  }, [searchParams, router, pathname, begin, routeKey])
+
+    const href = next.toString() ? `${pathname}?${next}` : pathname
+    router.replace(href, { scroll: false })
+  }, [searchParams, router, pathname, begin])
 }

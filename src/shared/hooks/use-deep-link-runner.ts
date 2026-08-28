@@ -37,7 +37,7 @@ function centerEl(el: HTMLElement) {
   el.scrollIntoView({ behavior: "auto", block: "center" })
 }
 
-/** directing → expand + scroll → arrive (siempre, sin esperar loading). */
+/** directing → expand → afterPaint → arrive (siempre). */
 export function useDeepLinkRunner({ focusedId, setExpandedRowId }: Props) {
   const phase = useDeepLinkRoute(s => s.route?.phase)
   const setExpandedRef = useRef(setExpandedRowId)

@@ -23,7 +23,7 @@ import { PermissionGroup } from "./permissions/permission-group"
 import { UserAccessProfileSummary } from "./user-access-profile-summary"
 import { PermissionsModeTabs, type PermissionsMode } from "./permissions-mode-tabs"
 import { usePageToolbar } from "@/shared/responsive/navigation/hooks/use-page-toolbar"
-import { UserDialog } from "@/features/admin/users/components/dialog/user-dialog"
+import { UserInlineEditor } from "@/features/admin/users/components/inline/user-inline-editor"
 import { UserActions } from "@/features/admin/users/components/actions/user-actions"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
@@ -93,7 +93,7 @@ export function RolePermissionsPageContent() {
   const [mode, setMode] = useState<PermissionsMode>(() =>
     searchParams.get("tab") === "usuarios" ? "usuarios" : "roles",
   )
-  const [editUserOpen, setEditUserOpen] = useState(false)
+  const [editingUserId, setEditingUserId] = useState<string | null>(null)
   /** Usuarios: perfil primero; excepciones solo a demanda. */
   const [userPanelView, setUserPanelView] = useState<"profile" | "exceptions">(
     "profile",
@@ -111,12 +111,14 @@ export function RolePermissionsPageContent() {
     setSearch("")
     setSelectedRole(null)
     setSelectedUserId(null)
+    setEditingUserId(null)
     setCheckedIds(new Set())
     setDirty(false)
     setUserPanelView("profile")
   }
 
   function selectUser(user: User) {
+    setEditingUserId(null)
     setSelectedUserId(user.id)
     setUserPanelView("profile")
     setCheckedIds(new Set())
@@ -483,11 +485,17 @@ export function RolePermissionsPageContent() {
               {mode === "usuarios" && selectedUser ? (
                 <div className="flex shrink-0 items-center gap-2">
                   {/* Acción primaria ANTES del toggle (Editar | Guardar) */}
-                  {canEditUser && userPanelView === "profile" && (
+                  {canEditUser && userPanelView === "profile" && !editingUserId && (
                     <PrimaryAction
                       label="Editar"
                       icon={Pencil}
-                      onClick={() => setEditUserOpen(true)}
+                      onClick={() => setEditingUserId(selectedUser.id)}
+                    />
+                  )}
+                  {editingUserId && (
+                    <PrimaryAction
+                      label="Cancelar"
+                      onClick={() => setEditingUserId(null)}
                     />
                   )}
                   {userPanelView === "exceptions" && (
@@ -499,7 +507,7 @@ export function RolePermissionsPageContent() {
                       disabled={!dirty || saving}
                     />
                   )}
-                  <div className="flex items-center gap-1 rounded-xl bg-foreground/5 p-1">
+                  {!editingUserId && <div className="flex items-center gap-1 rounded-xl bg-foreground/5 p-1">
                     <button
                       type="button"
                       onClick={() => setUserPanelView("profile")}
@@ -524,7 +532,7 @@ export function RolePermissionsPageContent() {
                     >
                       Excepciones
                     </button>
-                  </div>
+                  </div>}
                 </div>
               ) : (
                 mode === "roles" && (
@@ -539,7 +547,16 @@ export function RolePermissionsPageContent() {
               )}
             </header>
 
-            {mode === "usuarios" && userPanelView === "profile" && selectedUser ? (
+            {mode === "usuarios" && editingUserId && selectedUser ? (
+              <UserInlineEditor
+                user={selectedUser}
+                onCancel={() => setEditingUserId(null)}
+                onSaved={saved => {
+                  setEditingUserId(null)
+                  setSelectedUserId(saved.id)
+                }}
+              />
+            ) : mode === "usuarios" && userPanelView === "profile" && selectedUser ? (
               <UserAccessProfileSummary user={selectedUser} />
             ) : (
               <>
@@ -621,11 +638,17 @@ export function RolePermissionsPageContent() {
               {mode === "usuarios" && selectedUser ? (
                 <div className="flex shrink-0 items-center gap-2">
                   {/* Acción primaria ANTES del toggle (Editar | Guardar) */}
-                  {canEditUser && userPanelView === "profile" && (
+                  {canEditUser && userPanelView === "profile" && !editingUserId && (
                     <PrimaryAction
                       label="Editar"
                       icon={Pencil}
-                      onClick={() => setEditUserOpen(true)}
+                      onClick={() => setEditingUserId(selectedUser.id)}
+                    />
+                  )}
+                  {editingUserId && (
+                    <PrimaryAction
+                      label="Cancelar"
+                      onClick={() => setEditingUserId(null)}
                     />
                   )}
                   {userPanelView === "exceptions" && (
@@ -637,7 +660,7 @@ export function RolePermissionsPageContent() {
                       disabled={!dirty || saving}
                     />
                   )}
-                  <div className="flex items-center gap-1 rounded-xl bg-foreground/5 p-1">
+                  {!editingUserId && <div className="flex items-center gap-1 rounded-xl bg-foreground/5 p-1">
                     <button
                       type="button"
                       onClick={() => setUserPanelView("profile")}
@@ -662,7 +685,7 @@ export function RolePermissionsPageContent() {
                     >
                       Excepciones
                     </button>
-                  </div>
+                  </div>}
                 </div>
               ) : (
                 mode === "roles" && (
@@ -681,7 +704,16 @@ export function RolePermissionsPageContent() {
                   data-entity-table-scroll
                   className="min-h-0 min-w-0 flex-1 p-1.5"
                 >
-                  {mode === "usuarios" && userPanelView === "profile" && selectedUser ? (
+                  {mode === "usuarios" && editingUserId && selectedUser ? (
+                    <UserInlineEditor
+                      user={selectedUser}
+                      onCancel={() => setEditingUserId(null)}
+                      onSaved={saved => {
+                        setEditingUserId(null)
+                        setSelectedUserId(saved.id)
+                      }}
+                    />
+                  ) : mode === "usuarios" && userPanelView === "profile" && selectedUser ? (
                     <UserAccessProfileSummary user={selectedUser} />
                   ) : (
                     <>
@@ -713,14 +745,7 @@ export function RolePermissionsPageContent() {
         )}
       </div>
 
-      {editUserOpen && selectedUser && (
-        <UserDialog
-          open={editUserOpen}
-          user={selectedUser}
-          onClose={() => setEditUserOpen(false)}
-          onSaved={saved => setSelectedUserId(saved.id)}
-        />
-      )}
+
     </div>
   )
 }

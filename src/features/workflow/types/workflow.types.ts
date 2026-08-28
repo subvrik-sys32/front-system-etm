@@ -17,6 +17,8 @@ export type WorkflowAction=
   |"review"
   |"reopen"
 
+export type StepExecution = "IN_HOUSE" | "OUTSOURCED"
+
 export interface WorkflowStep{
 
   id:string
@@ -28,6 +30,7 @@ export interface WorkflowStep{
   order:number
 
   status:WorkflowStatus
+  execution?:StepExecution
 
   operatorId:string | null
 

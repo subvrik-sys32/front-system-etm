@@ -1,5 +1,7 @@
 "use client"
 
+import { isProductionFloorLevel } from "@/shared/core/constants/department-roles"
+
 import {
   useEffect,
   useState,
@@ -424,7 +426,7 @@ export function UserDialog({
               areaIds: [],
             }),
             ...(levelStillValid
-              && (form.level !== "OPERARIO" || !stillProduccion)
+              && (!isProductionFloorLevel(form.level) || !stillProduccion)
               && {
                 areaIds: [],
               }),
@@ -433,13 +435,8 @@ export function UserDialog({
         onLevelChange={level =>
           update({
             level,
-            // Mismo criterio que el backend
-            // (assertAreasMatchLevel): el área solo tiene sentido
-            // para OPERARIO, así que se limpia sola al cambiar a
-            // cualquier otro sub-nivel — evita que quede una
-            // selección vieja "fantasma" que después el backend
-            // igual iba a descartar.
-            ...(level !== "OPERARIO" && {
+            // Áreas solo para OPERARIO / TERCERO (piso de planta).
+            ...(!isProductionFloorLevel(level) && {
               areaIds: [],
             }),
           })

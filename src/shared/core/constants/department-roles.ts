@@ -45,3 +45,10 @@ export function userHasRoleCode(
     allowed,
   )
 }
+
+/** Operario de planta o tercero externalizado: áreas fijas y asignación a steps. */
+export function isProductionFloorLevel(
+  level: string | null | undefined,
+): level is "OPERARIO" | "TERCERO" {
+  return level === "OPERARIO" || level === "TERCERO"
+}

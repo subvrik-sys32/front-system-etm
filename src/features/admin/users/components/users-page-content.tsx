@@ -1,5 +1,7 @@
 "use client"
 
+import { isProductionFloorLevel } from "@/shared/core/constants/department-roles"
+
 import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
 
 import { useQueryClient } from "@tanstack/react-query"
@@ -570,14 +572,14 @@ export function UsersPageContent() {
                           roleIds: nextRoles.map(r => r.id),
                           ...(!levelStillValid && { level: null, areaIds: [] }),
                           ...(levelStillValid &&
-                            (c.level !== "OPERARIO" || !stillProduccion) && { areaIds: [] }),
+                            (!isProductionFloorLevel(c.level) || !stillProduccion) && { areaIds: [] }),
                         }))
                       }}
                       onLevelChange={level =>
                         setFormData(c => ({
                           ...c,
                           level,
-                          ...(level !== "OPERARIO" && { areaIds: [] }),
+                          ...(!isProductionFloorLevel(level) && { areaIds: [] }),
                         }))
                       }
                       onAreasChange={nextAreas =>

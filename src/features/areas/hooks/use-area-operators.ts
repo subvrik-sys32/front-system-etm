@@ -7,7 +7,10 @@ import { useTasks } from "@/features/tasks/hooks/use-tasks"
 
 import type { ProcessCode } from "@/features/tasks/types/task.types"
 import type { User } from "@/features/users/types/user.types"
-import { PRODUCTION_OPERATOR_ROLE_CODE } from "@/shared/core/constants/department-roles"
+import {
+  PRODUCTION_OPERATOR_ROLE_CODE,
+  isProductionFloorLevel,
+} from "@/shared/core/constants/department-roles"
 
 export type OperatorAvailability =
   | { state: "FREE" }
@@ -45,7 +48,7 @@ export function useAreaOperators(processCode: ProcessCode | null) {
     const candidates = (users as User[]).filter(
       user =>
         user.roles?.some(role => role.code === PRODUCTION_OPERATOR_ROLE_CODE) &&
-        user.level === "OPERARIO" &&
+        isProductionFloorLevel(user.level) &&
         // Antes era user.area?.processCode === processCode (1 a 1)
         // — ahora un operario puede estar en varias áreas, así que
         // basta con que UNA de ellas matchee esta.

@@ -1,5 +1,7 @@
 "use client"
 
+import { isProductionFloorLevel } from "@/shared/core/constants/department-roles"
+
 import { useAuthStore } from "@/features/auth/store/auth-store"
 import { useSupervisorAreasStore } from "@/features/areas/store/supervisor-areas-store"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
@@ -27,7 +29,7 @@ export function useMyAreaTasks() {
       .filter((code): code is ProcessCode => !!code && isProcessCode(code))
 
   const isOperarioWithArea =
-    user?.level === "OPERARIO" && operarioAreaCodes.length > 0
+    isProductionFloorLevel(user?.level) && operarioAreaCodes.length > 0
 
   const hasGlobalManagementPermission = has(PermissionCode.ROLE_MANAGE)
   const isAdmin = hasGlobalManagementPermission

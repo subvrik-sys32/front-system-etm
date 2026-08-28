@@ -404,26 +404,23 @@ function TaskMobileCardReady({
             </span>
           ) : (
             <>
-              {/* Mobile: resumen de campos */}
-              <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground md:hidden">
-                {/* Cliente: row = icono + texto → expandido = icono */}
-                <span
-                  className="inline-flex shrink-0 items-center"
-                  title={task.project.client.name}
-                >
+              {/* Mobile: mismo resumen de datos que el row móvil. */}
+              <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm md:hidden">
+                <span className="inline-flex min-w-0 shrink items-center gap-1.5 text-muted-foreground">
                   <EntityIconBadge
                     icon={task.project?.client?.icon}
                     color={task.project.client.color}
                     size={12}
                   />
+                  <span className="truncate">
+                    {task.project.client.name}
+                  </span>
                 </span>
 
                 <span className="shrink-0 text-muted-foreground/80">·</span>
 
-                {/* Etapa: row = icono → expandido = icono + texto */}
                 <span
-                  className="inline-flex min-w-0 items-center gap-1"
-                  style={{ color: stageInk }}
+                  className="inline-flex shrink-0 items-center"
                   title={stage.label}
                 >
                   <EntityIconBadge
@@ -431,15 +428,12 @@ function TaskMobileCardReady({
                     color={stageInk}
                     size={12}
                   />
-                  <span className="truncate">{stage.label}</span>
                 </span>
 
                 <span className="shrink-0 text-muted-foreground/80">·</span>
 
-                {/* Estado: row = icono → expandido = icono + texto */}
                 <span
-                  className="inline-flex min-w-0 items-center gap-1"
-                  style={{ color: statusInk }}
+                  className="inline-flex shrink-0 items-center"
                   title={status.label}
                 >
                   <EntityIconBadge
@@ -447,16 +441,14 @@ function TaskMobileCardReady({
                     color={statusInk}
                     size={12}
                   />
-                  <span className="truncate">{status.label}</span>
                 </span>
 
                 <span className="shrink-0 text-muted-foreground/80">·</span>
 
-                {/* Prioridad: row = icono + texto → expandido = icono */}
                 <span
-                  className="inline-flex shrink-0 items-center"
-                  title={task.priority.name}
+                  className="inline-flex min-w-0 items-center gap-1"
                   style={{ color: priorityInk }}
+                  title={task.priority.name}
                 >
                   {task.priority.icon ? (
                     <EntityIconBadge
@@ -465,6 +457,9 @@ function TaskMobileCardReady({
                       size={12}
                     />
                   ) : null}
+                  <span className="truncate">
+                    {task.priority.name}
+                  </span>
                 </span>
               </span>
 

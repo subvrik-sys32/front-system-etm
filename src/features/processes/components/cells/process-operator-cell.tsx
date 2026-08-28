@@ -68,10 +68,21 @@ export function ProcessOperatorCell({
   )
   const currentProcessCode = workflowAccess.processCode(processTask)
   const areaOperators = useAreaOperators(currentProcessCode ?? null)
+  const execution = processTask.workflowStep?.execution ?? "IN_HOUSE"
 
+  // La ejecución define qué clase de recurso puede quedar asignado:
+  // planta → OPERARIO; tercero → TERCERO. Supervisor nunca entra como
+  // operador de piso aunque pertenezca al área.
   const operators = useMemo(
-    () => areaOperators.map(({ user }) => user),
-    [areaOperators],
+    () =>
+      areaOperators
+        .filter(({ user }) =>
+          execution === "OUTSOURCED"
+            ? user.level === "TERCERO"
+            : user.level === "OPERARIO",
+        )
+        .map(({ user }) => user),
+    [areaOperators, execution],
   )
 
   const byId = useMemo(() => {
@@ -107,6 +118,7 @@ export function ProcessOperatorCell({
       { description?: string; descriptionColor?: string }
     >()
     for (const { user, availability } of areaOperators) {
+      if (!operators.some(operator => operator.id === user.id)) continue
       if (selectedIds.has(user.id)) {
         const isPrimary = selectedValues[0]?.id === user.id
         // Seleccionado en este step: no mostrar "Libre"

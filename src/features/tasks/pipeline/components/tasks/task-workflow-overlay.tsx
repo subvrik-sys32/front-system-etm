@@ -4,6 +4,7 @@ import { ChevronLeft, X } from "lucide-react"
 
 import { cn } from "@/shared/utils/utils"
 import { ProcessOperatorCell } from "@/features/processes/components/cells/process-operator-cell"
+import { ProcessExecutionCell } from "@/features/processes/components/cells/process-execution-cell"
 
 import { WorkflowActionButtons } from "../workflow/workflow-action-buttons"
 import { WorkflowNumericField } from "../workflow/workflow-numeric-field"
@@ -139,19 +140,33 @@ export function TaskWorkflowOverlay({
           ))}
 
         {state.displayVariant === "start" && (
-          <div className="flex items-center justify-center rounded-lg bg-foreground/5 px-3 py-2">
-            <ProcessOperatorCell
-              processTask={processTask}
-              onSavingChange={actions.setOperatorSaving}
-            />
+          <div className="flex flex-col gap-2 rounded-lg bg-foreground/5 p-2">
+            <div className="flex items-center justify-center">
+              <ProcessExecutionCell
+                processTask={processTask}
+                onSavingChange={actions.setOperatorSaving}
+              />
+            </div>
+            <div className="flex items-center justify-center px-1">
+              <ProcessOperatorCell
+                processTask={processTask}
+                onSavingChange={actions.setOperatorSaving}
+              />
+            </div>
           </div>
         )}
 
         {state.changeOperator && (
           <div className="flex flex-col gap-3">
             <p className="text-center text-xs font-medium text-muted-foreground">
-              Cambiar operario
+              Configuración del proceso
             </p>
+            <div className="flex items-center justify-center">
+              <ProcessExecutionCell
+                processTask={processTask}
+                onSavingChange={actions.setOperatorSaving}
+              />
+            </div>
             <div className="flex items-center justify-center rounded-lg bg-foreground/5 px-3 py-2">
               <ProcessOperatorCell
                 processTask={processTask}

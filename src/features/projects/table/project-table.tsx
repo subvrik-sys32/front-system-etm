@@ -9,6 +9,7 @@ import type { Project } from "../types/project.types"
 import type { Task } from "@/features/tasks/types/task.types"
 
 import { useDeepLinkRunner } from "@/shared/hooks/use-deep-link-runner"
+import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus"
 import { useExpandRow } from "@/shared/hooks/use-expand-row"
 
 import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
@@ -35,6 +36,7 @@ type Props = {
   focusToken?: string
   search: string
   showHistory: boolean
+  onHistoryRequired?: () => void
   reorderProjects: (projects: Project[]) => Promise<unknown>
 }
 
@@ -46,6 +48,7 @@ export function ProjectTable({
   focusToken,
   search,
   showHistory,
+  onHistoryRequired,
   reorderProjects,
 }: Props) {
   const expand = useEntityExpand()
@@ -118,6 +121,16 @@ export function ProjectTable({
     expand.expandedRowId,
     expand.setExpandedRowId,
   ])
+
+  useHistoryHiddenFocus({
+    focusedId: focusedProjectId,
+    focusToken,
+    showHistory,
+    visibleItems: displayedProjects,
+    allItems: sortedProjects,
+    getId: project => project.id,
+    onHistoryRequired,
+  })
 
   const dragApi = useRowDragReorder({
     items: displayedProjects,

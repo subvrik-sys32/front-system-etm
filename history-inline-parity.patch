@@ -1,0 +1,241 @@
+diff --git a/src/features/processes/components/process-page-content.tsx b/src/features/processes/components/process-page-content.tsx
+index 523fa73..159aa29 100644
+--- a/src/features/processes/components/process-page-content.tsx
++++ b/src/features/processes/components/process-page-content.tsx
+@@ -1,7 +1,9 @@
+ "use client"
+ 
++import { notifyHistoryMode } from "@/shared/history/notify-history-mode"
++
+ import { useQueryClient } from "@tanstack/react-query"
+-import { useState } from "react"
++import { useState, useEffect } from "react"
+ 
+ import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+@@ -40,6 +42,11 @@ export function ProcessPageContent({
+   const { isMobile } = useResponsive()
+   const [search, setSearch] = useState("")
+   const [showHistory, setShowHistory] = useState(initialShowHistory)
++
++  useEffect(() => {
++    if (initialShowHistory) notifyHistoryMode("procesos")
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [])
+   const [resolvingFocus, setResolvingFocus] = useState(false)
+ 
+   const { tasks, loading } = useTasks()
+@@ -93,7 +100,13 @@ export function ProcessPageContent({
+               key="history"
+               count={completedCount}
+               active={showHistory}
+-              onClick={() => setShowHistory(v => !v)}
++              onClick={() => {
++                setShowHistory(v => {
++                  const next = !v
++                  if (next) notifyHistoryMode("procesos")
++                  return next
++                })
++              }}
+             />,
+             <ExportMenu
+               key="export"
+@@ -122,7 +135,10 @@ export function ProcessPageContent({
+             focusedTaskId={focusedTaskId}
+             focusToken={focusToken}
+             showHistory={showHistory}
+-            onHistoryRequired={() => setShowHistory(true)}
++            onHistoryRequired={() => {
++              setShowHistory(true)
++              notifyHistoryMode("procesos")
++            }}
+             onResolvingChange={setResolvingFocus}
+           />
+         </EntityExpandProvider>
+diff --git a/src/features/projects/components/expanded-row/project-expanded-row.tsx b/src/features/projects/components/expanded-row/project-expanded-row.tsx
+index c4e1ff8..fcabad0 100644
+--- a/src/features/projects/components/expanded-row/project-expanded-row.tsx
++++ b/src/features/projects/components/expanded-row/project-expanded-row.tsx
+@@ -1,5 +1,7 @@
+ "use client"
+ 
++import { isProjectCompleted } from "@/features/projects/selectors/is-project-completed"
++
+ import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
+ 
+ import { Activity, AlertTriangle, CheckCircle2, ClipboardList, MessageSquare, Puzzle } from "lucide-react"
+@@ -379,6 +381,7 @@ export function ProjectExpandedRow({
+         target={{ scope: "project", projectId: project.id }}
+         open={commentsDialogOpen}
+         onOpenChange={setCommentsDialogOpen}
++        readOnly={isProjectCompleted(project)}
+       />
+     </EntityExpandedRow>
+   )
+diff --git a/src/features/projects/components/project-page-content.tsx b/src/features/projects/components/project-page-content.tsx
+index a57fb86..1446613 100644
+--- a/src/features/projects/components/project-page-content.tsx
++++ b/src/features/projects/components/project-page-content.tsx
+@@ -1,8 +1,10 @@
+ "use client"
+ 
++import { notifyHistoryMode } from "@/shared/history/notify-history-mode"
++
+ import { useQueryClient } from "@tanstack/react-query"
+ 
+-import { useMemo, useState } from "react"
++import { useMemo, useState, useEffect } from "react"
+ 
+ import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
+ 
+@@ -44,6 +46,11 @@ export function ProjectPageContent({
+   const [search, setSearch] = useState("")
+   const [showHistory, setShowHistory] = useState(initialShowHistory)
+ 
++  useEffect(() => {
++    if (initialShowHistory) notifyHistoryMode("proyectos")
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [])
++
+   const { isMobile } = useResponsive()
+ 
+   const { projects, loading, reorderProjects } = useProjects()
+@@ -79,7 +86,13 @@ export function ProjectPageContent({
+               key="history"
+               count={completedCount}
+               active={showHistory}
+-              onClick={() => setShowHistory(v => !v)}
++              onClick={() => {
++                setShowHistory(v => {
++                  const next = !v
++                  if (next) notifyHistoryMode("proyectos")
++                  return next
++                })
++              }}
+             />,
+             ...(isMobile ? [<ProjectCreateDialAction key="create" />] : []),
+           ]}
+@@ -106,6 +119,10 @@ export function ProjectPageContent({
+             focusToken={focusToken}
+             search={search}
+             showHistory={showHistory}
++            onHistoryRequired={() => {
++              setShowHistory(true)
++              notifyHistoryMode("proyectos")
++            }}
+             reorderProjects={reorderProjects}
+           />
+         </EntityExpandProvider>
+diff --git a/src/features/projects/table/project-table.tsx b/src/features/projects/table/project-table.tsx
+index a778a2b..f3f2d29 100644
+--- a/src/features/projects/table/project-table.tsx
++++ b/src/features/projects/table/project-table.tsx
+@@ -9,6 +9,7 @@ import type { Project } from "../types/project.types"
+ import type { Task } from "@/features/tasks/types/task.types"
+ 
+ import { useDeepLinkRunner } from "@/shared/hooks/use-deep-link-runner"
++import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus"
+ import { useExpandRow } from "@/shared/hooks/use-expand-row"
+ 
+ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
+@@ -35,6 +36,7 @@ type Props = {
+   focusToken?: string
+   search: string
+   showHistory: boolean
++  onHistoryRequired?: () => void
+   reorderProjects: (projects: Project[]) => Promise<unknown>
+ }
+ 
+@@ -46,6 +48,7 @@ export function ProjectTable({
+   focusToken,
+   search,
+   showHistory,
++  onHistoryRequired,
+   reorderProjects,
+ }: Props) {
+   const expand = useEntityExpand()
+@@ -119,6 +122,16 @@ export function ProjectTable({
+     expand.setExpandedRowId,
+   ])
+ 
++  useHistoryHiddenFocus({
++    focusedId: focusedProjectId,
++    focusToken,
++    showHistory,
++    visibleItems: displayedProjects,
++    allItems: sortedProjects,
++    getId: project => project.id,
++    onHistoryRequired,
++  })
++
+   const dragApi = useRowDragReorder({
+     items: displayedProjects,
+     getId: p => p.id,
+diff --git a/src/features/tasks/components/task-page-content.tsx b/src/features/tasks/components/task-page-content.tsx
+index 0950237..1796772 100644
+--- a/src/features/tasks/components/task-page-content.tsx
++++ b/src/features/tasks/components/task-page-content.tsx
+@@ -1,7 +1,9 @@
+ "use client"
+ 
++import { notifyHistoryMode } from "@/shared/history/notify-history-mode"
++
+ import { useQueryClient } from "@tanstack/react-query"
+-import { useState } from "react"
++import { useState, useEffect } from "react"
+ 
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
+@@ -39,6 +41,11 @@ export function TaskPageContent({
+   const [search, setSearch] = useState("")
+   const [showHistory, setShowHistory] = useState(initialShowHistory)
+ 
++  useEffect(() => {
++    if (initialShowHistory) notifyHistoryMode("tareas")
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [])
++
+   const { tasks, loading, reorderTasks } = useTasks()
+   const { exporting, exportPdf, exportExcel } = useTaskExport(tasks)
+ 
+@@ -78,7 +85,13 @@ export function TaskPageContent({
+               key="history"
+               count={completedCount}
+               active={showHistory}
+-              onClick={() => setShowHistory(v => !v)}
++              onClick={() => {
++                setShowHistory(v => {
++                  const next = !v
++                  if (next) notifyHistoryMode("tareas")
++                  return next
++                })
++              }}
+             />,
+             <ExportMenu
+               key="export"
+@@ -108,7 +121,10 @@ export function TaskPageContent({
+             search={search}
+             showHistory={showHistory}
+             reorderTasks={reorderTasks}
+-            onHistoryRequired={() => setShowHistory(true)}
++            onHistoryRequired={() => {
++              setShowHistory(true)
++              notifyHistoryMode("tareas")
++            }}
+           />
+         </EntityExpandProvider>
+       </AppListScroll>
+diff --git a/src/shared/history/notify-history-mode.ts b/src/shared/history/notify-history-mode.ts
+new file mode 100644
+index 0000000..a118efb
+--- /dev/null
++++ b/src/shared/history/notify-history-mode.ts
+@@ -0,0 +1,8 @@
++import { toast } from "sonner"
++
++/** Aviso unificado al entrar en modo histórico (lista / deep-link / toggle). */
++export function notifyHistoryMode(scope: "tareas" | "procesos" | "proyectos") {
++  toast.message("Modo histórico", {
++    description: `Estás viendo ${scope} finalizados. Los mensajes son de solo lectura.`,
++  })
++}

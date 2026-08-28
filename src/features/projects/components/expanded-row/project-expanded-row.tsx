@@ -1,5 +1,7 @@
 "use client"
 
+import { isProjectCompleted } from "@/features/projects/selectors/is-project-completed"
+
 import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
 
 import { Activity, AlertTriangle, CheckCircle2, ClipboardList, MessageSquare, Puzzle } from "lucide-react"
@@ -379,6 +381,7 @@ export function ProjectExpandedRow({
         target={{ scope: "project", projectId: project.id }}
         open={commentsDialogOpen}
         onOpenChange={setCommentsDialogOpen}
+        readOnly={isProjectCompleted(project)}
       />
     </EntityExpandedRow>
   )

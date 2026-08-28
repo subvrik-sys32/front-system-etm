@@ -1,8 +1,10 @@
 "use client"
 
+import { notifyHistoryMode } from "@/shared/history/notify-history-mode"
+
 import { useQueryClient } from "@tanstack/react-query"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 
 import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
 
@@ -44,6 +46,11 @@ export function ProjectPageContent({
   const [search, setSearch] = useState("")
   const [showHistory, setShowHistory] = useState(initialShowHistory)
 
+  useEffect(() => {
+    if (initialShowHistory) notifyHistoryMode("proyectos")
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const { isMobile } = useResponsive()
 
   const { projects, loading, reorderProjects } = useProjects()
@@ -79,7 +86,13 @@ export function ProjectPageContent({
               key="history"
               count={completedCount}
               active={showHistory}
-              onClick={() => setShowHistory(v => !v)}
+              onClick={() => {
+                setShowHistory(v => {
+                  const next = !v
+                  if (next) notifyHistoryMode("proyectos")
+                  return next
+                })
+              }}
             />,
             ...(isMobile ? [<ProjectCreateDialAction key="create" />] : []),
           ]}
@@ -106,6 +119,10 @@ export function ProjectPageContent({
             focusToken={focusToken}
             search={search}
             showHistory={showHistory}
+            onHistoryRequired={() => {
+              setShowHistory(true)
+              notifyHistoryMode("proyectos")
+            }}
             reorderProjects={reorderProjects}
           />
         </EntityExpandProvider>

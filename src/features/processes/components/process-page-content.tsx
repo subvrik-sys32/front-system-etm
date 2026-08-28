@@ -1,7 +1,9 @@
 "use client"
 
+import { notifyHistoryMode } from "@/shared/history/notify-history-mode"
+
 import { useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
@@ -40,6 +42,11 @@ export function ProcessPageContent({
   const { isMobile } = useResponsive()
   const [search, setSearch] = useState("")
   const [showHistory, setShowHistory] = useState(initialShowHistory)
+
+  useEffect(() => {
+    if (initialShowHistory) notifyHistoryMode("procesos")
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [resolvingFocus, setResolvingFocus] = useState(false)
 
   const { tasks, loading } = useTasks()
@@ -93,7 +100,13 @@ export function ProcessPageContent({
               key="history"
               count={completedCount}
               active={showHistory}
-              onClick={() => setShowHistory(v => !v)}
+              onClick={() => {
+                setShowHistory(v => {
+                  const next = !v
+                  if (next) notifyHistoryMode("procesos")
+                  return next
+                })
+              }}
             />,
             <ExportMenu
               key="export"
@@ -122,7 +135,10 @@ export function ProcessPageContent({
             focusedTaskId={focusedTaskId}
             focusToken={focusToken}
             showHistory={showHistory}
-            onHistoryRequired={() => setShowHistory(true)}
+            onHistoryRequired={() => {
+              setShowHistory(true)
+              notifyHistoryMode("procesos")
+            }}
             onResolvingChange={setResolvingFocus}
           />
         </EntityExpandProvider>

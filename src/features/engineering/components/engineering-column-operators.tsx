@@ -101,7 +101,7 @@ function OperatorChip({
 
   return (
     <span
-      className="inline-flex h-7 max-w-[10rem] shrink-0 items-center gap-1.5 rounded-lg px-2.5 transition-transform duration-150 active:scale-95"
+      className="inline-flex h-7 max-w-[10rem] min-w-0 shrink items-center gap-1.5 rounded-lg px-2.5 transition-transform duration-150 active:scale-95"
       style={{ backgroundColor: badge.background, color: badge.text }}
     >
       {Icon ? (
@@ -247,7 +247,7 @@ export function EngineeringColumnOperators({
         <button
           type="button"
           className={cn(
-            "group flex h-9 w-full min-w-0 items-center gap-2 rounded-xl bg-foreground/[0.04] p-1.5 text-left backdrop-blur-sm transition-all duration-150",
+            "group flex min-h-9 h-auto w-full min-w-0 items-start gap-2 rounded-xl bg-foreground/[0.04] p-1.5 text-left backdrop-blur-sm transition-all duration-150",
             "hover:bg-foreground/[0.08] hover:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           )}
         >
@@ -257,7 +257,7 @@ export function EngineeringColumnOperators({
 
           <div className="h-4 w-px shrink-0 bg-border/40" />
 
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 overflow-hidden">
             {groups.slice(0, 3).map(g => (
               <OperatorChip
                 key={g.assignee.id}

@@ -31,8 +31,8 @@ import {
   RoleDesktopRow,
   RoleMobileCard,
   UserDesktopRow,
-  UserMobileCard,
 } from "../table"
+import { UserMobileCard } from "@/features/admin/users/components/cards/user-mobile-card"
 import { useRoles } from "../hooks/use-roles"
 
 import { useUsers } from "@/features/users/hooks/use-users"
@@ -306,8 +306,10 @@ export function RolePermissionsPageContent() {
       >
         {/* PANEL IZQUIERDO: ROLES o USUARIOS */}
         {showLeftPanel && isMobile && (
-          <AppListScroll
-          >
+          <AppListScroll>
+            <div className="mb-3 flex w-full justify-center">
+              <PermissionsModeTabs mode={mode} onChange={handleModeChange} />
+            </div>
             <EntityToolbarSearch value={search} onChange={setSearch} />
             <div className="mt-2 space-y-3 pb-4">
               {mode === "roles" ? (
@@ -352,7 +354,8 @@ export function RolePermissionsPageContent() {
                         key={user.id}
                         user={user}
                         index={index}
-                        onSelect={() => selectUser(user)}
+                        expanded={selectedUserId === user.id}
+                        onToggle={() => selectUser(user)}
                       />
                     ))}
                 </>
@@ -432,82 +435,10 @@ export function RolePermissionsPageContent() {
           <AppListScroll
             className="p-1.5"
           >
-            <header className="mb-1 flex shrink-0 items-start justify-between gap-4">
-              <div className="flex min-w-0 items-center gap-3">
-                {hasSelection && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedRole(null)
-                      setSelectedUserId(null)
-                    }}
-                    className="flex size-8 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
-                  >
-                    <ArrowLeft size={16} />
-                  </button>
-                )}
-
-                {hasSelection && (
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      {mode === "roles"
-                        ? "Permisos"
-                        : userPanelView === "profile"
-                          ? "Perfil"
-                          : "Excepciones"}
-                    </p>
-                    {/* Cambiado a flex-col o flex-wrap controlado para acomodar el estado */}
-                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span
-                          className="size-2.5 shrink-0 rounded-full"
-                          style={{ backgroundColor: selectedColor || "var(--muted-foreground)" }}
-                        />
-                        <span className="truncate text-sm font-medium text-foreground">
-                          {selectedName}
-                        </span>
-                      </div>
-                      {dirty && (
-                        <span className="shrink-0 text-xs font-medium text-amber-800 dark:text-amber-400">
-                          Cambios sin guardar
-                        </span>
-                      )}
-                    </div>
-                    {mode === "usuarios" && (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Por usuario
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {mode === "usuarios" && selectedUser ? (
-                <div className="flex shrink-0 items-center gap-2">
-                  {/* Acción primaria ANTES del toggle (Editar | Guardar) */}
-                  {canEditUser && userPanelView === "profile" && !editingUserId && (
-                    <PrimaryAction
-                      label="Editar"
-                      icon={Pencil}
-                      onClick={() => setEditingUserId(selectedUser.id)}
-                    />
-                  )}
-                  {editingUserId && (
-                    <PrimaryAction
-                      label="Cancelar"
-                      onClick={() => setEditingUserId(null)}
-                    />
-                  )}
-                  {userPanelView === "exceptions" && (
-                    <PrimaryAction
-                      label={saveLabel}
-                      icon={Save}
-                      isLoading={saving}
-                      onClick={handleSave}
-                      disabled={!dirty || saving}
-                    />
-                  )}
-                  {!editingUserId && <div className="flex items-center gap-1 rounded-xl bg-foreground/5 p-1">
+            <header className="mb-1 flex shrink-0 flex-col gap-2">
+              {mode === "usuarios" && selectedUser && !editingUserId && (
+                <div className="flex w-full items-center justify-between gap-2">
+                  <div className="ml-auto flex items-center gap-1 rounded-xl bg-foreground/5 p-1">
                     <button
                       type="button"
                       onClick={() => setUserPanelView("profile")}
@@ -532,19 +463,96 @@ export function RolePermissionsPageContent() {
                     >
                       Excepciones
                     </button>
-                  </div>}
+                  </div>
                 </div>
-              ) : (
-                mode === "roles" && (
-                  <PrimaryAction
-                    label={saveLabel}
-                    icon={Save}
-                    isLoading={saving}
-                    onClick={handleSave}
-                    disabled={!hasSelection || !dirty || saving}
-                  />
-                )
               )}
+
+              <div className="flex min-w-0 items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  {hasSelection && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedRole(null)
+                        setSelectedUserId(null)
+                      }}
+                      className="flex size-8 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+                    >
+                      <ArrowLeft size={16} />
+                    </button>
+                  )}
+
+                  {hasSelection && (
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        {mode === "roles"
+                          ? "Permisos"
+                          : userPanelView === "profile"
+                            ? "Perfil"
+                            : "Excepciones"}
+                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span
+                            className="size-2.5 shrink-0 rounded-full"
+                            style={{ backgroundColor: selectedColor || "var(--muted-foreground)" }}
+                          />
+                          <span className="truncate text-sm font-medium text-foreground">
+                            {selectedName}
+                          </span>
+                        </div>
+                        {dirty && (
+                          <span className="shrink-0 text-xs font-medium text-amber-800 dark:text-amber-400">
+                            Cambios sin guardar
+                          </span>
+                        )}
+                      </div>
+                      {mode === "usuarios" && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Por usuario
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {mode === "usuarios" && selectedUser ? (
+                  <div className="flex shrink-0 items-center gap-2">
+                    {canEditUser && userPanelView === "profile" && !editingUserId && (
+                      <PrimaryAction
+                        label="Editar"
+                        icon={Pencil}
+                        onClick={() => setEditingUserId(selectedUser.id)}
+                      />
+                    )}
+                    {editingUserId && (
+                      <PrimaryAction
+                        label="Cancelar"
+                        onClick={() => setEditingUserId(null)}
+                      />
+                    )}
+                    {userPanelView === "exceptions" && (
+                      <PrimaryAction
+                        label={saveLabel}
+                        icon={Save}
+                        isLoading={saving}
+                        onClick={handleSave}
+                        disabled={!dirty || saving}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  mode === "roles" && (
+                    <PrimaryAction
+                      label={saveLabel}
+                      icon={Save}
+                      isLoading={saving}
+                      onClick={handleSave}
+                      disabled={!hasSelection || !dirty || saving}
+                    />
+                  )
+                )}
+              </div>
             </header>
 
             {mode === "usuarios" && editingUserId && selectedUser ? (

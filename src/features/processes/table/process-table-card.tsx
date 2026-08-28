@@ -1,8 +1,16 @@
 "use client"
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import {
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation"
 
-import { useEffect, useMemo, useState } from "react"
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 
 import { useDeepLinkRunner } from "@/shared/hooks/use-deep-link-runner"
 import { useExpandRow } from "@/shared/hooks/use-expand-row"
@@ -15,17 +23,24 @@ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 import { TaskProcessColumn } from "@/features/tasks/pipeline/table/task-process-column"
 
 import { ProcessMobileCard } from "./process-mobile-card"
-import { ENTITY_PULSE_OPACITIES } from "@/shared/ui/entity-table/pulse-rows"
+import {
+  ENTITY_PULSE_OPACITIES,
+} from "@/shared/ui/entity-table/pulse-rows"
 
 import { processAccess } from "../access/process-access"
 
 import { useFilterStore } from "@/shared/filter/store/filter-store"
-import { filterProcess } from "@/shared/filter/selectors/filter-process"
+import {
+  filterProcess,
+} from "@/shared/filter/selectors/filter-process"
 
 import { useProcessSearch } from "../hooks/use-process-search"
 
 import { useSortStore } from "@/shared/sorting/store/sort-store"
-import { createTaskView } from "@/shared/sorting/engine/sort-engine"
+import {
+  createTaskView,
+  getWorkflowOperationalRank,
+} from "@/shared/sorting/engine/sort-engine"
 
 import type {
   ProcessDefinition,
@@ -41,16 +56,11 @@ type Props = {
   focusToken?: string
   showHistory: boolean
   onHistoryRequired?: () => void
-  onResolvingChange?: (resolving: boolean) => void
+  onResolvingChange?: (
+    resolving: boolean,
+  ) => void
 }
 
-// Vista CARD de Procesos — la única vista que queda (se borró la
-// vista tabla). En desktop es ProcessMobileCard (fila con acciones
-// siempre visibles). En mobile se restauró lo que ya existía antes
-// de unificar todo: TaskProcessColumn, la misma kanban card que usa
-// el tablero de Tareas — se había perdido sin querer al borrar
-// process-table.tsx (la vista TABLA), que era donde vivía esta
-// rama mobile.
 export function ProcessTableCard({
   processDefinition,
   processTasks,
@@ -62,7 +72,6 @@ export function ProcessTableCard({
   onHistoryRequired,
   onResolvingChange,
 }: Props) {
-
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -71,100 +80,162 @@ export function ProcessTableCard({
 
   const expand = useEntityExpand()
 
-  // Estado del pipeline mobile — esta página es standalone (no vive
-  // dentro de TaskPipelineBoard), así que necesita su propio lock de
-  // overlay Y su propia clave de expansión, con el formato
-  // "taskId:processCode" que espera TaskProcessColumn — NO se puede
-  // reusar expand.expandedRowId acá porque ese es solo el taskId
-  // (formato de ProcessMobileCard/EntityTable, pensado para
-  // desktop), nunca matchea.
-  const [mobileExpandedKey, setMobileExpandedKey] =
-    useState<string | null>(null)
+  const [
+    mobileExpandedKey,
+    setMobileExpandedKey,
+  ] = useState<string | null>(null)
 
-  const [activeOverlayKey, setActiveOverlayKey] =
-    useState<string | null>(null)
+  const [
+    activeOverlayKey,
+    setActiveOverlayKey,
+  ] = useState<string | null>(null)
 
-  const handleOverlayOpenChange = (key: string, isOpen: boolean) => {
-    setActiveOverlayKey(isOpen ? key : null)
+  const handleOverlayOpenChange = (
+    key: string,
+    isOpen: boolean,
+  ) => {
+    setActiveOverlayKey(
+      isOpen ? key : null,
+    )
   }
 
   const taskSortMode = useSortStore(
     s => s.taskSortMode,
   )
+
   const taskSortDirection = useSortStore(
     s => s.taskSortDirection,
   )
 
-  // Mobile expande vía mobileExpandedKey; desktop vía expand store.
-  // useFocusedRow solo necesita setExpandedRowId en desktop; en mobile
-  // un no-op evita trabajo de store inútil mientras el scroll sigue
-  // encontrando [data-expanded-row-id] en TaskProcessColumn.
   const setExpandedRowId = useExpandRow({
     focusedId: focusedTaskId,
-    setExpandedRowId: expand.setExpandedRowId,
+    setExpandedRowId:
+      expand.setExpandedRowId,
   })
 
   useDeepLinkRunner({
     focusedId: focusedTaskId,
-    setExpandedRowId: expand.setExpandedRowId,
+    setExpandedRowId:
+      expand.setExpandedRowId,
   })
 
-  const filteredTasks = useProcessSearch(processTasks, search)
+  const filteredTasks =
+    useProcessSearch(
+      processTasks,
+      search,
+    )
 
-  const processFilters = useFilterStore(
-    state => state.filters.processes,
-  )
+  const processFilters =
+    useFilterStore(
+      state => state.filters.processes,
+    )
 
   const visibleTasks = useMemo(
-    () => filterProcess({
-      processTasks: filteredTasks,
-      filters: processFilters,
-    }),
-    [filteredTasks, processFilters],
+    () =>
+      filterProcess({
+        processTasks: filteredTasks,
+        filters: processFilters,
+      }),
+    [
+      filteredTasks,
+      processFilters,
+    ],
   )
 
+  /**
+   * Procesos usa el workflowStep del propio row.
+   *
+   * Esto es fundamental: no usamos el primer step pendiente de
+   * Task.workflowSteps porque aquí cada fila representa un proceso
+   * concreto.
+   *
+   * Jerarquía del orden:
+   *
+   * 1. Disponibilidad del proceso en SU área.
+   * 2. Prioridad de la tarea.
+   * 3. Asignación del operador.
+   * 4. Fecha de entrega.
+   * 5. Position.
+   *
+   * La asignación NO adelanta una tarea de menor prioridad sobre
+   * otra de mayor prioridad.
+   */
   const orderedTasks = useMemo(
-    () => createTaskView({ base: visibleTasks, mode: taskSortMode, direction: taskSortDirection,
-      getTask: processTask => processTask.task,
-     }),
-    [visibleTasks, taskSortMode, taskSortDirection],
+    () =>
+      createTaskView({
+        base: visibleTasks,
+        mode: taskSortMode,
+        direction: taskSortDirection,
+        getTask:
+          processTask =>
+            processTask.task,
+        getOperationalRank:
+          processTask =>
+            getWorkflowOperationalRank(
+              processTask
+                .workflowStep
+                ?.status,
+            ),
+      }),
+    [
+      visibleTasks,
+      taskSortMode,
+      taskSortDirection,
+    ],
   )
 
   const completedTasks = useMemo(
-    () => orderedTasks.filter(
-      task => task.workflowStep?.status === "REVIEWED",
-    ),
+    () =>
+      orderedTasks.filter(
+        task =>
+          task.workflowStep
+            ?.status === "REVIEWED",
+      ),
     [orderedTasks],
   )
 
   const activeTasks = useMemo(
-    () => orderedTasks.filter(
-      task => task.workflowStep?.status !== "REVIEWED",
-    ),
+    () =>
+      orderedTasks.filter(
+        task =>
+          task.workflowStep
+            ?.status !== "REVIEWED",
+      ),
     [orderedTasks],
   )
 
   const displayedTasks = useMemo(
-    () => showHistory
-      ? [...completedTasks, ...activeTasks]
-      : activeTasks,
-    [showHistory, completedTasks, activeTasks],
+    () =>
+      showHistory
+        ? [
+            ...completedTasks,
+            ...activeTasks,
+          ]
+        : activeTasks,
+    [
+      showHistory,
+      completedTasks,
+      activeTasks,
+    ],
   )
 
   useEffect(() => {
-
     if (!expand.expandedRowId) {
       return
     }
 
-    const existsAnywhere = orderedTasks.some(
-      processTask => processAccess.task(processTask).id === expand.expandedRowId,
-    )
+    const existsAnywhere =
+      orderedTasks.some(
+        processTask =>
+          processAccess
+            .task(processTask)
+            .id ===
+          expand.expandedRowId,
+      )
 
     if (!existsAnywhere) {
       expand.setExpandedRowId(null)
     }
-
   }, [
     orderedTasks,
     expand.expandedRowId,
@@ -177,116 +248,170 @@ export function ProcessTableCard({
     showHistory,
     visibleItems: displayedTasks,
     allItems: orderedTasks,
-    getId: processTask => processAccess.task(processTask).id,
+    getId: processTask =>
+      processAccess.task(processTask).id,
     onHistoryRequired,
     onResolvingChange,
   })
 
-  // Si llega un foco a una tarea específica (ej. desde una
-  // notificación) mientras estamos en mobile, expandirla
-  // automáticamente con la clave en el formato correcto.
   useEffect(() => {
-
-    if (!isMobile || !focusedTaskId) {
+    if (
+      !isMobile ||
+      !focusedTaskId
+    ) {
       return
     }
 
-    const exists = displayedTasks.some(
-      pt => pt.task.id === focusedTaskId,
-    )
+    const exists =
+      displayedTasks.some(
+        pt =>
+          pt.task.id ===
+          focusedTaskId,
+      )
 
     if (exists) {
-      setMobileExpandedKey(`${focusedTaskId}:${processDefinition.code}`)
+      setMobileExpandedKey(
+        `${focusedTaskId}:${processDefinition.code}`,
+      )
     }
-
-  }, [isMobile, focusedTaskId, displayedTasks, processDefinition.code])
+  }, [
+    isMobile,
+    focusedTaskId,
+    displayedTasks,
+    processDefinition.code,
+  ])
 
   if (loading) {
     return (
       <div className="flex flex-col gap-2 pb-2">
-        {ENTITY_PULSE_OPACITIES.map((opacity, i) => (
-          <ProcessMobileCard key={i} loading opacity={opacity} />
-        ))}
+        {ENTITY_PULSE_OPACITIES.map(
+          (opacity, i) => (
+            <ProcessMobileCard
+              key={i}
+              loading
+              opacity={opacity}
+            />
+          ),
+        )}
       </div>
     )
   }
 
   if (isMobile) {
-
-    const tasks = displayedTasks.map(
-      processTask => processTask.task,
-    )
+    const tasks =
+      displayedTasks.map(
+        processTask =>
+          processTask.task,
+      )
 
     return (
-
       <TaskProcessColumn
-        processCode={processDefinition.code}
+        processCode={
+          processDefinition.code
+        }
         tasks={tasks}
-        expandedKey={mobileExpandedKey}
-        onToggleCard={(key) => {
-          const next = mobileExpandedKey === key ? null : key
-          const nextTaskId = next?.split(":")[0]
-          if (focusedTaskId && nextTaskId !== focusedTaskId) {
-            clearEntityFocusParams(router, pathname, searchParams)
+        expandedKey={
+          mobileExpandedKey
+        }
+        onToggleCard={key => {
+          const next =
+            mobileExpandedKey === key
+              ? null
+              : key
+
+          const nextTaskId =
+            next?.split(":")[0]
+
+          if (
+            focusedTaskId &&
+            nextTaskId !==
+              focusedTaskId
+          ) {
+            clearEntityFocusParams(
+              router,
+              pathname,
+              searchParams,
+            )
           }
-          setMobileExpandedKey(next)
+
+          setMobileExpandedKey(
+            next,
+          )
         }}
-        activeOverlayKey={activeOverlayKey}
-        onOverlayOpenChange={handleOverlayOpenChange}
+        activeOverlayKey={
+          activeOverlayKey
+        }
+        onOverlayOpenChange={
+          handleOverlayOpenChange
+        }
         contentOnly
       />
-
     )
-
   }
 
-  const expandedPt = displayedTasks.find(
-    pt => processAccess.task(pt).id === expand.expandedRowId,
-  )
-  const dimActiveSiblings = Boolean(
-    expandedPt && expandedPt.workflowStep?.status !== "REVIEWED",
-  )
+  const expandedPt =
+    displayedTasks.find(
+      processTask =>
+        processAccess
+          .task(processTask)
+          .id ===
+        expand.expandedRowId,
+    )
+
+  const dimActiveSiblings =
+    Boolean(
+      expandedPt &&
+      expandedPt.workflowStep
+        ?.status !== "REVIEWED",
+    )
 
   return (
-
     <div className="flex flex-col gap-2 pb-2">
+      {displayedTasks.map(
+        processTask => {
+          const id =
+            processAccess
+              .task(processTask)
+              .id
 
-      {displayedTasks.map(processTask => {
-
-        const id = processAccess.task(processTask).id
-
-        return (
-
-          <div key={id} data-expanded-row-id={id}>
-
-            <ProcessMobileCard
-              processTask={processTask}
-              expanded={expand.expandedRowId === id}
-              dimOthers={dimActiveSiblings}
-              onToggle={() =>
-                setExpandedRowId(
-                  expand.expandedRowId === id
-                    ? null
-                    : id,
-                )
+          return (
+            <div
+              key={id}
+              data-expanded-row-id={
+                id
               }
-            />
-
-          </div>
-
-        )
-
-      })}
-
-      {displayedTasks.length === 0 && (
-
-        <div className="flex h-24 items-center justify-center rounded-xl bg-foreground/5 text-sm text-muted-foreground">
-          Sin tareas en {processDefinition.label}
-        </div>
-
+            >
+              <ProcessMobileCard
+                processTask={
+                  processTask
+                }
+                expanded={
+                  expand.expandedRowId ===
+                  id
+                }
+                dimOthers={
+                  dimActiveSiblings
+                }
+                onToggle={() =>
+                  setExpandedRowId(
+                    expand.expandedRowId ===
+                      id
+                      ? null
+                      : id,
+                  )
+                }
+              />
+            </div>
+          )
+        },
       )}
 
+      {displayedTasks.length === 0 && (
+        <div className="flex h-24 items-center justify-center rounded-xl bg-foreground/5 text-sm text-muted-foreground">
+          Sin tareas en{" "}
+          {processDefinition.label}
+        </div>
+      )}
     </div>
-
   )
 }

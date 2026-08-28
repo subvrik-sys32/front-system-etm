@@ -119,11 +119,11 @@ export function ProjectExpandedRow({
     if (!isTarget || !arrived) return
     if (tabParam === "comments") {
       setCommentsDialogOpen(true)
-      setActiveView("workflow")
+      setActiveView("tasks")
       useDeepLinkRoute.getState().finish()
       return
     }
-    setActiveView("workflow")
+    setActiveView("tasks")
   }, [isTarget, arrived, tabParam])
 
   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
@@ -380,7 +380,7 @@ export function ProjectExpandedRow({
         open={commentsDialogOpen}
         onOpenChange={open => {
           setCommentsDialogOpen(open)
-          if (!open) setActiveView("workflow")
+          if (!open) setActiveView("tasks")
         }}
         readOnly={isProjectCompleted(project)}
       />

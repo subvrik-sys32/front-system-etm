@@ -219,6 +219,39 @@ export function ProcessTableCard({
     ],
   )
 
+  /**
+   * Segmento visual de asignación:
+   *
+   * Las tareas cuyo workflowStep de ESTE proceso tiene assignedById
+   * salen de la lista normal y pasan a un bloque propio arriba.
+   *
+   * IMPORTANTE:
+   * La separación es deliberada y tiene precedencia visual sobre
+   * la lista normal. Dentro de cada bloque se conserva exactamente
+   * el orden operativo/prioridad que ya calculó orderedTasks.
+   */
+  const assignedTasks = useMemo(
+    () =>
+      displayedTasks.filter(
+        processTask =>
+          Boolean(
+            processTask.workflowStep
+              ?.assignedById,
+          ),
+      ),
+    [displayedTasks],
+  )
+
+  const unassignedTasks = useMemo(
+    () =>
+      displayedTasks.filter(
+        processTask =>
+          !processTask.workflowStep
+            ?.assignedById,
+      ),
+    [displayedTasks],
+  )
+
   useEffect(() => {
     if (!expand.expandedRowId) {
       return
@@ -365,45 +398,84 @@ export function ProcessTableCard({
         ?.status !== "REVIEWED",
     )
 
-  return (
-    <div className="flex flex-col gap-2 pb-2">
-      {displayedTasks.map(
-        processTask => {
-          const id =
-            processAccess
-              .task(processTask)
-              .id
+  const renderProcessTasks = (
+    tasks: ProcessTask[],
+  ) =>
+    tasks.map(
+      processTask => {
+        const id =
+          processAccess
+            .task(processTask)
+            .id
 
-          return (
-            <div
-              key={id}
-              data-expanded-row-id={
+        return (
+          <div
+            key={id}
+            data-expanded-row-id={
+              id
+            }
+          >
+            <ProcessMobileCard
+              processTask={
+                processTask
+              }
+              expanded={
+                expand.expandedRowId ===
                 id
               }
-            >
-              <ProcessMobileCard
-                processTask={
-                  processTask
-                }
-                expanded={
+              dimOthers={
+                dimActiveSiblings
+              }
+              onToggle={() =>
+                setExpandedRowId(
                   expand.expandedRowId ===
-                  id
-                }
-                dimOthers={
-                  dimActiveSiblings
-                }
-                onToggle={() =>
-                  setExpandedRowId(
-                    expand.expandedRowId ===
-                      id
-                      ? null
-                      : id,
-                  )
-                }
-              />
+                    id
+                    ? null
+                    : id,
+                )
+              }
+            />
+          </div>
+        )
+      },
+    )
+
+  return (
+    <div className="flex flex-col gap-3 pb-2">
+      {assignedTasks.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 px-1">
+            <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+              Asignadas
+            </span>
+            <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+              {assignedTasks.length}
+            </span>
+          </div>
+
+          {renderProcessTasks(
+            assignedTasks,
+          )}
+        </section>
+      )}
+
+      {unassignedTasks.length > 0 && (
+        <section className="flex flex-col gap-2">
+          {assignedTasks.length > 0 && (
+            <div className="flex items-center gap-2 px-1">
+              <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                Disponibles
+              </span>
+              <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+                {unassignedTasks.length}
+              </span>
             </div>
-          )
-        },
+          )}
+
+          {renderProcessTasks(
+            unassignedTasks,
+          )}
+        </section>
       )}
 
       {displayedTasks.length === 0 && (

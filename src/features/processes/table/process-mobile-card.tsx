@@ -282,7 +282,7 @@ function ProcessMobileCardReady({
 
         </div>
 
-        {stepId && processCode && (
+        {stepId && processCode && !isMobile && (
           <div
             className="w-30 shrink-0"
             onClick={e => e.stopPropagation()}
@@ -343,79 +343,155 @@ function ProcessMobileCardReady({
               Ocultar campos
             </span>
           ) : (
-            <span className="flex min-w-0 flex-1 items-center gap-3 text-sm">
-              {/* Cliente */}
-              <span
-                className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground"
-                title={project.client.name}
-              >
-                <EntityIconBadge
-                  icon={project.client.icon ?? "factory"}
-                  color={project.client.color}
-                  size={14}
-                />
-                <span className="truncate">{project.client.name}</span>
-              </span>
-
-              <span className="shrink-0 text-muted-foreground/50">·</span>
-
-              {/* Prioridad */}
-              <span
-                className="inline-flex min-w-0 items-center gap-1.5"
-                title={priority.name}
-                style={{ color: priorityInk }}
-              >
-                <EntityIconBadge
-                  icon={priority.icon}
-                  color={priorityInk}
-                  size={14}
-                />
-                <span className="hidden truncate md:inline">{priority.name}</span>
-              </span>
-
-              <span className="shrink-0 text-muted-foreground/50">·</span>
-
-              {/* Estado */}
-              <span
-                className="inline-flex min-w-0 items-center gap-1.5"
-                title={statusLabel.label}
-                style={{ color: statusInk }}
-              >
-                <EntityIconBadge
-                  icon={statusLabel.icon}
-                  color={statusInk}
-                  size={14}
-                />
-                <span className="hidden truncate md:inline">{statusLabel.label}</span>
-              </span>
-
-              <span className="shrink-0 text-muted-foreground/50">·</span>
-
-              {/* Operario / Sin asignar */}
-              <span
-                className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground"
-                title={operatorLabel ?? "Sin asignar"}
-              >
-                {operator ? (
+            <>
+              {/* Desktop: conserva la presentación actual. */}
+              <span className="hidden min-w-0 flex-1 items-center gap-3 text-sm md:flex">
+                {/* Cliente */}
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground"
+                  title={project.client.name}
+                >
                   <EntityIconBadge
-                    icon={operator.icon}
-                    color={operatorInk}
+                    icon={project.client.icon ?? "factory"}
+                    color={project.client.color}
                     size={14}
                   />
-                ) : (
-                  <UserX size={14} className="shrink-0 text-muted-foreground" />
-                )}
-                {operatorLabel ? (
-                  <OperatorNameText
-                    name={operatorLabel}
-                    color={operator?.color}
-                    className="truncate font-medium"
+                  <span className="truncate">{project.client.name}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/50">·</span>
+
+                {/* Prioridad */}
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5"
+                  title={priority.name}
+                  style={{ color: priorityInk }}
+                >
+                  <EntityIconBadge
+                    icon={priority.icon}
+                    color={priorityInk}
+                    size={14}
                   />
-                ) : (
-                  <span className="truncate">Sin asignar</span>
-                )}
+                  <span className="truncate">{priority.name}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/50">·</span>
+
+                {/* Estado */}
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5"
+                  title={statusLabel.label}
+                  style={{ color: statusInk }}
+                >
+                  <EntityIconBadge
+                    icon={statusLabel.icon}
+                    color={statusInk}
+                    size={14}
+                  />
+                  <span className="truncate">{statusLabel.label}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/50">·</span>
+
+                {/* Operario / Sin asignar */}
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground"
+                  title={operatorLabel ?? "Sin asignar"}
+                >
+                  {operator ? (
+                    <EntityIconBadge
+                      icon={operator.icon}
+                      color={operatorInk}
+                      size={14}
+                    />
+                  ) : (
+                    <UserX size={14} className="shrink-0 text-muted-foreground" />
+                  )}
+                  {operatorLabel ? (
+                    <OperatorNameText
+                      name={operatorLabel}
+                      color={operator?.color}
+                      className="truncate font-medium"
+                    />
+                  ) : (
+                    <span className="truncate">Sin asignar</span>
+                  )}
+                </span>
               </span>
-            </span>
+
+              {/* Mobile: invierte icono/texto respecto al row.
+                  Cliente = icono solo
+                  Prioridad = icono + texto
+                  Estado = icono + texto
+                  Operario = icono solo
+              */}
+              <span className="flex min-w-0 flex-1 items-center gap-3 text-sm md:hidden">
+                {/* Cliente: icono solamente */}
+                <span
+                  className="inline-flex shrink-0 items-center"
+                  title={project.client.name}
+                >
+                  <EntityIconBadge
+                    icon={project.client.icon ?? "factory"}
+                    color={project.client.color}
+                    size={14}
+                  />
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/50">·</span>
+
+                {/* Prioridad: icono + texto */}
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5"
+                  title={priority.name}
+                  style={{ color: priorityInk }}
+                >
+                  <EntityIconBadge
+                    icon={priority.icon}
+                    color={priorityInk}
+                    size={14}
+                  />
+                  <span className="truncate">{priority.name}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/50">·</span>
+
+                {/* Estado: icono + texto */}
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5"
+                  title={statusLabel.label}
+                  style={{ color: statusInk }}
+                >
+                  <EntityIconBadge
+                    icon={statusLabel.icon}
+                    color={statusInk}
+                    size={14}
+                  />
+                  <span className="truncate">{statusLabel.label}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/50">·</span>
+
+                {/* Operario / Sin asignar: icono solamente */}
+                <span
+                  className="inline-flex shrink-0 items-center"
+                  title={operatorLabel ?? "Sin asignar"}
+                >
+                  {operator ? (
+                    <EntityIconBadge
+                      icon={operator.icon}
+                      color={operatorInk}
+                      size={14}
+                    />
+                  ) : (
+                    <UserX
+                      size={14}
+                      className="shrink-0 text-muted-foreground"
+                    />
+                  )}
+                </span>
+              </span>
+            </>
           )}
           <ChevronDown
             size={14}
@@ -451,6 +527,29 @@ function ProcessMobileCardReady({
             </>
           }
         />
+
+        {/* En móvil las acciones del workflow viven dentro del expandido.
+            En desktop siguen en el row, como antes. */}
+        {isMobile && stepId && processCode && (
+          <div className="space-y-2 pt-1">
+            <div className="px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              Acciones del flujo
+            </div>
+
+            <div
+              className="rounded-xl bg-foreground/5 p-2"
+              onClick={e => e.stopPropagation()}
+              onPointerDown={e => e.stopPropagation()}
+            >
+              <ProcessRowActions
+                task={task}
+                stepId={stepId}
+                status={workflowAccess.status(processTask)}
+                processCode={processCode}
+              />
+            </div>
+          </div>
+        )}
       </CollapsibleHeightSection>
     </div>
   )

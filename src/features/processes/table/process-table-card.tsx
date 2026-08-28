@@ -330,58 +330,136 @@ export function ProcessTableCard({
     )
   }
 
+  /**
+   * MOBILE
+   *
+   * IMPORTANTE:
+   * No usamos TaskProcessColumn / TaskPipelineCard aquí.
+   * Cada proceso se representa directamente mediante
+   * ProcessMobileCard.
+   *
+   * Los segmentos Asignadas / Disponibles se mantienen.
+   */
+  const renderMobileProcessTasks = (
+    tasks: ProcessTask[],
+  ) =>
+    tasks.map(
+      processTask => {
+        const id =
+          processAccess
+            .task(processTask)
+            .id
+
+        const key =
+          `${id}:${processDefinition.code}`
+
+        return (
+          <div
+            key={id}
+            data-expanded-row-id={id}
+          >
+            <ProcessMobileCard
+              processTask={
+                processTask
+              }
+              expanded={
+                mobileExpandedKey === key
+              }
+              dimOthers={
+                Boolean(
+                  mobileExpandedKey &&
+                    mobileExpandedKey !== key &&
+                    processTask.workflowStep?.status !==
+                      "REVIEWED",
+                )
+              }
+              onToggle={() => {
+                const next =
+                  mobileExpandedKey === key
+                    ? null
+                    : key
+
+                const nextTaskId =
+                  next?.split(":")[0]
+
+                if (
+                  focusedTaskId &&
+                  nextTaskId !==
+                    focusedTaskId
+                ) {
+                  clearEntityFocusParams(
+                    router,
+                    pathname,
+                    searchParams,
+                  )
+                }
+
+                setMobileExpandedKey(
+                  next,
+                )
+              }}
+            />
+          </div>
+        )
+      },
+    )
+
   if (isMobile) {
-    const tasks =
-      displayedTasks.map(
-        processTask =>
-          processTask.task,
-      )
-
     return (
-      <TaskProcessColumn
-        processCode={
-          processDefinition.code
-        }
-        tasks={tasks}
-        expandedKey={
-          mobileExpandedKey
-        }
-        onToggleCard={key => {
-          const next =
-            mobileExpandedKey === key
-              ? null
-              : key
+      <div className="flex flex-col gap-3 pb-2">
+        {assignedTasks.length > 0 && (
+          <section className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 px-1">
+              <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+                Asignadas
+              </span>
 
-          const nextTaskId =
-            next?.split(":")[0]
+              <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+                {assignedTasks.length}
+              </span>
+            </div>
 
-          if (
-            focusedTaskId &&
-            nextTaskId !==
-              focusedTaskId
-          ) {
-            clearEntityFocusParams(
-              router,
-              pathname,
-              searchParams,
-            )
-          }
+            {renderMobileProcessTasks(
+              assignedTasks,
+            )}
+          </section>
+        )}
 
-          setMobileExpandedKey(
-            next,
-          )
-        }}
-        activeOverlayKey={
-          activeOverlayKey
-        }
-        onOverlayOpenChange={
-          handleOverlayOpenChange
-        }
-        contentOnly
-      />
+        {unassignedTasks.length > 0 && (
+          <section className="flex flex-col gap-2">
+            {assignedTasks.length > 0 && (
+              <div className="flex items-center gap-2 px-1">
+                <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                  Disponibles
+                </span>
+
+                <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+                  {unassignedTasks.length}
+                </span>
+              </div>
+            )}
+
+            {renderMobileProcessTasks(
+              unassignedTasks,
+            )}
+          </section>
+        )}
+
+        {displayedTasks.length === 0 && (
+          <div className="flex h-24 items-center justify-center rounded-xl bg-foreground/5 text-sm text-muted-foreground">
+            Sin tareas en{" "}
+            {processDefinition.label}
+          </div>
+        )}
+      </div>
     )
   }
 
+  /**
+   * DESKTOP
+   *
+   * Se conserva el flujo existente.
+   */
   const expandedPt =
     displayedTasks.find(
       processTask =>
@@ -448,6 +526,7 @@ export function ProcessTableCard({
             <span className="text-[11px] font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
               Asignadas
             </span>
+
             <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
               {assignedTasks.length}
             </span>
@@ -466,6 +545,7 @@ export function ProcessTableCard({
               <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
                 Disponibles
               </span>
+
               <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
                 {unassignedTasks.length}
               </span>

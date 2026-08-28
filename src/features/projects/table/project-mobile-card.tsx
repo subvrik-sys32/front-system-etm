@@ -328,14 +328,62 @@ function ProjectMobileCardReady({
             <>
               {/* Mobile: conservar exactamente el resumen actual. */}
               <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground md:hidden">
-                <span className="shrink-0 truncate">{project.client.name}</span>
-                <span className="shrink-0 text-muted-foreground/80">·</span>
-                <span className="min-w-0 truncate" style={{ color: stageInk }}>
-                  {project.stage.name}
+                {/* Cliente: en el row es icono + texto → aquí solo icono */}
+                <span
+                  className="inline-flex shrink-0 items-center"
+                  title={project.client.name}
+                >
+                  <EntityIconBadge
+                    icon={project.client.icon}
+                    color={project.client.color}
+                    size={14}
+                  />
                 </span>
+
                 <span className="shrink-0 text-muted-foreground/80">·</span>
-                <span className="min-w-0 truncate" style={{ color: statusInk }}>
-                  {project.status.name}
+
+                {/* Etapa: en el row es icono → aquí icono + texto */}
+                <span
+                  className="inline-flex min-w-0 items-center gap-1"
+                  style={{ color: stageInk }}
+                  title={project.stage.name}
+                >
+                  <EntityIconBadge
+                    icon={project.stage.icon}
+                    color={stageInk}
+                    size={12}
+                  />
+                  <span className="truncate">{project.stage.name}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/80">·</span>
+
+                {/* Estado: en el row es icono → aquí icono + texto */}
+                <span
+                  className="inline-flex min-w-0 items-center gap-1"
+                  style={{ color: statusInk }}
+                  title={project.status.name}
+                >
+                  <EntityIconBadge
+                    icon={project.status.icon}
+                    color={statusInk}
+                    size={12}
+                  />
+                  <span className="truncate">{project.status.name}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/80">·</span>
+
+                {/* PM: en el row es icono + texto → aquí solo icono */}
+                <span
+                  className="inline-flex shrink-0 items-center"
+                  title={project.pm.name}
+                >
+                  <UserRound
+                    size={14}
+                    strokeWidth={2.25}
+                    style={{ color: pmInk }}
+                  />
                 </span>
               </span>
 

@@ -1,5 +1,7 @@
 "use client"
 
+import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
+
 import { Activity, AlertTriangle, CheckCircle2, ClipboardList, MessageSquare, Puzzle } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
@@ -26,9 +28,6 @@ import { ProjectTasksList } from "./project-tasks-list"
 import { ProjectRowActions } from "../actions/project-row-actions"
 import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
-import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
-import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
 
 type Props = {
   project: Project
@@ -46,9 +45,10 @@ export function ProjectExpandedRow({
   const router = useRouter()
   const pathname = usePathname()
 
-  const urlProjectId = searchParams.get("projectId")
-  const isTarget = urlProjectId === project.id
-  const tabParam = searchParams.get("tab")
+  const route = useDeepLinkRoute(s => s.route)
+  const isTarget = route?.projectId === project.id
+  const tabParam = route?.tab
+  const arrived = route?.phase === "arrived"
 
   const [
     activeView,
@@ -112,44 +112,17 @@ export function ProjectExpandedRow({
     project.id,
   ])
 
-  const urlFocusToken = searchParams.get("focus")
-  const settledToken = useFocusSettleStore(s => s.settledToken)
-  const navActive = useFocusNavStore(s => s.active)
-  // Mensajes solo cuando la ruta terminó Y el overlay ya no está.
-  const focusSettled =
-    (!urlFocusToken || settledToken === urlFocusToken) && !navActive
 
   useEffect(() => {
-    if (!isTarget) {
-      return
-    }
-
+    if (!isTarget || !arrived) return
     if (tabParam === "comments") {
-      if (!focusSettled) {
-        return
-      }
-
       setActiveView("comments")
-      // Dialog en todos los breakpoints (paridad con processes).
       setCommentsDialogOpen(true)
-      // Consumir tab: F5 no debe reabrir Mensajes.
-      consumeCommentsTabParam(router, pathname, searchParams)
+      useDeepLinkRoute.getState().finish()
       return
     }
-
-    if (tabParam === "kpis") {
-      setActiveView("kpis")
-      return
-    }
-
     setActiveView("tasks")
-  }, [
-    isTarget,
-    tabParam,
-    isMobile,
-    focusSettled,
-    navActive,
-  ])
+  }, [isTarget, arrived, tabParam])
 
   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
 

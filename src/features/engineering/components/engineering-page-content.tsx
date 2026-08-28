@@ -1,8 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { useFocusedRow } from "@/shared/hooks/use-focused-row"
-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+import { useDeepLinkRunner } from "@/shared/hooks/use-deep-link-runner"
 import { useQueryClient } from "@tanstack/react-query"
 
 import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
@@ -84,15 +83,9 @@ export function EngineeringPageContent({
   const { tasks, loading } = useEngineeringTasks(filters)
 
   const [focusedExpandedId, setFocusedExpandedId] = useState<string | null>(null)
-  const markSettled = useFocusSettleStore(s => s.markSettled)
-  useFocusedRow({
+  useDeepLinkRunner({
     focusedId: focusedTaskId,
-    expandedRowId: focusedExpandedId,
     setExpandedRowId: setFocusedExpandedId,
-    focusToken,
-    onSettled: () => {
-      if (focusToken) markSettled(focusToken)
-    },
   })
 
   const listUsers = useMemo(

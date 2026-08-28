@@ -7,10 +7,9 @@ import {
 
 import type { Task } from "../types/task.types"
 
-import { useFocusedRow } from "@/shared/hooks/use-focused-row"
+import { useDeepLinkRunner } from "@/shared/hooks/use-deep-link-runner"
 import { useExpandRow } from "@/shared/hooks/use-expand-row"
 import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus"
-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
 
 import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
@@ -66,16 +65,9 @@ export function TaskTable({
     setExpandedRowId: expand.setExpandedRowId,
   })
 
-  const markSettled = useFocusSettleStore(s => s.markSettled)
-
-  useFocusedRow({
+  useDeepLinkRunner({
     focusedId: focusedTaskId,
-    expandedRowId: expand.expandedRowId,
     setExpandedRowId: expand.setExpandedRowId,
-    focusToken,
-    onSettled: () => {
-      if (focusToken) markSettled(focusToken)
-    },
   })
 
   const filteredTasks = useTaskSearch(tasks, search)

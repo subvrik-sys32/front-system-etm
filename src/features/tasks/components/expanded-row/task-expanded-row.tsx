@@ -1,5 +1,7 @@
 "use client"
 
+import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
+
 import { useEffect, useState } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { ClipboardList, MessageSquare } from "lucide-react"
@@ -28,9 +30,6 @@ import { TaskRowActions } from "../actions/task-row-actions"
 import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
 import { useActiveCommentContextStore } from "@/features/comments/store/active-comment-context-store"
-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
-import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
-import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
 import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
 
 type Props = {
@@ -46,9 +45,10 @@ export function TaskExpandedRow({
   const router = useRouter()
   const pathname = usePathname()
 
-  const urlTaskId = searchParams.get("taskId")
-  const isTarget = urlTaskId === task.id
-  const tabParam = searchParams.get("tab")
+  const route = useDeepLinkRoute(s => s.route)
+  const isTarget = route?.taskId === task.id
+  const tabParam = route?.tab
+  const arrived = route?.phase === "arrived"
 
   const [
     activeView,
@@ -80,47 +80,17 @@ export function TaskExpandedRow({
     ? comments.length
     : (task.commentCount ?? 0)
 
-  const urlFocusToken = searchParams.get("focus")
-  const settledToken = useFocusSettleStore(s => s.settledToken)
-  const navActive = useFocusNavStore(s => s.active)
-  // Si no hay token en la URL (no vino de un deep-link), no hay nada
-  // que esperar — se abre directo, como antes.
-  // Mensajes solo cuando la ruta terminó Y el overlay ya no está.
-  const focusSettled =
-    (!urlFocusToken || settledToken === urlFocusToken) && !navActive
 
   useEffect(() => {
-    if (!isTarget) {
-      return
-    }
-
+    if (!isTarget || !arrived) return
     if (tabParam === "comments") {
-      // Esperar scroll+expand del deep-link; luego abrir dialog en
-      // todos los breakpoints (ya no hay panel inline de mensajes).
-      if (!focusSettled) {
-        return
-      }
-
       setActiveView("comments")
       setCommentsDialogOpen(true)
-      // Consumir tab: F5 no debe reabrir Mensajes.
-      consumeCommentsTabParam(router, pathname, searchParams)
+      useDeepLinkRoute.getState().finish()
       return
     }
-
-    if (tabParam === "kpis") {
-      setActiveView("workflow")
-      return
-    }
-
     setActiveView("workflow")
-  }, [
-    isTarget,
-    tabParam,
-    isMobile,
-    focusSettled,
-    navActive,
-  ])
+  }, [isTarget, arrived, tabParam])
 
   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
 

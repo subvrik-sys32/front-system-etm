@@ -1,0 +1,1213 @@
+diff --git a/src/app/(protected)/ingenieria/page.tsx b/src/app/(protected)/ingenieria/page.tsx
+index 0e066a8..d40e88a 100644
+--- a/src/app/(protected)/ingenieria/page.tsx
++++ b/src/app/(protected)/ingenieria/page.tsx
+@@ -1,24 +1,19 @@
+ "use client"
+ 
+-import { useSearchParams } from "next/navigation"
+-
+ import { EngineeringPageContent } from "@/features/engineering/components/engineering-page-content"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+ import { PageShell } from "@/shared/responsive/layout/page-shell"
++import { useDeepLinkCapture } from "@/shared/hooks/use-deep-link-capture"
++import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
+ 
+ export default function IngenieriaPage() {
+   usePageTitle("Ingeniería")
+-  const searchParams = useSearchParams()
+-  const taskId = searchParams.get("taskId") ?? undefined
+-  const focusToken = searchParams.get("focus") ?? undefined
+-
++  useDeepLinkCapture()
++  const taskId = useDeepLinkRoute(s => s.route?.taskId)
+   return (
+     <PageShell mode="list">
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+-        <EngineeringPageContent
+-          focusedTaskId={taskId}
+-          focusToken={focusToken}
+-        />
++        <EngineeringPageContent focusedTaskId={taskId} />
+       </section>
+     </PageShell>
+   )
+diff --git a/src/app/(protected)/processes/page.tsx b/src/app/(protected)/processes/page.tsx
+index e50a9d3..002d206 100644
+--- a/src/app/(protected)/processes/page.tsx
++++ b/src/app/(protected)/processes/page.tsx
+@@ -1,25 +1,22 @@
+ "use client"
+ 
+ import { useSearchParams } from "next/navigation"
+-
+ import { ProcessPageContent } from "@/features/processes/components/process-page-content"
+ import { getProcessDefinition } from "@/features/processes/selectors/get-process-definition"
+ import type { ProcessCode } from "@/features/tasks/types/task.types"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+ import { PageShell } from "@/shared/responsive/layout/page-shell"
++import { useDeepLinkCapture } from "@/shared/hooks/use-deep-link-capture"
++import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
+ 
+ export default function ProcessPage() {
+   const searchParams = useSearchParams()
+-
+-  const taskId = searchParams.get("taskId") ?? undefined
+-  const focusToken = searchParams.get("focus") ?? undefined
+-  const initialShowHistory = searchParams.get("history") === "1"
++  useDeepLinkCapture()
++  const taskId = useDeepLinkRoute(s => s.route?.taskId)
+   const codeParam = searchParams.get("code") ?? "ct"
+   const processCode = codeParam.toUpperCase() as ProcessCode
+   const process = getProcessDefinition(processCode)
+-
+   usePageTitle(process?.label ?? "Proceso")
+-
+   return (
+     <PageShell mode="list">
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+@@ -27,10 +24,9 @@ export default function ProcessPage() {
+           key={processCode}
+           processCode={processCode}
+           focusedTaskId={taskId}
+-          focusToken={focusToken}
+-          initialShowHistory={initialShowHistory}
++          initialShowHistory={searchParams.get("history") === "1"}
+         />
+       </section>
+     </PageShell>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/app/(protected)/projects/page.tsx b/src/app/(protected)/projects/page.tsx
+index db31013..fb16f55 100644
+--- a/src/app/(protected)/projects/page.tsx
++++ b/src/app/(protected)/projects/page.tsx
+@@ -1,33 +1,30 @@
+ "use client"
+ 
+ import { useSearchParams } from "next/navigation"
+-
+ import { ProjectActions } from "@/features/projects/components/actions/project-actions"
+ import { ProjectPageContent } from "@/features/projects/components/project-page-content"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+ import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
+ import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+ import { PageShell } from "@/shared/responsive/layout/page-shell"
++import { useDeepLinkCapture } from "@/shared/hooks/use-deep-link-capture"
++import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
+ 
+ export default function ProjectsPage() {
+   usePageTitle("Proyectos")
+   const { isMobile } = useResponsive()
+   usePageActions(isMobile ? null : <ProjectActions />)
+-
++  useDeepLinkCapture()
++  const projectId = useDeepLinkRoute(s => s.route?.projectId)
+   const searchParams = useSearchParams()
+-  const projectId = searchParams.get("projectId") ?? undefined
+-  const focusToken = searchParams.get("focus") ?? undefined
+-  const initialShowHistory = searchParams.get("history") === "1"
+-
+   return (
+     <PageShell mode="list">
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+         <ProjectPageContent
+           focusedProjectId={projectId}
+-          focusToken={focusToken}
+-          initialShowHistory={initialShowHistory}
++          initialShowHistory={searchParams.get("history") === "1"}
+         />
+       </section>
+     </PageShell>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/app/(protected)/tasks/page.tsx b/src/app/(protected)/tasks/page.tsx
+index e675179..4a7b3e0 100644
+--- a/src/app/(protected)/tasks/page.tsx
++++ b/src/app/(protected)/tasks/page.tsx
+@@ -1,32 +1,28 @@
+ "use client"
+ 
+ import { useSearchParams } from "next/navigation"
+-
+ import { TaskActions } from "@/features/tasks/components/actions/task-actions"
+ import { TaskPageContent } from "@/features/tasks/components/task-page-content"
+ import { usePageTitle } from "@/shared/responsive/navigation/hooks/use-page-title"
+ import { PageShell } from "@/shared/responsive/layout/page-shell"
+ import { usePageActions } from "@/shared/responsive/navigation/hooks/use-page-actions"
++import { useDeepLinkCapture } from "@/shared/hooks/use-deep-link-capture"
++import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
+ 
+ export default function TasksPage() {
+   usePageTitle("Tareas")
+   usePageActions(<TaskActions />)
+-
++  useDeepLinkCapture()
++  const taskId = useDeepLinkRoute(s => s.route?.taskId)
+   const searchParams = useSearchParams()
+-  const taskId = searchParams.get("taskId") ?? undefined
+-  const focusToken = searchParams.get("focus") ?? undefined
+-  const initialShowHistory = searchParams.get("history") === "1"
+-
+   return (
+     <PageShell mode="list">
+-
+       <section className="flex min-h-0 w-full flex-1 flex-col">
+         <TaskPageContent
+           focusedTaskId={taskId}
+-          focusToken={focusToken}
+-          initialShowHistory={initialShowHistory}
++          initialShowHistory={searchParams.get("history") === "1"}
+         />
+       </section>
+     </PageShell>
+   )
+-}
+\ No newline at end of file
++}
+diff --git a/src/features/engineering/components/engineering-page-content.tsx b/src/features/engineering/components/engineering-page-content.tsx
+index a6b2693..7394c9f 100644
+--- a/src/features/engineering/components/engineering-page-content.tsx
++++ b/src/features/engineering/components/engineering-page-content.tsx
+@@ -1,8 +1,7 @@
+ "use client"
+ 
+ import { useMemo, useState } from "react"
+-import { useFocusedRow } from "@/shared/hooks/use-focused-row"
+-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
++import { useDeepLinkRunner } from "@/shared/hooks/use-deep-link-runner"
+ import { useQueryClient } from "@tanstack/react-query"
+ 
+ import { AppListScroll } from "@/shared/ui/vertical-scroll/app-list-scroll"
+@@ -84,15 +83,9 @@ export function EngineeringPageContent({
+   const { tasks, loading } = useEngineeringTasks(filters)
+ 
+   const [focusedExpandedId, setFocusedExpandedId] = useState<string | null>(null)
+-  const markSettled = useFocusSettleStore(s => s.markSettled)
+-  useFocusedRow({
++  useDeepLinkRunner({
+     focusedId: focusedTaskId,
+-    expandedRowId: focusedExpandedId,
+     setExpandedRowId: setFocusedExpandedId,
+-    focusToken,
+-    onSettled: () => {
+-      if (focusToken) markSettled(focusToken)
+-    },
+   })
+ 
+   const listUsers = useMemo(
+diff --git a/src/features/processes/components/expanded-row/process-expanded-row.tsx b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+index b886d1b..4e6d9a3 100644
+--- a/src/features/processes/components/expanded-row/process-expanded-row.tsx
++++ b/src/features/processes/components/expanded-row/process-expanded-row.tsx
+@@ -1,5 +1,7 @@
+ "use client"
+ 
++import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
++
+ import { useEffect, useState, type ReactNode } from "react"
+ import { useSearchParams, useRouter, usePathname } from "next/navigation"
+ import { Activity, ArrowRight, Clock, Clock3, MessageSquare, Package, Puzzle, Layers3 } from "lucide-react"
+@@ -27,9 +29,6 @@ import { ProcessDispatchCard } from "./cards/process-dispatch-card"
+ import { ProcessTimeCard } from "./cards/process-time-card"
+ import { ProcessProgressCard } from "./cards/process-progress-card"
+ import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
+-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+-import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
+-import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
+ 
+ type Props = {
+   processTask: ProcessTask
+@@ -49,9 +48,10 @@ export function ProcessExpandedRow({
+   const router = useRouter()
+   const pathname = usePathname()
+ 
+-  const urlTaskId = searchParams.get("taskId")
+-  const isTarget = urlTaskId === processTask.task.id
+-  const tabParam = searchParams.get("tab") as "comments" | "kpis"
++  const route = useDeepLinkRoute(s => s.route)
++  const isTarget = route?.taskId === processTask.task.id
++  const tabParam = route?.tab
++  const arrived = route?.phase === "arrived"
+ 
+   const processCode =
+     processTask.workflowStep?.processCode
+@@ -169,37 +169,17 @@ export function ProcessExpandedRow({
+     setCommentsDialogOpen,
+   ] = useState(false)
+ 
+-  const urlFocusToken = searchParams.get("focus")
+-  const settledToken = useFocusSettleStore(s => s.settledToken)
+-  const navActive = useFocusNavStore(s => s.active)
+-  // Mensajes solo cuando la ruta terminó Y el overlay ya no está.
+-  const focusSettled =
+-    (!urlFocusToken || settledToken === urlFocusToken) && !navActive
+ 
+   useEffect(() => {
+-    if (!isTarget) {
+-      return
+-    }
+-
++    if (!isTarget || !arrived) return
+     if (tabParam === "comments") {
+-      if (!focusSettled) {
+-        return
+-      }
+-
+       setCommentsDialogOpen(true)
+       setActiveView("kpis")
+-      // Consumir tab: F5 no debe reabrir Mensajes.
+-      consumeCommentsTabParam(router, pathname, searchParams)
++      useDeepLinkRoute.getState().finish()
+       return
+     }
+-
+     setActiveView("kpis")
+-  }, [
+-    isTarget,
+-    tabParam,
+-    focusSettled,
+-    navActive,
+-  ])
++  }, [isTarget, arrived, tabParam])
+ 
+   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
+ 
+diff --git a/src/features/processes/table/process-table-card.tsx b/src/features/processes/table/process-table-card.tsx
+index eebf4ab..29deb70 100644
+--- a/src/features/processes/table/process-table-card.tsx
++++ b/src/features/processes/table/process-table-card.tsx
+@@ -4,8 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
+ 
+ import { useEffect, useMemo, useState } from "react"
+ 
+-import { useFocusedRow } from "@/shared/hooks/use-focused-row"
+-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
++import { useDeepLinkRunner } from "@/shared/hooks/use-deep-link-runner"
+ import { useExpandRow } from "@/shared/hooks/use-expand-row"
+ import { clearEntityFocusParams } from "@/shared/hooks/clear-entity-focus-params"
+ import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus"
+@@ -105,16 +104,9 @@ export function ProcessTableCard({
+     setExpandedRowId: expand.setExpandedRowId,
+   })
+ 
+-  const markSettled = useFocusSettleStore(s => s.markSettled)
+-
+-  useFocusedRow({
++  useDeepLinkRunner({
+     focusedId: focusedTaskId,
+-    expandedRowId: expand.expandedRowId,
+-    setExpandedRowId: isMobile ? () => {} : expand.setExpandedRowId,
+-    focusToken,
+-    onSettled: () => {
+-      if (focusToken) markSettled(focusToken)
+-    },
++    setExpandedRowId: expand.setExpandedRowId,
+   })
+ 
+   const filteredTasks = useProcessSearch(processTasks, search)
+diff --git a/src/features/projects/components/expanded-row/project-expanded-row.tsx b/src/features/projects/components/expanded-row/project-expanded-row.tsx
+index a926c4b..c4e1ff8 100644
+--- a/src/features/projects/components/expanded-row/project-expanded-row.tsx
++++ b/src/features/projects/components/expanded-row/project-expanded-row.tsx
+@@ -1,5 +1,7 @@
+ "use client"
+ 
++import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
++
+ import { Activity, AlertTriangle, CheckCircle2, ClipboardList, MessageSquare, Puzzle } from "lucide-react"
+ import { useEffect, useMemo, useState } from "react"
+ import { useSearchParams, useRouter, usePathname } from "next/navigation"
+@@ -26,9 +28,6 @@ import { ProjectTasksList } from "./project-tasks-list"
+ import { ProjectRowActions } from "../actions/project-row-actions"
+ import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
+ import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
+-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+-import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
+-import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
+ 
+ type Props = {
+   project: Project
+@@ -46,9 +45,10 @@ export function ProjectExpandedRow({
+   const router = useRouter()
+   const pathname = usePathname()
+ 
+-  const urlProjectId = searchParams.get("projectId")
+-  const isTarget = urlProjectId === project.id
+-  const tabParam = searchParams.get("tab")
++  const route = useDeepLinkRoute(s => s.route)
++  const isTarget = route?.projectId === project.id
++  const tabParam = route?.tab
++  const arrived = route?.phase === "arrived"
+ 
+   const [
+     activeView,
+@@ -112,44 +112,17 @@ export function ProjectExpandedRow({
+     project.id,
+   ])
+ 
+-  const urlFocusToken = searchParams.get("focus")
+-  const settledToken = useFocusSettleStore(s => s.settledToken)
+-  const navActive = useFocusNavStore(s => s.active)
+-  // Mensajes solo cuando la ruta terminó Y el overlay ya no está.
+-  const focusSettled =
+-    (!urlFocusToken || settledToken === urlFocusToken) && !navActive
+ 
+   useEffect(() => {
+-    if (!isTarget) {
+-      return
+-    }
+-
++    if (!isTarget || !arrived) return
+     if (tabParam === "comments") {
+-      if (!focusSettled) {
+-        return
+-      }
+-
+       setActiveView("comments")
+-      // Dialog en todos los breakpoints (paridad con processes).
+       setCommentsDialogOpen(true)
+-      // Consumir tab: F5 no debe reabrir Mensajes.
+-      consumeCommentsTabParam(router, pathname, searchParams)
++      useDeepLinkRoute.getState().finish()
+       return
+     }
+-
+-    if (tabParam === "kpis") {
+-      setActiveView("kpis")
+-      return
+-    }
+-
+     setActiveView("tasks")
+-  }, [
+-    isTarget,
+-    tabParam,
+-    isMobile,
+-    focusSettled,
+-    navActive,
+-  ])
++  }, [isTarget, arrived, tabParam])
+ 
+   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
+ 
+diff --git a/src/features/projects/table/project-table.tsx b/src/features/projects/table/project-table.tsx
+index 8682be1..a778a2b 100644
+--- a/src/features/projects/table/project-table.tsx
++++ b/src/features/projects/table/project-table.tsx
+@@ -8,9 +8,8 @@ import {
+ import type { Project } from "../types/project.types"
+ import type { Task } from "@/features/tasks/types/task.types"
+ 
+-import { useFocusedRow } from "@/shared/hooks/use-focused-row"
++import { useDeepLinkRunner } from "@/shared/hooks/use-deep-link-runner"
+ import { useExpandRow } from "@/shared/hooks/use-expand-row"
+-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+ 
+ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
+ import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
+@@ -65,16 +64,9 @@ export function ProjectTable({
+     setExpandedRowId: expand.setExpandedRowId,
+   })
+ 
+-  const markSettled = useFocusSettleStore(s => s.markSettled)
+-
+-  useFocusedRow({
++  useDeepLinkRunner({
+     focusedId: focusedProjectId,
+-    expandedRowId: expand.expandedRowId,
+     setExpandedRowId: expand.setExpandedRowId,
+-    focusToken,
+-    onSettled: () => {
+-      if (focusToken) markSettled(focusToken)
+-    },
+   })
+ 
+   const filteredProjects = useProjectSearch(projects, search)
+diff --git a/src/features/tasks/components/expanded-row/task-expanded-row.tsx b/src/features/tasks/components/expanded-row/task-expanded-row.tsx
+index a84701f..804698e 100644
+--- a/src/features/tasks/components/expanded-row/task-expanded-row.tsx
++++ b/src/features/tasks/components/expanded-row/task-expanded-row.tsx
+@@ -1,5 +1,7 @@
+ "use client"
+ 
++import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
++
+ import { useEffect, useState } from "react"
+ import { useSearchParams, useRouter, usePathname } from "next/navigation"
+ import { ClipboardList, MessageSquare } from "lucide-react"
+@@ -28,9 +30,6 @@ import { TaskRowActions } from "../actions/task-row-actions"
+ import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
+ import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
+ import { useActiveCommentContextStore } from "@/features/comments/store/active-comment-context-store"
+-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+-import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
+-import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
+ import { isWorkflowCompleted } from "@/features/workflow/selectors/is-completed"
+ 
+ type Props = {
+@@ -46,9 +45,10 @@ export function TaskExpandedRow({
+   const router = useRouter()
+   const pathname = usePathname()
+ 
+-  const urlTaskId = searchParams.get("taskId")
+-  const isTarget = urlTaskId === task.id
+-  const tabParam = searchParams.get("tab")
++  const route = useDeepLinkRoute(s => s.route)
++  const isTarget = route?.taskId === task.id
++  const tabParam = route?.tab
++  const arrived = route?.phase === "arrived"
+ 
+   const [
+     activeView,
+@@ -80,47 +80,17 @@ export function TaskExpandedRow({
+     ? comments.length
+     : (task.commentCount ?? 0)
+ 
+-  const urlFocusToken = searchParams.get("focus")
+-  const settledToken = useFocusSettleStore(s => s.settledToken)
+-  const navActive = useFocusNavStore(s => s.active)
+-  // Si no hay token en la URL (no vino de un deep-link), no hay nada
+-  // que esperar — se abre directo, como antes.
+-  // Mensajes solo cuando la ruta terminó Y el overlay ya no está.
+-  const focusSettled =
+-    (!urlFocusToken || settledToken === urlFocusToken) && !navActive
+ 
+   useEffect(() => {
+-    if (!isTarget) {
+-      return
+-    }
+-
++    if (!isTarget || !arrived) return
+     if (tabParam === "comments") {
+-      // Esperar scroll+expand del deep-link; luego abrir dialog en
+-      // todos los breakpoints (ya no hay panel inline de mensajes).
+-      if (!focusSettled) {
+-        return
+-      }
+-
+       setActiveView("comments")
+       setCommentsDialogOpen(true)
+-      // Consumir tab: F5 no debe reabrir Mensajes.
+-      consumeCommentsTabParam(router, pathname, searchParams)
++      useDeepLinkRoute.getState().finish()
+       return
+     }
+-
+-    if (tabParam === "kpis") {
+-      setActiveView("workflow")
+-      return
+-    }
+-
+     setActiveView("workflow")
+-  }, [
+-    isTarget,
+-    tabParam,
+-    isMobile,
+-    focusSettled,
+-    navActive,
+-  ])
++  }, [isTarget, arrived, tabParam])
+ 
+   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
+ 
+diff --git a/src/features/tasks/table/task-table.tsx b/src/features/tasks/table/task-table.tsx
+index d4cc022..eae961e 100644
+--- a/src/features/tasks/table/task-table.tsx
++++ b/src/features/tasks/table/task-table.tsx
+@@ -7,10 +7,9 @@ import {
+ 
+ import type { Task } from "../types/task.types"
+ 
+-import { useFocusedRow } from "@/shared/hooks/use-focused-row"
++import { useDeepLinkRunner } from "@/shared/hooks/use-deep-link-runner"
+ import { useExpandRow } from "@/shared/hooks/use-expand-row"
+ import { useHistoryHiddenFocus } from "@/shared/hooks/use-history-hidden-focus"
+-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+ 
+ import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
+ import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
+@@ -66,16 +65,9 @@ export function TaskTable({
+     setExpandedRowId: expand.setExpandedRowId,
+   })
+ 
+-  const markSettled = useFocusSettleStore(s => s.markSettled)
+-
+-  useFocusedRow({
++  useDeepLinkRunner({
+     focusedId: focusedTaskId,
+-    expandedRowId: expand.expandedRowId,
+     setExpandedRowId: expand.setExpandedRowId,
+-    focusToken,
+-    onSettled: () => {
+-      if (focusToken) markSettled(focusToken)
+-    },
+   })
+ 
+   const filteredTasks = useTaskSearch(tasks, search)
+diff --git a/src/shared/focus/deep-link-route.ts b/src/shared/focus/deep-link-route.ts
+new file mode 100644
+index 0000000..daf6fbf
+--- /dev/null
++++ b/src/shared/focus/deep-link-route.ts
+@@ -0,0 +1,46 @@
++"use client"
++
++/**
++ * Ruta programática unificada.
++ * idle → directing → arrived → idle
++ */
++import { create } from "zustand"
++
++export type DeepLinkPhase = "idle" | "directing" | "arrived"
++
++export type DeepLinkRoute = {
++  phase: DeepLinkPhase
++  taskId?: string
++  projectId?: string
++  focusToken?: string
++  tab?: string | null
++  key: string
++}
++
++type Store = {
++  route: DeepLinkRoute | null
++  begin: (input: Omit<DeepLinkRoute, "phase">) => void
++  arrive: () => void
++  finish: () => void
++  cancel: () => void
++}
++
++export const useDeepLinkRoute = create<Store>((set, get) => ({
++  route: null,
++  begin: input => {
++    const cur = get().route
++    if (cur && cur.key === input.key && cur.phase !== "idle") return
++    set({ route: { ...input, phase: "directing" } })
++  },
++  arrive: () => {
++    const route = get().route
++    if (!route || route.phase !== "directing") return
++    set({ route: { ...route, phase: "arrived" } })
++  },
++  finish: () => set({ route: null }),
++  cancel: () => set({ route: null }),
++}))
++
++export function selectIsDirecting(s: Store) {
++  return s.route?.phase === "directing"
++}
+diff --git a/src/shared/focus/focus-nav-overlay.tsx b/src/shared/focus/focus-nav-overlay.tsx
+index a3eeded..b91b9fe 100644
+--- a/src/shared/focus/focus-nav-overlay.tsx
++++ b/src/shared/focus/focus-nav-overlay.tsx
+@@ -1,35 +1,25 @@
+ "use client"
+ 
+-import { useEffect } from "react"
+-
+ import { Spinner } from "@/shared/ui/spinner/spinner"
+-import { useFocusNavStore } from "./store/focus-nav-store"
+-
+-const SAFETY_MS = 4000
++import { selectIsDirecting, useDeepLinkRoute } from "@/shared/focus/deep-link-route"
++import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
+ 
+ export function FocusNavOverlay() {
+-  const active = useFocusNavStore(s => s.active)
++  const directing = useDeepLinkRoute(selectIsDirecting)
++  const navActive = useFocusNavStore(s => s.active)
+   const label = useFocusNavStore(s => s.label)
+-  const end = useFocusNavStore(s => s.end)
+-
+-  useEffect(() => {
+-    if (!active) return
+-    const t = window.setTimeout(end, SAFETY_MS)
+-    return () => window.clearTimeout(t)
+-  }, [active, end])
+-
+-  if (!active) return null
++  if (!directing && !navActive) return null
+ 
+   return (
+     <div
+-      className="fixed inset-0 z-200 flex items-center justify-center bg-background/55 backdrop-blur-md"
++      className="fixed inset-0 z-[200] flex items-center justify-center bg-background/55 backdrop-blur-md"
+       aria-live="polite"
+       aria-busy="true"
+     >
+       <div className="flex flex-col items-center gap-3 rounded-2xl bg-chrome px-6 py-5 shadow-xs">
+         <Spinner size={22} className="text-primary" />
+         <p className="text-sm font-medium text-foreground">
+-          {label ?? "Dirigiendo…"}
++          {directing ? "Dirigiendo…" : (label ?? "Dirigiendo…")}
+         </p>
+       </div>
+     </div>
+diff --git a/src/shared/focus/store/focus-intent-store.ts b/src/shared/focus/store/focus-intent-store.ts
+deleted file mode 100644
+index 825e09b..0000000
+--- a/src/shared/focus/store/focus-intent-store.ts
++++ /dev/null
+@@ -1,34 +0,0 @@
+-"use client"
+-
+-import { create } from "zustand"
+-
+-/**
+- * Intent de deep-link de un solo uso (memoria).
+- * La URL se limpia al capturar; el trabajo corre contra este store.
+- * F5 → memoria vacía + URL limpia → no re-dirige.
+- */
+-export type DeepLinkIntent = {
+-  taskId?: string
+-  projectId?: string
+-  focusToken?: string
+-  tab?: string | null
+-  key: string
+-}
+-
+-type FocusIntentStore = {
+-  intent: DeepLinkIntent | null
+-  capture: (intent: DeepLinkIntent) => void
+-  consumeTab: () => void
+-  consume: () => void
+-}
+-
+-export const useFocusIntentStore = create<FocusIntentStore>(set => ({
+-  intent: null,
+-  capture: intent => set({ intent }),
+-  consumeTab: () =>
+-    set(state => {
+-      if (!state.intent) return state
+-      return { intent: { ...state.intent, tab: null } }
+-    }),
+-  consume: () => set({ intent: null }),
+-}))
+diff --git a/src/shared/hooks/clear-entity-focus-params.ts b/src/shared/hooks/clear-entity-focus-params.ts
+index 41997db..30bd9bb 100644
+--- a/src/shared/hooks/clear-entity-focus-params.ts
++++ b/src/shared/hooks/clear-entity-focus-params.ts
+@@ -1,15 +1,9 @@
+ "use client"
+ 
+-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
++import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
++import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
+ 
+-/**
+- * Params de deep-link de entidad (tarea / proyecto / foco).
+- * La URL es la fuente de verdad del foco programático.
+- * Si el usuario toma el control (otro row, colapsar, nav limpia), se borran.
+- */
+ const FOCUS_PARAM_KEYS = ["taskId", "projectId", "focus", "tab"] as const
+-
+-/** Orígenes de navegación cross-feature (sessionStorage). */
+ const ORIGIN_STORAGE_KEYS = [
+   "process-origin-task-id",
+   "task-origin-project-id",
+@@ -18,10 +12,7 @@ const ORIGIN_STORAGE_KEYS = [
+ ] as const
+ 
+ type RouterLike = {
+-  replace: (
+-    href: string,
+-    options?: { scroll?: boolean },
+-  ) => void
++  replace: (href: string, options?: { scroll?: boolean }) => void
+ }
+ 
+ function clearOriginButtons() {
+@@ -29,8 +20,6 @@ function clearOriginButtons() {
+   for (const key of ORIGIN_STORAGE_KEYS) {
+     sessionStorage.removeItem(key)
+   }
+-  // Avisa a BackToTask / BackToProject / BackToProcess para que se desmonten sin
+-  // depender solo del click del propio botón.
+   window.dispatchEvent(new Event("entity-origin-cleared"))
+ }
+ 
+@@ -39,27 +28,21 @@ export function clearEntityFocusParams(
+   pathname: string,
+   searchParams: { toString(): string },
+ ): void {
++  const hadRoute = useDeepLinkRoute.getState().route != null
+   const next = new URLSearchParams(searchParams.toString())
+-  let changed = false
+-
++  let hadParams = false
+   for (const key of FOCUS_PARAM_KEYS) {
+     if (next.has(key)) {
+       next.delete(key)
+-      changed = true
++      hadParams = true
+     }
+   }
+ 
+-  useFocusSettleStore.getState().reset()
+-
+-  // URL consumida → no dejar residuos de "← Tarea" / "← Proyecto".
+-  if (changed) {
+-    clearOriginButtons()
+-  }
+-
+-  if (!changed) return
++  useDeepLinkRoute.getState().cancel()
++  useFocusNavStore.getState().end()
+ 
++  if (hadParams || hadRoute) clearOriginButtons()
++  if (!hadParams) return
+   const query = next.toString()
+-  router.replace(query ? `${pathname}?${query}` : pathname, {
+-    scroll: false,
+-  })
++  router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+ }
+diff --git a/src/shared/hooks/consume-comments-tab.ts b/src/shared/hooks/consume-comments-tab.ts
+deleted file mode 100644
+index efe460d..0000000
+--- a/src/shared/hooks/consume-comments-tab.ts
++++ /dev/null
+@@ -1,25 +0,0 @@
+-"use client"
+-
+-/**
+- * Consume `tab=comments` del deep-link una vez abierto el dialog.
+- * Deja taskId/projectId/code/focus — solo quita tab para que F5 no reabra Mensajes.
+- */
+-type RouterLike = {
+-  replace: (href: string, options?: { scroll?: boolean }) => void
+-}
+-
+-export function consumeCommentsTabParam(
+-  router: RouterLike,
+-  pathname: string,
+-  searchParams: { toString(): string; get(name: string): string | null },
+-): void {
+-  if (searchParams.get("tab") !== "comments") return
+-
+-  const next = new URLSearchParams(searchParams.toString())
+-  next.delete("tab")
+-
+-  const query = next.toString()
+-  router.replace(query ? `${pathname}?${query}` : pathname, {
+-    scroll: false,
+-  })
+-}
+diff --git a/src/shared/hooks/use-capture-deep-link.ts b/src/shared/hooks/use-capture-deep-link.ts
+deleted file mode 100644
+index 4277fae..0000000
+--- a/src/shared/hooks/use-capture-deep-link.ts
++++ /dev/null
+@@ -1,44 +0,0 @@
+-"use client"
+-
+-import { useEffect } from "react"
+-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+-
+-import { useFocusIntentStore } from "@/shared/focus/store/focus-intent-store"
+-import { stripDeepLinkSearchParams } from "@/shared/hooks/clear-entity-focus-params"
+-
+-/**
+- * URL → intent store (una vez) → strip URL.
+- * No llama clearEntityFocusParams (eso consumiría el intent recién capturado).
+- */
+-export function useCaptureDeepLink() {
+-  const searchParams = useSearchParams()
+-  const router = useRouter()
+-  const pathname = usePathname()
+-  const capture = useFocusIntentStore(s => s.capture)
+-  const intentKey = useFocusIntentStore(s => s.intent?.key ?? null)
+-
+-  useEffect(() => {
+-    const taskId = searchParams.get("taskId") ?? undefined
+-    const projectId = searchParams.get("projectId") ?? undefined
+-    const focusToken = searchParams.get("focus") ?? undefined
+-    const tab = searchParams.get("tab")
+-
+-    if (!taskId && !projectId && !focusToken && !tab) return
+-
+-    const key =
+-      focusToken ??
+-      `entity:${taskId ?? ""}:${projectId ?? ""}:tab:${tab ?? ""}`
+-
+-    if (intentKey === key) return
+-
+-    capture({
+-      taskId,
+-      projectId,
+-      focusToken,
+-      tab,
+-      key,
+-    })
+-
+-    stripDeepLinkSearchParams(router, pathname, searchParams)
+-  }, [searchParams, router, pathname, capture, intentKey])
+-}
+diff --git a/src/shared/hooks/use-deep-link-capture.ts b/src/shared/hooks/use-deep-link-capture.ts
+new file mode 100644
+index 0000000..12a8d6b
+--- /dev/null
++++ b/src/shared/hooks/use-deep-link-capture.ts
+@@ -0,0 +1,47 @@
++"use client"
++
++import { useEffect } from "react"
++import { usePathname, useRouter, useSearchParams } from "next/navigation"
++
++import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
++import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
++
++const FOCUS_KEYS = ["taskId", "projectId", "focus", "tab"] as const
++
++export function useDeepLinkCapture() {
++  const searchParams = useSearchParams()
++  const router = useRouter()
++  const pathname = usePathname()
++  const begin = useDeepLinkRoute(s => s.begin)
++  const routeKey = useDeepLinkRoute(s => s.route?.key ?? null)
++
++  useEffect(() => {
++    const taskId = searchParams.get("taskId") ?? undefined
++    const projectId = searchParams.get("projectId") ?? undefined
++    const focusToken = searchParams.get("focus") ?? undefined
++    const tab = searchParams.get("tab")
++
++    if (!taskId && !projectId && !focusToken && !tab) return
++
++    const key =
++      focusToken ??
++      `entity:${taskId ?? ""}:${projectId ?? ""}:tab:${tab ?? ""}`
++
++    if (routeKey === key) return
++
++    useFocusNavStore.getState().end()
++    begin({ taskId, projectId, focusToken, tab, key })
++
++    const next = new URLSearchParams(searchParams.toString())
++    let changed = false
++    for (const k of FOCUS_KEYS) {
++      if (next.has(k)) {
++        next.delete(k)
++        changed = true
++      }
++    }
++    if (!changed) return
++    const q = next.toString()
++    router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false })
++  }, [searchParams, router, pathname, begin, routeKey])
++}
+diff --git a/src/shared/hooks/use-deep-link-runner.ts b/src/shared/hooks/use-deep-link-runner.ts
+new file mode 100644
+index 0000000..4cd7c5b
+--- /dev/null
++++ b/src/shared/hooks/use-deep-link-runner.ts
+@@ -0,0 +1,72 @@
++"use client"
++
++import { useEffect, useRef } from "react"
++
++import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
++
++type Props = {
++  focusedId?: string
++  setExpandedRowId: (id: string | null) => void
++}
++
++function centerEl(el: HTMLElement) {
++  let parent: HTMLElement | null = el.parentElement
++  while (parent) {
++    const { overflowY } = window.getComputedStyle(parent)
++    const scrollable =
++      (overflowY === "auto" ||
++        overflowY === "scroll" ||
++        overflowY === "overlay") &&
++      parent.scrollHeight > parent.clientHeight + 1
++    if (scrollable) {
++      const pr = parent.getBoundingClientRect()
++      const er = el.getBoundingClientRect()
++      const mid = er.top - pr.top + parent.scrollTop + er.height / 2
++      const top = Math.max(
++        0,
++        Math.min(
++          mid - parent.clientHeight / 2,
++          parent.scrollHeight - parent.clientHeight,
++        ),
++      )
++      parent.scrollTo({ top, behavior: "auto" })
++      return
++    }
++    parent = parent.parentElement
++  }
++  el.scrollIntoView({ behavior: "auto", block: "center" })
++}
++
++/** directing → expand + scroll → arrive (siempre, sin esperar loading). */
++export function useDeepLinkRunner({ focusedId, setExpandedRowId }: Props) {
++  const phase = useDeepLinkRoute(s => s.route?.phase)
++  const setExpandedRef = useRef(setExpandedRowId)
++  setExpandedRef.current = setExpandedRowId
++
++  useEffect(() => {
++    if (phase !== "directing" || !focusedId) return
++
++    setExpandedRef.current(focusedId)
++
++    let cancelled = false
++    const raf1 = requestAnimationFrame(() => {
++      requestAnimationFrame(() => {
++        if (cancelled) return
++        const el = document.querySelector(
++          `[data-expanded-row-id="${CSS.escape(focusedId)}"]`,
++        ) as HTMLElement | null
++        if (el) centerEl(el)
++
++        const state = useDeepLinkRoute.getState()
++        const tab = state.route?.tab
++        state.arrive()
++        if (!tab) state.finish()
++      })
++    })
++
++    return () => {
++      cancelled = true
++      cancelAnimationFrame(raf1)
++    }
++  }, [phase, focusedId])
++}
+diff --git a/src/shared/hooks/use-focused-row.ts b/src/shared/hooks/use-focused-row.ts
+index ab8b9e2..e80de7e 100644
+--- a/src/shared/hooks/use-focused-row.ts
++++ b/src/shared/hooks/use-focused-row.ts
+@@ -1,226 +1,3 @@
+ "use client"
+-
+-import { useEffect, useRef } from "react"
+-
+-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+-import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
+-
+-type Props = {
+-  focusedId?: string
+-  expandedRowId?: string | null
+-  setExpandedRowId: (id: string | null) => void
+-  focusToken?: string
+-  onSettled?: () => void
+-}
+-
+-const FIND_TIMEOUT_MS = 2500
+-
+-function isScrollable(el: HTMLElement): boolean {
+-  const { overflowY } = window.getComputedStyle(el)
+-  if (
+-    overflowY !== "auto" &&
+-    overflowY !== "scroll" &&
+-    overflowY !== "overlay"
+-  ) {
+-    return false
+-  }
+-  return el.scrollHeight > el.clientHeight + 1
+-}
+-
+-function getScrollParent(el: HTMLElement): HTMLElement | null {
+-  let parent = el.parentElement
+-  while (parent) {
+-    if (isScrollable(parent)) return parent
+-    parent = parent.parentElement
+-  }
+-  return null
+-}
+-
+-function centerInScrollParent(el: HTMLElement) {
+-  const parent = getScrollParent(el)
+-  if (!parent) {
+-    el.scrollIntoView({ behavior: "auto", block: "center" })
+-    return
+-  }
+-  const parentRect = parent.getBoundingClientRect()
+-  const elRect = el.getBoundingClientRect()
+-  const elMid =
+-    elRect.top - parentRect.top + parent.scrollTop + elRect.height / 2
+-  const target = elMid - parent.clientHeight / 2
+-  const max = Math.max(0, parent.scrollHeight - parent.clientHeight)
+-  const top = Math.max(0, Math.min(target, max))
+-  parent.scrollTo({ top, behavior: "auto" })
+-}
+-
+-/** Después del paint del expand (sin setTimeout de 220ms). */
+-function afterPaint(cb: () => void): () => void {
+-  let raf1 = 0
+-  let raf2 = 0
+-  let cancelled = false
+-  raf1 = window.requestAnimationFrame(() => {
+-    raf2 = window.requestAnimationFrame(() => {
+-      if (!cancelled) cb()
+-    })
+-  })
+-  return () => {
+-    cancelled = true
+-    window.cancelAnimationFrame(raf1)
+-    window.cancelAnimationFrame(raf2)
+-  }
+-}
+-
+-function waitForRow(
+-  selector: string,
+-  onFound: (el: HTMLElement) => void,
+-  timeoutMs: number,
+-  isActive: () => boolean,
+-  onTimeout?: () => void,
+-): () => void {
+-  const root = document.body
+-  let cancelled = false
+-  let raf = 0
+-  const start = performance.now()
+-  const tryFind = () => {
+-    if (cancelled || !isActive()) return
+-    const el = root.querySelector(selector) as HTMLElement | null
+-    if (el) {
+-      onFound(el)
+-      return
+-    }
+-    if (performance.now() - start >= timeoutMs) {
+-      onTimeout?.()
+-      return
+-    }
+-    raf = window.requestAnimationFrame(tryFind)
+-  }
+-  raf = window.requestAnimationFrame(tryFind)
+-  return () => {
+-    cancelled = true
+-    window.cancelAnimationFrame(raf)
+-  }
+-}
+-
+-/**
+- * Secuencia deep-link:
+- * 1. Dirigiendo ON
+- * 2. Expand inmediato + scroll al row
+- * 3. Dirigiendo OFF
+- * 4. markSettled → recién ahí Mensajes puede abrir
+- *
+- * Nunca markSettled con overlay activo (dialog no queda detrás).
+- */
+-export function useFocusedRow({
+-  focusedId,
+-  expandedRowId = null,
+-  setExpandedRowId,
+-  focusToken,
+-  onSettled,
+-}: Props) {
+-  const prevFocusedIdRef = useRef<string | undefined>(undefined)
+-  const expandedRowIdRef = useRef<string | null>(expandedRowId)
+-  expandedRowIdRef.current = expandedRowId
+-
+-  const onSettledRef = useRef(onSettled)
+-  onSettledRef.current = onSettled
+-  const focusTokenRef = useRef(focusToken)
+-  focusTokenRef.current = focusToken
+-  const setExpandedRowIdRef = useRef(setExpandedRowId)
+-  setExpandedRowIdRef.current = setExpandedRowId
+-
+-  /** Orden fijo: cerrar overlay → marcar settled → callback. */
+-  const completeNavigation = () => {
+-    useFocusNavStore.getState().end()
+-    const token = focusTokenRef.current
+-    if (token) useFocusSettleStore.getState().markSettled(token)
+-    onSettledRef.current?.()
+-  }
+-
+-  const stopTrackingRef = useRef<(() => void) | null>(null)
+-  const stopTracking = () => {
+-    stopTrackingRef.current?.()
+-    stopTrackingRef.current = null
+-  }
+-
+-  useEffect(() => {
+-    if (!focusedId) return
+-    if (expandedRowId != null && expandedRowId !== focusedId) stopTracking()
+-  }, [expandedRowId, focusedId])
+-
+-  useEffect(() => {
+-    if (!focusedId) {
+-      stopTracking()
+-      useFocusNavStore.getState().end()
+-      prevFocusedIdRef.current = undefined
+-      return
+-    }
+-
+-    if (
+-      expandedRowIdRef.current != null &&
+-      expandedRowIdRef.current !== focusedId
+-    ) {
+-      stopTracking()
+-      return
+-    }
+-
+-    prevFocusedIdRef.current = focusedId
+-
+-    const animate = Boolean(focusTokenRef.current)
+-    if (animate) {
+-      useFocusNavStore.getState().start("Dirigiendo…")
+-      // Invalidar settled previo para que Mensajes no abra a mitad de ruta.
+-      useFocusSettleStore.getState().reset()
+-    }
+-
+-    const selector = `[data-expanded-row-id="${CSS.escape(focusedId)}"]`
+-    const isActive = () => {
+-      const expanded = expandedRowIdRef.current
+-      return (
+-        prevFocusedIdRef.current === focusedId &&
+-        (expanded == null || expanded === focusedId)
+-      )
+-    }
+-
+-    stopTracking()
+-    const expand = () => setExpandedRowIdRef.current(focusedId)
+-
+-    // Expand al inicio: el row ya está en DOM (data-expanded-row-id en el wrapper).
+-    expand()
+-
+-    if (!animate) {
+-      completeNavigation()
+-      return () => {
+-        stopTracking()
+-      }
+-    }
+-
+-    let cancelPaint: (() => void) | null = null
+-
+-    const stopWait = waitForRow(
+-      selector,
+-      el => {
+-        if (!isActive()) return
+-        centerInScrollParent(el)
+-        cancelPaint = afterPaint(() => {
+-          if (!isActive()) return
+-          centerInScrollParent(el)
+-          completeNavigation()
+-        })
+-      },
+-      FIND_TIMEOUT_MS,
+-      isActive,
+-      () => {
+-        if (!isActive()) return
+-        completeNavigation()
+-      },
+-    )
+-
+-    stopTrackingRef.current = () => {
+-      stopWait()
+-      cancelPaint?.()
+-    }
+-
+-    return () => {
+-      stopTracking()
+-    }
+-  }, [focusedId, focusToken])
+-}
++/** @deprecated Use useDeepLinkRunner */
++export { useDeepLinkRunner as useFocusedRow } from "./use-deep-link-runner"

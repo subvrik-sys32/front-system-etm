@@ -1,15 +1,9 @@
 "use client"
 
-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
+import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
+import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
 
-/**
- * Params de deep-link de entidad (tarea / proyecto / foco).
- * La URL es la fuente de verdad del foco programático.
- * Si el usuario toma el control (otro row, colapsar, nav limpia), se borran.
- */
 const FOCUS_PARAM_KEYS = ["taskId", "projectId", "focus", "tab"] as const
-
-/** Orígenes de navegación cross-feature (sessionStorage). */
 const ORIGIN_STORAGE_KEYS = [
   "process-origin-task-id",
   "task-origin-project-id",
@@ -18,10 +12,7 @@ const ORIGIN_STORAGE_KEYS = [
 ] as const
 
 type RouterLike = {
-  replace: (
-    href: string,
-    options?: { scroll?: boolean },
-  ) => void
+  replace: (href: string, options?: { scroll?: boolean }) => void
 }
 
 function clearOriginButtons() {
@@ -29,8 +20,6 @@ function clearOriginButtons() {
   for (const key of ORIGIN_STORAGE_KEYS) {
     sessionStorage.removeItem(key)
   }
-  // Avisa a BackToTask / BackToProject / BackToProcess para que se desmonten sin
-  // depender solo del click del propio botón.
   window.dispatchEvent(new Event("entity-origin-cleared"))
 }
 
@@ -39,27 +28,21 @@ export function clearEntityFocusParams(
   pathname: string,
   searchParams: { toString(): string },
 ): void {
+  const hadRoute = useDeepLinkRoute.getState().route != null
   const next = new URLSearchParams(searchParams.toString())
-  let changed = false
-
+  let hadParams = false
   for (const key of FOCUS_PARAM_KEYS) {
     if (next.has(key)) {
       next.delete(key)
-      changed = true
+      hadParams = true
     }
   }
 
-  useFocusSettleStore.getState().reset()
+  useDeepLinkRoute.getState().cancel()
+  useFocusNavStore.getState().end()
 
-  // URL consumida → no dejar residuos de "← Tarea" / "← Proyecto".
-  if (changed) {
-    clearOriginButtons()
-  }
-
-  if (!changed) return
-
+  if (hadParams || hadRoute) clearOriginButtons()
+  if (!hadParams) return
   const query = next.toString()
-  router.replace(query ? `${pathname}?${query}` : pathname, {
-    scroll: false,
-  })
+  router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
 }

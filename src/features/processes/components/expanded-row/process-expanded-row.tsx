@@ -1,5 +1,7 @@
 "use client"
 
+import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
+
 import { useEffect, useState, type ReactNode } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { Activity, ArrowRight, Clock, Clock3, MessageSquare, Package, Puzzle, Layers3 } from "lucide-react"
@@ -27,9 +29,6 @@ import { ProcessDispatchCard } from "./cards/process-dispatch-card"
 import { ProcessTimeCard } from "./cards/process-time-card"
 import { ProcessProgressCard } from "./cards/process-progress-card"
 import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
-import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
-import { consumeCommentsTabParam } from "@/shared/hooks/consume-comments-tab"
 
 type Props = {
   processTask: ProcessTask
@@ -49,9 +48,10 @@ export function ProcessExpandedRow({
   const router = useRouter()
   const pathname = usePathname()
 
-  const urlTaskId = searchParams.get("taskId")
-  const isTarget = urlTaskId === processTask.task.id
-  const tabParam = searchParams.get("tab") as "comments" | "kpis"
+  const route = useDeepLinkRoute(s => s.route)
+  const isTarget = route?.taskId === processTask.task.id
+  const tabParam = route?.tab
+  const arrived = route?.phase === "arrived"
 
   const processCode =
     processTask.workflowStep?.processCode
@@ -169,37 +169,17 @@ export function ProcessExpandedRow({
     setCommentsDialogOpen,
   ] = useState(false)
 
-  const urlFocusToken = searchParams.get("focus")
-  const settledToken = useFocusSettleStore(s => s.settledToken)
-  const navActive = useFocusNavStore(s => s.active)
-  // Mensajes solo cuando la ruta terminó Y el overlay ya no está.
-  const focusSettled =
-    (!urlFocusToken || settledToken === urlFocusToken) && !navActive
 
   useEffect(() => {
-    if (!isTarget) {
-      return
-    }
-
+    if (!isTarget || !arrived) return
     if (tabParam === "comments") {
-      if (!focusSettled) {
-        return
-      }
-
       setCommentsDialogOpen(true)
       setActiveView("kpis")
-      // Consumir tab: F5 no debe reabrir Mensajes.
-      consumeCommentsTabParam(router, pathname, searchParams)
+      useDeepLinkRoute.getState().finish()
       return
     }
-
     setActiveView("kpis")
-  }, [
-    isTarget,
-    tabParam,
-    focusSettled,
-    navActive,
-  ])
+  }, [isTarget, arrived, tabParam])
 
   const setActiveTarget = useActiveCommentContextStore(s => s.setActiveTarget)
 

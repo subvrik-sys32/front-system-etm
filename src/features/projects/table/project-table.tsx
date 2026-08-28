@@ -8,9 +8,8 @@ import {
 import type { Project } from "../types/project.types"
 import type { Task } from "@/features/tasks/types/task.types"
 
-import { useFocusedRow } from "@/shared/hooks/use-focused-row"
+import { useDeepLinkRunner } from "@/shared/hooks/use-deep-link-runner"
 import { useExpandRow } from "@/shared/hooks/use-expand-row"
-import { useFocusSettleStore } from "@/shared/focus/store/focus-settle-store"
 
 import { useEntityExpand } from "@/shared/ui/entity-table/features/expansion"
 import { useRowDragReorder } from "@/shared/dnd/use-row-drag-reorder"
@@ -65,16 +64,9 @@ export function ProjectTable({
     setExpandedRowId: expand.setExpandedRowId,
   })
 
-  const markSettled = useFocusSettleStore(s => s.markSettled)
-
-  useFocusedRow({
+  useDeepLinkRunner({
     focusedId: focusedProjectId,
-    expandedRowId: expand.expandedRowId,
     setExpandedRowId: expand.setExpandedRowId,
-    focusToken,
-    onSettled: () => {
-      if (focusToken) markSettled(focusToken)
-    },
   })
 
   const filteredProjects = useProjectSearch(projects, search)

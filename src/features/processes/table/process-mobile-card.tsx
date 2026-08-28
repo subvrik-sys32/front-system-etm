@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ChevronDown, MessageSquare } from "lucide-react"
+import { ChevronDown, MessageSquare, User, UserX } from "lucide-react"
 
 import { CollapsibleHeightSection } from "@/shared/ui/collapsible-height-section"
 import { cn } from "@/shared/utils/utils"
@@ -147,6 +147,7 @@ function ProcessMobileCardReady({
   const statusLabel = workflowAccess.statusLabel(processTask)
   const priorityInk = useDomainInk(priority.color)
   const statusInk = useDomainInk(statusLabel.color)
+  const operatorInk = useDomainInk(operator?.color)
 
   const stepId = workflowAccess.stepId(processTask)
   const processCode = workflowAccess.processCode(processTask)
@@ -176,7 +177,7 @@ function ProcessMobileCardReady({
           />
 
           <div className="flex min-w-0 flex-1 flex-col items-start">
-            {/* md+: referencia · iconos prio/estado. Mobile: solo nombre */}
+            {/* Referencia principal + iconos de prioridad y estado en línea */}
             <div className="flex min-w-0 max-w-full items-center gap-1.5">
               {isMobile ? (
                 <span className="max-w-full truncate text-sm font-semibold leading-none text-foreground">
@@ -191,7 +192,7 @@ function ProcessMobileCardReady({
                   {task.reference}
                 </Link>
               )}
-              <span className="shrink-0 self-center text-muted-foreground/80">·</span>
+              <span className="shrink-0 text-muted-foreground/85">·</span>
               <span
                 className="inline-flex size-5 shrink-0 items-center justify-center self-center"
                 title={priority.name}
@@ -199,10 +200,10 @@ function ProcessMobileCardReady({
                 <EntityIconBadge
                   icon={priority.icon}
                   color={priority.color}
-                  size={isMobile ? 12 : 16}
+                  size={16}
                 />
               </span>
-              <span className="shrink-0 self-center text-muted-foreground/80">·</span>
+              <span className="shrink-0 text-muted-foreground/85">·</span>
               <span
                 className="inline-flex size-5 shrink-0 items-center justify-center self-center"
                 title={statusLabel.label}
@@ -210,61 +211,48 @@ function ProcessMobileCardReady({
                 <EntityIconBadge
                   icon={statusLabel.icon}
                   color={statusLabel.color}
-                  size={isMobile ? 12 : 16}
+                  size={16}
                 />
               </span>
             </div>
 
-            {/* Mobile: cliente · iconos prio/estado · operario | md+: cliente · operario */}
+            {/* Línea inferior: Cliente con su icono corporativo y Operario con icono y color de asignación */}
             <div
               className={cn(
                 "mt-0.5 flex min-w-0 items-center gap-1.5 text-xs",
                 expanded && "hidden",
               )}
             >
-              <span
-                className="size-1.5 shrink-0 rounded-full"
-                style={{ backgroundColor: project.client.color }}
-              />
-              <span className="shrink-0 truncate text-muted-foreground">
-                {project.client.name}
-              </span>
-
-              {/* Mobile: iconos prio/estado · operario-icon | md+: operario nombre (como tasks/projects) */}
-              <span className="shrink-0 text-muted-foreground/80 md:hidden">·</span>
-              <span className="inline-flex shrink-0 items-center gap-1 md:hidden">
+              <span className="inline-flex min-w-0 shrink items-center gap-1.5 text-muted-foreground">
                 <EntityIconBadge
-                  icon={priority.icon}
-                  color={priority.color}
+                  icon={project.client.icon ?? "factory"}
+                  color={project.client.color}
                   size={12}
                 />
-              </span>
-              <span className="shrink-0 text-muted-foreground/80 md:hidden">·</span>
-              <span className="inline-flex shrink-0 items-center gap-1 md:hidden">
-                <EntityIconBadge
-                  icon={statusLabel.icon}
-                  color={statusLabel.color}
-                  size={12}
-                />
+                <span className="truncate">{project.client.name}</span>
               </span>
 
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span className="flex min-w-0 items-center gap-1">
-                <span className="md:hidden">
-                  <EntityIconBadge
-                    icon={operator?.icon}
-                    color={operator?.color ?? "#a3a3a3"}
-                    size={12}
-                  />
+              <span className="shrink-0 text-muted-foreground/85">·</span>
+              <span className="flex min-w-0 items-center gap-1.5">
+                <span className="inline-flex items-center">
+                  {operator ? (
+                    <EntityIconBadge
+                      icon={operator.icon}
+                      color={operatorInk}
+                      size={12}
+                    />
+                  ) : (
+                    <UserX size={12} className="shrink-0 text-muted-foreground" />
+                  )}
                 </span>
                 {operatorLabel ? (
                   <OperatorNameText
                     name={operatorLabel}
                     color={operator?.color}
-                    className="hidden truncate md:inline"
+                    className="truncate font-medium"
                   />
                 ) : (
-                  <span className="hidden truncate text-muted-foreground md:inline">
+                  <span className="truncate text-muted-foreground">
                     Sin asignar
                   </span>
                 )}
@@ -287,10 +275,11 @@ function ProcessMobileCardReady({
             </span>
           )}
 
-          {/* Fecha — badge mensajes queda a la izquierda (shrink-0) */}
+          {/* Fecha */}
           <span className="hidden shrink-0 text-xs tabular-nums text-muted-foreground @[40rem]/prow:inline">
             {formatDate(task.deliveryDate)}
           </span>
+
         </div>
 
         {stepId && processCode && (
@@ -354,29 +343,77 @@ function ProcessMobileCardReady({
               Ocultar campos
             </span>
           ) : (
-            <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground">
+            <span className="flex min-w-0 flex-1 items-center gap-3 text-sm">
+              {/* Cliente */}
               <span
-                className="size-1.5 shrink-0 rounded-full"
-                style={{ backgroundColor: project.client.color }}
-              />
-              <span className="shrink-0 truncate">{project.client.name}</span>
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span className="flex shrink-0 items-center gap-1">
-                <span className="md:hidden">
-                  <EntityIconBadge icon={priority.icon} color={priority.color} size={13} />
-                </span>
-                <span className="hidden truncate md:inline" style={{ color: priorityInk }}>
-                  {priority.name}
-                </span>
+                className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground"
+                title={project.client.name}
+              >
+                <EntityIconBadge
+                  icon={project.client.icon ?? "factory"}
+                  color={project.client.color}
+                  size={14}
+                />
+                <span className="truncate">{project.client.name}</span>
               </span>
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span className="flex shrink-0 items-center gap-1">
-                <span className="md:hidden">
-                  <EntityIconBadge icon={statusLabel.icon} color={statusLabel.color} size={13} />
-                </span>
-                <span className="hidden truncate md:inline" style={{ color: statusInk }}>
-                  {statusLabel.label}
-                </span>
+
+              <span className="shrink-0 text-muted-foreground/50">·</span>
+
+              {/* Prioridad */}
+              <span
+                className="inline-flex min-w-0 items-center gap-1.5"
+                title={priority.name}
+                style={{ color: priorityInk }}
+              >
+                <EntityIconBadge
+                  icon={priority.icon}
+                  color={priorityInk}
+                  size={14}
+                />
+                <span className="hidden truncate md:inline">{priority.name}</span>
+              </span>
+
+              <span className="shrink-0 text-muted-foreground/50">·</span>
+
+              {/* Estado */}
+              <span
+                className="inline-flex min-w-0 items-center gap-1.5"
+                title={statusLabel.label}
+                style={{ color: statusInk }}
+              >
+                <EntityIconBadge
+                  icon={statusLabel.icon}
+                  color={statusInk}
+                  size={14}
+                />
+                <span className="hidden truncate md:inline">{statusLabel.label}</span>
+              </span>
+
+              <span className="shrink-0 text-muted-foreground/50">·</span>
+
+              {/* Operario / Sin asignar */}
+              <span
+                className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground"
+                title={operatorLabel ?? "Sin asignar"}
+              >
+                {operator ? (
+                  <EntityIconBadge
+                    icon={operator.icon}
+                    color={operatorInk}
+                    size={14}
+                  />
+                ) : (
+                  <UserX size={14} className="shrink-0 text-muted-foreground" />
+                )}
+                {operatorLabel ? (
+                  <OperatorNameText
+                    name={operatorLabel}
+                    color={operator?.color}
+                    className="truncate font-medium"
+                  />
+                ) : (
+                  <span className="truncate">Sin asignar</span>
+                )}
               </span>
             </span>
           )}

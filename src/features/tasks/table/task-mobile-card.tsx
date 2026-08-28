@@ -3,9 +3,8 @@
 import { useBadgeColors, useDomainInk } from "@/shared/utils/use-badge-colors"
 
 import { useCallback, useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useFocusNavStore } from "@/shared/focus/store/focus-nav-store"
-import { useSearchParams } from "next/navigation"
 import { ChevronDown, MessageSquare } from "lucide-react"
 
 import { CollapsibleHeightSection } from "@/shared/ui/collapsible-height-section"
@@ -63,8 +62,6 @@ type Props =
       dimOthers?: boolean
       onToggle: () => void
     }
-
-/** Loading = mismo shell que la fila real (estilo bitácora). */
 
 function taskDetailAssetCount(task: Task): number {
   if (typeof task.detailAssetCount === "number") return task.detailAssetCount
@@ -128,7 +125,6 @@ function TaskMobileCardReady({
   const { isMobile } = useResponsive()
   const isManualMode = useSortStore(s => s.taskSortMode === "manual")
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   const goToProject = useCallback(() => {
     useFocusNavStore.getState().start("Abriendo proyecto…")
@@ -141,7 +137,6 @@ function TaskMobileCardReady({
       threshold: 320,
     })
 
-  const isTarget = searchParams.get("taskId") === task.id
   const projectChipBadge = useBadgeColors(
     task.project?.client?.color ?? "#64748B",
     "subtle",
@@ -188,11 +183,10 @@ function TaskMobileCardReady({
           }}
           className={cn(
             "flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 py-3 pr-2 text-left",
-            // Sin drag: misma holgura izquierda que process (pl-2)
             !isManualMode && "pl-2",
           )}
         >
-          {/* Chip código: desktop click → proyecto; móvil long-press → proyecto */}
+          {/* Chip código */}
           <span
             role="link"
             tabIndex={0}
@@ -270,17 +264,20 @@ function TaskMobileCardReady({
               </span>
             </div>
 
-            {/* Mobile: cliente · iconos · prioridad | md+: cliente · prioridad */}
+            {/* Mobile: cliente (con EntityIconBadge) · iconos · prioridad (con icono de urgente/prioridad) | md+: cliente · prioridad */}
             <div
               className={cn(
                 "mt-0.5 flex min-w-0 max-w-full items-center gap-1.5 text-xs",
                 expanded && "hidden",
               )}
             >
-              <span
-                className="size-1.5 shrink-0 rounded-full"
-                style={{ backgroundColor: task.project.client.color }}
-              />
+              <span className="inline-flex shrink-0 items-center gap-1">
+                <EntityIconBadge
+                  icon={task.project?.client?.icon}
+                  color={task.project.client.color}
+                  size={12}
+                />
+              </span>
               <span className="min-w-0 truncate text-muted-foreground">
                 {task.project.client.name}
               </span>
@@ -308,7 +305,7 @@ function TaskMobileCardReady({
 
               <span className="shrink-0 text-muted-foreground/80">·</span>
               <span className="flex min-w-0 items-center gap-1">
-                <span className="md:hidden">
+                <span className="inline-flex shrink-0 items-center gap-1">
                   {task.priority.icon ? (
                     <EntityIconBadge
                       icon={task.priority.icon}
@@ -330,11 +327,17 @@ function TaskMobileCardReady({
                 >
                   {task.priority.name}
                 </span>
+                <span
+                  className="min-w-0 truncate md:hidden"
+                  style={{ color: priorityInk }}
+                >
+                  {task.priority.name}
+                </span>
               </span>
             </div>
           </div>
 
-          {/* Mensajes solo colapsado y solo si hay */}
+          {/* Mensajes */}
           {!expanded && (task.commentCount ?? 0) > 0 && (
             <span
               title={
@@ -377,7 +380,6 @@ function TaskMobileCardReady({
           </div>
         )}
 
-
         <button
           type="button"
           onClick={handleRowToggle}
@@ -408,23 +410,111 @@ function TaskMobileCardReady({
               Ocultar campos
             </span>
           ) : (
-            <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground">
-              <span
-                className="size-1.5 shrink-0 rounded-full"
-                style={{ backgroundColor: task.project.client.color }}
-              />
-              <span className="shrink-0 truncate">
-                {task.project.client.name}
+            <>
+              {/* Mobile: resumen de campos */}
+              <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground md:hidden">
+                <span className="inline-flex shrink-0 items-center gap-1">
+                  <EntityIconBadge
+                    icon={task.project?.client?.icon}
+                    color={task.project.client.color}
+                    size={12}
+                  />
+                </span>
+                <span className="shrink-0 truncate">
+                  {task.project.client.name}
+                </span>
+                <span className="shrink-0 text-muted-foreground/80">·</span>
+                <span className="min-w-0 truncate" style={{ color: stageInk }}>
+                  {stage.label}
+                </span>
+                <span className="shrink-0 text-muted-foreground/80">·</span>
+                <span className="min-w-0 truncate" style={{ color: statusInk }}>
+                  {status.label}
+                </span>
+                <span className="shrink-0 text-muted-foreground/80">·</span>
+                <span className="inline-flex shrink-0 items-center gap-1">
+                  {task.priority.icon ? (
+                    <EntityIconBadge
+                      icon={task.priority.icon}
+                      color={task.priority.color ?? "#a3a3a3"}
+                      size={12}
+                    />
+                  ) : null}
+                  <span className="min-w-0 truncate" style={{ color: priorityInk }}>
+                    {task.priority.name}
+                  </span>
+                </span>
               </span>
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span className="min-w-0 truncate" style={{ color: stageInk }}>
-                {stage.label}
+
+              {/* Tablet/Desktop: cada dato se representa con su icono y conserva su color de dominio */}
+              <span className="hidden min-w-0 flex-1 items-center gap-3 text-sm md:flex">
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground"
+                  title={task.project.client.name}
+                >
+                  <EntityIconBadge
+                    icon={task.project?.client?.icon}
+                    color={task.project.client.color}
+                    size={14}
+                  />
+                  <span className="truncate">{task.project.client.name}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/50">·</span>
+
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5"
+                  title={stage.label}
+                  style={{ color: stageInk }}
+                >
+                  <EntityIconBadge
+                    icon={stage.icon}
+                    color={stageInk}
+                    size={14}
+                  />
+                  <span className="truncate">{stage.label}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/50">·</span>
+
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5"
+                  title={status.label}
+                  style={{ color: statusInk }}
+                >
+                  <EntityIconBadge
+                    icon={status.icon}
+                    color={statusInk}
+                    size={14}
+                  />
+                  <span className="truncate">{status.label}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/50">·</span>
+
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5"
+                  title={task.priority.name}
+                  style={{ color: priorityInk }}
+                >
+                  {task.priority.icon ? (
+                    <EntityIconBadge
+                      icon={task.priority.icon}
+                      color={priorityInk}
+                      size={14}
+                    />
+                  ) : (
+                    <span
+                      className="text-[11px] font-semibold"
+                      style={{ color: priorityInk }}
+                    >
+                      {task.priority.name.charAt(0)}
+                    </span>
+                  )}
+                  <span className="truncate">{task.priority.name}</span>
+                </span>
               </span>
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span className="min-w-0 truncate" style={{ color: statusInk }}>
-                {status.label}
-              </span>
-            </span>
+            </>
           )}
           <ChevronDown
             size={14}

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
 
-import { ChevronDown, Plus, MessageSquare } from "lucide-react"
+import { ChevronDown, MessageSquare, UserRound } from "lucide-react"
 
 import { CollapsibleHeightSection } from "@/shared/ui/collapsible-height-section"
 import { cn } from "@/shared/utils/utils"
@@ -26,17 +26,14 @@ import { ProjectClientCell } from "../components/cells/project-client-cell"
 import { ProjectStageCell } from "../components/cells/project-stage-cell"
 import { ProjectStatusCell } from "../components/cells/project-status-cell"
 import { ProjectPmCell } from "../components/cells/project-pm-cell"
-import { ProjectRowActions } from "../components/actions/project-row-actions"
 import { DetailAssetsEye } from "@/features/detail-assets/components/detail-assets-eye"
 import { ProjectExpandedRow } from "../components/expanded-row/project-expanded-row"
-import { IconAction } from "@/shared/ui/actions/icon-action"
 import { DragCell } from "@/shared/ui/entity-table-common/drag-cell"
 import { useSortStore } from "@/shared/sorting/store/sort-store"
 import { TaskDialog } from "@/features/tasks/components/dialog/task-dialog"
 import { PermissionCode } from "@/shared/core/enums/permission-code.enum"
 import { usePermissions } from "@/features/permissions/hooks/use-permissions"
 import { ProjectCodeChip } from "@/features/projects/components/project-code-chip"
-import { displayProjectCode } from "@/features/projects/utils/display-project-code"
 
 
 function EntityIconBadge({
@@ -144,6 +141,7 @@ function ProjectMobileCardReady({
   // Móvil expandido: acciones en el row; burbuja de conteo cede el sitio
   const stageInk = useDomainInk(project.stage.color)
   const statusInk = useDomainInk(project.status.color)
+  const pmInk = useDomainInk(project.pm.color)
 
   return (
     <div className={cn("@container/prow rounded-xl bg-foreground/5", isDimmed && "opacity-50")}>
@@ -201,15 +199,16 @@ function ProjectMobileCardReady({
                 expanded && "hidden",
               )}
             >
-              <span
-                className="size-1.5 shrink-0 rounded-full"
-                style={{ backgroundColor: project.client.color }}
-              />
-              <span className="shrink-0 truncate text-muted-foreground">
-                {project.client.name}
+              <span className="inline-flex min-w-0 shrink items-center gap-1.5 text-muted-foreground">
+                <EntityIconBadge
+                  icon={project.client.icon}
+                  color={project.client.color}
+                  size={12}
+                />
+                <span className="truncate">{project.client.name}</span>
               </span>
 
-              <span className="shrink-0 text-muted-foreground/80 md:hidden">·</span>
+              <span className="shrink-0 text-muted-foreground/80">·</span>
               <span className="inline-flex shrink-0 items-center gap-1 md:hidden">
                 <EntityIconBadge
                   icon={project.stage.icon}
@@ -226,9 +225,18 @@ function ProjectMobileCardReady({
                 />
               </span>
 
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span className="min-w-0 truncate text-muted-foreground">
-                {project.pm.name}
+              <span
+                className="hidden min-w-0 items-center gap-1.5 text-muted-foreground md:inline-flex"
+                title={project.pm.name}
+              >
+                <UserRound size={12} strokeWidth={2.25} className="shrink-0" style={{ color: pmInk }} />
+                <span className="truncate">{project.pm.name}</span>
+              </span>
+
+              <span className="shrink-0 text-muted-foreground/85 md:hidden">·</span>
+              <span className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground md:hidden">
+                <UserRound size={12} strokeWidth={2.25} className="shrink-0" style={{ color: pmInk }} />
+                <span className="truncate">{project.pm.name}</span>
               </span>
             </div>
           </div>
@@ -290,7 +298,6 @@ function ProjectMobileCardReady({
           </div>
         )}
 
-
         <button
           type="button"
           onClick={handleRowToggle}
@@ -318,21 +325,75 @@ function ProjectMobileCardReady({
               Ocultar campos
             </span>
           ) : (
-            <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground">
-              <span
-                className="size-1.5 shrink-0 rounded-full"
-                style={{ backgroundColor: project.client.color }}
-              />
-              <span className="shrink-0 truncate">{project.client.name}</span>
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span className="min-w-0 truncate" style={{ color: stageInk }}>
-                {project.stage.name}
+            <>
+              {/* Mobile: conservar exactamente el resumen actual. */}
+              <span className="flex min-w-0 flex-1 items-center gap-1.5 text-sm text-muted-foreground md:hidden">
+                <span className="shrink-0 truncate">{project.client.name}</span>
+                <span className="shrink-0 text-muted-foreground/80">·</span>
+                <span className="min-w-0 truncate" style={{ color: stageInk }}>
+                  {project.stage.name}
+                </span>
+                <span className="shrink-0 text-muted-foreground/80">·</span>
+                <span className="min-w-0 truncate" style={{ color: statusInk }}>
+                  {project.status.name}
+                </span>
               </span>
-              <span className="shrink-0 text-muted-foreground/80">·</span>
-              <span className="min-w-0 truncate" style={{ color: statusInk }}>
-                {project.status.name}
+
+              {/* Tablet/Desktop: cada dato se representa con su icono y conserva su color de dominio. */}
+              <span className="hidden min-w-0 flex-1 items-center gap-3 text-sm md:flex">
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground"
+                  title={project.client.name}
+                >
+                  <EntityIconBadge
+                    icon={project.client.icon}
+                    color={project.client.color}
+                    size={14}
+                  />
+                  <span className="truncate">{project.client.name}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/50">·</span>
+
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5"
+                  title={project.stage.name}
+                  style={{ color: stageInk }}
+                >
+                  <EntityIconBadge
+                    icon={project.stage.icon}
+                    color={stageInk}
+                    size={14}
+                  />
+                  <span className="truncate">{project.stage.name}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/50">·</span>
+
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5"
+                  title={project.status.name}
+                  style={{ color: statusInk }}
+                >
+                  <EntityIconBadge
+                    icon={project.status.icon}
+                    color={statusInk}
+                    size={14}
+                  />
+                  <span className="truncate">{project.status.name}</span>
+                </span>
+
+                <span className="shrink-0 text-muted-foreground/50">·</span>
+
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5 text-muted-foreground"
+                  title={project.pm.name}
+                >
+                  <UserRound size={14} strokeWidth={2.25} className="shrink-0" style={{ color: pmInk }} />
+                  <span className="truncate">{project.pm.name}</span>
+                </span>
               </span>
-            </span>
+            </>
           )}
           <ChevronDown
             size={14}

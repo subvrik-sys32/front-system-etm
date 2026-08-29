@@ -272,16 +272,27 @@ function ProcessMobileCardReady({
           <span className="hidden shrink-0 text-xs tabular-nums text-muted-foreground @[40rem]/prow:inline">
             {formatDate(task.deliveryDate)}
           </span>
+
         </div>
 
-        {/* Ojo de activos en modo compacto */}
+        {/* Ojo de activos y auditoría en modo compacto */}
         {!expanded && (
           <div
-            className="flex shrink-0 items-center gap-1 pr-0.5"
+            className="flex shrink-0 items-center gap-1.5 pr-0.5"
             onClick={e => e.stopPropagation()}
             onPointerDown={e => e.stopPropagation()}
           >
             <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />
+
+            <div className="hidden @[48rem]/prow:flex items-center">
+              <EntityAuditInfo
+                createdAt={task.createdAt}
+                updatedAt={task.updatedAt}
+                createdBy={task.createdBy}
+                updatedBy={task.updatedBy}
+                workflowSteps={task.workflowSteps}
+              />
+            </div>
           </div>
         )}
 
@@ -383,7 +394,7 @@ function ProcessMobileCardReady({
           />
         </CollapsibleHeightSection>
 
-        {/* Fila expandida inferior con auditoría, materiales e historial (Pasando workflowActions para unificarlos arriba) */}
+        {/* Fila expandida inferior con auditoría, materiales e historial */}
         <ProcessExpandedRow
           processTask={processTask}
           workflowActions={

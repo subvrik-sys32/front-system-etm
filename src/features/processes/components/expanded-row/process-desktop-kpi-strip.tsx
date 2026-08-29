@@ -735,15 +735,6 @@ export function ProcessDesktopKpiStrip({
                   py-1.5
                 "
               >
-                <ArrowRight
-                  className="
-                    h-3.5
-                    w-3.5
-                    shrink-0
-                    text-white/50
-                  "
-                  strokeWidth={2.5}
-                />
 
                 {NextIcon ? (
                   <NextIcon

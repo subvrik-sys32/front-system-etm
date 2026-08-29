@@ -50,6 +50,7 @@ export function TaskRowActions({ task, className, showAudit = true }: TaskRowAct
   return (
     <>
       <div className={cn("flex items-center gap-1", className)}>
+        <TaskMaterialInfo task={task} />
         {showAudit && (
           <EntityAuditInfo
             createdAt={task.createdAt}
@@ -59,7 +60,6 @@ export function TaskRowActions({ task, className, showAudit = true }: TaskRowAct
             workflowSteps={task.workflowSteps}
           />
         )}
-        <TaskMaterialInfo task={task} />
         <IconAction
           icon={Pencil}
           title="Editar"

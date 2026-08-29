@@ -11,7 +11,28 @@ import { usePermissionStore } from "@/features/permissions/store/permission-stor
 const SHORT = "[@media(max-height:520px)]"
 const CORPORATE_DOMAIN = "@etmperu.com"
 
-export function LoginForm() {
+// Debe ser >= a la duración de la transición "assembling" del motor de
+// partículas (transition.duration en hoverConfig, por defecto 0.9s en
+// ProductionVisual). Se le suma un pequeño margen para que el logo se
+// alcance a ver ya completamente formado, quieto, antes de navegar.
+const ASSEMBLE_ANIMATION_MS = 1500
+
+// Teclas que no deberían "romper" las partículas (no cambian el contenido
+// del input, solo navegan/modifican el foco o el estado del teclado).
+const IGNORED_KEYS = new Set([
+  "Shift", "Control", "Alt", "Meta", "CapsLock", "Tab",
+  "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown",
+  "Escape", "Home", "End", "PageUp", "PageDown",
+])
+
+type LoginFormProps = {
+  /** Se llama en cada tecla presionada dentro de los inputs del form. */
+  onFieldActivity?: () => void
+  /** Se llama justo cuando el login fue exitoso (antes de redirigir). */
+  onLoginSuccess?: () => void
+}
+
+export function LoginForm({ onFieldActivity, onLoginSuccess }: LoginFormProps = {}) {
   const router = useRouter()
   const setUser = useAuthStore(s => s.setUser)
   const setPermissions = usePermissionStore(s => s.setPermissions)
@@ -25,6 +46,11 @@ export function LoginForm() {
 
   const toggleShowPassword = () => {
     setShowPassword(prev => !prev)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (IGNORED_KEYS.has(e.key)) return
+    onFieldActivity?.()
   }
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -41,6 +67,12 @@ export function LoginForm() {
       setUser(result.user)
       setPermissions(result.permissions)
       setSuccess(true)
+      // Dispara el ensamblaje del logo antes de navegar. Se espera el
+      // tiempo completo de la animación (ver ASSEMBLE_ANIMATION_MS) para
+      // que el logo termine de formarse y se vea quieto un instante antes
+      // de redirigir — si se navega antes, la transición se corta a medias.
+      onLoginSuccess?.()
+      await new Promise(resolve => setTimeout(resolve, ASSEMBLE_ANIMATION_MS))
       router.replace("/projects")
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Credenciales incorrectas.")
@@ -76,6 +108,7 @@ export function LoginForm() {
               const cleanValue = e.target.value.split("@")[0]
               setUsernamePrefix(cleanValue)
             }}
+            onKeyDown={handleKeyDown}
             placeholder="usuario"
             type="text"
             autoComplete="off"
@@ -102,6 +135,7 @@ export function LoginForm() {
             value={password}
             disabled={loading}
             onChange={e => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Contraseña"
             type={showPassword ? "text" : "password"}
             autoComplete="new-password"

@@ -1,13 +1,19 @@
 "use client"
 
 import Image from "next/image"
+import { useRef } from "react"
 
 import { LoginForm } from "@/features/auth/components/login-form"
 
 import { ThemeToggle } from "@/shared/theme/theme-toggle"
-import { ProductionVisual } from "@/shared/ui/visual/production-visual"
+import {
+  ProductionVisual,
+  type ParticleEngineHandle,
+} from "@/shared/ui/visual/production-visual"
 
 export default function LoginPage() {
+  const visualRef = useRef<ParticleEngineHandle>(null)
+
   return (
     <main className="relative flex min-h-dvh w-full items-center justify-center overflow-y-auto bg-background px-4 py-4 text-foreground select-none hide-scrollbar tablet:px-6">
       {/* Theme */}
@@ -20,21 +26,22 @@ export default function LoginPage() {
 
         {/* Grid adaptable */}
         <div className="relative grid min-h-105 grid-cols-1 laptop:grid-cols-[1.1fr_0.9fr]">
-          
+
           {/* LEFT CONTAINER (Oculto en móvil, visible solo en laptop con el átomo) */}
           <div className="relative hidden min-w-0 overflow-hidden laptop:flex laptop:flex-col p-3">
-            
+
             <div className="relative size-full overflow-hidden rounded-xl bg-[#0a0a0a] flex flex-col justify-between p-7 laptop:p-8">
-              
+
               {/* Esquinas técnicas decorativas */}
               <div className="absolute top-3 left-3 w-2.5 h-2.5 border-t-2 border-l-2 border-accent/40 pointer-events-none z-20" />
               <div className="absolute top-3 right-3 w-2.5 h-2.5 border-t-2 border-r-2 border-accent/40 pointer-events-none z-20" />
               <div className="absolute bottom-3 left-3 w-2.5 h-2.5 border-b-2 border-l-2 border-accent/40 pointer-events-none z-20" />
               <div className="absolute bottom-3 right-3 w-2.5 h-2.5 border-b-2 border-r-2 border-accent/40 pointer-events-none z-20" />
 
-              {/* El átomo de fondo */}
+              {/* El átomo de fondo — ref conectado al form para
+                  romper/armar las partículas según lo que pase en el login */}
               <div className="absolute inset-0">
-                <ProductionVisual />
+                <ProductionVisual ref={visualRef} />
               </div>
             </div>
 
@@ -43,7 +50,7 @@ export default function LoginPage() {
           {/* RIGHT (Formulario: en móvil incluye el logo arriba y diseño estrecho) */}
           <div className="flex min-w-0 items-center justify-center p-6 tablet:p-7 laptop:p-8">
             <div className="w-full max-w-70 tablet:max-w-75">
-              
+
               {/* Logo visible SOLAMENTE en móvil/tablet cuando el lado izquierdo está oculto */}
               <div className="mb-5 flex flex-col items-center text-center laptop:hidden">
                 <div className="relative h-15 w-15">
@@ -61,7 +68,10 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              <LoginForm />
+              <LoginForm
+                onFieldActivity={() => visualRef.current?.disturb()}
+                onLoginSuccess={() => visualRef.current?.assemble()}
+              />
 
               <p className="mt-5 text-center text-[9px] tracking-wide text-muted-foreground/60">
                 ETM SAC · Sistema interno

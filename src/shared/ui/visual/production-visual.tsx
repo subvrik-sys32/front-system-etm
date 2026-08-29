@@ -23,10 +23,21 @@
 //    descentrado al hacer zoom).
 // Hay un único tope de seguridad (MAX_PARTICLES) muy por encima de lo que
 // se genera en uso normal, solo para casos extremos (canvases enormes).
+//
+// === NUEVO: handle imperativo (disturb / assemble / scatter) ===
+// Se expone un ref con tres métodos para controlar el motor desde afuera
+// (p. ej. desde el formulario de login):
+//   - disturb(intensity?)  → da un impulso aleatorio a cada partícula,
+//     reusando el sistema de repulsión (repX/repY) que ya decae solo cada
+//     frame. Ideal para "romper" el orden en cada tecla presionada.
+//   - assemble()           → dispara el mismo camino que usa el hover para
+//     armar el logo exacto (estado "assembling" → "active").
+//   - scatter()            → vuelve a dispersar (estado "scattering" →
+//     "idle"), útil si se quiere revertir manualmente.
 // @ts-nocheck
 "use client"
 
-import { useEffect, useRef } from "react"
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 
 // -- Colores de marca ETM ----------------------------------------------------
 // Mismos valores que usa el resto de la UI (bg-primary / bg-accent).
@@ -41,6 +52,16 @@ const PARTICLE_SPEED = 0.1
 // Es solo una red de seguridad para casos extremos (canvases enormes +
 // particleCount muy alto), no debería activarse en un uso típico.
 const MAX_PARTICLES = 30000
+
+// -- Tipos del handle imperativo --------------------------------------------
+export type ParticleEngineHandle = {
+    /** Da un impulso aleatorio a cada partícula (rompe el orden visual). */
+    disturb: (intensity?: number) => void
+    /** Arma el logo exacto (estado "assembling" → "active"). */
+    assemble: () => void
+    /** Dispersa las partículas (estado "scattering" → "idle"). */
+    scatter: () => void
+}
 
 // -- Helpers ----------------------------------------------------------------
 function containRect(iW, iH, cW, cH) {
@@ -164,7 +185,7 @@ function mkParticle(src, x, y, idleX, idleY, isExtra = false) {
 }
 
 // -- Motor de partículas ------------------------------------------------------
-function ParticleEngine(__props) {
+const ParticleEngine = forwardRef(function ParticleEngine(__props, ref) {
     const {
         imageConfig,
         particleCount,
@@ -320,6 +341,43 @@ function ParticleEngine(__props) {
             if (animStateRef.current === newState) animStateRef.current = next
         }, _dur)
     }
+
+    // -- Handle imperativo expuesto hacia afuera (disturb/assemble/scatter) --
+    useImperativeHandle(
+        ref,
+        () => ({
+            disturb: (intensity = 1) => {
+                const { particles } = sceneRef.current
+                for (const p of particles) {
+                    if (p.isPadding) continue
+                    const angle = Math.random() * Math.PI * 2
+                    const force = (5 + Math.random() * 10) * intensity
+                    // Reusa el sistema de repulsión existente: repX/repY ya
+                    // decae solo cada frame (p.repX *= 0.97 cuando no está
+                    // en zona de repulsión activa), así que no hace falta
+                    // ningún timer ni estado adicional para "deshacer" esto.
+                    p.repX += Math.cos(angle) * force
+                    p.repY += Math.sin(angle) * force
+                    // Pequeño empujón adicional a la velocidad de roam, para
+                    // que también se note en el movimiento de flotación.
+                    p.vx =
+                        (p.vx || 0) +
+                        Math.cos(angle) * 0.4 * PARTICLE_SPEED * intensity
+                    p.vy =
+                        (p.vy || 0) +
+                        Math.sin(angle) * 0.4 * PARTICLE_SPEED * intensity
+                }
+            },
+            assemble: () => {
+                startAnimRef.current("assembling")
+            },
+            scatter: () => {
+                startAnimRef.current("scattering")
+            },
+        }),
+        []
+    )
+
     const initParticles = () => {
         const {
             image: url,
@@ -905,7 +963,8 @@ function ParticleEngine(__props) {
             />
         </div>
     )
-}
+})
+ParticleEngine.displayName = "ParticleEngine"
 
 /**
  * ProductionVisual — versión de marca ETM.
@@ -915,17 +974,26 @@ function ParticleEngine(__props) {
  * panel, las partículas se ensamblan en el logo exacto; al salir, vuelven a
  * dispersarse. Cerca del cursor además se repelen, dando una textura viva.
  *
- * Uso: <ProductionVisual /> — ya trae los colores y el ícono de ETM por
- * defecto. Se le puede pasar cualquier prop del motor para ajustar densidad,
- * tamaño de partícula, velocidad de ensamblaje, etc.
+ * Ahora también acepta un ref (ParticleEngineHandle) con:
+ *   - disturb(intensity?) → rompe el orden de las partículas (p. ej. en
+ *     cada tecla presionada en el login).
+ *   - assemble()          → arma el logo exacto (p. ej. al loguearse OK).
+ *   - scatter()           → vuelve a dispersar manualmente.
+ *
+ * Uso: <ProductionVisual ref={miRef} /> — ya trae los colores y el ícono de
+ * ETM por defecto. Se le puede pasar cualquier prop del motor para ajustar
+ * densidad, tamaño de partícula, velocidad de ensamblaje, etc.
  *
  * NOTA sobre particleCount: con el fix de muestreo, este valor ahora sí
  * determina (aprox.) el nº final de partículas. Si antes se veía "denso"
  * por el bug de sobre-muestreo, puede que quieras subir este número un poco
  * (p.ej. 200-400) para recuperar esa densidad visual con un coste de CPU
- * mucho menor y controlado (tope duro: MAX_PARTICLES = 1400).
+ * mucho menor y controlado (tope duro: MAX_PARTICLES = 30000).
  */
-export function ProductionVisual(overrides = {}) {
+export const ProductionVisual = forwardRef(function ProductionVisual(
+    overrides = {},
+    ref
+) {
     const {
         imageConfig: imageConfigOverride,
         hoverConfig: hoverConfigOverride,
@@ -969,5 +1037,6 @@ export function ProductionVisual(overrides = {}) {
         ...rest,
     }
 
-    return <ParticleEngine {...merged} />
-}
+    return <ParticleEngine ref={ref} {...merged} />
+})
+ProductionVisual.displayName = "ProductionVisual"

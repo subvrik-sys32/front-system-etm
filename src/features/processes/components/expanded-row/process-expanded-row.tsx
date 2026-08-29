@@ -2,25 +2,8 @@
 
 import { useDeepLinkRoute } from "@/shared/focus/deep-link-route"
 
-import {
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react"
-
-import {
-  useSearchParams,
-  useRouter,
-  usePathname,
-} from "next/navigation"
-
-import {
-  Activity,
-  ArrowRight,
-  Clock,
-  MessageSquare,
-  Puzzle,
-} from "lucide-react"
+import { useEffect, useState, type ReactNode } from "react"
+import { Activity, ArrowRight, Clock, MessageSquare, Puzzle } from "lucide-react"
 
 import type { ProcessTask } from "../../types/process.types"
 
@@ -30,24 +13,10 @@ import {
   EntityExpandedToggle,
 } from "@/shared/ui/entity-expanded-row"
 
-import {
-  KpiCarousel,
-  type KpiItem,
-} from "@/shared/ui/mini-card/kpi-carousel"
-
 import { ProcessDesktopKpiStrip } from "./process-desktop-kpi-strip"
-
-import {
-  useResponsive,
-} from "@/shared/responsive/hooks/use-responsive"
-
-import {
-  getProcessProgress,
-} from "@/features/processes/selectors/get-process-progress"
-
-import {
-  useActiveCommentContextStore,
-} from "@/features/comments/store/active-comment-context-store"
+import { useResponsive } from "@/shared/responsive/hooks/use-responsive"
+import { getProcessProgress } from "@/features/processes/selectors/get-process-progress"
+import { useActiveCommentContextStore } from "@/features/comments/store/active-comment-context-store"
 
 import { ProcessProductionCard } from "./cards/process-production-card"
 import { ProcessMaterialCard } from "./cards/process-material-card"
@@ -57,35 +26,33 @@ import { ProcessDispatchCard } from "./cards/process-dispatch-card"
 import { ProcessTimeCard } from "./cards/process-time-card"
 import { ProcessProgressCard } from "./cards/process-progress-card"
 
-import {
-  CommentHistoryDialog,
-} from "@/features/comments/components/comment-history-dialog"
+import { CommentHistoryDialog } from "@/features/comments/components/comment-history-dialog"
 
 type Props = {
   processTask: ProcessTask
 
-  /** Ojo / materiales / auditoría — misma fila que toggle + KPIs. */
+  /**
+   * Acciones de la derecha:
+   * ojo / material / auditoría.
+   */
   headerActions?: ReactNode
+
+  /**
+   * Acciones principales del workflow:
+   * iniciar / pausar / completar.
+   */
+  workflowActions?: ReactNode
 }
 
 export function ProcessExpandedRow({
   processTask,
   headerActions,
+  workflowActions,
 }: Props) {
   const {
     isMobile,
     isCompact,
-    ready,
   } = useResponsive()
-
-  const searchParams =
-    useSearchParams()
-
-  const router =
-    useRouter()
-
-  const pathname =
-    usePathname()
 
   const route =
     useDeepLinkRoute(
@@ -100,7 +67,8 @@ export function ProcessExpandedRow({
     route?.tab
 
   const arrived =
-    route?.phase === "arrived"
+    route?.phase ===
+    "arrived"
 
   const processCode =
     processTask.workflowStep
@@ -138,7 +106,9 @@ export function ProcessExpandedRow({
       ? [
           <ProcessProductionCard
             key="production"
-            size={cardSize}
+            size={
+              cardSize
+            }
             processTask={
               processTask
             }
@@ -146,7 +116,9 @@ export function ProcessExpandedRow({
 
           <ProcessMaterialCard
             key="material"
-            size={cardSize}
+            size={
+              cardSize
+            }
             processTask={
               processTask
             }
@@ -158,7 +130,9 @@ export function ProcessExpandedRow({
       ? [
           <ProcessProductionCard
             key="production"
-            size={cardSize}
+            size={
+              cardSize
+            }
             processTask={
               processTask
             }
@@ -166,7 +140,9 @@ export function ProcessExpandedRow({
 
           <ProcessPaintCard
             key="paint"
-            size={cardSize}
+            size={
+              cardSize
+            }
             processTask={
               processTask
             }
@@ -178,7 +154,9 @@ export function ProcessExpandedRow({
       ? [
           <ProcessAssemblyCard
             key="assembly"
-            size={cardSize}
+            size={
+              cardSize
+            }
             processTask={
               processTask
             }
@@ -186,7 +164,9 @@ export function ProcessExpandedRow({
 
           <ProcessPaintCard
             key="paint"
-            size={cardSize}
+            size={
+              cardSize
+            }
             processTask={
               processTask
             }
@@ -199,7 +179,9 @@ export function ProcessExpandedRow({
       ? [
           <ProcessDispatchCard
             key="dispatch"
-            size={cardSize}
+            size={
+              cardSize
+            }
             processTask={
               processTask
             }
@@ -207,7 +189,9 @@ export function ProcessExpandedRow({
 
           <ProcessPaintCard
             key="paint"
-            size={cardSize}
+            size={
+              cardSize
+            }
             processTask={
               processTask
             }
@@ -218,7 +202,9 @@ export function ProcessExpandedRow({
 
     <ProcessTimeCard
       key="time"
-      size={cardSize}
+      size={
+        cardSize
+      }
       processTask={
         processTask
       }
@@ -226,7 +212,9 @@ export function ProcessExpandedRow({
 
     <ProcessProgressCard
       key="progress"
-      size={cardSize}
+      size={
+        cardSize
+      }
       processTask={
         processTask
       }
@@ -240,23 +228,22 @@ export function ProcessExpandedRow({
   const [
     activeView,
     setActiveView,
-  ] =
-    useState<ProcessView>(
-      "kpis",
-    )
+  ] = useState<ProcessView>(
+    "kpis",
+  )
 
   const [
     commentsDialogOpen,
     setCommentsDialogOpen,
-  ] =
-    useState(false)
+  ] = useState(false)
 
   useEffect(() => {
     if (
       !isTarget ||
       !arrived
-    )
+    ) {
       return
+    }
 
     if (
       tabParam ===
@@ -288,7 +275,8 @@ export function ProcessExpandedRow({
 
   const setActiveTarget =
     useActiveCommentContextStore(
-      s => s.setActiveTarget,
+      s =>
+        s.setActiveTarget,
     )
 
   useEffect(() => {
@@ -324,47 +312,6 @@ export function ProcessExpandedRow({
       processTask,
     )
 
-  const items: KpiItem[] = [
-    {
-      icon: Activity,
-      color: "#22C55E",
-      label: "Estado",
-      value: statusLabel,
-    },
-
-    {
-      icon: Activity,
-      color: "#22C55E",
-      label: "Avance",
-      value: `${percent}%`,
-    },
-
-    {
-      icon: ArrowRight,
-      color: "#64748B",
-      label: "Siguiente",
-      value:
-        nextProcessLabel,
-    },
-
-    {
-      icon: Puzzle,
-      color: "#3b9bb8",
-      label: "Piezas",
-      value:
-        processTask.task
-          .pieces,
-    },
-
-    {
-      icon: Clock,
-      color: "#b8a42a",
-      label: "Lote",
-      value:
-        `L${processTask.task.lotNumber}`,
-    },
-  ]
-
   return (
     <EntityExpandedRow
       rowId={
@@ -374,97 +321,156 @@ export function ProcessExpandedRow({
       <EntityExpandedContent>
 
         {/* =====================================================
-            FILA SUPERIOR
+            MOBILE
+            =====================================================
 
-            IZQUIERDA:
-            Toggle KPIs / Mensajes
+            Toggle:
+              izquierda
 
-            DERECHA:
-            Eye / Layers / Info
+            Workflow:
+              CENTRO ABSOLUTO DE LA FILA
+
+            Actions:
+              derecha
             ===================================================== */}
-        <div className="mb-2 flex w-full min-w-0 items-center select-none">
+        {isCompact ? (
+          <div
+            className="
+              relative
+              mb-2
+              flex
+              w-full
+              min-w-0
+              items-center
+              select-none
+            "
+          >
 
-          {/* -----------------------------------------------
-              CONTROLES DE VISTA — IZQUIERDA
-              ----------------------------------------------- */}
-          <div className="shrink-0">
-            <EntityExpandedToggle<ProcessView>
-              value={
-                activeView
-              }
-              onChange={(
-                next,
-              ) => {
-                if (
-                  next ===
-                  "comments"
-                ) {
-                  setCommentsDialogOpen(
-                    true,
-                  )
-
-                  return
+            {/* =================================================
+                IZQUIERDA — TOGGLE
+                ================================================= */}
+            <div
+              className="
+                relative
+                z-10
+                flex
+                shrink-0
+                items-center
+              "
+            >
+              <EntityExpandedToggle<ProcessView>
+                value={
+                  activeView
                 }
-
-                setActiveView(
+                onChange={(
                   next,
-                )
-              }}
-              className="w-auto"
-              options={[
-                {
-                  value:
-                    "kpis",
-                  label:
-                    "KPIs",
-                  icon:
-                    Activity,
-                },
+                ) => {
+                  if (
+                    next ===
+                    "comments"
+                  ) {
+                    setCommentsDialogOpen(
+                      true,
+                    )
 
-                ...(workflowStepId
-                  ? ([
-                      {
+                    return
+                  }
+
+                  setActiveView(
+                    next,
+                  )
+                }}
+                className="w-auto"
+                options={[
+                  {
+                    value:
+                      "kpis",
+                    label:
+                      "KPIs",
+                    icon:
+                      Activity,
+                  },
+
+                  ...(workflowStepId
+                    ? ([
+                        {
+                          value:
+                            "comments",
+                          label:
+                            "Mensajes",
+                          icon:
+                            MessageSquare,
+
+                          ...(totalComments >
+                          0
+                            ? {
+                                count:
+                                  totalComments,
+                              }
+                            : {}),
+                        },
+                      ] as {
                         value:
-                          "comments",
-                        label:
-                          "Mensajes",
-                        icon:
-                          MessageSquare,
+                          ProcessView
+                        label: string
+                        icon: typeof MessageSquare
+                        count?: number
+                      }[])
+                    : []),
+                ]}
+              />
+            </div>
 
-                        ...(totalComments >
-                        0
-                          ? {
-                              count:
-                                totalComments,
-                            }
-                          : {}),
-                      },
-                    ] as {
-                      value:
-                        ProcessView
-                      label:
-                        string
-                      icon:
-                        typeof MessageSquare
-                      count?: number
-                    }[])
-                  : []),
-              ]}
-            />
-          </div>
+            {/* =================================================
+                CENTRO — WORKFLOW ACTIONS
+                =================================================
 
-          {/* -----------------------------------------------
-              ACTIONS — DERECHA
+                ESTO ES LO QUE CAMBIA.
 
-              ml-auto = empuja TODO el grupo
-              hasta el extremo derecho.
+                El bloque se posiciona exactamente al 50%
+                del ancho total de la fila.
 
-              Aquí están:
-              👁
-              capas
-              info
-              ----------------------------------------------- */}
-          {headerActions ? (
+                Por eso pausa/check quedan centrados
+                independientemente del ancho del toggle
+                o de los botones de la derecha.
+                ================================================= */}
+            {workflowActions ? (
+              <div
+                className="
+                  absolute
+                  left-1/2
+                  top-1/2
+                  z-10
+                  flex
+                  -translate-x-1/2
+                  -translate-y-1/2
+                  items-center
+                  justify-center
+                "
+                onClick={e =>
+                  e.stopPropagation()
+                }
+                onPointerDown={e =>
+                  e.stopPropagation()
+                }
+              >
+                <div
+                  className="
+                    flex
+                    shrink-0
+                    flex-nowrap
+                    items-center
+                    justify-center
+                  "
+                >
+                  {workflowActions}
+                </div>
+              </div>
+            ) : null}
+
+            {/* =================================================
+                DERECHA — OJO / CAPAS / INFO
+                ================================================= */}
             <div
               className="
                 ml-auto
@@ -483,15 +489,114 @@ export function ProcessExpandedRow({
             >
               {headerActions}
             </div>
-          ) : null}
-        </div>
+
+          </div>
+        ) : (
+          /* ===================================================
+             DESKTOP / TABLET
+
+             SIN CAMBIOS.
+             =================================================== */
+          <div className="mb-2 flex min-w-0 flex-nowrap items-center gap-2 select-none">
+
+            <div className="shrink-0">
+              <EntityExpandedToggle<ProcessView>
+                value={
+                  activeView
+                }
+                onChange={(
+                  next,
+                ) => {
+                  if (
+                    next ===
+                    "comments"
+                  ) {
+                    setCommentsDialogOpen(
+                      true,
+                    )
+
+                    return
+                  }
+
+                  setActiveView(
+                    next,
+                  )
+                }}
+                className="w-auto"
+                options={[
+                  {
+                    value:
+                      "kpis",
+                    label:
+                      "KPIs",
+                    icon:
+                      Activity,
+                  },
+
+                  ...(workflowStepId
+                    ? ([
+                        {
+                          value:
+                            "comments",
+                          label:
+                            "Mensajes",
+                          icon:
+                            MessageSquare,
+
+                          ...(totalComments >
+                          0
+                            ? {
+                                count:
+                                  totalComments,
+                              }
+                            : {}),
+                        },
+                      ] as {
+                        value:
+                          ProcessView
+                        label: string
+                        icon: typeof MessageSquare
+                        count?: number
+                      }[])
+                    : []),
+                ]}
+              />
+            </div>
+
+            {headerActions ? (
+              <div
+                className="
+                  flex
+                  shrink-0
+                  items-center
+                  gap-1
+                "
+                onClick={e =>
+                  e.stopPropagation()
+                }
+                onPointerDown={e =>
+                  e.stopPropagation()
+                }
+              >
+                {headerActions}
+              </div>
+            ) : null}
+
+          </div>
+        )}
 
         {/* =====================================================
-            BADGE KPI
+            KPI BADGE
             ===================================================== */}
         {activeView ===
           "kpis" && (
-          <div className="mb-2 w-full min-w-0">
+          <div
+            className="
+              mb-2
+              w-full
+              min-w-0
+            "
+          >
             <ProcessDesktopKpiStrip
               processTask={
                 processTask

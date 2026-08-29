@@ -383,25 +383,19 @@ function ProcessMobileCardReady({
           />
         </CollapsibleHeightSection>
 
-        {/* Acciones de la fila (botones de play/pausa/completar) */}
-        {stepId && processCode && (
-          <div
-            className="flex w-full items-center justify-center pt-1"
-            onClick={e => e.stopPropagation()}
-            onPointerDown={e => e.stopPropagation()}
-          >
-            <ProcessRowActions
-              task={task}
-              stepId={stepId}
-              status={workflowAccess.status(processTask)}
-              processCode={processCode}
-            />
-          </div>
-        )}
-
-        {/* Fila expandida inferior con auditoría, materiales e historial */}
+        {/* Fila expandida inferior con auditoría, materiales e historial (Pasando workflowActions para unificarlos arriba) */}
         <ProcessExpandedRow
           processTask={processTask}
+          workflowActions={
+            stepId && processCode ? (
+              <ProcessRowActions
+                task={task}
+                stepId={stepId}
+                status={workflowAccess.status(processTask)}
+                processCode={processCode}
+              />
+            ) : undefined
+          }
           headerActions={
             <>
               <DetailAssetsEye taskId={task.id} readOnly count={task.detailAssetCount ?? 0} />

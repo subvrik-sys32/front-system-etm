@@ -92,19 +92,13 @@ export function ProcessDesktopKpiStrip({
   const {
     stepId,
     locked,
-  } = getWorkflowStepContext(
-    processTask,
-  )
+  } = getWorkflowStepContext(processTask)
 
   const started =
-    workflowAccess.startedAt(
-      processTask,
-    )
+    workflowAccess.startedAt(processTask)
 
   const completed =
-    workflowAccess.completedAt(
-      processTask,
-    )
+    workflowAccess.completedAt(processTask)
 
   const fmtTime = (
     v: string | null,
@@ -293,6 +287,24 @@ export function ProcessDesktopKpiStrip({
   const leftValueClass =
     "truncate text-xs font-bold leading-tight sm:text-sm"
 
+  /**
+   * =========================================================
+   * COLUMNA IZQUIERDA
+   * =========================================================
+   *
+   * IMPORTANTE:
+   * No se cambia el padding, gap ni la estructura
+   * exterior de esta columna.
+   *
+   * Solo el contenido textual tiene:
+   *
+   * - min-w-0
+   * - max-w-full
+   * - truncate
+   *
+   * para que pueda aparecer "..." cuando no haya
+   * espacio suficiente.
+   */
   function LeftCol({
     icon: Icon,
     label,
@@ -325,14 +337,20 @@ export function ProcessDesktopKpiStrip({
             {label}
           </p>
 
+          {/* SOLO AQUÍ: truncamiento del valor */}
           <div
             className={cn(
               leftValueClass,
-              "flex justify-center",
+              "min-w-0 max-w-full truncate text-center",
             )}
             style={{
               color: finishInk,
             }}
+            title={
+              typeof children === "string"
+                ? children
+                : undefined
+            }
           >
             {children}
           </div>
@@ -343,27 +361,30 @@ export function ProcessDesktopKpiStrip({
 
   /**
    * =========================================================
-   * BADGE ORIGINAL
+   * BADGE
    * =========================================================
-   *
-   * NO SE MODIFICA.
    */
   function KpiBadge({
     icon: Icon,
     label,
     accent,
     children,
+    fixedWidth = false,
   }: {
     icon: typeof Activity
     label: string
     accent?: string
     children: ReactNode
+    fixedWidth?: boolean
   }) {
     return (
       <div
         className={cn(
           "flex shrink-0 items-center gap-1.5 rounded-xl",
           "bg-white/[0.06] px-2.5 py-1.5",
+
+          fixedWidth &&
+            "w-[104px]",
         )}
       >
         <Icon
@@ -375,7 +396,7 @@ export function ProcessDesktopKpiStrip({
           }}
         />
 
-        <div className="min-w-0 text-center">
+        <div className="min-w-0 flex-1 text-center">
           <p className="truncate text-center text-[9px] uppercase tracking-[0.14em] text-white/55 sm:text-[10px]">
             {label}
           </p>
@@ -404,10 +425,9 @@ export function ProcessDesktopKpiStrip({
    * =========================================================
    * PRODUCCIÓN — DESKTOP
    * =========================================================
-   *
-   * NO SE TOCA.
    */
-  const productionCol: Col | null =
+  const productionCol:
+    Col | null =
     showOutput ||
     showPlRt ||
     inQty != null
@@ -430,9 +450,7 @@ export function ProcessDesktopKpiStrip({
 
                 <span className="tabular-nums text-white">
                   {inQty != null &&
-                  String(
-                    inQty,
-                  ).trim() !== ""
+                  String(inQty).trim() !== ""
                     ? inQty
                     : "—"}
                 </span>
@@ -455,22 +473,16 @@ export function ProcessDesktopKpiStrip({
                         step?.piecesOutput ??
                         null
                       }
-                      disabled={
-                        locked
-                      }
+                      disabled={locked}
                       placeholder="Ingresar"
-                      stepId={
-                        stepId
-                      }
+                      stepId={stepId}
                       fieldKey="piecesOutput"
                       onSave={async value => {
                         if (!stepId)
                           return
 
                         const piecesOutput =
-                          toNumber(
-                            value,
-                          )
+                          toNumber(value)
 
                         await updateField(
                           stepId,
@@ -504,25 +516,17 @@ export function ProcessDesktopKpiStrip({
                         step?.plRtReal ??
                         null
                       }
-                      suffix={
-                        plRtSuffix
-                      }
-                      disabled={
-                        locked
-                      }
+                      suffix={plRtSuffix}
+                      disabled={locked}
                       placeholder="Ingresar"
-                      stepId={
-                        stepId
-                      }
+                      stepId={stepId}
                       fieldKey="plRtReal"
                       onSave={async value => {
                         if (!stepId)
                           return
 
                         const plRtReal =
-                          toNumber(
-                            value,
-                          )
+                          toNumber(value)
 
                         await updateField(
                           stepId,
@@ -547,20 +551,13 @@ export function ProcessDesktopKpiStrip({
    * =========================================================
    * MOBILE — PRODUCCIÓN
    * =========================================================
-   *
-   * CAMBIO:
-   * Se elimina solamente "IN".
-   *
-   * Antes:
-   *   IN 50
-   *
-   * Ahora:
-   *   50
    */
-  const compactProductionInfoCol: Col | null =
+  const compactProductionInfoCol:
+    Col | null =
     inQty != null
       ? {
-          key: "compact-produccion-info",
+          key:
+            "compact-produccion-info",
 
           node: (
             <KpiBadge
@@ -586,20 +583,13 @@ export function ProcessDesktopKpiStrip({
    * =========================================================
    * MOBILE — SALIDA
    * =========================================================
-   *
-   * CAMBIO:
-   * Se elimina solamente "OUT".
-   *
-   * Antes:
-   *   OUT [Ingresar]
-   *
-   * Ahora:
-   *   [Ingresar]
    */
-  const compactOutputCol: Col | null =
+  const compactOutputCol:
+    Col | null =
     showOutput
       ? {
-          key: "compact-output",
+          key:
+            "compact-output",
           hasIngresar: true,
 
           node: (
@@ -609,6 +599,7 @@ export function ProcessDesktopKpiStrip({
               accent={
                 ACCENT.salida
               }
+              fixedWidth
             >
               <ProcessEditableValue
                 inline
@@ -618,22 +609,16 @@ export function ProcessDesktopKpiStrip({
                   step?.piecesOutput ??
                   null
                 }
-                disabled={
-                  locked
-                }
+                disabled={locked}
                 placeholder="Ingresar"
-                stepId={
-                  stepId
-                }
+                stepId={stepId}
                 fieldKey="piecesOutput"
                 onSave={async value => {
                   if (!stepId)
                     return
 
                   const piecesOutput =
-                    toNumber(
-                      value,
-                    )
+                    toNumber(value)
 
                   await updateField(
                     stepId,
@@ -656,10 +641,12 @@ export function ProcessDesktopKpiStrip({
    * MOBILE — PL/RT
    * =========================================================
    */
-  const compactPlRtCol: Col | null =
+  const compactPlRtCol:
+    Col | null =
     showPlRt
       ? {
-          key: "compact-plrt",
+          key:
+            "compact-plrt",
           hasIngresar: true,
 
           node: (
@@ -669,6 +656,7 @@ export function ProcessDesktopKpiStrip({
               accent={
                 ACCENT.salida
               }
+              fixedWidth
             >
               <ProcessEditableValue
                 inline
@@ -681,22 +669,16 @@ export function ProcessDesktopKpiStrip({
                 suffix={
                   plRtSuffix
                 }
-                disabled={
-                  locked
-                }
+                disabled={locked}
                 placeholder="Ingresar"
-                stepId={
-                  stepId
-                }
+                stepId={stepId}
                 fieldKey="plRtReal"
                 onSave={async value => {
                   if (!stepId)
                     return
 
                   const plRtReal =
-                    toNumber(
-                      value,
-                    )
+                    toNumber(value)
 
                   await updateField(
                     stepId,
@@ -719,13 +701,15 @@ export function ProcessDesktopKpiStrip({
    * MOBILE — DESTINO
    * =========================================================
    */
-  const compactDestinationCol: Col | null =
+  const compactDestinationCol:
+    Col | null =
     nextProcessCode &&
     PROCESS_DEFINITIONS[
       nextProcessCode
     ]
       ? {
-          key: "compact-destination",
+          key:
+            "compact-destination",
 
           node: (() => {
             const definition =
@@ -740,17 +724,34 @@ export function ProcessDesktopKpiStrip({
 
             return (
               <div
-                className={cn(
-                  "flex shrink-0 items-center",
-                  "gap-1.5 rounded-xl",
-                  "bg-white/[0.06]",
-                  "px-2.5 py-1.5",
-                )}
+                className="
+                  flex
+                  shrink-0
+                  items-center
+                  gap-1.5
+                  rounded-xl
+                  bg-white/[0.06]
+                  px-2.5
+                  py-1.5
+                "
               >
+                <ArrowRight
+                  className="
+                    h-3.5
+                    w-3.5
+                    shrink-0
+                    text-white/50
+                  "
+                  strokeWidth={2.5}
+                />
 
                 {NextIcon ? (
                   <NextIcon
-                    className="h-3.5 w-3.5 shrink-0"
+                    className="
+                      h-3.5
+                      w-3.5
+                      shrink-0
+                    "
                     style={{
                       color:
                         definition.color,
@@ -758,13 +759,28 @@ export function ProcessDesktopKpiStrip({
                   />
                 ) : null}
 
-                <div className="min-w-0 text-center">
-                  <p className="truncate text-[9px] font-bold uppercase tracking-[0.14em] text-white/45">
+                <div className="
+                  min-w-0
+                  text-center
+                ">
+                  <p className="
+                    truncate
+                    text-[9px]
+                    font-bold
+                    uppercase
+                    tracking-[0.14em]
+                    text-white/45
+                  ">
                     Destino
                   </p>
 
                   <p
-                    className="truncate text-xs font-bold leading-tight"
+                    className="
+                      truncate
+                      text-xs
+                      font-bold
+                      leading-tight
+                    "
                     style={{
                       color:
                         definition.color,
@@ -786,10 +802,11 @@ export function ProcessDesktopKpiStrip({
 
   /**
    * =========================================================
-   * PIEZAS — DESKTOP
+   * PIEZAS
    * =========================================================
    */
-  const piecesCol: Col | null =
+  const piecesCol:
+    Col | null =
     isMaterialProcess
       ? {
           key: "piezas",
@@ -812,10 +829,11 @@ export function ProcessDesktopKpiStrip({
 
   /**
    * =========================================================
-   * AVANCE — DESKTOP
+   * AVANCE
    * =========================================================
    */
-  const avanceCol: Col = {
+  const avanceCol:
+    Col = {
     key: "avance",
 
     node: (
@@ -826,7 +844,13 @@ export function ProcessDesktopKpiStrip({
           ACCENT.avance
         }
       >
-        <span className="inline-flex flex-wrap items-center gap-x-1.5 text-white">
+        <span className="
+          inline-flex
+          flex-wrap
+          items-center
+          gap-x-1.5
+          text-white
+        ">
           <span
             className="tabular-nums"
             style={{
@@ -841,7 +865,11 @@ export function ProcessDesktopKpiStrip({
             ·
           </span>
 
-          <span className="truncate uppercase text-white/90">
+          <span className="
+            truncate
+            uppercase
+            text-white/90
+          ">
             {statusLabel}
           </span>
 
@@ -855,7 +883,11 @@ export function ProcessDesktopKpiStrip({
                 </span>
 
                 <span
-                  className="inline-flex items-center gap-1"
+                  className="
+                    inline-flex
+                    items-center
+                    gap-1
+                  "
                   title={
                     PROCESS_DEFINITIONS[
                       nextProcessCode
@@ -864,10 +896,11 @@ export function ProcessDesktopKpiStrip({
                 >
                   <ArrowRight
                     size={12}
-                    strokeWidth={
-                      2.75
-                    }
-                    className="shrink-0 text-white/70"
+                    strokeWidth={2.75}
+                    className="
+                      shrink-0
+                      text-white/70
+                    "
                   />
 
                   {(() => {
@@ -902,10 +935,11 @@ export function ProcessDesktopKpiStrip({
 
   /**
    * =========================================================
-   * JORNADA — DESKTOP
+   * JORNADA
    * =========================================================
    */
-  const jornadaCol: Col = {
+  const jornadaCol:
+    Col = {
     key: "jornada",
 
     node: (
@@ -916,7 +950,12 @@ export function ProcessDesktopKpiStrip({
           ACCENT.jornada
         }
       >
-        <span className="inline-flex items-center gap-x-1.5 tabular-nums">
+        <span className="
+          inline-flex
+          items-center
+          gap-x-1.5
+          tabular-nums
+        ">
           <span
             style={{
               color:
@@ -953,10 +992,11 @@ export function ProcessDesktopKpiStrip({
 
   /**
    * =========================================================
-   * PINTURA — DESKTOP
+   * PINTURA
    * =========================================================
    */
-  const paintRealCol: Col | null =
+  const paintRealCol:
+    Col | null =
     isPaintProcess
       ? {
           key: "real",
@@ -969,6 +1009,7 @@ export function ProcessDesktopKpiStrip({
               accent={
                 ACCENT.real
               }
+              fixedWidth
             >
               <ProcessEditableValue
                 inline
@@ -978,22 +1019,16 @@ export function ProcessDesktopKpiStrip({
                   paintKgReal
                 }
                 suffix="KG"
-                disabled={
-                  locked
-                }
+                disabled={locked}
                 placeholder="Ingresar"
-                stepId={
-                  stepId
-                }
+                stepId={stepId}
                 fieldKey="paintKgReal"
                 onSave={async value => {
                   if (!stepId)
                     return
 
                   const next =
-                    toNumber(
-                      value,
-                    )
+                    toNumber(value)
 
                   await updateField(
                     stepId,
@@ -1018,7 +1053,8 @@ export function ProcessDesktopKpiStrip({
    * ENSAMBLE
    * =========================================================
    */
-  const ensambleSalidaCol: Col | null =
+  const ensambleSalidaCol:
+    Col | null =
     isAssemblyProcess
       ? {
           key: "salida",
@@ -1031,6 +1067,7 @@ export function ProcessDesktopKpiStrip({
               accent={
                 ACCENT.salida
               }
+              fixedWidth
             >
               <ProcessEditableValue
                 inline
@@ -1040,22 +1077,16 @@ export function ProcessDesktopKpiStrip({
                   step?.piecesOutput ??
                   null
                 }
-                disabled={
-                  locked
-                }
+                disabled={locked}
                 placeholder="Ingresar"
-                stepId={
-                  stepId
-                }
+                stepId={stepId}
                 fieldKey="piecesOutput"
                 onSave={async value => {
                   if (!stepId)
                     return
 
                   const piecesOutput =
-                    toNumber(
-                      value,
-                    )
+                    toNumber(value)
 
                   await updateField(
                     stepId,
@@ -1078,7 +1109,8 @@ export function ProcessDesktopKpiStrip({
    * DESPACHO
    * =========================================================
    */
-  const despachoCol: Col | null =
+  const despachoCol:
+    Col | null =
     isDispatchProcess
       ? {
           key: "despacho",
@@ -1091,6 +1123,7 @@ export function ProcessDesktopKpiStrip({
               accent={
                 ACCENT.despacho
               }
+              fixedWidth
             >
               <ProcessEditableValue
                 inline
@@ -1101,22 +1134,16 @@ export function ProcessDesktopKpiStrip({
                   null
                 }
                 suffix="UND"
-                disabled={
-                  locked
-                }
+                disabled={locked}
                 placeholder="Ingresar"
-                stepId={
-                  stepId
-                }
+                stepId={stepId}
                 fieldKey="piecesOutput"
                 onSave={async value => {
                   if (!stepId)
                     return
 
                   const piecesOutput =
-                    toNumber(
-                      value,
-                    )
+                    toNumber(value)
 
                   await updateField(
                     stepId,
@@ -1138,10 +1165,9 @@ export function ProcessDesktopKpiStrip({
    * =========================================================
    * DESKTOP / OTROS BREAKPOINTS
    * =========================================================
-   *
-   * COMPLETAMENTE INTACTO.
    */
-  const allRight: Col[] = (
+  const allRight:
+    Col[] = (
     isMaterialProcess
       ? [
           piecesCol,
@@ -1185,7 +1211,8 @@ export function ProcessDesktopKpiStrip({
    * MOBILE — INFORMACIÓN
    * =========================================================
    */
-  const compactMainCols: Col[] = [
+  const compactMainCols:
+    Col[] = [
     ...(compactProductionInfoCol
       ? [
           compactProductionInfoCol,
@@ -1197,12 +1224,9 @@ export function ProcessDesktopKpiStrip({
    * =========================================================
    * MOBILE — SEGUNDO BADGE
    * =========================================================
-   *
-   * SALIDA
-   * PL/RT
-   * DESTINO
    */
-  const compactInputCols: Col[] = [
+  const compactInputCols:
+    Col[] = [
     ...(compactOutputCol
       ? [compactOutputCol]
       : []),
@@ -1212,7 +1236,9 @@ export function ProcessDesktopKpiStrip({
       : []),
 
     ...(compactDestinationCol
-      ? [compactDestinationCol]
+      ? [
+          compactDestinationCol,
+        ]
       : []),
 
     ...(isPaintProcess &&
@@ -1222,7 +1248,9 @@ export function ProcessDesktopKpiStrip({
 
     ...(isAssemblyProcess &&
     ensambleSalidaCol
-      ? [ensambleSalidaCol]
+      ? [
+          ensambleSalidaCol,
+        ]
       : []),
 
     ...(isDispatchProcess &&
@@ -1231,11 +1259,6 @@ export function ProcessDesktopKpiStrip({
       : []),
   ]
 
-  /**
-   * =========================================================
-   * RENDER
-   * =========================================================
-   */
   return (
     <div
       className={cn(
@@ -1251,7 +1274,16 @@ export function ProcessDesktopKpiStrip({
           ===================================================== */}
       <div
         ref={badgeRef}
-        className="flex h-[70.5px] w-full min-w-0 items-center rounded-2xl pr-2 shadow-sm"
+        className="
+          flex
+          h-[70.5px]
+          w-full
+          min-w-0
+          items-center
+          rounded-2xl
+          pr-2
+          shadow-sm
+        "
         style={{
           background:
             getFinishMaterialSurface(
@@ -1260,19 +1292,34 @@ export function ProcessDesktopKpiStrip({
             ),
         }}
       >
-        {/* -------------------------------------------------
+        {/* =================================================
             INFORMACIÓN IZQUIERDA
-            ------------------------------------------------- */}
-        <div className="flex min-w-0 shrink-0 items-center gap-3 pl-4 pr-4 tablet:gap-4">
+
+            IMPORTANTE:
+            se mantienen EXACTAMENTE los paddings
+            y gaps originales.
+
+            No flex-1.
+            No cambio de padding.
+            No cambio de gap.
+            ================================================= */}
+        <div className="
+          flex
+          min-w-0
+          shrink-0
+          items-center
+          gap-3
+          pl-4
+          pr-4
+          tablet:gap-4
+        ">
           {isMaterialProcess ? (
             <>
               <LeftCol
                 icon={Layers3}
                 label="Lote"
               >
-                <span className="tabular-nums">
-                  {lotValue}
-                </span>
+                {lotValue}
               </LeftCol>
 
               <LeftCol
@@ -1297,8 +1344,7 @@ export function ProcessDesktopKpiStrip({
               icon={Puzzle}
               label="Ensamble"
             >
-              {task.assemblyCount}{" "}
-              und
+              {task.assemblyCount} und
             </LeftCol>
           ) : isDispatchProcess ? (
             <LeftCol
@@ -1312,25 +1358,29 @@ export function ProcessDesktopKpiStrip({
               icon={Layers3}
               label="Lote"
             >
-              <span className="tabular-nums">
-                {lotValue}
-              </span>
+              {lotValue}
             </LeftCol>
           )}
         </div>
 
-        {/* -------------------------------------------------
+        {/* =================================================
             SEPARADOR
-            ------------------------------------------------- */}
+            ================================================= */}
         <div
           data-finish-sep
           aria-hidden
-          className="h-5 w-px shrink-0 self-center bg-white/20"
+          className="
+            h-5
+            w-px
+            shrink-0
+            self-center
+            bg-white/20
+          "
         />
 
-        {/* -------------------------------------------------
+        {/* =================================================
             CONTENIDO DERECHO
-            ------------------------------------------------- */}
+            ================================================= */}
         <div
           className={cn(
             "ml-auto flex min-w-0 items-center gap-2 pl-3 pr-2",
@@ -1353,7 +1403,9 @@ export function ProcessDesktopKpiStrip({
           ).map(col => (
             <div
               key={col.key}
-              className="shrink-0"
+              className="
+                shrink-0
+              "
             >
               {col.node}
             </div>
@@ -1368,14 +1420,17 @@ export function ProcessDesktopKpiStrip({
         compactInputCols.length >
           0 && (
           <div
-            className={cn(
-              "flex h-[70.5px] w-full min-w-0",
-              "items-center",
-              "rounded-2xl",
-              "bg-[#202024]",
-              "px-2",
-              "shadow-sm",
-            )}
+            className="
+              flex
+              h-[70.5px]
+              w-full
+              min-w-0
+              items-center
+              rounded-2xl
+              bg-[#202024]
+              px-2
+              shadow-sm
+            "
             onClick={e =>
               e.stopPropagation()
             }
@@ -1384,21 +1439,30 @@ export function ProcessDesktopKpiStrip({
             }
           >
             <div
-              className={cn(
-                "flex w-full min-w-0",
-                "items-center justify-center",
-                "gap-2",
-                "overflow-x-auto overflow-y-hidden",
-                "[-ms-overflow-style:none]",
-                "[scrollbar-width:none]",
-                "[&::-webkit-scrollbar]:hidden",
-              )}
+              className="
+                flex
+                w-full
+                min-w-0
+                items-center
+                justify-center
+                gap-2
+                overflow-x-auto
+                overflow-y-hidden
+                [-ms-overflow-style:none]
+                [scrollbar-width:none]
+                [&::-webkit-scrollbar]:hidden
+              "
             >
               {compactInputCols.map(
                 col => (
                   <div
                     key={col.key}
-                    className="flex shrink-0 items-center justify-center"
+                    className="
+                      flex
+                      shrink-0
+                      items-center
+                      justify-center
+                    "
                   >
                     {col.node}
                   </div>

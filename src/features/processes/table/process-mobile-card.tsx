@@ -273,6 +273,21 @@ function ProcessMobileCardReady({
             {formatDate(task.deliveryDate)}
           </span>
 
+          {/* Acciones de workflow en el row colapsado para pantallas grandes (después de la fecha) */}
+          <div
+            className="hidden @[48rem]/prow:flex items-center gap-1.5 shrink-0"
+            onClick={e => e.stopPropagation()}
+            onPointerDown={e => e.stopPropagation()}
+          >
+            {stepId && processCode && (
+              <ProcessRowActions
+                task={task}
+                stepId={stepId}
+                status={workflowAccess.status(processTask)}
+                processCode={processCode}
+              />
+            )}
+          </div>
         </div>
 
         {/* Ojo de activos y auditoría en modo compacto */}
